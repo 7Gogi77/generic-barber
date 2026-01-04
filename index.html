@@ -4,253 +4,165 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Blade & Bourbon | Luxury Barber Experience</title>
-    
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,600&family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
-    
+    <script src="js/config.js"></script>
     <script>
         tailwind.config = {
             theme: {
                 extend: {
-                    colors: {
-                        gold: '#C5A059',
-                        dark: '#0A0A0A',
-                        card: '#141414',
-                    },
-                    fontFamily: {
-                        serif: ['Cormorant Garamond', 'serif'],
-                        sans: ['Montserrat', 'sans-serif'],
-                    },
-                    animation: {
-                        'fade-in-up': 'fadeInUp 1s ease forwards',
-                    }
+                    colors: { gold: SITE_CONFIG.primaryGold, dark: '#0A0A0A', card: '#141414' },
+                    fontFamily: { serif: ['Cormorant Garamond', 'serif'], sans: ['Montserrat', 'sans-serif'] }
                 }
             }
         }
     </script>
-    
     <style>
-		html { scroll-behavior: smooth; }
-        .gold-gradient {
-            background: linear-gradient(135deg, #C5A059 0%, #F1D396 50%, #C5A059 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-delay-300 { animation-delay: 0.3s; }
-        .animate-delay-600 { animation-delay: 0.6s; }
-        .animate-delay-900 { animation-delay: 0.9s; }
-        
-        /* Custom styling for form inputs */
-        .form-input {
-            background: transparent;
-            border-bottom: 1px solid rgba(197, 160, 89, 0.3);
-            width: 100%;
-            padding: 10px 0;
-            outline: none;
-            transition: border-color 0.3s;
-        }
-        .form-input:focus { border-color: #C5A059; }
+        #cursor { width: 20px; height: 20px; border: 1px solid #C5A059; border-radius: 50%; position: fixed; pointer-events: none; z-index: 9999; transition: transform 0.1s ease; }
+        .reveal { opacity: 0; transform: translateY(30px); transition: all 0.8s ease-out; }
+        .reveal.active { opacity: 1; transform: translateY(0); }
+        .gold-gradient { background: linear-gradient(135deg, #C5A059 0%, #F1D396 50%, #C5A059 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
     </style>
 </head>
-<body class="bg-dark text-white font-sans overflow-x-hidden">
+<body class="bg-dark text-white font-sans overflow-x-hidden cursor-none">
+    <div id="cursor" class="hidden md:block"></div>
 
-    <nav class="fixed w-full z-50 px-8 py-6 flex justify-between items-center bg-dark/80 backdrop-blur-md border-b border-white/5">
-		<div class="text-2xl font-serif font-bold tracking-widest gold-gradient text-center">B&B</div>
-		<div class="hidden md:flex space-x-8 text-xs uppercase tracking-[0.2em] font-medium">
-			<a href="#home" class="hover:text-gold transition-colors">Home</a>
-			<a href="#about" class="hover:text-gold transition-colors">Our Story</a>
-			<a href="#services" class="hover:text-gold transition-colors">Services</a>
-			<a href="#barbers" class="hover:text-gold transition-colors">Barbers</a>
-			<a href="#booking" class="hover:text-gold transition-colors font-bold">Book Now</a>
-		</div>
-		<a href="#booking" class="border border-gold px-6 py-2 text-[10px] uppercase tracking-widest hover:bg-gold hover:text-dark transition-all duration-300">Appointment</a>
-	</nav>
+    <nav id="main-nav" class="fixed w-full z-50 px-8 py-6 flex justify-between items-center transition-all duration-500">
+        <div class="text-2xl font-serif font-bold tracking-widest gold-gradient" id="logo-text"></div>
+        <div class="hidden md:flex space-x-8 text-[10px] uppercase tracking-[0.3em] font-medium">
+            <a href="#home" class="hover:text-gold transition-colors">Home</a>
+            <a href="#about" class="hover:text-gold transition-colors">Story</a>
+            <a href="#services" class="hover:text-gold transition-colors">Services</a>
+            <a href="#barbers" class="hover:text-gold transition-colors">Barbers</a>
+            <a href="#gallery" class="hover:text-gold transition-colors">Gallery</a>
+        </div>
+        <a href="#booking" class="bg-gold text-dark px-6 py-2 text-[10px] font-bold uppercase tracking-widest hover:bg-white transition-all">Book Now</a>
+    </nav>
 
     <section id="home" class="relative h-screen flex items-center justify-center overflow-hidden">
         <div class="absolute inset-0 z-0">
-            <div class="absolute inset-0 bg-gradient-to-b from-dark/40 via-dark/70 to-dark z-10"></div>
-            <img src="https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&q=80&w=2000" 
-                 class="w-full h-full object-cover scale-105 animate-[pulse_8s_infinite]" alt="Barber Shop">
+            <div class="absolute inset-0 bg-black/60 z-10"></div>
+            <img src="https://images.unsplash.com/photo-1503951914875-452162b0f3f1?q=80&w=2000" id="hero-img" class="w-full h-full object-cover scale-110 transition-transform">
         </div>
-
-        <div class="relative z-20 text-center px-4 max-w-4xl">
-            <span class="block text-gold uppercase tracking-[0.5em] text-sm mb-4 opacity-0 animate-fade-in-up">Established 1924</span>
-            <h1 class="text-6xl md:text-8xl font-serif mb-8 opacity-0 animate-fade-in-up animate-delay-300">
-                Where Tradition <br> <span class="italic text-gold">Meets Style</span>
-            </h1>
-            <p class="text-gray-400 text-lg md:text-xl max-w-2xl mx-auto mb-10 font-light opacity-0 animate-fade-in-up animate-delay-600">
-                Experience the finest grooming services in the city. Professionalism, precision, and the ultimate gentleman's atmosphere.
-            </p>
-			<div class="flex flex-col md:flex-row items-center justify-center gap-6 opacity-0 animate-fade-in-up animate-delay-900">
-				<a href="#services" class="bg-gold text-dark px-10 py-4 font-semibold uppercase tracking-widest hover:bg-white transition-all duration-300 w-full md:w-auto text-center">
-					View Services
-				</a>
-				<a href="#about" class="border border-white/20 px-10 py-4 font-semibold uppercase tracking-widest hover:border-gold transition-all duration-300 w-full md:w-auto text-center">
-					Our Story
-				</a>
-			</div>
+        <div class="relative z-20 text-center px-4">
+            <span class="block text-gold tracking-[0.5em] text-xs mb-4 reveal" id="hero-sub"></span>
+            <h1 class="text-6xl md:text-8xl font-serif mb-8 reveal italic" id="hero-main"></h1>
+            <a href="#services" class="inline-block border border-white/20 px-10 py-4 uppercase tracking-widest text-[10px] hover:border-gold reveal">View Services</a>
         </div>
     </section>
 
-    <section id="about" class="bg-dark py-24 px-8">
-        <div class="max-w-6xl mx-auto grid md:grid-cols-2 gap-16 items-center">
-            <div>
-                <img src="https://images.unsplash.com/photo-1532710093739-9470acff878f?auto=format&fit=crop&q=80&w=1000" class="rounded-sm border border-gold/20" alt="Vintage Barber">
+    <section id="about" class="bg-dark py-32 px-8 reveal">
+        <div class="max-w-6xl mx-auto grid md:grid-cols-2 gap-20 items-center">
+            <div class="relative">
+                <div class="absolute -top-4 -left-4 w-24 h-24 border-t border-l border-gold"></div>
+                <img id="story-img" src="" alt="Story" class="grayscale w-full">
             </div>
             <div>
-                <span class="text-gold uppercase tracking-widest text-xs mb-4 block">Since 1924</span>
-                <h2 class="text-4xl font-serif mb-6 italic">A Century of Excellence</h2>
-                <p class="text-gray-400 leading-relaxed mb-6">Blade & Bourbon was founded on the principle that a haircut is not just a chore, but a ritual. For over 100 years, we have served the city's finest, passing down secrets of the trade through generations of master barbers.</p>
-                <p class="text-gray-400 leading-relaxed">Today, we blend those time-honored techniques with contemporary styles to ensure every client walks out with a signature look.</p>
+                <h2 id="story-title" class="text-5xl font-serif mb-8 italic"></h2>
+                <p id="story-text" class="text-gray-400 leading-loose mb-8 text-lg"></p>
+                <div class="w-16 h-1 bg-gold"></div>
             </div>
         </div>
     </section>
 
-    <section id="services" class="bg-card py-24 px-4 relative overflow-hidden">
-        <div class="max-w-4xl mx-auto relative z-10">
-            <div class="text-center mb-20">
-                <h2 class="text-4xl md:text-5xl font-serif">Services & Pricing</h2>
-                <div class="w-20 h-[1px] bg-gold mx-auto mt-6"></div>
-            </div>
-
-            <div class="grid md:grid-cols-2 gap-x-16 gap-y-10">
-                <div class="space-y-8">
-                    <h3 class="text-xl font-serif text-gold italic mb-6 text-center">Haircuts</h3>
-                    <div class="group">
-                        <div class="flex items-baseline gap-2">
-                            <span class="text-lg font-medium group-hover:text-gold transition-colors">Classic Haircut</span>
-                            <div class="flex-grow border-b border-dotted border-white/20 mb-1"></div>
-                            <span class="text-gold font-serif text-xl">$35</span>
-                        </div>
-                    </div>
-                    <div class="group">
-                        <div class="flex items-baseline gap-2">
-                            <span class="text-lg font-medium group-hover:text-gold transition-colors">Signature Fade</span>
-                            <div class="flex-grow border-b border-dotted border-white/20 mb-1"></div>
-                            <span class="text-gold font-serif text-xl">$45</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="space-y-8 mt-12 md:mt-0">
-                    <h3 class="text-xl font-serif text-gold italic mb-6 text-center">Shaves</h3>
-                    <div class="group">
-                        <div class="flex items-baseline gap-2">
-                            <span class="text-lg font-medium group-hover:text-gold transition-colors">Hot Towel Shave</span>
-                            <div class="flex-grow border-b border-dotted border-white/20 mb-1"></div>
-                            <span class="text-gold font-serif text-xl">$40</span>
-                        </div>
-                    </div>
-                    <div class="group">
-                        <div class="flex items-baseline gap-2">
-                            <span class="text-lg font-medium group-hover:text-gold transition-colors">The Royal Treatment</span>
-                            <div class="flex-grow border-b border-dotted border-white/20 mb-1"></div>
-                            <span class="text-gold font-serif text-xl">$70</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section id="barbers" class="bg-dark py-24 px-4">
-        <div class="max-w-6xl mx-auto">
-            <div class="text-center mb-16">
-                <h2 class="text-4xl font-serif">Master Barbers</h2>
-                <div class="w-20 h-[1px] bg-gold mx-auto mt-6"></div>
-            </div>
-
-            <div class="grid md:grid-cols-3 gap-8">
-                <div class="group relative overflow-hidden bg-card border border-white/5">
-                    <div class="aspect-[3/4] overflow-hidden">
-                        <img src="https://images.unsplash.com/photo-1519345182560-3f2917c472ef?auto=format&fit=crop&q=80&w=800" class="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-110 transition-all duration-700">
-                    </div>
-                    <div class="p-6 text-center">
-                        <h4 class="text-xl font-serif text-gold">Alexander Vance</h4>
-                        <p class="text-gray-500 text-xs uppercase mt-2">Founder</p>
-                    </div>
-                </div>
-                <div class="group relative overflow-hidden bg-card border border-white/5">
-                    <div class="aspect-[3/4] overflow-hidden">
-                        <img src="https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?auto=format&fit=crop&q=80&w=800" class="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-110 transition-all duration-700">
-                    </div>
-                    <div class="p-6 text-center">
-                        <h4 class="text-xl font-serif text-gold">Julian Rossi</h4>
-                        <p class="text-gray-500 text-xs uppercase mt-2">Beard Expert</p>
-                    </div>
-                </div>
-                <div class="group relative overflow-hidden bg-card border border-white/5">
-                    <div class="aspect-[3/4] overflow-hidden">
-                        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=800" class="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-110 transition-all duration-700">
-                    </div>
-                    <div class="p-6 text-center">
-                        <h4 class="text-xl font-serif text-gold">Marcus Thorne</h4>
-                        <p class="text-gray-500 text-xs uppercase mt-2">Senior Stylist</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section id="booking" class="bg-card py-24 px-8">
+    <section class="bg-card py-24 px-8 border-y border-white/5 text-center reveal">
         <div class="max-w-4xl mx-auto">
-            <div class="text-center mb-12">
-                <span class="text-gold uppercase tracking-widest text-xs">Reservations</span>
-                <h2 class="text-4xl font-serif mt-4">Book Your Appointment</h2>
-            </div>
-            <form class="grid md:grid-cols-2 gap-8">
-                <input type="text" placeholder="Full Name" class="form-input text-sm">
-                <input type="email" placeholder="Email Address" class="form-input text-sm">
-                <select class="form-input text-sm text-gray-400">
-                    <option>Select Service</option>
-                    <option>Classic Haircut</option>
-                    <option>Signature Fade</option>
-                    <option>Hot Towel Shave</option>
-                </select>
-                <input type="date" class="form-input text-sm text-gray-400">
-                <div class="md:col-span-2 mt-8">
-                    <button class="w-full bg-gold text-dark py-4 uppercase tracking-widest font-bold hover:bg-white transition-colors">Secure Booking</button>
-                </div>
+            <span class="text-gold text-6xl font-serif italic">"</span>
+            <p id="test-quote" class="text-2xl font-serif italic mb-8 text-gray-200"></p>
+            <span id="test-author" class="uppercase tracking-widest text-[10px] text-gold"></span>
+        </div>
+    </section>
+
+    <section id="services" class="bg-dark py-32 px-8 reveal">
+        <div class="max-w-4xl mx-auto">
+            <h2 class="text-center text-4xl font-serif mb-20 italic text-gold uppercase tracking-widest">Pricing</h2>
+            <div id="services-list" class="grid md:grid-cols-2 gap-x-16 gap-y-12"></div>
+        </div>
+    </section>
+
+    <section id="barbers" class="bg-card py-32 px-8 reveal">
+        <div class="max-w-6xl mx-auto">
+            <h2 class="text-center text-4xl font-serif mb-20 italic">The Craftsmen</h2>
+            <div id="barbers-list" class="grid md:grid-cols-3 gap-8"></div>
+        </div>
+    </section>
+
+    <section id="gallery" class="bg-dark py-32 px-8 reveal">
+        <div id="gallery-list" class="max-w-6xl mx-auto columns-1 md:columns-3 gap-4 space-y-4"></div>
+    </section>
+
+    <section id="booking" class="bg-card py-32 px-8 reveal text-center">
+        <div class="max-w-xl mx-auto">
+            <h2 class="text-4xl font-serif mb-12">Request Appointment</h2>
+            <form class="space-y-6 text-left">
+                <input type="text" placeholder="GENTLEMAN'S NAME" class="w-full bg-transparent border-b border-gold/30 py-4 outline-none focus:border-gold text-[10px] tracking-widest">
+                <button class="w-full bg-gold text-dark py-5 font-bold uppercase tracking-[0.3em] text-[10px] hover:bg-white transition-all">Secure Spot</button>
             </form>
         </div>
     </section>
 
-    <section id="gallery" class="bg-dark py-24 px-4">
-        <div class="max-w-6xl mx-auto">
-            <div class="columns-1 md:columns-3 gap-4 space-y-4">
-                <img src="https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&q=80&w=800" class="w-full rounded-sm grayscale hover:grayscale-0 transition-all duration-500">
-                <img src="https://images.unsplash.com/photo-1621605815971-fbc98d665033?auto=format&fit=crop&q=80&w=800" class="w-full rounded-sm grayscale hover:grayscale-0 transition-all duration-500">
-                <img src="https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&q=80&w=800" class="w-full rounded-sm grayscale hover:grayscale-0 transition-all duration-500">
-            </div>
-        </div>
-    </section>
-
-    <footer id="contact" class="bg-dark pt-20 pb-10 px-8 border-t border-white/5">
-        <div class="max-w-6xl mx-auto grid md:grid-cols-4 gap-12 mb-16">
-            <div class="col-span-1 md:col-span-2">
-                <h3 class="text-3xl font-serif gold-gradient mb-6">Blade & Bourbon</h3>
-                <p class="text-gray-500 max-w-sm leading-relaxed">Premium grooming for the modern gentleman.</p>
-            </div>
-            <div>
-                <h4 class="text-gold uppercase tracking-widest text-xs mb-6 font-bold">Hours</h4>
-                <ul class="text-sm text-gray-400 space-y-2">
-                    <li>Mon - Fri: 09:00 - 20:00</li>
-                    <li>Saturday: 10:00 - 18:00</li>
-                </ul>
-            </div>
-            <div>
-                <h4 class="text-gold uppercase tracking-widest text-xs mb-6 font-bold">Location</h4>
-                <address class="text-sm text-gray-400 not-italic">123 Gentleman St.<br>London, UK</address>
-            </div>
-        </div>
-        <div class="text-center border-t border-white/5 pt-8 text-[10px] text-gray-600 uppercase tracking-widest">
-            &copy; 2024 Blade & Bourbon. All rights reserved.
-        </div>
+    <footer class="bg-dark py-12 border-t border-white/5 text-center text-[9px] text-gray-600 tracking-[0.4em] uppercase">
+        <div id="footer-copy"></div>
     </footer>
 
+    <script>
+        function initSite() {
+            document.getElementById('logo-text').innerText = SITE_CONFIG.shopName;
+            document.getElementById('hero-sub').innerText = SITE_CONFIG.heroSubtitle;
+            document.getElementById('hero-main').innerText = SITE_CONFIG.heroTitle;
+            document.getElementById('footer-copy').innerHTML = `&copy; 2024 ${SITE_CONFIG.shopName}`;
+            
+            // Story
+            document.getElementById('story-title').innerText = SITE_CONFIG.ourStory.title;
+            document.getElementById('story-text').innerText = SITE_CONFIG.ourStory.text;
+            document.getElementById('story-img').src = SITE_CONFIG.ourStory.image;
+
+            // Testimonial
+            document.getElementById('test-quote').innerText = SITE_CONFIG.testimonial.quote;
+            document.getElementById('test-author').innerText = `— ${SITE_CONFIG.testimonial.author}`;
+
+            // Services
+            const sList = document.getElementById('services-list');
+            SITE_CONFIG.services.forEach(s => {
+                sList.innerHTML += `<div class="flex justify-between items-end border-b border-white/10 pb-4">
+                    <div><h4 class="font-serif text-xl">${s.name}</h4><p class="text-[9px] text-gray-500 uppercase mt-1 tracking-widest">${s.desc}</p></div>
+                    <span class="text-xl text-gold font-serif">${s.price}</span></div>`;
+            });
+
+            // Barbers
+            const bList = document.getElementById('barbers-list');
+            SITE_CONFIG.barbers.forEach(b => {
+                bList.innerHTML += `<div class="group overflow-hidden">
+                    <img src="${b.img}" class="grayscale group-hover:grayscale-0 transition-all duration-700 aspect-[3/4] object-cover">
+                    <div class="mt-4 text-center"><h4 class="font-serif text-lg text-gold">${b.name}</h4><p class="text-[9px] text-gray-500 uppercase tracking-widest">${b.role}</p></div></div>`;
+            });
+
+            // Gallery
+            const gList = document.getElementById('gallery-list');
+            SITE_CONFIG.gallery.forEach(img => {
+                gList.innerHTML += `<img src="${img}" class="w-full grayscale hover:grayscale-0 transition-all duration-500">`;
+            });
+        }
+
+        const cursor = document.querySelector('#cursor');
+        document.addEventListener('mousemove', e => { cursor.style.left = e.clientX + 'px'; cursor.style.top = e.clientY + 'px'; });
+
+        function reveal() {
+            document.querySelectorAll(".reveal").forEach(r => {
+                if (r.getBoundingClientRect().top < window.innerHeight - 100) r.classList.add("active");
+            });
+        }
+
+        window.addEventListener("scroll", () => {
+            reveal();
+            const nav = document.getElementById('main-nav');
+            if (window.scrollY > 50) nav.classList.add('bg-dark/95', 'py-4', 'backdrop-blur-md', 'border-white/5');
+            else nav.classList.remove('bg-dark/95', 'py-4', 'backdrop-blur-md', 'border-white/5');
+            document.getElementById('hero-img').style.transform = `scale(1.1) translateY(${window.scrollY * 0.2}px)`;
+        });
+
+        initSite();
+        reveal();
+    </script>
 </body>
 </html>
