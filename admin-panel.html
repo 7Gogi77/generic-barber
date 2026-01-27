@@ -1395,9 +1395,22 @@
         }
         
         function saveConfig() {
+            // Save locally
             localStorage.setItem('site_config_backup', JSON.stringify(SITE_CONFIG));
             localStorage.setItem('appointments', JSON.stringify(SITE_CONFIG.appointments || []));
-            showNotification('Spremembe so bile shranjene', 'success');
+            
+            // Sync to cloud (global)
+            if (typeof CloudSync !== 'undefined' && CloudSync.isConnected) {
+                CloudSync.saveToCloud(SITE_CONFIG).then(success => {
+                    if (success) {
+                        showNotification('✅ Spremembe so bile shranjene globalno', 'success');
+                    } else {
+                        showNotification('⚠️ Shranjeno lokalno, globalna sinhronizacija ni uspela', 'warning');
+                    }
+                });
+            } else {
+                showNotification('⚠️ Shranjeno lokalno (Firebase ni povezan)', 'warning');
+            }
         }
 
         // Sync color picker and text inputs
@@ -1496,5 +1509,8 @@
             refreshBusinessPanel();
         });
     </script>
+    
+    <!-- Firebase Cloud Sync -->
+    <script type="module" src="js/firebase-config.js"></script>
 </body>
 </html>

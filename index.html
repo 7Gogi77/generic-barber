@@ -761,6 +761,20 @@
         }
 
         function initSite() {
+            // Load from cloud first (global changes), then local backup
+            if (typeof CloudSync !== 'undefined') {
+                CloudSync.loadFromCloud().then(() => {
+                    renderSiteContent();
+                });
+            } else {
+                // Fallback if Firebase not available
+                loadSavedConfig();
+                loadAppointments();
+                renderSiteContent();
+            }
+        }
+        
+        function renderSiteContent() {
             // Load any saved changes from admin panel
             loadSavedConfig();
             loadAppointments();
@@ -884,5 +898,8 @@
         initSite();
         reveal();
     </script>
+    
+    <!-- Firebase Cloud Sync -->
+    <script type="module" src="js/firebase-config.js"></script>
 </body>
 </html>
