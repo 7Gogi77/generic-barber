@@ -1073,19 +1073,27 @@
             if (!SITE_CONFIG.logo) SITE_CONFIG.logo = {};
 
             // If text URL provided, use it; otherwise keep existing
-            const largeUrl = document.getElementById('logoLargeUrl').value.trim();
-            const miniUrl = document.getElementById('logoMiniUrl').value.trim();
-            const heroUrl = document.getElementById('heroImageUrl').value.trim();
-            const footer = document.getElementById('footerText').value.trim();
+            const largeUrlEl = document.getElementById('logoLargeUrl');
+            const miniUrlEl = document.getElementById('logoMiniUrl');
+            const heroUrlEl = document.getElementById('heroImageUrl');
+            const footerEl = document.getElementById('footerText');
+            
+            const largeUrl = largeUrlEl ? largeUrlEl.value.trim() : '';
+            const miniUrl = miniUrlEl ? miniUrlEl.value.trim() : '';
+            const heroUrl = heroUrlEl ? heroUrlEl.value.trim() : '';
+            const footer = footerEl ? footerEl.value.trim() : '';
 
             if (largeUrl) SITE_CONFIG.logo.large = largeUrl;
             if (miniUrl) SITE_CONFIG.logo.mini = miniUrl;
             if (heroUrl) SITE_CONFIG.hero.backgroundImage = heroUrl;
-            SITE_CONFIG.footerText = footer;
+            if (footer) SITE_CONFIG.footerText = footer;
 
             // If files uploaded, read them as data URLs
-            const largeFile = document.getElementById('logoLargeInput').files[0];
-            const miniFile = document.getElementById('logoMiniInput').files[0];
+            const largeInputEl = document.getElementById('logoLargeInput');
+            const miniInputEl = document.getElementById('logoMiniInput');
+            
+            const largeFile = largeInputEl ? largeInputEl.files[0] : null;
+            const miniFile = miniInputEl ? miniInputEl.files[0] : null;
 
             if (largeFile) {
                 const r = new FileReader();
