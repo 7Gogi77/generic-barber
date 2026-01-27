@@ -416,14 +416,51 @@
 
                 <!-- BUSINESS HOURS SECTION -->
                 <div class="admin-section">
-                    <div class="section-title">⏰ Delovni Čas in Kontakt</div>
+                    <div class="section-title">⏰ Delovni Čas in Delovni Dnevi</div>
+                    <p style="font-size: 12px; color: #666; margin-bottom: 15px;">Nastavi svoje delovne dneve in ure</p>
+                    
+                    <!-- Working Days Selection -->
+                    <div style="margin-bottom: 20px;">
+                        <label class="form-label-admin">Delovni Dnevi:</label>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-top: 10px;">
+                            <label style="display: flex; align-items: center; gap: 8px; font-size: 14px;">
+                                <input type="checkbox" id="dayMonday" class="working-day-checkbox" onchange="updateWorkingDays()"> Ponedeljek
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 8px; font-size: 14px;">
+                                <input type="checkbox" id="dayTuesday" class="working-day-checkbox" onchange="updateWorkingDays()"> Torek
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 8px; font-size: 14px;">
+                                <input type="checkbox" id="dayWednesday" class="working-day-checkbox" onchange="updateWorkingDays()"> Sreda
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 8px; font-size: 14px;">
+                                <input type="checkbox" id="dayThursday" class="working-day-checkbox" onchange="updateWorkingDays()"> Četrtek
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 8px; font-size: 14px;">
+                                <input type="checkbox" id="dayFriday" class="working-day-checkbox" onchange="updateWorkingDays()"> Petek
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 8px; font-size: 14px;">
+                                <input type="checkbox" id="daySaturday" class="working-day-checkbox" onchange="updateWorkingDays()"> Sobota
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 8px; font-size: 14px;">
+                                <input type="checkbox" id="daySunday" class="working-day-checkbox" onchange="updateWorkingDays()"> Nedelja
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Business Hours per Day -->
+                    <div style="margin-bottom: 20px;">
+                        <label class="form-label-admin">Delovni Čas po Dnevih:</label>
+                        <div id="workingHoursContainer" style="display: grid; gap: 12px; margin-top: 10px;"></div>
+                    </div>
+
+                    <!-- Default Business Hours -->
                     <div class="form-row">
                         <div class="form-group-admin">
-                            <label class="form-label-admin">Začetek Delovnega Časa (ura)</label>
+                            <label class="form-label-admin">Privzeti Začetek Časa (ura)</label>
                             <input id="businessStart" type="number" min="0" max="23" class="form-input-admin">
                         </div>
                         <div class="form-group-admin">
-                            <label class="form-label-admin">Konec Delovnega Časa (ura)</label>
+                            <label class="form-label-admin">Privzeti Konec Časa (ura)</label>
                             <input id="businessEnd" type="number" min="0" max="23" class="form-input-admin">
                         </div>
                     </div>
@@ -639,6 +676,9 @@
             
             // Appointments
             loadAppointments();
+
+            // Working Days
+            loadWorkingDays();
         }
 
         // Load services
@@ -917,6 +957,115 @@
             SITE_CONFIG.ownerContact.email = document.getElementById('ownerEmail').value;
             SITE_CONFIG.ownerContact.phone = document.getElementById('ownerPhone').value;
             saveConfig();
+        }
+
+        // Update working days
+        function updateWorkingDays() {
+            if (!SITE_CONFIG.booking) SITE_CONFIG.booking = {};
+            if (!SITE_CONFIG.booking.workingDays) SITE_CONFIG.booking.workingDays = {};
+            
+            const dayMap = {
+                'Monday': 1,
+                'Tuesday': 2,
+                'Wednesday': 3,
+                'Thursday': 4,
+                'Friday': 5,
+                'Saturday': 6,
+                'Sunday': 0
+            };
+            
+            const dayIds = ['dayMonday', 'dayTuesday', 'dayWednesday', 'dayThursday', 'dayFriday', 'daySaturday', 'daySunday'];
+            const dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+            
+            // Reset working days
+            SITE_CONFIG.booking.workingDays = {};
+            const daysClosed = [];
+            
+            // Check which days are working days
+            dayIds.forEach((id, idx) => {
+                const checkbox = document.getElementById(id);
+                const dayNum = dayMap[dayNames[idx]];
+                
+                if (checkbox && checkbox.checked) {
+                    SITE_CONFIG.booking.workingDays[dayNum] = true;
+                } else {
+                    daysClosed.push(dayNum);
+                }
+            });
+            
+            // Store days closed for calendar (inverse of working days)
+            SITE_CONFIG.booking.daysClosed = daysClosed;
+            
+            // Render hours for each working day
+            renderWorkingHoursInputs();
+            saveConfig();
+        }
+
+        // Render working hours inputs for each day
+        function renderWorkingHoursInputs() {
+            const container = document.getElementById('workingHoursContainer');
+            if (!container) return;
+            
+            container.innerHTML = '';
+            
+            if (!SITE_CONFIG.booking) SITE_CONFIG.booking = {};
+            if (!SITE_CONFIG.booking.workingDays) SITE_CONFIG.booking.workingDays = {};
+            
+            const dayNames = ['Nedelja', 'Ponedeljek', 'Torek', 'Sreda', 'Četrtek', 'Petek', 'Sobota'];
+            const dayNamesEn = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+            
+            for (let dayNum = 0; dayNum < 7; dayNum++) {
+                if (SITE_CONFIG.booking.workingDays[dayNum]) {
+                    const hoursStart = SITE_CONFIG.booking.hours?.[dayNum]?.start || SITE_CONFIG.booking.businessHours?.start || 9;
+                    const hoursEnd = SITE_CONFIG.booking.hours?.[dayNum]?.end || SITE_CONFIG.booking.businessHours?.end || 19;
+                    
+                    const dayRow = document.createElement('div');
+                    dayRow.style.cssText = 'display: grid; grid-template-columns: 150px 1fr 1fr; gap: 10px; align-items: center; padding: 10px; background: #f9f9f9; border-radius: 5px;';
+                    dayRow.innerHTML = `
+                        <label style="font-weight: 500; font-size: 14px;">${dayNames[dayNum]}:</label>
+                        <input type="number" min="0" max="23" value="${hoursStart}" placeholder="Od ure" 
+                            onchange="setDayHours(${dayNum}, this.value, null)" style="padding: 8px; border: 1px solid #ddd; border-radius: 3px;">
+                        <input type="number" min="0" max="23" value="${hoursEnd}" placeholder="Do ure"
+                            onchange="setDayHours(${dayNum}, null, this.value)" style="padding: 8px; border: 1px solid #ddd; border-radius: 3px;">
+                    `;
+                    container.appendChild(dayRow);
+                }
+            }
+        }
+
+        // Set custom hours for a specific day
+        function setDayHours(dayNum, startHour, endHour) {
+            if (!SITE_CONFIG.booking) SITE_CONFIG.booking = {};
+            if (!SITE_CONFIG.booking.hours) SITE_CONFIG.booking.hours = {};
+            if (!SITE_CONFIG.booking.hours[dayNum]) SITE_CONFIG.booking.hours[dayNum] = {};
+            
+            if (startHour !== null) {
+                SITE_CONFIG.booking.hours[dayNum].start = parseInt(startHour) || 9;
+            }
+            if (endHour !== null) {
+                SITE_CONFIG.booking.hours[dayNum].end = parseInt(endHour) || 19;
+            }
+            
+            saveConfig();
+        }
+
+        // Load and populate working days on admin panel load
+        function loadWorkingDays() {
+            if (!SITE_CONFIG.booking) SITE_CONFIG.booking = {};
+            
+            const dayIds = ['dayMonday', 'dayTuesday', 'dayWednesday', 'dayThursday', 'dayFriday', 'daySaturday', 'daySunday'];
+            const dayNums = [1, 2, 3, 4, 5, 6, 0];
+            
+            // Check working days
+            dayNums.forEach((dayNum, idx) => {
+                const checkbox = document.getElementById(dayIds[idx]);
+                if (checkbox) {
+                    checkbox.checked = SITE_CONFIG.booking.workingDays?.[dayNum] || false;
+                }
+            });
+            
+            // Render hours
+            renderWorkingHoursInputs();
         }
 
         // Save appearance settings (logos, hero image, footer)

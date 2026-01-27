@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Blade & Bourbon | Luxury Barber Experience</title>
+    <link id="favicon" rel="icon" type="image/png">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,600&family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/theme.css">
@@ -234,7 +235,10 @@
                     </div>
                     
                     <form id="appointmentForm" class="space-y-4 mb-8">
-                        <input type="text" id="appointmentName" placeholder="Ime" class="w-full bg-transparent border-b border-gold/30 py-3 outline-none focus:border-gold text-white text-sm tracking-widest" required>
+                        <div class="grid md:grid-cols-2 gap-4">
+                            <input type="text" id="appointmentFirstName" placeholder="Ime" class="w-full bg-transparent border-b border-gold/30 py-3 outline-none focus:border-gold text-white text-sm tracking-widest" required>
+                            <input type="text" id="appointmentSurname" placeholder="Priimek" class="w-full bg-transparent border-b border-gold/30 py-3 outline-none focus:border-gold text-white text-sm tracking-widest" required>
+                        </div>
                         <input type="email" id="appointmentEmail" placeholder="E-pošta" class="w-full bg-transparent border-b border-gold/30 py-3 outline-none focus:border-gold text-white text-sm tracking-widest" required>
                         <input type="tel" id="appointmentPhone" placeholder="Telefonska Številka" class="w-full bg-transparent border-b border-gold/30 py-3 outline-none focus:border-gold text-white text-sm tracking-widest" required>
                     </form>
@@ -261,8 +265,10 @@
                         <h3 class="text-2xl font-serif text-gold mb-4">Termin Potrjen!</h3>
                         <p class="text-gray-400 mb-6">Preverite svojo e-pošto za potrdilo naročila</p>
                         <div id="successDetails" class="bg-card p-6 rounded border border-gold/30 mb-8 text-left text-sm">
-                            <p><span class="text-gray-500">Ime:</span> <span class="text-white" id="successName"></span></p>
+                            <p><span class="text-gray-500">Ime:</span> <span class="text-white" id="successFirstName"></span></p>
+                            <p><span class="text-gray-500">Priimek:</span> <span class="text-white" id="successSurname"></span></p>
                             <p><span class="text-gray-500">E-pošta:</span> <span class="text-white" id="successEmail"></span></p>
+                            <p><span class="text-gray-500">Telefonska Številka:</span> <span class="text-white" id="successPhone"></span></p>
                             <p><span class="text-gray-500">Termin:</span> <span class="text-white" id="successDateTime"></span></p>
                             <p><span class="text-gray-500">Storitve:</span> <span class="text-white" id="successServices"></span></p>
                         </div>
@@ -489,8 +495,21 @@
             slots.innerHTML = '';
             
             const totalDuration = getTotalDuration();
-            const startHour = (SITE_CONFIG.booking.businessHours?.start) || 9;
-            const endHour = (SITE_CONFIG.booking.businessHours?.end) || 19;
+            
+            // Get day of week (0 = Sunday, 1 = Monday, etc.)
+            const [year, month, day] = selectedDate.split('-');
+            const dateObj = new Date(year, month - 1, day);
+            const dayOfWeek = dateObj.getDay();
+            
+            // Get hours for this specific day, or use default business hours
+            let startHour = (SITE_CONFIG.booking.businessHours?.start) || 9;
+            let endHour = (SITE_CONFIG.booking.businessHours?.end) || 19;
+            
+            if (SITE_CONFIG.booking.hours && SITE_CONFIG.booking.hours[dayOfWeek]) {
+                startHour = SITE_CONFIG.booking.hours[dayOfWeek].start || startHour;
+                endHour = SITE_CONFIG.booking.hours[dayOfWeek].end || endHour;
+            }
+            
             const slotDur = SITE_CONFIG.booking.slotDuration || 15;
             const appointments = SITE_CONFIG.appointments || [];
             
@@ -592,20 +611,71 @@
             document.getElementById('summaryDateTime').innerText = dateStr + ' ob ' + selectedTime;
         }
         
+        function isValidName(name) {
+            // Allow letters, spaces, hyphens, apostrophes (for names like O'Brien, Marie-Claire)
+            const nameRegex = /^[a-zA-ZÀ-ÿ\s\-']{2,}$/;
+            return nameRegex.test(name);
+        }
+        
+        function isValidEmail(email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailRegex.test(email);
+        }
+        
+        function isValidPhone(phone) {
+            // Allow digits, spaces, hyphens, + (for international numbers)
+            const phoneRegex = /^[\d\s\-+()]{7,}$/;
+            return phoneRegex.test(phone);
+        }
+        
         function confirmAppointment() {
-            const name = document.getElementById('appointmentName').value.trim();
+            const firstName = document.getElementById('appointmentFirstName').value.trim();
+            const surname = document.getElementById('appointmentSurname').value.trim();
             const email = document.getElementById('appointmentEmail').value.trim();
             const phone = document.getElementById('appointmentPhone').value.trim();
             
-            if (!name || !email || !phone) {
+            // Check if all fields are filled
+            if (!firstName || !surname || !email || !phone) {
                 alert('Vpiši vse podatke');
                 return;
             }
             
+            // Validate name format
+            if (!isValidName(firstName)) {
+                alert('Ime mora vsebovati samo črke (najmanj 2 znaka)');
+                document.getElementById('appointmentFirstName').focus();
+                return;
+            }
+            
+            // Validate surname format
+            if (!isValidName(surname)) {
+                alert('Priimek mora vsebovati samo črke (najmanj 2 znaka)');
+                document.getElementById('appointmentSurname').focus();
+                return;
+            }
+            
+            // Validate email format
+            if (!isValidEmail(email)) {
+                alert('Vpiši veljavno e-pošto (npr. ime@example.com)');
+                document.getElementById('appointmentEmail').focus();
+                return;
+            }
+            
+            // Validate phone format
+            if (!isValidPhone(phone)) {
+                alert('Vpiši veljavno telefonsko številko (najmanj 7 znakov)');
+                document.getElementById('appointmentPhone').focus();
+                return;
+            }
+            
+            const fullName = firstName + ' ' + surname;
+            
             const appointment = {
                 date: selectedDate,
                 time: selectedTime,
-                name: name,
+                firstName: firstName,
+                surname: surname,
+                fullName: fullName,
                 email: email,
                 phone: phone,
                 services: selectedServices.map(idx => SITE_CONFIG.servicesSection.items[idx].name),
@@ -619,35 +689,25 @@
             localStorage.setItem('appointments', JSON.stringify(SITE_CONFIG.appointments));
             
             // Show success
-            document.getElementById('successName').innerText = name;
+            document.getElementById('successFirstName').innerText = firstName;
+            document.getElementById('successSurname').innerText = surname;
             document.getElementById('successEmail').innerText = email;
+            document.getElementById('successPhone').innerText = phone;
+            
             // Parse date correctly without timezone issues
             const [year, month, day] = selectedDate.split('-');
             const dateStr = `${day}. ${month}. ${year}`;
             document.getElementById('successDateTime').innerText = dateStr + ' ob ' + selectedTime;
             document.getElementById('successServices').innerText = appointment.services.join(', ');
             
-            // Send notification (client-side email simulation)
+            // Send notification
             sendNotification(appointment);
             
             currentStep = 4;
             showStep(4);
         }
         
-        function resetAppointment() {
-            currentStep = 1;
-            selectedServices = [];
-            selectedDate = null;
-            selectedTime = null;
-            document.getElementById('appointmentForm').reset();
-            showStep(1);
-            renderServices();
-        }
-        
         function sendNotification(appointment) {
-            // Generate notification text
-            const notifText = `Nova Naročila:\n${appointment.name}\n${appointment.email}\n${appointment.phone}\n${appointment.date} ob ${appointment.time}\nStoritve: ${appointment.services.join(', ')}\nCena: €${appointment.totalPrice}`;
-            
             // Save notification to localStorage
             const notifications = JSON.parse(localStorage.getItem('ownerNotifications') || '[]');
             notifications.push({
@@ -661,7 +721,8 @@
             
             if (ownerEmail && FORMSPREE_ENDPOINT) {
                 const formData = new FormData();
-                formData.append('Ime stranke: ', appointment.name);
+                formData.append('Ime: ', appointment.firstName);
+                formData.append('Priimek: ', appointment.surname);
                 formData.append('E-Mail stranke: ', appointment.email);
                 formData.append('Tel. št. stranke: ', appointment.phone);
                 formData.append('Datum termina: ', appointment.date);
@@ -687,14 +748,29 @@
                     console.log('⚠️ Could not send to Formspree, but appointment saved locally:', error);
                 });
             }
-            
-            console.log('💾 Appointment saved locally:', notifText);
+        }
+        
+        function resetAppointment() {
+            currentStep = 1;
+            selectedServices = [];
+            selectedDate = null;
+            selectedTime = null;
+            document.getElementById('appointmentForm').reset();
+            showStep(1);
+            renderServices();
         }
 
         function initSite() {
             // Load any saved changes from admin panel
             loadSavedConfig();
             loadAppointments();
+            
+            // Update page title and favicon
+            document.title = SITE_CONFIG.shopName + ' | Luxury Barber Experience';
+            const favicon = document.getElementById('favicon');
+            if (SITE_CONFIG.logo && SITE_CONFIG.logo.mini) {
+                favicon.href = SITE_CONFIG.logo.mini;
+            }
             
             // Apply theme colors
             const t = SITE_CONFIG.theme;
