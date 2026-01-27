@@ -6,26 +6,113 @@
     <title>Blade & Bourbon | Luxury Barber Experience</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,600&family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/theme.css">
     <script src="js/config.js"></script>
+    <script src="js/admin.js"></script>
+    <!-- No external email library needed - using Formspree -->
+    <script>
+        // Formspree endpoint - user will set this up
+        const FORMSPREE_ENDPOINT = "https://formspree.io/f/meegkorn";
+    </script>
     <script>
         tailwind.config = {
             theme: {
                 extend: {
-                    colors: { gold: SITE_CONFIG.primaryGold, dark: '#0A0A0A', card: '#141414' },
-                    fontFamily: { serif: ['Cormorant Garamond', 'serif'], sans: ['Montserrat', 'sans-serif'] }
+                    colors: { 
+                        gold: SITE_CONFIG.theme.primary, 
+                        dark: SITE_CONFIG.theme.dark, 
+                        card: SITE_CONFIG.theme.card 
+                    },
+                    fontFamily: { 
+                        serif: [SITE_CONFIG.theme.fontSerif, 'serif'], 
+                        sans: [SITE_CONFIG.theme.fontSans, 'sans-serif'] 
+                    }
                 }
             }
         }
     </script>
     <style>
-        #cursor { width: 20px; height: 20px; border: 1px solid #C5A059; border-radius: 50%; position: fixed; pointer-events: none; z-index: 9999; transition: transform 0.1s ease; }
+        #cursor { width: 20px; height: 20px; border: 1px solid var(--color-primary); border-radius: 50%; position: fixed; pointer-events: none; z-index: 9999; transition: transform 0.1s ease; }
         .reveal { opacity: 0; transform: translateY(30px); transition: all 0.8s ease-out; }
         .reveal.active { opacity: 1; transform: translateY(0); }
-        .gold-gradient { background: linear-gradient(135deg, #C5A059 0%, #F1D396 50%, #C5A059 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .gold-gradient { background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 50%, var(--gradient-start) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .appointment-step { display: none; }
+        .appointment-step.active { display: block; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .service-card { cursor: pointer; transition: all 0.3s ease; }
+        .service-card:hover { transform: translateY(-2px); }
+        .calendar-widget { font-size: 13px; }
+        .calendar-widget button { cursor: pointer; }
+        
+        /* Dynamic color bindings */
+        #appointmentWidget { background-color: var(--color-dark); }
+        footer { background-color: var(--footer-bg-color); color: var(--footer-text-color); border-color: rgba(255, 255, 255, 0.05); }
+        #nav-links-container a { color: var(--nav-text-color); }
+        #nav-links-container a:hover { color: var(--nav-hover-color); }
+        #nav-links-container a::after { background-color: var(--nav-hover-color); }
+        .bg-card { background-color: var(--color-card) !important; border-color: rgba(255, 255, 255, 0.1) !important; }
+        .text-gold { color: var(--color-primary) !important; }
+        .border-gold { border-color: var(--color-primary) !important; }
+        .border-gold\/30 { border-color: color-mix(in srgb, var(--color-primary) 30%, transparent) !important; }
+        .text-gray-400 { color: var(--text-secondary) !important; }
+        .text-gray-500 { color: var(--text-secondary) !important; }
+        .text-gray-300 { color: color-mix(in srgb, var(--text-secondary) 70%, var(--text-primary) 30%) !important; }
+        .text-gray-600 { color: color-mix(in srgb, var(--text-secondary) 50%, var(--footer-text-color) 50%) !important; }
+        .border-white\/10 { border-color: rgba(255, 255, 255, 0.1) !important; }
+        .bg-gray-700 { background-color: color-mix(in srgb, var(--color-dark) 50%, var(--color-card) 50%) !important; }
+        .hover\:bg-gray-600:hover { background-color: color-mix(in srgb, var(--color-dark) 40%, var(--color-card) 60%) !important; }
+        .bg-gold { background-color: var(--button-color) !important; }
+        .text-dark { color: var(--button-text-color) !important; }
+        .bg-gold:hover { background-color: var(--text-primary) !important; }
+        
+        /* Mobile responsive improvements */
+        @media (max-width: 768px) {
+            #appointmentWidget { padding: 16px !important; }
+            #servicesGrid { grid-template-columns: 1fr !important; }
+            .grid.md\:grid-cols-2 { grid-template-columns: 1fr !important; }
+            #booking { padding: 24px 16px !important; }
+            h2 { font-size: 1.5rem !important; }
+            h3 { font-size: 1.25rem !important; }
+            .text-4xl { font-size: 1.5rem !important; }
+            .text-2xl { font-size: 1.25rem !important; }
+            .text-sm { font-size: 0.875rem !important; }
+            .p-4 { padding: 12px !important; }
+            .p-6 { padding: 16px !important; }
+            .py-3 { padding-top: 12px !important; padding-bottom: 12px !important; }
+            .px-4 { padding-left: 12px !important; padding-right: 12px !important; }
+            input, textarea, button { font-size: 16px !important; } /* Prevents zoom on iOS */
+            .flex.gap-4 { flex-direction: column; gap: 12px; }
+            .flex-1 { width: 100%; }
+            .max-h-96 { max-height: 300px; }
+            .columns-1 { columns: 1 !important; }
+        }
+        
+        @media (max-width: 480px) {
+            #appointmentWidget { padding: 12px !important; border-radius: 8px; }
+            #booking { padding: 16px 12px !important; }
+            h1 { font-size: 1.5rem !important; }
+            h2 { font-size: 1.25rem !important; }
+            h3 { font-size: 1.1rem !important; }
+            .text-xl { font-size: 1rem !important; }
+            .mb-8 { margin-bottom: 16px !important; }
+            .mb-4 { margin-bottom: 12px !important; }
+            .py-32 { padding-top: 24px !important; padding-bottom: 24px !important; }
+            .py-16 { padding-top: 16px !important; padding-bottom: 16px !important; }
+            #main-nav { padding: 12px 16px !important; }
+            #nav-links-container { display: none !important; }
+            #nav-book-btn { padding: 8px 12px !important; font-size: 9px !important; }
+            .logo { font-size: 1.25rem !important; }
+            .calendar-widget { font-size: 11px; }
+            .grid.grid-cols-7 { gap: 1px !important; }
+            .grid.grid-cols-7 button { padding: 1px !important; font-size: 11px !important; }
+            .appointment-step { padding: 0 !important; }
+        }
     </style>
 </head>
 <body class="bg-dark text-white font-sans overflow-x-hidden cursor-none">
     <div id="cursor" class="hidden md:block"></div>
+
+
 
     <nav id="main-nav" class="fixed w-full z-50 px-8 py-6 flex justify-between items-center transition-all duration-500">
         <div class="text-2xl font-serif font-bold tracking-widest gold-gradient" id="logo-text"></div>
@@ -36,7 +123,7 @@
 
     <section id="home" class="relative h-screen flex items-center justify-center overflow-hidden">
         <div class="absolute inset-0 z-0">
-            <div class="absolute inset-0 bg-black/60 z-10"></div>
+            <div class="absolute inset-0 bg-gradient-to-b from-black/30 to-black/60 z-10"></div>
             <img id="hero-img-src" src="" class="w-full h-full object-cover scale-110 transition-transform">
         </div>
         <div class="relative z-20 text-center px-4">
@@ -88,23 +175,545 @@
     </section>
 
     <section id="booking" class="bg-card py-32 px-8 reveal text-center">
-        <div class="max-w-xl mx-auto">
-            <h2 id="booking-title" class="text-4xl font-serif mb-12"></h2>
-            <form class="space-y-6 text-left" onsubmit="event.preventDefault()">
-                <input type="text" id="placeholder-name" class="w-full bg-transparent border-b border-gold/30 py-4 outline-none focus:border-gold text-[10px] tracking-widest">
-                <button id="booking-btn" class="w-full bg-gold text-dark py-5 font-bold uppercase tracking-[0.3em] text-[10px] hover:bg-white transition-all"></button>
-            </form>
+        <div class="max-w-4xl mx-auto">
+            <h2 id="booking-title" class="text-4xl font-serif mb-16 italic text-gold uppercase tracking-widest"></h2>
+            
+            <div id="appointmentWidget" class="bg-dark rounded-lg p-8 shadow-2xl">
+                <!-- Step 1: Service Selection -->
+                <div id="step1" class="appointment-step active">
+                    <div class="text-center mb-8">
+                        <h3 class="text-2xl font-serif text-white mb-2">Izberi Storitve</h3>
+                        <p class="text-gray-400 text-sm">Izberi eno ali več storitev</p>
+                    </div>
+                    <div id="servicesGrid" class="grid md:grid-cols-2 gap-4 mb-8"></div>
+                    <div class="bg-card p-4 rounded border border-white/10 mb-8">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-gray-400">Skupni čas:</span>
+                            <span class="text-gold font-serif text-lg" id="totalDuration">0 min</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-400">Skupna cena:</span>
+                            <span class="text-gold font-serif text-lg" id="totalPrice">$0</span>
+                        </div>
+                    </div>
+                    <button id="nextBtn1" onclick="nextStep()" class="w-full bg-gold text-dark py-3 font-bold uppercase tracking-widest text-sm hover:bg-white transition-all rounded disabled:opacity-50 disabled:cursor-not-allowed" disabled>Naprej</button>
+                </div>
+
+                <!-- Step 2: Calendar & Time Selection -->
+                <div id="step2" class="appointment-step">
+                    <div class="text-center mb-8">
+                        <h3 class="text-2xl font-serif text-white mb-2">Izberi Termin</h3>
+                        <p class="text-gray-400 text-sm">Izberi dan in čas</p>
+                    </div>
+                    
+                    <div class="grid md:grid-cols-2 gap-8 mb-8">
+                        <!-- Calendar -->
+                        <div class="bg-card p-6 rounded border border-white/10">
+                            <div id="calendar" class="calendar-widget"></div>
+                        </div>
+                        
+                        <!-- Time Slots -->
+                        <div class="bg-card p-6 rounded border border-white/10">
+                            <h4 class="text-white font-serif mb-4">Dostopni Termini</h4>
+                            <div id="timeSlots" class="space-y-2 max-h-96 overflow-y-auto"></div>
+                            <p id="noSlotsMsg" class="text-gray-500 text-sm text-center py-8">Izberi dan</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-4">
+                        <button onclick="prevStep()" class="flex-1 bg-gray-700 text-white py-3 font-bold uppercase tracking-widest text-sm hover:bg-gray-600 transition-all rounded">Nazaj</button>
+                        <button id="nextBtn2" onclick="nextStep()" class="flex-1 bg-gold text-dark py-3 font-bold uppercase tracking-widest text-sm hover:bg-white transition-all rounded disabled:opacity-50 disabled:cursor-not-allowed" disabled>Naprej</button>
+                    </div>
+                </div>
+
+                <!-- Step 3: Contact Details & Confirmation -->
+                <div id="step3" class="appointment-step">
+                    <div class="text-center mb-8">
+                        <h3 class="text-2xl font-serif text-white mb-2">Potrditev</h3>
+                        <p class="text-gray-400 text-sm">Vpiši svoje podatke</p>
+                    </div>
+                    
+                    <form id="appointmentForm" class="space-y-4 mb-8">
+                        <input type="text" id="appointmentName" placeholder="Ime" class="w-full bg-transparent border-b border-gold/30 py-3 outline-none focus:border-gold text-white text-sm tracking-widest" required>
+                        <input type="email" id="appointmentEmail" placeholder="E-pošta" class="w-full bg-transparent border-b border-gold/30 py-3 outline-none focus:border-gold text-white text-sm tracking-widest" required>
+                        <input type="tel" id="appointmentPhone" placeholder="Telefonska Številka" class="w-full bg-transparent border-b border-gold/30 py-3 outline-none focus:border-gold text-white text-sm tracking-widest" required>
+                    </form>
+                    
+                    <div class="bg-card p-4 rounded border border-white/10 mb-8 text-left">
+                        <h4 class="text-white font-serif mb-4">Povzetek Naročila</h4>
+                        <div id="summaryServices" class="text-gray-300 text-sm mb-3"></div>
+                        <div class="border-t border-white/10 pt-3 flex justify-between">
+                            <span class="text-gray-400">Termin:</span>
+                            <span id="summaryDateTime" class="text-gold">—</span>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-4">
+                        <button onclick="prevStep()" class="flex-1 bg-gray-700 text-white py-3 font-bold uppercase tracking-widest text-sm hover:bg-gray-600 transition-all rounded">Nazaj</button>
+                        <button id="confirmBtn" onclick="confirmAppointment()" class="flex-1 bg-gold text-dark py-3 font-bold uppercase tracking-widest text-sm hover:bg-white transition-all rounded">Potrdi Termin</button>
+                    </div>
+                </div>
+
+                <!-- Step 4: Success Confirmation -->
+                <div id="step4" class="appointment-step text-center">
+                    <div class="mb-8">
+                        <div class="text-6xl mb-4">✓</div>
+                        <h3 class="text-2xl font-serif text-gold mb-4">Termin Potrjen!</h3>
+                        <p class="text-gray-400 mb-6">Preverite svojo e-pošto za potrdilo naročila</p>
+                        <div id="successDetails" class="bg-card p-6 rounded border border-gold/30 mb-8 text-left text-sm">
+                            <p><span class="text-gray-500">Ime:</span> <span class="text-white" id="successName"></span></p>
+                            <p><span class="text-gray-500">E-pošta:</span> <span class="text-white" id="successEmail"></span></p>
+                            <p><span class="text-gray-500">Termin:</span> <span class="text-white" id="successDateTime"></span></p>
+                            <p><span class="text-gray-500">Storitve:</span> <span class="text-white" id="successServices"></span></p>
+                        </div>
+                    </div>
+                    <button onclick="resetAppointment()" class="w-full bg-gold text-dark py-3 font-bold uppercase tracking-widest text-sm hover:bg-white transition-all rounded">Nazaj na Domačo Stran</button>
+                </div>
+            </div>
         </div>
     </section>
 
-    <footer class="bg-dark py-12 border-t border-white/5 text-center text-[9px] text-gray-600 tracking-[0.4em] uppercase">
+    <footer class="py-12 border-t border-white/5 text-center text-[9px] tracking-[0.4em] uppercase">
         <div id="footer-copy"></div>
     </footer>
 
     <script>
+        // ============ APPOINTMENT SYSTEM ============
+        let currentStep = 1;
+        let selectedServices = [];
+        let selectedDate = null;
+        let selectedTime = null;
+        const bookedSlots = new Set(); // Track booked times
+        
+        // Load saved config from localStorage (admin changes)
+        function loadSavedConfig() {
+            const saved = localStorage.getItem('site_config_backup');
+            if (saved) {
+                try {
+                    const config = JSON.parse(saved);
+                    Object.assign(SITE_CONFIG, config);
+                    applyThemeColors(); // Apply theme colors after loading config
+                } catch (e) {
+                    console.log('Could not load saved config, using defaults');
+                }
+            }
+        }
+        
+        // Apply saved theme colors to the page
+        function applyThemeColors() {
+            const t = SITE_CONFIG.theme;
+            const root = document.documentElement;
+            
+            // Apply primary theme colors
+            root.style.setProperty('--color-primary', t.primary || '#DC143C');
+            root.style.setProperty('--color-dark', t.dark || '#0A0A0A');
+            root.style.setProperty('--color-card', t.card || '#141414');
+            root.style.setProperty('--gradient-start', t.gradientStart || '#DC143C');
+            root.style.setProperty('--gradient-end', t.gradientEnd || '#FF6B6B');
+            
+            // Apply text colors
+            root.style.setProperty('--text-primary', t.textPrimary || '#FFFFFF');
+            root.style.setProperty('--text-secondary', t.textSecondary || '#A0A0A0');
+            root.style.setProperty('--text-gold', t.textGold || '#DC143C');
+            
+            // Apply button colors
+            root.style.setProperty('--button-color', t.buttonColor || '#DC143C');
+            root.style.setProperty('--button-text-color', t.buttonTextColor || '#0A0A0A');
+            
+            // Apply nav colors
+            root.style.setProperty('--nav-text-color', t.navTextColor || '#A0A0A0');
+            root.style.setProperty('--nav-hover-color', t.navHoverColor || '#DC143C');
+            
+            // Apply footer colors
+            root.style.setProperty('--footer-bg-color', t.footerBgColor || '#0A0A0A');
+            root.style.setProperty('--footer-text-color', t.footerTextColor || '#606060');
+        }
+        
+        // Initialize appointments from localStorage
+        function loadAppointments() {
+            const saved = localStorage.getItem('appointments');
+            if (saved) {
+                try {
+                    SITE_CONFIG.appointments = JSON.parse(saved);
+                } catch (e) {
+                    console.log('Could not load appointments');
+                }
+            }
+        }
+        
+        // Render service selection grid
+        function renderServices() {
+            const grid = document.getElementById('servicesGrid');
+            grid.innerHTML = '';
+            SITE_CONFIG.servicesSection.items.forEach((service, idx) => {
+                const isSelected = selectedServices.includes(idx);
+                const duration = service.duration || 0;
+                grid.innerHTML += `
+                    <div class="service-card p-4 rounded border-2 cursor-pointer transition-all ${isSelected ? 'border-gold bg-gold/10' : 'border-white/10 bg-card hover:border-gold/50'}" 
+                         onclick="toggleService(${idx})">
+                        <h4 class="text-white font-serif mb-2">${service.name}</h4>
+                        <p class="text-gray-400 text-xs mb-3">${duration} min</p>
+                        <p class="text-gold font-serif text-sm">${service.price}</p>
+                        <p class="text-gray-500 text-xs mt-2">${service.desc}</p>
+                    </div>
+                `;
+            });
+            updateTotals();
+        }
+        
+        function toggleService(idx) {
+            if (selectedServices.includes(idx)) {
+                selectedServices = selectedServices.filter(i => i !== idx);
+            } else {
+                selectedServices.push(idx);
+            }
+            renderServices();
+        }
+        
+        function updateTotals() {
+            let totalMin = 0;
+            let totalPrice = 0;
+            selectedServices.forEach(idx => {
+                const service = SITE_CONFIG.servicesSection.items[idx];
+                const duration = service.duration || parseInt(service.desc.split(' ')[0]) || 0; // Fallback: extract from description
+                totalMin += duration;
+                const price = parseInt(service.price.replace('$', '')) || 0;
+                totalPrice += price;
+            });
+            document.getElementById('totalDuration').innerText = totalMin + ' min';
+            document.getElementById('totalPrice').innerText = totalPrice + '€';
+            document.getElementById('nextBtn1').disabled = selectedServices.length === 0;
+        }
+        
+        // Calendar generation
+        function renderCalendar() {
+            const cal = document.getElementById('calendar');
+            const now = new Date();
+            now.setHours(0, 0, 0, 0);
+            
+            // Get current month to track when it changes
+            let currentMonth = now.getMonth();
+            let currentYear = now.getFullYear();
+            let monthDisplay = new Date(currentYear, currentMonth, 1);
+            
+            let html = '<div class="text-center mb-4">';
+            html += `<h4 class="text-white font-serif mb-4">${monthDisplay.toLocaleDateString('sl-SI', { month: 'long', year: 'numeric' })}</h4>`;
+            html += '<div class="grid grid-cols-7 gap-2">';
+            
+            // Days of week headers
+            ['Pon', 'Tor', 'Sre', 'Čet', 'Pet', 'Sob', 'Ned'].forEach(day => {
+                html += `<div class="text-gray-500 text-xs font-bold">${day}</div>`;
+            });
+            
+            // Get first day of current month and add empty cells
+            const firstDay = new Date(currentYear, currentMonth, 1);
+            let startDay = firstDay.getDay();
+            if (startDay === 0) startDay = 7; // Sunday = 7 in our system
+            
+            // Add empty cells for days before month starts
+            for (let i = 1; i < startDay; i++) {
+                html += `<div></div>`;
+            }
+            
+            // Generate days - up to 60 days to cover multiple months
+            for (let i = 0; i < 60; i++) {
+                const date = new Date(now);
+                date.setDate(date.getDate() + i);
+                // Use local date, not ISO (which converts to UTC and can shift the day)
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                const dateStr = `${year}-${month}-${day}`;
+                const dayOfWeek = date.getDay();
+                const daysClosed = SITE_CONFIG.booking.daysClosed || [0]; // Default: Sunday closed
+                const isClosed = daysClosed.includes(dayOfWeek);
+                const isSelected = selectedDate === dateStr;
+                
+                // Add new month header if month changed
+                if (date.getMonth() !== currentMonth) {
+                    // Close previous month's grid and start new one
+                    html += '</div></div>';
+                    currentMonth = date.getMonth();
+                    currentYear = date.getFullYear();
+                    monthDisplay = new Date(currentYear, currentMonth, 1);
+                    html += '<div class="text-center mb-4 mt-6">';
+                    html += `<h4 class="text-white font-serif mb-4">${monthDisplay.toLocaleDateString('sl-SI', { month: 'long', year: 'numeric' })}</h4>`;
+                    html += '<div class="grid grid-cols-7 gap-2">';
+                    
+                    // Days of week headers
+                    ['Pon', 'Tor', 'Sre', 'Čet', 'Pet', 'Sob', 'Ned'].forEach(day => {
+                        html += `<div class="text-gray-500 text-xs font-bold">${day}</div>`;
+                    });
+                    
+                    // Add empty cells for days before new month starts
+                    const firstDayOfMonth = new Date(currentYear, currentMonth, 1);
+                    let startDayOfMonth = firstDayOfMonth.getDay();
+                    if (startDayOfMonth === 0) startDayOfMonth = 7;
+                    
+                    for (let j = 1; j < startDayOfMonth; j++) {
+                        html += `<div></div>`;
+                    }
+                }
+                
+                if (isClosed) {
+                    html += `<div class="text-gray-600 text-xs opacity-50">—</div>`;
+                } else {
+                    html += `
+                        <button type="button" class="text-xs py-2 px-1 rounded border transition-all ${isSelected ? 'border-gold bg-gold/20 text-gold font-bold' : 'border-white/20 text-gray-300 hover:border-gold/50'}"
+                                onclick="selectDate('${dateStr}')">${date.getDate()}</button>
+                    `;
+                }
+            }
+            html += '</div></div>';
+            cal.innerHTML = html;
+        }
+        
+        function selectDate(dateStr) {
+            selectedDate = dateStr;
+            selectedTime = null; // Reset time when changing date
+            renderCalendar();
+            renderTimeSlots();
+        }
+        
+        function renderTimeSlots() {
+            const slots = document.getElementById('timeSlots');
+            const noMsg = document.getElementById('noSlotsMsg');
+            
+            if (!selectedDate) {
+                slots.innerHTML = '';
+                noMsg.style.display = 'block';
+                return;
+            }
+            
+            noMsg.style.display = 'none';
+            slots.innerHTML = '';
+            
+            const totalDuration = getTotalDuration();
+            const startHour = (SITE_CONFIG.booking.businessHours?.start) || 9;
+            const endHour = (SITE_CONFIG.booking.businessHours?.end) || 19;
+            const slotDur = SITE_CONFIG.booking.slotDuration || 15;
+            const appointments = SITE_CONFIG.appointments || [];
+            
+            // Helper function to check if a time slot overlaps with any appointment
+            function isSlotAvailable(startTime, durationMinutes) {
+                // Convert time string "HH:MM" to minutes since midnight
+                const [h, m] = startTime.split(':').map(Number);
+                const slotStartMin = h * 60 + m;
+                const slotEndMin = slotStartMin + durationMinutes;
+                
+                // Check against all existing appointments on this date
+                return !appointments.some(appt => {
+                    if (appt.date !== selectedDate) return false;
+                    
+                    const [apptH, apptM] = appt.time.split(':').map(Number);
+                    const apptStartMin = apptH * 60 + apptM;
+                    const apptEndMin = apptStartMin + (appt.totalDuration || 0);
+                    
+                    // Check for overlap: new appointment overlaps if it starts before existing ends
+                    // AND existing appointment starts before new one ends
+                    return slotStartMin < apptEndMin && apptStartMin < slotEndMin;
+                });
+            }
+            
+            for (let hour = startHour; hour < endHour; hour++) {
+                for (let min = 0; min < 60; min += slotDur) {
+                    const timeStr = String(hour).padStart(2, '0') + ':' + String(min).padStart(2, '0');
+                    const isAvailable = isSlotAvailable(timeStr, totalDuration);
+                    const isSelected = selectedTime === timeStr;
+                    
+                    if (isAvailable) {
+                        slots.innerHTML += `
+                            <button type="button" class="w-full text-left px-4 py-2 rounded border transition-all ${isSelected ? 'border-gold bg-gold/20 text-gold font-bold' : 'border-white/10 text-gray-300 hover:border-gold/50 hover:bg-gold/5'}"
+                                    onclick="selectTime('${timeStr}')">${timeStr}</button>
+                        `;
+                    }
+                }
+            }
+            document.getElementById('nextBtn2').disabled = !selectedTime;
+        }
+        
+        function selectTime(timeStr) {
+            selectedTime = timeStr;
+            renderTimeSlots();
+            document.getElementById('nextBtn2').disabled = !selectedTime;
+        }
+        
+        function getTotalDuration() {
+            return selectedServices.reduce((sum, idx) => {
+                const service = SITE_CONFIG.servicesSection.items[idx];
+                const duration = service.duration || parseInt(service.desc.split(' ')[0]) || 0; // Fallback: extract from description
+                return sum + duration;
+            }, 0);
+        }
+        
+        // Step navigation
+        function nextStep() {
+            if (currentStep === 1 && selectedServices.length === 0) return;
+            if (currentStep === 2 && !selectedDate) return;
+            if (currentStep === 2 && !selectedTime) return;
+            if (currentStep === 3) return confirmAppointment();
+            
+            currentStep++;
+            showStep(currentStep);
+            
+            if (currentStep === 2) {
+                renderCalendar();
+                renderTimeSlots();
+            } else if (currentStep === 3) {
+                updateSummary();
+            }
+        }
+        
+        function prevStep() {
+            if (currentStep > 1) {
+                currentStep--;
+                showStep(currentStep);
+            }
+        }
+        
+        function showStep(step) {
+            for (let i = 1; i <= 4; i++) {
+                const el = document.getElementById('step' + i);
+                if (el) {
+                    if (i === step) el.classList.add('active');
+                    else el.classList.remove('active');
+                }
+            }
+        }
+        
+        function updateSummary() {
+            const summaryServices = document.getElementById('summaryServices');
+            const servicesText = selectedServices.map(idx => SITE_CONFIG.servicesSection.items[idx].name).join(', ');
+            summaryServices.innerHTML = `<strong>Storitve:</strong> ${servicesText}<br><strong>Čas:</strong> ${getTotalDuration()} min`;
+            
+            // Parse date correctly without timezone issues
+            const [year, month, day] = selectedDate.split('-');
+            const dateStr = `${day}. ${month}. ${year}`;
+            document.getElementById('summaryDateTime').innerText = dateStr + ' ob ' + selectedTime;
+        }
+        
+        function confirmAppointment() {
+            const name = document.getElementById('appointmentName').value.trim();
+            const email = document.getElementById('appointmentEmail').value.trim();
+            const phone = document.getElementById('appointmentPhone').value.trim();
+            
+            if (!name || !email || !phone) {
+                alert('Vpiši vse podatke');
+                return;
+            }
+            
+            const appointment = {
+                date: selectedDate,
+                time: selectedTime,
+                name: name,
+                email: email,
+                phone: phone,
+                services: selectedServices.map(idx => SITE_CONFIG.servicesSection.items[idx].name),
+                totalDuration: getTotalDuration(),
+                totalPrice: selectedServices.reduce((sum, idx) => sum + parseInt(SITE_CONFIG.servicesSection.items[idx].price.replace('€', '')) || 0, 0),
+                id: Date.now()
+            };
+            
+            // Save appointment
+            SITE_CONFIG.appointments.push(appointment);
+            localStorage.setItem('appointments', JSON.stringify(SITE_CONFIG.appointments));
+            
+            // Show success
+            document.getElementById('successName').innerText = name;
+            document.getElementById('successEmail').innerText = email;
+            // Parse date correctly without timezone issues
+            const [year, month, day] = selectedDate.split('-');
+            const dateStr = `${day}. ${month}. ${year}`;
+            document.getElementById('successDateTime').innerText = dateStr + ' ob ' + selectedTime;
+            document.getElementById('successServices').innerText = appointment.services.join(', ');
+            
+            // Send notification (client-side email simulation)
+            sendNotification(appointment);
+            
+            currentStep = 4;
+            showStep(4);
+        }
+        
+        function resetAppointment() {
+            currentStep = 1;
+            selectedServices = [];
+            selectedDate = null;
+            selectedTime = null;
+            document.getElementById('appointmentForm').reset();
+            showStep(1);
+            renderServices();
+        }
+        
+        function sendNotification(appointment) {
+            // Generate notification text
+            const notifText = `Nova Naročila:\n${appointment.name}\n${appointment.email}\n${appointment.phone}\n${appointment.date} ob ${appointment.time}\nStoritve: ${appointment.services.join(', ')}\nCena: €${appointment.totalPrice}`;
+            
+            // Save notification to localStorage
+            const notifications = JSON.parse(localStorage.getItem('ownerNotifications') || '[]');
+            notifications.push({
+                ...appointment,
+                sentAt: new Date().toISOString()
+            });
+            localStorage.setItem('ownerNotifications', JSON.stringify(notifications));
+            
+            // Send via Formspree using fetch API (background, no redirect)
+            const ownerEmail = SITE_CONFIG.ownerContact?.email;
+            
+            if (ownerEmail && FORMSPREE_ENDPOINT) {
+                const formData = new FormData();
+                formData.append('Ime stranke: ', appointment.name);
+                formData.append('E-Mail stranke: ', appointment.email);
+                formData.append('Tel. št. stranke: ', appointment.phone);
+                formData.append('Datum termina: ', appointment.date);
+                formData.append('Čas termina: ', appointment.time);
+                formData.append('Storitve: ', appointment.services.join(', '));
+                formData.append('Končna cena: ', appointment.totalPrice + "€");
+                formData.append('Čas trajanja: ', appointment.totalDuration + " min");
+                formData.append('_subject', 'Novo Naročilo iz Spletne Strani');
+                formData.append('_replyto', appointment.email);
+                formData.append('_cc', ownerEmail);
+                
+                // Send using fetch (background, no redirect)
+                fetch(FORMSPREE_ENDPOINT, {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => {
+                    if (response.ok) {
+                        console.log('✅ Email sent to Formspree');
+                    }
+                })
+                .catch(error => {
+                    console.log('⚠️ Could not send to Formspree, but appointment saved locally:', error);
+                });
+            }
+            
+            console.log('💾 Appointment saved locally:', notifText);
+        }
+
         function initSite() {
+            // Load any saved changes from admin panel
+            loadSavedConfig();
+            loadAppointments();
+            
+            // Apply theme colors
+            const t = SITE_CONFIG.theme;
+            const root = document.documentElement;
+            root.style.setProperty('--color-primary', t.primary);
+            root.style.setProperty('--color-dark', t.dark);
+            root.style.setProperty('--color-card', t.card);
+            root.style.setProperty('--gradient-start', t.gradientStart);
+            root.style.setProperty('--gradient-end', t.gradientEnd);
+            
             // Navbar & Hero
-            document.getElementById('logo-text').innerText = SITE_CONFIG.shopName;
+            const logoEl = document.getElementById('logo-text');
+            const showLogo = SITE_CONFIG.logo && SITE_CONFIG.logo.showLogo !== false;
+            
+            if (showLogo && SITE_CONFIG.logo && SITE_CONFIG.logo.large) {
+                logoEl.innerHTML = `<img src="${SITE_CONFIG.logo.large}" alt="${SITE_CONFIG.shopName}" style="max-height:48px;">`;
+            } else {
+                logoEl.innerText = SITE_CONFIG.shopName;
+            }
             document.getElementById('hero-sub').innerText = SITE_CONFIG.hero.subtitle;
             document.getElementById('hero-main').innerText = SITE_CONFIG.hero.title;
             document.getElementById('hero-btn').innerText = SITE_CONFIG.hero.buttonText;
@@ -142,6 +751,17 @@
             // Barbers
             document.getElementById('barbers-title').innerText = SITE_CONFIG.barbersSection.title;
             const bList = document.getElementById('barbers-list');
+            const barberCount = SITE_CONFIG.barbersSection.list.length;
+            
+            // Set grid columns based on barber count
+            if (barberCount === 1) {
+                bList.className = 'flex justify-center';
+            } else if (barberCount === 2) {
+                bList.className = 'grid md:grid-cols-2 gap-8 md:max-w-2xl mx-auto';
+            } else {
+                bList.className = 'grid md:grid-cols-3 gap-8';
+            }
+            
             SITE_CONFIG.barbersSection.list.forEach(b => {
                 bList.innerHTML += `<div class="group overflow-hidden">
                     <img src="${b.img}" class="grayscale group-hover:grayscale-0 transition-all duration-700 aspect-[3/4] object-cover">
@@ -154,10 +774,10 @@
                 gList.innerHTML += `<img src="${img}" class="w-full grayscale hover:grayscale-0 transition-all duration-500 rounded-sm">`;
             });
 
-            // Booking
-            document.getElementById('booking-title').innerText = SITE_CONFIG.booking.title;
-            document.getElementById('booking-btn').innerText = SITE_CONFIG.booking.buttonText;
-            document.getElementById('placeholder-name').placeholder = SITE_CONFIG.booking.placeholderName;
+            // Booking - Appointment System
+            document.getElementById('booking-title').innerText = SITE_CONFIG.booking.heading || SITE_CONFIG.booking.title;
+            renderServices();
+            
             document.getElementById('footer-copy').innerHTML = `&copy; ${new Date().getFullYear()} ${SITE_CONFIG.shopName}`;
         }
 
@@ -177,8 +797,11 @@
         window.addEventListener("scroll", () => {
             reveal();
             const nav = document.getElementById('main-nav');
-            if (window.scrollY > 50) nav.classList.add('bg-dark/95', 'py-4', 'backdrop-blur-md', 'border-white/10');
-            else nav.classList.remove('bg-dark/95', 'py-4', 'backdrop-blur-md', 'border-white/10');
+            if (window.scrollY > 50) {
+                nav.classList.add('scrolled');
+            } else {
+                nav.classList.remove('scrolled');
+            }
             document.getElementById('hero-img-src').style.transform = `scale(1.1) translateY(${window.scrollY * 0.2}px)`;
         });
 

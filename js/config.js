@@ -9,7 +9,58 @@
 const SITE_CONFIG = {
     // General Brand Settings
     shopName: "Blade & Bourbon", // Your shop title (appears in Logo and Footer)
-    primaryGold: "#C5A059",      // Primary accent color for buttons and highlights
+    
+    // Logo Settings
+    logo: {
+        large: "", // URL or base64 for logo
+        mini: "",  // Mini version of logo
+        showLogo: true  // true = show logo, false = show shop name
+    },
+    
+    // Currency
+    currency: "€",
+    
+    // CENTRALIZED THEME SYSTEM
+    // This object controls all visual styling across the site
+    // Colors inspired by classic barber shop aesthetic (Red, White, Blue)
+    theme: {
+        // Primary Colors (Classic Barber Pole Colors)
+        primary: "#DC143C",           // Classic barber red
+        dark: "#0A0A0A",              // Dark background
+        card: "#141414",              // Card background
+        
+        // Gradients (Red & Navy barber aesthetic)
+        gradientStart: "#DC143C",     // Crimson red start
+        gradientEnd: "#FF6B6B",       // Light red end
+        gradientDark: "#0A0A0A",      // Dark gradient
+        gradientAccent: "#003DA5",    // Navy blue accent
+        
+        // Text Colors
+        textPrimary: "#FFFFFF",       // Main text (white)
+        textSecondary: "#A0A0A0",     // Secondary text
+        textGold: "#DC143C",          // Red accent text
+        
+        // Accent Colors (Barber Pole)
+        accentRed: "#DC143C",         // Primary red
+        accentBlue: "#003DA5",        // Navy blue
+        accentWhite: "#FFFFFF",       // White
+        
+        // Border Colors
+        borderLight: "rgba(255,255,255,0.1)",
+        borderGold: "rgba(220,20,60,0.3)",
+        
+        // Functional Colors
+        success: "#4ADE80",           // Success messages
+        error: "#F87171",             // Error messages
+        warning: "#FBBF24",           // Warning messages
+        
+        // Fonts
+        fontSerif: "Cormorant Garamond, serif",
+        fontSans: "Montserrat, sans-serif"
+    },
+    
+    // PRIMARY GOLD (kept for backward compatibility - now uses barber red)
+    primaryGold: "#DC143C",      // Barber red accent color
     
 	// Navigation Menu
     navLinks: [
@@ -42,16 +93,16 @@ const SITE_CONFIG = {
     servicesSection: {
         title: "Premium Pricing",                 // Title for the services grid
         items: [
-            { name: "Classic Haircut", price: "$35", desc: "45 min • Precision cut" },
-            { name: "Signature Fade", price: "$45", desc: "60 min • Razor finish" },
-            { name: "Hot Towel Shave", price: "$40", desc: "30 min • Traditional" },
-            { name: "The Royal Treatment", price: "$75", desc: "90 min • Cut + Shave" }
+            { name: "Classic Haircut", price: "€35", desc: "45 min • Precision cut", duration: 45 },
+            { name: "Signature Fade", price: "€45", desc: "60 min • Razor finish", duration: 60 },
+            { name: "Hot Towel Shave", price: "€40", desc: "30 min • Traditional", duration: 30 },
+            { name: "The Royal Treatment", price: "€75", desc: "90 min • Cut + Shave", duration: 90 }
         ]
     },
 
     // Our Barbers Section
     barbersSection: {
-        title: "The Craftsmen",                   // Section title
+        title: "The Craftsmen",                   // Section title (editable in admin)
         list: [
             { 
                 name: "Alexander Vance", 
@@ -87,8 +138,42 @@ const SITE_CONFIG = {
 
     // Appointment / Booking Section
     booking: {
-        title: "Request Appointment",            // Headline for the booking form
-        buttonText: "Secure My Spot",             // Submit button text
-        placeholderName: "GENTLEMAN'S NAME"      // Text inside the input field
+        title: "Naročilo Termina",              // Headline for the booking form (editable in admin)
+        heading: "Request Appointment",         // Alternative heading (editable in admin)
+        buttonText: "Potrdi Termin",             // Submit button text
+        placeholderName: "Ime",                  // Text inside the input field
+        placeholderEmail: "E-pošta",             // Email field
+        placeholderPhone: "Telefonska Številka", // Phone field
+        businessHours: {
+            start: 9,    // 9 AM
+            end: 19      // 7 PM
+        },
+        daysClosed: [0], // 0 = Sunday
+        slotDuration: 15 // 15 minute slots
+    },
+    
+    // ADMIN & SECURITY SETTINGS
+    admin: {
+        // PASSWORD HASH: Use bcrypt or similar in production
+        // This is a SHA-256 hash of the password "admin123" (example only)
+        // To generate a new hash, use an online tool or crypto library
+        // SHA-256("admin123") = 0192023a7bbd73250516f069df18b500
+        passwordHash: "kurac321", // Change this immediately!
+        
+        // Security: Maximum failed login attempts before lockout
+        maxAttempts: 3,
+        
+        // Security: Lockout duration in milliseconds (60000 = 1 minute)
+        lockoutDuration: 60000,
+        
+        // Feature: Enable/disable admin panel
+        enabled: false
+    },
+    
+    // Appointments storage (managed by admin)
+    appointments: [],
+    ownerContact: {
+        email: "spidergogi9@gmail.com",
+        phone: "+386 1 000 0000"
     }
 };
