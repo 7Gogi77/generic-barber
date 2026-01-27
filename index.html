@@ -383,9 +383,13 @@
                 const service = SITE_CONFIG.servicesSection.items[idx];
                 const duration = service.duration || parseInt(service.desc.split(' ')[0]) || 0; // Fallback: extract from description
                 totalMin += duration;
-                const price = parseInt(service.price.replace('$', '')) || 0;
+                // Remove € or $ and parse as number
+                const cleanPrice = service.price.replace(/[€$]/g, '').trim();
+                const price = parseInt(cleanPrice) || 0;
+                console.log(`Service: ${service.name}, Price: "${service.price}", Clean: "${cleanPrice}", Parsed: ${price}`);
                 totalPrice += price;
             });
+            console.log(`Total Price: ${totalPrice}`);
             document.getElementById('totalDuration').innerText = totalMin + ' min';
             document.getElementById('totalPrice').innerText = totalPrice + '€';
             document.getElementById('nextBtn1').disabled = selectedServices.length === 0;
@@ -680,7 +684,7 @@
                 phone: phone,
                 services: selectedServices.map(idx => SITE_CONFIG.servicesSection.items[idx].name),
                 totalDuration: getTotalDuration(),
-                totalPrice: selectedServices.reduce((sum, idx) => sum + parseInt(SITE_CONFIG.servicesSection.items[idx].price.replace('€', '')) || 0, 0),
+                totalPrice: selectedServices.reduce((sum, idx) => sum + parseInt(SITE_CONFIG.servicesSection.items[idx].price.replace(/[€$]/g, '')) || 0, 0),
                 id: Date.now()
             };
             
