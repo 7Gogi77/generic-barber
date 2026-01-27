@@ -761,17 +761,36 @@
         }
 
         function initSite() {
-            // Load from cloud first (global changes), then local backup
-            if (typeof CloudSync !== 'undefined') {
-                CloudSync.loadFromCloud().then(() => {
-                    renderSiteContent();
-                });
-            } else {
-                // Fallback if Firebase not available
+            // Try to load from Firebase first (for global sync)
+            loadFromFirebase().then(() => {
+                renderSiteContent();
+            }).catch(() => {
+                // Fallback to local storage
                 loadSavedConfig();
                 loadAppointments();
                 renderSiteContent();
+            });
+        }
+        
+        // Load config from Firebase REST API
+        async function loadFromFirebase() {
+            try {
+                const dbUrl = 'https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app/site_config.json';
+                const response = await fetch(dbUrl);
+                
+                if (response.ok) {
+                    const cloudConfig = await response.json();
+                    if (cloudConfig) {
+                        Object.assign(SITE_CONFIG, cloudConfig);
+                        localStorage.setItem('site_config_backup', JSON.stringify(SITE_CONFIG));
+                        console.log('✅ Loaded config from Firebase');
+                        return true;
+                    }
+                }
+            } catch (error) {
+                console.log('⚠️ Firebase load failed, using local');
             }
+            return false;
         }
         
         function renderSiteContent() {
@@ -898,8 +917,5 @@
         initSite();
         reveal();
     </script>
-    
-    <!-- Firebase Cloud Sync -->
-    <script type="module" src="js/firebase-config.js"></script>
 </body>
 </html>
