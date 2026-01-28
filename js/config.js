@@ -154,11 +154,9 @@ const SITE_CONFIG = {
     
     // ADMIN & SECURITY SETTINGS
     admin: {
-        // PASSWORD HASH: Use bcrypt or similar in production
-        // This is a SHA-256 hash of the password "admin123" (example only)
-        // To generate a new hash, use an online tool or crypto library
-        // SHA-256("admin123") = 0192023a7bbd73250516f069df18b500
-        passwordHash: "kurac321", // Change this immediately!
+        // Admin login credentials (change these immediately in production!)
+        username: "admin",
+        password: "admin123",
         
         // Security: Maximum failed login attempts before lockout
         maxAttempts: 3,
@@ -167,7 +165,7 @@ const SITE_CONFIG = {
         lockoutDuration: 60000,
         
         // Feature: Enable/disable admin panel
-        enabled: false
+        enabled: true
     },
     
     // Appointments storage (managed by admin)
