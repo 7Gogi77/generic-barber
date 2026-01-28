@@ -8,44 +8,6 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="js/config.js"></script>
     <link rel="stylesheet" href="admin-style.css">
-    <style>
-        .admin-tabs {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 30px;
-            border-bottom: 2px solid #e0e0e0;
-            padding: 0 20px;
-        }
-        .tab-btn {
-            padding: 14px 24px;
-            background: none;
-            border: none;
-            cursor: pointer;
-            font-size: 15px;
-            font-weight: 600;
-            color: #666;
-            border-bottom: 3px solid transparent;
-            transition: all 0.3s ease;
-        }
-        .tab-btn:hover {
-            color: #DC143C;
-        }
-        .tab-btn.active {
-            color: #DC143C;
-            border-bottom-color: #DC143C;
-        }
-        .tab-content {
-            display: none;
-        }
-        .tab-content.active {
-            display: block;
-            animation: fadeIn 0.3s ease;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-    </style>
 </head>
 <body>
     <!-- LOGIN SCREEN -->
@@ -77,16 +39,16 @@
                 </div>
             </div>
 
-            <!-- TAB NAVIGATION -->
+            <!-- TABS -->
             <div class="admin-tabs">
-                <button class="tab-btn active" onclick="switchTab(event, 'panel')">📊 Panel</button>
-                <button class="tab-btn" onclick="switchTab(event, 'vsebina')">📝 Vsebina</button>
-                <button class="tab-btn" onclick="switchTab(event, 'videz')">🎨 Videz</button>
-                <button class="tab-btn" onclick="switchTab(event, 'storitve')">💼 Storitve</button>
+                <button class="tab-btn active" onclick="switchTab(event, 'dashboard')">📊 Panel</button>
+                <button class="tab-btn" onclick="switchTab(event, 'content')">📝 Vsebina</button>
+                <button class="tab-btn" onclick="switchTab(event, 'appearance')">🎨 Videz</button>
+                <button class="tab-btn" onclick="switchTab(event, 'services')">💼 Storitve</button>
             </div>
 
-            <!-- TAB 1: PANEL -->
-            <div id="panel" class="tab-content active">
+            <!-- TAB: DASHBOARD -->
+            <div id="dashboard" class="tab-content active">
                 <h2 style="margin-top: 0; margin-bottom: 30px; color: #333; font-size: 24px; border-bottom: 2px solid #DC143C; padding-bottom: 10px;">📈 Poslovni Panel</h2>
                 
                 <div class="admin-section">
@@ -123,14 +85,14 @@
                 </div>
 
                 <div class="admin-section">
-                    <div class="section-title">Naročila Termina</div>
+                    <div class="section-title">📅 Naročila Termina</div>
                     <p style="color: #666; font-size: 14px; margin-bottom: 20px;">Skupaj naročil: <strong id="appointmentCount">0</strong></p>
                     <div id="appointmentsContainer" style="max-height: 500px; overflow-y: auto;"></div>
                 </div>
             </div>
 
-            <!-- TAB 2: VSEBINA -->
-            <div id="vsebina" class="tab-content">
+            <!-- TAB: CONTENT -->
+            <div id="content" class="tab-content">
                 <h2 style="margin-top: 0; margin-bottom: 30px; color: #333; font-size: 24px; border-bottom: 2px solid #DC143C; padding-bottom: 10px;">📝 Vsebina in Tekst</h2>
                 
                 <div class="admin-section">
@@ -141,13 +103,13 @@
                             <input id="shopName" type="text" class="form-input-admin">
                         </div>
                         <div class="form-group-admin">
-                            <label class="form-label-admin">Email Lasnika</label>
+                            <label class="form-label-admin">Email</label>
                             <input id="ownerEmail" type="email" class="form-input-admin">
                         </div>
                     </div>
                     <div class="form-row">
                         <div class="form-group-admin">
-                            <label class="form-label-admin">Telefonska Številka</label>
+                            <label class="form-label-admin">Telefon</label>
                             <input id="ownerPhone" type="tel" class="form-input-admin">
                         </div>
                     </div>
@@ -199,15 +161,15 @@
                     </div>
                 </div>
 
-                <button class="save-btn" onclick="saveContent()">Shrani Vsebino</button>
+                <button class="save-btn" onclick="saveContent()">💾 Shrani Vsebino</button>
             </div>
 
-            <!-- TAB 3: VIDEZ -->
-            <div id="videz" class="tab-content">
+            <!-- TAB: APPEARANCE -->
+            <div id="appearance" class="tab-content">
                 <h2 style="margin-top: 0; margin-bottom: 30px; color: #333; font-size: 24px; border-bottom: 2px solid #DC143C; padding-bottom: 10px;">🎨 Videz Spletne Strani</h2>
                 
                 <div class="admin-section">
-                    <div class="section-title">Boje</div>
+                    <div class="section-title">Boje in Tema</div>
                     <div class="form-row">
                         <div class="form-group-admin">
                             <label class="form-label-admin">Primarna Barva</label>
@@ -243,44 +205,47 @@
                     </div>
                 </div>
 
-                <button class="save-btn" onclick="saveAppearance()">Shrani Videz</button>
+                <button class="save-btn" onclick="saveAppearance()">💾 Shrani Videz</button>
             </div>
 
-            <!-- TAB 4: STORITVE -->
-            <div id="storitve" class="tab-content">
+            <!-- TAB: SERVICES -->
+            <div id="services" class="tab-content">
                 <h2 style="margin-top: 0; margin-bottom: 30px; color: #333; font-size: 24px; border-bottom: 2px solid #DC143C; padding-bottom: 10px;">💼 Storitve in Brivci</h2>
                 
                 <div class="admin-section">
                     <div class="section-title">Storitve</div>
                     <div id="servicesContainer"></div>
-                    <button class="save-btn" style="margin-top: 20px;" onclick="saveServices()">Shrani Storitve</button>
+                    <button class="save-btn" style="margin-top: 20px;" onclick="saveServices()">💾 Shrani Storitve</button>
                 </div>
 
                 <div class="admin-section">
                     <div class="section-title">Brivci</div>
                     <div id="barbersContainer"></div>
-                    <button class="save-btn" style="margin-top: 20px;" onclick="saveBarbers()">Shrani Brivce</button>
+                    <button class="save-btn" style="margin-top: 20px;" onclick="saveBarbers()">💾 Shrani Brivce</button>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        // =========================
-        // AUTHENTICATION
-        // =========================
+        console.log('Admin panel loaded');
+        console.log('SITE_CONFIG:', SITE_CONFIG);
+
+        // ===== AUTH =====
         function handleLogin(e) {
             e.preventDefault();
-            const name = document.getElementById('adminName').value;
+            const user = document.getElementById('adminName').value;
             const pass = document.getElementById('adminPassword').value;
             
-            if (name === SITE_CONFIG.admin.username && pass === SITE_CONFIG.admin.password) {
+            console.log('Login attempt:', user);
+            
+            if (user === SITE_CONFIG.admin.username && pass === SITE_CONFIG.admin.password) {
                 localStorage.setItem('adminLoggedIn', 'true');
                 showAdminPanel();
             } else {
                 const error = document.getElementById('loginError');
                 error.style.display = 'block';
-                error.innerText = 'Napačno uporabniško ime ali geslo';
+                error.textContent = 'Napačno uporabniško ime ali geslo';
             }
         }
 
@@ -295,6 +260,7 @@
             loadAllData();
         }
 
+        // ===== TABS =====
         function switchTab(e, tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
@@ -302,22 +268,15 @@
             e.target.classList.add('active');
         }
 
-        // =========================
-        // SAVE CONFIG
-        // =========================
+        // ===== SAVE =====
         function saveConfig() {
+            console.log('Saving config...');
             localStorage.setItem('site_config_backup', JSON.stringify(SITE_CONFIG));
             localStorage.setItem('appointments', JSON.stringify(SITE_CONFIG.appointments || []));
-            showNotification('✅ Spremembe so bile shranjene', 'success');
+            alert('✅ Spremembe shranjene!');
         }
 
-        function showNotification(msg, type) {
-            alert(msg);
-        }
-
-        // =========================
-        // DASHBOARD
-        // =========================
+        // ===== DASHBOARD =====
         function updateDashboard(appointments) {
             const now = new Date();
             const currentMonth = now.getMonth() + 1;
@@ -343,174 +302,100 @@
                     serviceCount[service] = (serviceCount[service] || 0) + 1;
                 });
             });
-            const serviceLabels = Object.keys(serviceCount);
-            const serviceData = Object.values(serviceCount);
             
-            if (serviceLabels.length > 0 && document.getElementById('servicesChart')) {
-                const servicesCtx = document.getElementById('servicesChart').getContext('2d');
+            const labels = Object.keys(serviceCount);
+            const data = Object.values(serviceCount);
+            
+            if (labels.length > 0 && document.getElementById('servicesChart')) {
+                const ctx = document.getElementById('servicesChart').getContext('2d');
                 if (window.servicesChartInstance) window.servicesChartInstance.destroy();
-                window.servicesChartInstance = new Chart(servicesCtx, {
+                window.servicesChartInstance = new Chart(ctx, {
                     type: 'doughnut',
                     data: { 
-                        labels: serviceLabels, 
-                        datasets: [{ 
-                            data: serviceData, 
-                            backgroundColor: ['#DC143C', '#4F46E5', '#10B981', '#F59E0B', '#EF4444'], 
-                            borderColor: '#fff', 
-                            borderWidth: 2 
-                        }] 
+                        labels: labels, 
+                        datasets: [{ data: data, backgroundColor: ['#DC143C', '#4F46E5', '#10B981', '#F59E0B', '#EF4444'], borderColor: '#fff', borderWidth: 2 }] 
                     },
-                    options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { position: 'bottom' } } }
-                });
-            }
-            
-            // Appointments chart
-            const dayCount = {};
-            appointments.forEach(appt => {
-                const [year, month, day] = appt.date.split('-');
-                dayCount[day] = (dayCount[day] || 0) + 1;
-            });
-            const dayLabels = Object.keys(dayCount).sort((a, b) => parseInt(a) - parseInt(b)).slice(0, 7);
-            const dayData = dayLabels.map(day => dayCount[day] || 0);
-            
-            if (dayLabels.length > 0 && document.getElementById('appointmentsChart')) {
-                const appointmentsCtx = document.getElementById('appointmentsChart').getContext('2d');
-                if (window.appointmentsChartInstance) window.appointmentsChartInstance.destroy();
-                window.appointmentsChartInstance = new Chart(appointmentsCtx, {
-                    type: 'bar',
-                    data: { 
-                        labels: dayLabels.map(d => d + '.'), 
-                        datasets: [{ 
-                            label: 'Naročila', 
-                            data: dayData, 
-                            backgroundColor: '#DC143C', 
-                            borderColor: '#FF6B6B', 
-                            borderWidth: 1, 
-                            borderRadius: 4 
-                        }] 
-                    },
-                    options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+                    options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
                 });
             }
         }
 
-        // =========================
-        // APPOINTMENTS
-        // =========================
         function loadAppointments() {
-            const container = document.getElementById('appointmentsContainer');
-            const appointments = SITE_CONFIG.appointments || [];
-            document.getElementById('appointmentCount').textContent = appointments.length;
-            updateDashboard(appointments);
+            const appts = SITE_CONFIG.appointments || [];
+            document.getElementById('appointmentCount').textContent = appts.length;
+            updateDashboard(appts);
             
-            if (appointments.length === 0) {
-                container.innerHTML = '<p style="color: #999; text-align: center;">Ni nobenega naročila</p>';
+            const container = document.getElementById('appointmentsContainer');
+            if (appts.length === 0) {
+                container.innerHTML = '<p style="color: #999;">Ni naročil</p>';
                 return;
             }
             
-            container.innerHTML = appointments.map((appt, idx) => {
-                const [year, month, day] = appt.date.split('-');
-                const dateStr = `${day}. ${month}. ${year}`;
+            container.innerHTML = appts.map((appt, idx) => {
+                const [y, m, d] = appt.date.split('-');
                 return `
-                    <div class="service-item" style="margin-bottom: 10px; padding: 12px; border-left: 3px solid #DC143C;">
-                        <p><strong>${appt.firstName} ${appt.surname}</strong></p>
-                        <p style="font-size: 12px; color: #666;">${appt.email} | ${appt.phone}</p>
-                        <p style="font-size: 13px; margin-top: 8px;"><strong>Termin:</strong> ${dateStr} ob ${appt.time}</p>
-                        <p style="font-size: 13px;"><strong>Storitve:</strong> ${appt.services.join(', ')}</p>
-                        <p style="font-size: 13px;"><strong>Trajanje:</strong> ${appt.totalDuration} min | <strong>Cena:</strong> €${appt.totalPrice}</p>
-                        <button onclick="deleteAppointment(${idx})" style="font-size: 12px; margin-top: 8px; padding: 6px 12px; background: #F87171; color: white; border: none; border-radius: 4px; cursor: pointer;">Izbriši</button>
-                        <button onclick="generateInvoice(${idx})" style="font-size: 12px; margin-left: 8px; margin-top: 8px; padding: 6px 12px; background: #60A5FA; color: white; border: none; border-radius: 4px; cursor: pointer;">Račun</button>
+                    <div style="padding: 12px; border-left: 3px solid #DC143C; margin-bottom: 10px; background: #f9f9f9; border-radius: 4px;">
+                        <p style="font-weight: 600; margin: 0;">${appt.firstName} ${appt.surname}</p>
+                        <p style="font-size: 12px; color: #666; margin: 4px 0;">${appt.email} | ${appt.phone}</p>
+                        <p style="font-size: 12px; margin: 4px 0;"><b>Termin:</b> ${d}.${m}.${y} ob ${appt.time}</p>
+                        <p style="font-size: 12px; margin: 4px 0;"><b>Storitve:</b> ${appt.services.join(', ')}</p>
+                        <p style="font-size: 12px; margin: 4px 0;"><b>Cena:</b> €${appt.totalPrice}</p>
+                        <button onclick="deleteAppointment(${idx})" style="font-size: 11px; padding: 5px 10px; background: #F87171; color: white; border: none; border-radius: 3px; cursor: pointer;">Izbriši</button>
                     </div>
                 `;
             }).join('');
         }
 
         function deleteAppointment(idx) {
-            if (confirm('Ali si prepričan?')) {
+            if (confirm('Izbriši?')) {
                 SITE_CONFIG.appointments.splice(idx, 1);
                 saveConfig();
                 loadAppointments();
             }
         }
 
-        function generateInvoice(idx) {
-            const appt = (SITE_CONFIG.appointments || [])[idx];
-            if (!appt) return alert('Ni najdenega naročila');
-
-            const serviceRows = appt.services.map(serviceName => {
-                const service = SITE_CONFIG.servicesSection.items.find(s => s.name === serviceName);
-                const price = service ? service.price : '0';
-                return `<tr><td>${serviceName}</td><td style="text-align: right;">€${price}</td></tr>`;
-            }).join('');
-
-            const invoiceHtml = `
-                <html>
-                <head>
-                    <title>Račun - ${SITE_CONFIG.shopName}</title>
-                    <style>body{font-family:Arial,Helvetica,sans-serif;padding:20px} table{width:100%;border-collapse:collapse;margin-top:20px} td,th{border:1px solid #ddd;padding:8px;text-align:left}</style>
-                </head>
-                <body>
-                    <h2>${SITE_CONFIG.shopName}</h2>
-                    <div>${SITE_CONFIG.ownerContact?.email || ''} | ${SITE_CONFIG.ownerContact?.phone || ''}</div>
-                    <h3>Račun za: ${appt.firstName} ${appt.surname}</h3>
-                    <div>Email: ${appt.email} | Tel: ${appt.phone}</div>
-                    <div>Termin: ${appt.date} ob ${appt.time}</div>
-                    <table>
-                        <thead><tr><th>Storitev</th><th style="text-align: right;">Cena</th></tr></thead>
-                        <tbody>
-                            ${serviceRows}
-                            <tr><td><strong>Skupaj</strong></td><td style="text-align: right;"><strong>€${appt.totalPrice}</strong></td></tr>
-                        </tbody>
-                    </table>
-                    <div style="margin-top:20px">Hvala za obisk!</div>
-                    <script>window.print();<\/script>
-                </body>
-                </html>
-            `;
-            const w = window.open('', '_blank');
-            w.document.write(invoiceHtml);
-            w.document.close();
-        }
-
-        // =========================
-        // CONTENT
-        // =========================
+        // ===== CONTENT =====
         function loadContent() {
             document.getElementById('shopName').value = SITE_CONFIG.shopName || '';
-            document.getElementById('heroTitle').value = SITE_CONFIG.hero.title || '';
-            document.getElementById('heroSubtitle').value = SITE_CONFIG.hero.subtitle || '';
-            document.getElementById('storyTitle').value = SITE_CONFIG.ourStory.title || '';
-            document.getElementById('storyText').value = SITE_CONFIG.ourStory.text || '';
-            document.getElementById('testimonialQuote').value = SITE_CONFIG.testimonial.quote || '';
-            document.getElementById('testimonialAuthor').value = SITE_CONFIG.testimonial.author || '';
+            document.getElementById('heroTitle').value = SITE_CONFIG.hero?.title || '';
+            document.getElementById('heroSubtitle').value = SITE_CONFIG.hero?.subtitle || '';
+            document.getElementById('storyTitle').value = SITE_CONFIG.ourStory?.title || '';
+            document.getElementById('storyText').value = SITE_CONFIG.ourStory?.text || '';
+            document.getElementById('testimonialQuote').value = SITE_CONFIG.testimonial?.quote || '';
+            document.getElementById('testimonialAuthor').value = SITE_CONFIG.testimonial?.author || '';
             document.getElementById('ownerEmail').value = SITE_CONFIG.ownerContact?.email || '';
             document.getElementById('ownerPhone').value = SITE_CONFIG.ownerContact?.phone || '';
         }
 
         function saveContent() {
             SITE_CONFIG.shopName = document.getElementById('shopName').value;
+            SITE_CONFIG.hero = SITE_CONFIG.hero || {};
             SITE_CONFIG.hero.title = document.getElementById('heroTitle').value;
             SITE_CONFIG.hero.subtitle = document.getElementById('heroSubtitle').value;
+            SITE_CONFIG.ourStory = SITE_CONFIG.ourStory || {};
             SITE_CONFIG.ourStory.title = document.getElementById('storyTitle').value;
             SITE_CONFIG.ourStory.text = document.getElementById('storyText').value;
+            SITE_CONFIG.testimonial = SITE_CONFIG.testimonial || {};
             SITE_CONFIG.testimonial.quote = document.getElementById('testimonialQuote').value;
             SITE_CONFIG.testimonial.author = document.getElementById('testimonialAuthor').value;
-            SITE_CONFIG.ownerContact = { email: document.getElementById('ownerEmail').value, phone: document.getElementById('ownerPhone').value };
+            SITE_CONFIG.ownerContact = { 
+                email: document.getElementById('ownerEmail').value, 
+                phone: document.getElementById('ownerPhone').value 
+            };
             saveConfig();
         }
 
-        // =========================
-        // APPEARANCE
-        // =========================
+        // ===== APPEARANCE =====
         function loadAppearance() {
-            document.getElementById('primaryColor').value = SITE_CONFIG.theme.primary || '#DC143C';
-            document.getElementById('darkColor').value = SITE_CONFIG.theme.dark || '#0A0A0A';
+            document.getElementById('primaryColor').value = SITE_CONFIG.theme?.primary || '#DC143C';
+            document.getElementById('darkColor').value = SITE_CONFIG.theme?.dark || '#0A0A0A';
             document.getElementById('showLogo').value = (SITE_CONFIG.logo?.showLogo !== false).toString();
             document.getElementById('logoLarge').value = SITE_CONFIG.logo?.large || '';
             document.getElementById('logoSmall').value = SITE_CONFIG.logo?.mini || '';
         }
 
         function saveAppearance() {
+            SITE_CONFIG.theme = SITE_CONFIG.theme || {};
             SITE_CONFIG.theme.primary = document.getElementById('primaryColor').value;
             SITE_CONFIG.theme.dark = document.getElementById('darkColor').value;
             SITE_CONFIG.logo = SITE_CONFIG.logo || {};
@@ -520,31 +405,31 @@
             saveConfig();
         }
 
-        // =========================
-        // SERVICES
-        // =========================
+        // ===== SERVICES =====
         function loadServices() {
             const container = document.getElementById('servicesContainer');
-            container.innerHTML = SITE_CONFIG.servicesSection.items.map((service, idx) => `
-                <div style="margin-bottom: 20px; padding: 15px; background: #f9f9f9; border-radius: 6px;">
+            const items = SITE_CONFIG.servicesSection?.items || [];
+            
+            container.innerHTML = items.map((svc, i) => `
+                <div style="padding: 15px; background: #f9f9f9; border-radius: 6px; margin-bottom: 15px;">
                     <div class="form-row">
                         <div class="form-group-admin">
-                            <label class="form-label-admin">Ime storitve</label>
-                            <input type="text" class="form-input-admin service-name-${idx}" value="${service.name}">
+                            <label class="form-label-admin">Ime</label>
+                            <input type="text" class="svc-name-${i} form-input-admin" value="${svc.name || ''}">
                         </div>
                         <div class="form-group-admin">
-                            <label class="form-label-admin">Cena</label>
-                            <input type="text" class="form-input-admin service-price-${idx}" value="${service.price}">
+                            <label class="form-label-admin">Cena (samo številka)</label>
+                            <input type="text" class="svc-price-${i} form-input-admin" value="${(svc.price || '').replace('€', '')}">
                         </div>
                     </div>
                     <div class="form-row">
                         <div class="form-group-admin">
-                            <label class="form-label-admin">Trajanje (minut)</label>
-                            <input type="number" class="form-input-admin service-duration-${idx}" value="${service.duration || 0}" min="1">
+                            <label class="form-label-admin">Trajanje (min)</label>
+                            <input type="number" class="svc-duration-${i} form-input-admin" value="${svc.duration || 30}">
                         </div>
                         <div class="form-group-admin">
                             <label class="form-label-admin">Opis</label>
-                            <input type="text" class="form-input-admin service-desc-${idx}" value="${service.desc}">
+                            <input type="text" class="svc-desc-${i} form-input-admin" value="${svc.desc || ''}">
                         </div>
                     </div>
                 </div>
@@ -552,36 +437,38 @@
         }
 
         function saveServices() {
-            SITE_CONFIG.servicesSection.items.forEach((service, idx) => {
-                service.name = document.querySelector('.service-name-' + idx).value;
-                service.price = document.querySelector('.service-price-' + idx).value;
-                service.duration = parseInt(document.querySelector('.service-duration-' + idx).value) || 0;
-                service.desc = document.querySelector('.service-desc-' + idx).value;
+            const items = SITE_CONFIG.servicesSection?.items || [];
+            items.forEach((svc, i) => {
+                svc.name = document.querySelector('.svc-name-' + i)?.value || '';
+                const price = document.querySelector('.svc-price-' + i)?.value || '0';
+                svc.price = '€' + price;
+                svc.duration = parseInt(document.querySelector('.svc-duration-' + i)?.value) || 30;
+                svc.desc = document.querySelector('.svc-desc-' + i)?.value || '';
             });
             saveConfig();
         }
 
-        // =========================
-        // BARBERS
-        // =========================
+        // ===== BARBERS =====
         function loadBarbers() {
             const container = document.getElementById('barbersContainer');
-            container.innerHTML = SITE_CONFIG.barbersSection.list.map((barber, idx) => `
-                <div style="margin-bottom: 20px; padding: 15px; background: #f9f9f9; border-radius: 6px;">
+            const list = SITE_CONFIG.barbersSection?.list || [];
+            
+            container.innerHTML = list.map((barber, i) => `
+                <div style="padding: 15px; background: #f9f9f9; border-radius: 6px; margin-bottom: 15px;">
                     <div class="form-row">
                         <div class="form-group-admin">
-                            <label class="form-label-admin">Ime brivca</label>
-                            <input type="text" class="form-input-admin barber-name-${idx}" value="${barber.name}">
+                            <label class="form-label-admin">Ime</label>
+                            <input type="text" class="barb-name-${i} form-input-admin" value="${barber.name || ''}">
                         </div>
                         <div class="form-group-admin">
                             <label class="form-label-admin">Vloga</label>
-                            <input type="text" class="form-input-admin barber-role-${idx}" value="${barber.role}">
+                            <input type="text" class="barb-role-${i} form-input-admin" value="${barber.role || ''}">
                         </div>
                     </div>
                     <div class="form-row full">
                         <div class="form-group-admin">
-                            <label class="form-label-admin">URL slike</label>
-                            <input type="text" class="form-input-admin barber-img-${idx}" value="${barber.img}">
+                            <label class="form-label-admin">Slika (URL)</label>
+                            <input type="text" class="barb-img-${i} form-input-admin" value="${barber.img || ''}">
                         </div>
                     </div>
                 </div>
@@ -589,10 +476,11 @@
         }
 
         function saveBarbers() {
-            SITE_CONFIG.barbersSection.list.forEach((barber, idx) => {
-                barber.name = document.querySelector('.barber-name-' + idx).value;
-                barber.role = document.querySelector('.barber-role-' + idx).value;
-                barber.img = document.querySelector('.barber-img-' + idx).value;
+            const list = SITE_CONFIG.barbersSection?.list || [];
+            list.forEach((barber, i) => {
+                barber.name = document.querySelector('.barb-name-' + i)?.value || '';
+                barber.role = document.querySelector('.barb-role-' + i)?.value || '';
+                barber.img = document.querySelector('.barb-img-' + i)?.value || '';
             });
             saveConfig();
         }
@@ -605,11 +493,9 @@
             loadBarbers();
         }
 
-        // INITIALIZE
+        // INIT
         if (localStorage.getItem('adminLoggedIn')) {
             showAdminPanel();
-        } else {
-            document.getElementById('loginScreen').style.display = 'block';
         }
     </script>
 </body>
