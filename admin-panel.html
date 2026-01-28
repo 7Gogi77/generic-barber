@@ -8,12 +8,51 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="js/config.js"></script>
     <link rel="stylesheet" href="admin-style.css">
+    <style>
+        .admin-tabs {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #e0e0e0;
+            padding: 0 20px;
+        }
+        .tab-btn {
+            padding: 14px 24px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 600;
+            color: #666;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+        .tab-btn:hover {
+            color: #DC143C;
+        }
+        .tab-btn.active {
+            color: #DC143C;
+            border-bottom-color: #DC143C;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
 </head>
 <body>
     <!-- LOGIN SCREEN -->
     <div id="loginScreen" class="login-container">
         <div class="login-logo">Blade & Bourbon</div>
         <div class="login-subtitle">Administracija</div>
+        
         <form class="login-form" onsubmit="handleLogin(event)">
             <div class="form-group">
                 <label class="form-label">Uporabniško Ime</label>
@@ -39,15 +78,175 @@
                 </div>
             </div>
 
-            <!-- TABS -->
+            <!-- TAB NAVIGATION -->
             <div class="admin-tabs">
-                <button class="tab-btn active" onclick="switchTab(event, 'dashboard')">📊 Panel</button>
-                <button class="tab-btn" onclick="switchTab(event, 'content')">📝 Vsebina</button>
-                <button class="tab-btn" onclick="switchTab(event, 'appearance')">🎨 Videz</button>
-                <button class="tab-btn" onclick="switchTab(event, 'services')">💼 Storitve</button>
+                <button class="tab-btn active" onclick="switchTab(event, 'videz')">🎨 Videz Spletne Strani</button>
+                <button class="tab-btn" onclick="switchTab(event, 'vsebina')">📝 Vsebina in Tekst</button>
+                <button class="tab-btn" onclick="switchTab(event, 'storitve')">💼 Storitve in Brivci</button>
+                <button class="tab-btn" onclick="switchTab(event, 'panel')">📊 Poslovni Panel</button>
             </div>
 
-            <!-- TAB: DASHBOARD -->
+            <!-- ===== TAB 1: VIDEZ (APPEARANCE) ===== -->
+            <div id="videz" class="tab-content active">
+                <h2 style="margin-top: 0; margin-bottom: 30px; color: #333; font-size: 24px; border-bottom: 2px solid #DC143C; padding-bottom: 10px;">🎨 Nastavitve Videza</h2>
+                
+                <!-- LOGO SECTION -->
+                <div class="admin-section">
+                    <div class="section-title">⚙️ Logotipi in Identiteta</div>
+                    <div class="form-row">
+                        <div class="form-group-admin">
+                            <label class="form-label-admin">Prikaži Logo ali Ime Podjetja?</label>
+                            <select id="showLogo" class="form-input-admin" style="width: 100%;">
+                                <option value="true">Logo</option>
+                                <option value="false">Ime Podjetja</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group-admin">
+                            <label class="form-label-admin">Logo (velik) - Navigacija</label>
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                <input id="logoLargeInput" type="file" accept="image/*" class="form-input-admin">
+                                <input id="logoLargeUrl" type="text" class="form-input-admin" placeholder="URL ali base64" style="flex:1">
+                            </div>
+                            <img id="logoLargePreview" src="" alt="Logo preview" style="max-height:60px; margin-top:8px; display:block">
+                        </div>
+                        <div class="form-group-admin">
+                            <label class="form-label-admin">Logo (mini) - Favicon</label>
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                <input id="logoMiniInput" type="file" accept="image/*" class="form-input-admin">
+                                <input id="logoMiniUrl" type="text" class="form-input-admin" placeholder="URL ali base64" style="flex:1">
+                            </div>
+                            <img id="logoMiniPreview" src="" alt="Mini logo preview" style="max-height:40px; margin-top:8px; display:block">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <button class="save-btn" onclick="saveLogo()">Shrani Logo Nastavitve</button>
+                        <button class="save-btn" onclick="saveAppearance()">Shrani Slike</button>
+                    </div>
+                </div>
+
+                <!-- COLORS SECTION -->
+                <div class="admin-section">
+                    <div class="section-title">🎨 Barvna Shema</div>
+                    <p style="font-size: 12px; color: #666; margin-bottom: 15px;">Glavne barve za temo spletne strani</p>
+                    <div class="form-row">
+                        <div class="form-group-admin">
+                            <label class="form-label-admin">Primarna Barva</label>
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                <input id="theme-primary" type="color" class="form-input-admin" style="width: 60px; height: 40px; cursor: pointer;">
+                                <input id="theme-primary-text" type="text" class="form-input-admin" placeholder="#DC143C" style="flex: 1;">
+                            </div>
+                        </div>
+                        <div class="form-group-admin">
+                            <label class="form-label-admin">Temna Barva</label>
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                <input id="theme-dark" type="color" class="form-input-admin" style="width: 60px; height: 40px; cursor: pointer;">
+                                <input id="theme-dark-text" type="text" class="form-input-admin" placeholder="#1a1a1a" style="flex: 1;">
+                            </div>
+                        </div>
+                    </div>
+                    <button class="save-btn" onclick="saveTheme()">Shrani Barve</button>
+                </div>
+            </div> <!-- END videz tab -->
+
+            <!-- ===== TAB 2: VSEBINA (CONTENT) ===== -->
+            <div id="vsebina" class="tab-content">
+                <h2 style="margin-top: 0; margin-bottom: 30px; color: #333; font-size: 24px; border-bottom: 2px solid #DC143C; padding-bottom: 10px;">📝 Vsebina in Tekst</h2>
+                
+                <!-- SHOP NAME SECTION -->
+                <div class="admin-section">
+                    <div class="section-title">🏢 Osnovni Podatki</div>
+                    <div class="form-row">
+                        <div class="form-group-admin">
+                            <label class="form-label-admin">Ime Trgovine</label>
+                            <input id="shopName" type="text" class="form-input-admin">
+                        </div>
+                    </div>
+                    <button class="save-btn" onclick="saveAppearance()">Shrani Ime</button>
+                </div>
+
+                <!-- HERO SECTION -->
+                <div class="admin-section">
+                    <div class="section-title">🎬 Naslovnica (Hero Sekcija)</div>
+                    <div class="form-row">
+                        <div class="form-group-admin">
+                            <label class="form-label-admin">Podnaslov</label>
+                            <input id="heroSubtitle" type="text" class="form-input-admin">
+                        </div>
+                        <div class="form-group-admin">
+                            <label class="form-label-admin">Glavni Naslov</label>
+                            <input id="heroTitle" type="text" class="form-input-admin">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ABOUT SECTION -->
+                <div class="admin-section">
+                    <div class="section-title">📖 O Nas (Story)</div>
+                    <div class="form-row">
+                        <div class="form-group-admin">
+                            <label class="form-label-admin">Naslov</label>
+                            <input id="storyTitle" type="text" class="form-input-admin">
+                        </div>
+                    </div>
+                    <div class="form-row full">
+                        <div class="form-group-admin">
+                            <label class="form-label-admin">Besedilo</label>
+                            <textarea id="storyText" class="form-input-admin" style="min-height: 120px;"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TESTIMONIAL SECTION -->
+                <div class="admin-section">
+                    <div class="section-title">💬 Priporočilo / Citat</div>
+                    <div class="form-row full">
+                        <div class="form-group-admin">
+                            <label class="form-label-admin">Citat</label>
+                            <textarea id="testimonialQuote" class="form-input-admin" style="min-height: 80px;"></textarea>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group-admin">
+                            <label class="form-label-admin">Avtor Citata</label>
+                            <input id="testimonialAuthor" type="text" class="form-input-admin">
+                        </div>
+                    </div>
+                </div>
+            </div> <!-- END vsebina tab -->
+
+            <!-- ===== TAB 3: STORITVE (SERVICES & BARBERS) ===== -->
+            <div id="storitve" class="tab-content">
+                <h2 style="margin-top: 0; margin-bottom: 30px; color: #333; font-size: 24px; border-bottom: 2px solid #DC143C; padding-bottom: 10px;">💼 Storitve in Brivci</h2>
+
+                <!-- SERVICES SECTION -->
+                <div class="admin-section">
+                    <div class="section-title">✂️ Storitve in Cene</div>
+                    <p style="font-size: 12px; color: #666; margin-bottom: 15px;">Upravljaj s storitvami in cenami</p>
+                    <div id="servicesContainer"></div>
+                    <div class="form-row" style="gap: 10px;">
+                        <button class="save-btn" onclick="addService()" style="background-color: #28a745; flex: 1;">+ Dodaj Storitev</button>
+                        <button class="save-btn" onclick="removeService()" style="background-color: #dc3545; flex: 1;">- Odstrani Storitev</button>
+                        <button class="save-btn" onclick="saveServices()" style="flex: 2;">Shrani Storitve</button>
+                    </div>
+                </div>
+
+                <!-- BARBERS SECTION -->
+                <div class="admin-section">
+                    <div class="section-title">💈 Brivci in Profili</div>
+                    <p style="font-size: 12px; color: #666; margin-bottom: 15px;">Upravljaj s profili brivcev</p>
+                    <div id="barbersContainer"></div>
+                    <div class="form-row" style="gap: 10px;">
+                        <button class="save-btn" onclick="addBarber()" style="background-color: #28a745; flex: 1;">+ Dodaj Brivca</button>
+                        <button class="save-btn" onclick="removeBarber()" style="background-color: #dc3545; flex: 1;">- Odstrani Brivca</button>
+                        <button class="save-btn" onclick="saveBarbers()" style="flex: 2;">Shrani Brivce</button>
+                    </div>
+                </div>
+            </div> <!-- END storitve tab -->
+
+            <!-- ===== TAB 4: PANEL (BUSINESS ANALYTICS) ===== -->
+            <div id="panel" class="tab-content">
             <div id="dashboard" class="tab-content active">
                 <h2 style="margin-top: 0; margin-bottom: 30px; color: #333; font-size: 24px; border-bottom: 2px solid #DC143C; padding-bottom: 10px;">📈 Poslovni Panel</h2>
                 
