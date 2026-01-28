@@ -724,28 +724,24 @@
             const ownerEmail = SITE_CONFIG.ownerContact?.email;
             
             if (ownerEmail && FORMSPREE_ENDPOINT) {
-                const payload = {
-                    'Ime': appointment.firstName,
-                    'Priimek': appointment.surname,
-                    'E-Mail stranke': appointment.email,
-                    'Tel. št. stranke': appointment.phone,
-                    'Datum termina': appointment.date,
-                    'Čas termina': appointment.time,
-                    'Storitve': appointment.services.join(', '),
-                    'Končna cena': appointment.totalPrice + "€",
-                    'Čas trajanja': appointment.totalDuration + " min",
-                    '_subject': 'Novo Naročilo iz Spletne Strani',
-                    '_replyto': appointment.email,
-                    '_cc': ownerEmail
-                };
+                const formData = new FormData();
+                formData.append('Ime', appointment.firstName);
+                formData.append('Priimek', appointment.surname);
+                formData.append('E-Mail stranke', appointment.email);
+                formData.append('Tel. št. stranke', appointment.phone);
+                formData.append('Datum termina', appointment.date);
+                formData.append('Čas termina', appointment.time);
+                formData.append('Storitve', appointment.services.join(', '));
+                formData.append('Končna cena', appointment.totalPrice + "€");
+                formData.append('Čas trajanja', appointment.totalDuration + " min");
+                formData.append('_subject', 'Novo Naročilo iz Spletne Strani');
+                formData.append('_replyto', appointment.email);
+                formData.append('_cc', ownerEmail);
                 
-                // Send using fetch with no-cors mode (bypasses CORS on redirect)
+                // Send using FormData with no-cors mode
                 fetch(FORMSPREE_ENDPOINT, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(payload),
+                    body: formData,
                     mode: 'no-cors'
                 })
                 .then(response => {
