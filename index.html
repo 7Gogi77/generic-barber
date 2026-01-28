@@ -734,22 +734,26 @@
             });
             localStorage.setItem('ownerNotifications', JSON.stringify(notifications));
             
-            // Build form data
-            const formData = new FormData();
-            formData.append('email', appointment.email);
-            formData.append('Ime', appointment.firstName);
-            formData.append('Priimek', appointment.surname);
-            formData.append('Telefon', appointment.phone);
-            formData.append('Datum', appointment.date);
-            formData.append('Cas', appointment.time);
-            formData.append('Storitve', appointment.services.join(', '));
-            formData.append('Cena', appointment.totalPrice + "€");
-            formData.append('Trajanje', appointment.totalDuration + " min");
+            // Build URL-encoded form data
+            const params = new URLSearchParams();
+            params.append('email', appointment.email);
+            params.append('Ime', appointment.firstName);
+            params.append('Priimek', appointment.surname);
+            params.append('Telefon', appointment.phone);
+            params.append('Datum', appointment.date);
+            params.append('Cas', appointment.time);
+            params.append('Storitve', appointment.services.join(', '));
+            params.append('Cena', appointment.totalPrice + "€");
+            params.append('Trajanje', appointment.totalDuration + " min");
+            params.append('_next', window.location.href);
             
-            // Submit via fetch without redirect
+            // Submit via fetch without following redirects
             fetch('https://formspree.io/f/meegkorn', {
                 method: 'POST',
-                body: formData,
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: params.toString(),
                 redirect: 'manual'
             })
             .then(response => {
