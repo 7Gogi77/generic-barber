@@ -161,13 +161,17 @@
             .chart-container > div { min-height: 200px !important; }
             .form-input-admin { padding: 8px 10px; font-size: 12px; max-width: 100%; }
             select.form-input-admin { padding: 8px 10px; font-size: 12px; }
+            .dashboard-grid { grid-template-columns: 1fr !important; }
         }
         
         @media (max-width: 600px) {
-            .dashboard-grid { gap: 10px !important; }
+            .dashboard-grid { gap: 10px !important; grid-template-columns: 1fr !important; }
             .chart-container { 
                 min-height: 250px !important;
                 padding: 12px !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                box-sizing: border-box !important;
             }
             .chart-container > h3 { 
                 font-size: 12px !important;
@@ -193,11 +197,14 @@
         }
         
         @media (max-width: 480px) {
-            .dashboard-grid { gap: 8px !important; }
+            .dashboard-grid { gap: 8px !important; grid-template-columns: 1fr !important; }
             .chart-container { 
                 min-height: 220px !important;
                 padding: 10px !important;
                 border-radius: 4px !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                box-sizing: border-box !important;
             }
             .chart-container > h3 { 
                 font-size: 11px !important;
