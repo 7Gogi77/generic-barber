@@ -156,6 +156,8 @@
             canvas { max-height: 200px; }
             .dashboard-grid > div { min-height: 280px !important; }
             .dashboard-grid > div > div { min-height: 200px !important; }
+            .form-input-admin { padding: 8px 10px; font-size: 12px; max-width: 100%; }
+            select.form-input-admin { padding: 8px 10px; font-size: 12px; }
         }
         
         @media (max-width: 600px) {
@@ -169,6 +171,22 @@
                 margin-bottom: 12px !important;
             }
             .dashboard-grid > div > div { min-height: 180px !important; }
+            canvas { max-height: 150px !important; }
+            .form-input-admin { 
+                padding: 7px 8px !important; 
+                font-size: 11px !important; 
+                max-width: 100% !important;
+                box-sizing: border-box !important;
+            }
+            select.form-input-admin { 
+                padding: 7px 8px !important; 
+                font-size: 11px !important; 
+                width: 100% !important;
+            }
+            input[type="date"].form-input-admin,
+            input[type="time"].form-input-admin { 
+                width: 100% !important; 
+            }
         }
         
         @media (max-width: 480px) {
@@ -177,6 +195,35 @@
                 min-height: 220px !important;
                 padding: 10px !important;
                 border-radius: 4px !important;
+            }
+            .dashboard-grid > div > h3 { 
+                font-size: 11px !important;
+                margin-bottom: 10px !important;
+            }
+            .dashboard-grid > div > div { 
+                min-height: 160px !important;
+            }
+            canvas { max-height: 120px !important; }
+            .form-input-admin { 
+                padding: 6px 7px !important; 
+                font-size: 10px !important; 
+                max-width: 100% !important;
+                box-sizing: border-box !important;
+                width: 100% !important;
+            }
+            select.form-input-admin { 
+                padding: 6px 7px !important; 
+                font-size: 10px !important; 
+                width: 100% !important;
+                box-sizing: border-box !important;
+            }
+            input[type="date"].form-input-admin,
+            input[type="time"].form-input-admin,
+            input[type="email"].form-input-admin,
+            input[type="tel"].form-input-admin,
+            input[type="text"].form-input-admin { 
+                width: 100% !important;
+                box-sizing: border-box !important;
             }
             .dashboard-grid > div > h3 { 
                 font-size: 11px !important;
