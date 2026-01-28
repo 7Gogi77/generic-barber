@@ -734,19 +734,30 @@
             });
             localStorage.setItem('ownerNotifications', JSON.stringify(notifications));
             
-            // Fill hidden form and submit to Formspree
-            document.getElementById('formspreeEmail').value = appointment.email;
-            document.getElementById('formspreeIme').value = appointment.firstName;
-            document.getElementById('formspreePriimek').value = appointment.surname;
-            document.getElementById('formspreeTelefon').value = appointment.phone;
-            document.getElementById('formspreeDatum').value = appointment.date;
-            document.getElementById('formspreeCas').value = appointment.time;
-            document.getElementById('formspreeStoritve').value = appointment.services.join(', ');
-            document.getElementById('formspreeCena').value = appointment.totalPrice + "€";
-            document.getElementById('formspreeTrajanje').value = appointment.totalDuration + " min";
+            // Build form data
+            const formData = new FormData();
+            formData.append('email', appointment.email);
+            formData.append('Ime', appointment.firstName);
+            formData.append('Priimek', appointment.surname);
+            formData.append('Telefon', appointment.phone);
+            formData.append('Datum', appointment.date);
+            formData.append('Cas', appointment.time);
+            formData.append('Storitve', appointment.services.join(', '));
+            formData.append('Cena', appointment.totalPrice + "€");
+            formData.append('Trajanje', appointment.totalDuration + " min");
             
-            // Submit form
-            document.getElementById('formspreeForm').submit();
+            // Submit via fetch without redirect
+            fetch('https://formspree.io/f/meegkorn', {
+                method: 'POST',
+                body: formData,
+                redirect: 'manual'
+            })
+            .then(response => {
+                console.log('✅ Appointment submitted');
+            })
+            .catch(error => {
+                console.log('⚠️ Submission failed, but saved locally:', error);
+            });
         }
         
         function resetAppointment() {
