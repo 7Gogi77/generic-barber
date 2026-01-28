@@ -15,29 +15,33 @@
             display: flex;
             gap: 0;
             margin-bottom: 0;
-            border-bottom: 1px solid #ccc;
+            border-bottom: 2px solid #e8ecf1;
             padding: 0;
             background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
         .tab-btn {
-            padding: 12px 20px;
+            padding: 14px 24px;
             background: white;
             border: none;
-            border-bottom: 3px solid transparent;
+            border-bottom: 4px solid transparent;
             cursor: pointer;
             font-size: 14px;
             font-weight: 500;
-            color: #555;
-            transition: all 0.2s;
+            color: #7f8c8d;
+            transition: all 0.3s ease;
+            margin: 0 2px;
         }
         .tab-btn:hover {
-            background: #f9f9f9;
-            color: #333;
+            background: #f8fafb;
+            color: #2c3e50;
+            border-bottom-color: #bdc3c7;
         }
         .tab-btn.active {
             color: #2c3e50;
-            border-bottom-color: #2c3e50;
+            border-bottom-color: #3498db;
             background: white;
+            font-weight: 600;
         }
         .tab-content {
             display: none;
@@ -53,24 +57,31 @@
         .logout-btn { background: #555; color: white; border: none; padding: 8px 16px; border-radius: 3px; cursor: pointer; font-size: 13px; }
         .logout-btn:hover { background: #333; }
         
-        .admin-section { margin-bottom: 20px; padding: 15px; background: #fafafa; border: 1px solid #ddd; border-radius: 3px; }
-        .section-title { font-size: 14px; font-weight: 600; color: #2c3e50; margin-bottom: 15px; }
+        .admin-section { margin-bottom: 20px; padding: 20px; background: white; border: 1px solid #e8ecf1; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .section-title { font-size: 15px; font-weight: 700; color: #2c3e50; margin-bottom: 18px; padding-bottom: 12px; border-bottom: 2px solid #ecf0f1; }
         
-        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
         .form-row.full { grid-template-columns: 1fr; }
         .form-group-admin { display: flex; flex-direction: column; }
-        .form-label-admin { font-size: 12px; font-weight: 600; color: #555; margin-bottom: 5px; }
-        .form-input-admin { padding: 8px 10px; border: 1px solid #ccc; border-radius: 3px; font-size: 13px; font-family: Poppins, sans-serif; }
-        .form-input-admin:focus { outline: none; border-color: #2c3e50; }
+        .form-label-admin { font-size: 13px; font-weight: 600; color: #2c3e50; margin-bottom: 8px; }
+        .form-input-admin { padding: 10px 12px; border: 1.5px solid #d5dce0; border-radius: 6px; font-size: 13px; font-family: Poppins, sans-serif; background: #fafbfc; transition: all 0.3s; }
+        .form-input-admin:focus { outline: none; border-color: #3498db; background: white; box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1); }
         
-        .save-btn { background: #2c3e50; color: white; border: none; padding: 10px 20px; border-radius: 3px; cursor: pointer; font-size: 13px; font-weight: 500; }
-        .save-btn:hover { background: #1a252f; }
+        .save-btn { background: #3498db; color: white; border: none; padding: 11px 22px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.3s; box-shadow: 0 2px 6px rgba(52, 152, 219, 0.3); }
+        .save-btn:hover { background: #2980b9; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(52, 152, 219, 0.4); }
 
         /* Responsive Design */
+        @media (max-width: 1200px) {
+            .form-row { grid-template-columns: 1fr; }
+            .dashboard-grid { grid-template-columns: repeat(2, 1fr) !important; }
+            .tab-content { padding: 18px; }
+        }
+
         @media (max-width: 1024px) {
             .form-row { grid-template-columns: 1fr; }
             .tab-content { padding: 15px; }
-            .admin-section { padding: 12px; }
+            .admin-section { padding: 18px; margin-bottom: 18px; }
+            .section-title { font-size: 14px; margin-bottom: 15px; }
         }
 
         @media (max-width: 768px) {
@@ -79,61 +90,68 @@
                 flex-wrap: nowrap;
             }
             .tab-btn {
-                padding: 10px 15px;
+                padding: 12px 16px;
                 font-size: 12px;
                 white-space: nowrap;
             }
             .tab-content { padding: 12px; }
-            .admin-section { padding: 10px; margin-bottom: 15px; }
-            .section-title { font-size: 13px; margin-bottom: 10px; }
-            .form-label-admin { font-size: 11px; }
-            .form-input-admin { padding: 6px 8px; font-size: 12px; }
-            .save-btn { padding: 8px 12px; font-size: 12px; }
-            .form-row { gap: 10px; margin-bottom: 10px; }
-            #loginScreen { padding: 20px; }
-            .login-card { padding: 20px !important; width: 100%; }
+            .admin-section { padding: 14px; margin-bottom: 14px; }
+            .section-title { font-size: 13px; margin-bottom: 12px; padding-bottom: 10px; }
+            .form-label-admin { font-size: 12px; margin-bottom: 6px; }
+            .form-input-admin { padding: 8px 10px; font-size: 12px; }
+            .save-btn { padding: 9px 16px; font-size: 12px; }
+            .form-row { gap: 12px; margin-bottom: 12px; }
+            #loginScreen { padding: 15px; }
+            .login-card { padding: 18px !important; width: 100%; }
+            #calendarGrid { gap: 1px !important; }
+            .dashboard-grid { grid-template-columns: 1fr !important; }
         }
 
-        @media (max-width: 480px) {
-            .admin-header { padding: 15px; }
+        @media (max-width: 600px) {
+            .admin-header { padding: 12px; }
             .admin-header h1 { font-size: 16px; }
             .tab-btn {
-                padding: 8px 10px;
+                padding: 10px 12px;
                 font-size: 11px;
             }
             .tab-content { padding: 10px; }
-            .admin-section { padding: 8px; margin-bottom: 12px; }
-            .section-title { font-size: 12px; margin-bottom: 8px; }
-            .form-label-admin { font-size: 10px; }
-            .form-input-admin { padding: 5px 6px; font-size: 11px; }
-            .save-btn { padding: 6px 10px; font-size: 11px; }
-            .form-row { gap: 8px; margin-bottom: 8px; }
-            .logout-btn { padding: 6px 12px; font-size: 11px; }
-            .login-card { padding: 15px !important; }
-        }
-
-        /* Responsive Grid for Dashboard Metrics */
-        @media (max-width: 1200px) {
-            .dashboard-grid {
-                grid-template-columns: repeat(2, 1fr) !important;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .dashboard-grid {
-                grid-template-columns: 1fr !important;
-            }
-        }
-
-        /* Responsive Forms */
-        @media (max-width: 768px) {
-            .upload-area { padding: 20px !important; }
-            .image-gallery { grid-template-columns: repeat(2, 1fr) !important; }
+            .admin-section { padding: 12px; margin-bottom: 12px; }
+            .section-title { font-size: 12px; margin-bottom: 10px; }
+            .form-label-admin { font-size: 11px; margin-bottom: 5px; }
+            .form-input-admin { padding: 7px 8px; font-size: 11px; }
+            .save-btn { padding: 8px 12px; font-size: 11px; }
+            .form-row { gap: 8px; margin-bottom: 10px; }
+            .logout-btn { padding: 6px 10px; font-size: 11px; }
+            .login-card { padding: 14px !important; }
+            #calendarGrid { grid-template-columns: repeat(7, 1fr) !important; }
+            #dayAppointments { font-size: 11px; }
         }
 
         @media (max-width: 480px) {
-            .upload-area { padding: 15px !important; }
+            .admin-header { padding: 10px; background: white; }
+            .admin-header h1 { font-size: 14px; margin: 0; }
+            .tab-btn {
+                padding: 8px 10px;
+                font-size: 10px;
+                margin: 0 1px;
+            }
+            .tab-content { padding: 8px; }
+            .admin-section { padding: 10px; margin-bottom: 10px; }
+            .section-title { font-size: 11px; margin-bottom: 8px; }
+            .form-row { gap: 6px; margin-bottom: 8px; }
+            .form-label-admin { font-size: 10px; margin-bottom: 4px; }
+            .form-input-admin { padding: 6px 7px; font-size: 10px; }
+            .save-btn { padding: 6px 10px; font-size: 10px; }
+            .upload-area { padding: 12px !important; }
             .image-gallery { grid-template-columns: 1fr !important; }
+            .logout-btn { padding: 5px 8px; font-size: 10px; }
+            #calendarMonthYear { font-size: 14px; }
+            #dayAppointments { font-size: 10px; }
+        }
+
+        /* Responsive Charts */
+        @media (max-width: 768px) {
+            canvas { max-height: 200px; }
         }
     </style>
 </head>
@@ -519,41 +537,41 @@
 
                 <!-- BUSINESS HOURS SECTION -->
                 <div class="admin-section">
-                    <div class="section-title">Delovni Čas in Delovni Dnevi</div>
-                    <p style="font-size: 12px; color: #666; margin-bottom: 15px;">Nastavi svoje delovne dneve in ure</p>
+                    <div class="section-title">⏰ Delovni Čas in Delovni Dnevi</div>
+                    <p style="font-size: 13px; color: #7f8c8d; margin-bottom: 18px;">Nastavi svoje delovne dneve in ure</p>
                     
                     <!-- Working Days Selection -->
-                    <div style="margin-bottom: 20px;">
+                    <div style="margin-bottom: 22px;">
                         <label class="form-label-admin">Delovni Dnevi:</label>
-                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-top: 10px;">
-                            <label style="display: flex; align-items: center; gap: 8px; font-size: 14px;">
-                                <input type="checkbox" id="dayMonday" class="working-day-checkbox" onchange="updateWorkingDays()"> Ponedeljek
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-top: 12px;">
+                            <label style="display: flex; align-items: center; gap: 10px; font-size: 13px; cursor: pointer; padding: 10px; background: #f8fafb; border-radius: 6px; border: 1.5px solid #ecf0f1; transition: all 0.2s;">
+                                <input type="checkbox" id="dayMonday" class="working-day-checkbox" onchange="updateWorkingDays()" style="cursor: pointer; width: 18px; height: 18px;"> <span style="font-weight: 500;">Ponedeljek</span>
                             </label>
-                            <label style="display: flex; align-items: center; gap: 8px; font-size: 14px;">
-                                <input type="checkbox" id="dayTuesday" class="working-day-checkbox" onchange="updateWorkingDays()"> Torek
+                            <label style="display: flex; align-items: center; gap: 10px; font-size: 13px; cursor: pointer; padding: 10px; background: #f8fafb; border-radius: 6px; border: 1.5px solid #ecf0f1; transition: all 0.2s;">
+                                <input type="checkbox" id="dayTuesday" class="working-day-checkbox" onchange="updateWorkingDays()" style="cursor: pointer; width: 18px; height: 18px;"> <span style="font-weight: 500;">Torek</span>
                             </label>
-                            <label style="display: flex; align-items: center; gap: 8px; font-size: 14px;">
-                                <input type="checkbox" id="dayWednesday" class="working-day-checkbox" onchange="updateWorkingDays()"> Sreda
+                            <label style="display: flex; align-items: center; gap: 10px; font-size: 13px; cursor: pointer; padding: 10px; background: #f8fafb; border-radius: 6px; border: 1.5px solid #ecf0f1; transition: all 0.2s;">
+                                <input type="checkbox" id="dayWednesday" class="working-day-checkbox" onchange="updateWorkingDays()" style="cursor: pointer; width: 18px; height: 18px;"> <span style="font-weight: 500;">Sreda</span>
                             </label>
-                            <label style="display: flex; align-items: center; gap: 8px; font-size: 14px;">
-                                <input type="checkbox" id="dayThursday" class="working-day-checkbox" onchange="updateWorkingDays()"> Četrtek
+                            <label style="display: flex; align-items: center; gap: 10px; font-size: 13px; cursor: pointer; padding: 10px; background: #f8fafb; border-radius: 6px; border: 1.5px solid #ecf0f1; transition: all 0.2s;">
+                                <input type="checkbox" id="dayThursday" class="working-day-checkbox" onchange="updateWorkingDays()" style="cursor: pointer; width: 18px; height: 18px;"> <span style="font-weight: 500;">Četrtek</span>
                             </label>
-                            <label style="display: flex; align-items: center; gap: 8px; font-size: 14px;">
-                                <input type="checkbox" id="dayFriday" class="working-day-checkbox" onchange="updateWorkingDays()"> Petek
+                            <label style="display: flex; align-items: center; gap: 10px; font-size: 13px; cursor: pointer; padding: 10px; background: #f8fafb; border-radius: 6px; border: 1.5px solid #ecf0f1; transition: all 0.2s;">
+                                <input type="checkbox" id="dayFriday" class="working-day-checkbox" onchange="updateWorkingDays()" style="cursor: pointer; width: 18px; height: 18px;"> <span style="font-weight: 500;">Petek</span>
                             </label>
-                            <label style="display: flex; align-items: center; gap: 8px; font-size: 14px;">
-                                <input type="checkbox" id="daySaturday" class="working-day-checkbox" onchange="updateWorkingDays()"> Sobota
+                            <label style="display: flex; align-items: center; gap: 10px; font-size: 13px; cursor: pointer; padding: 10px; background: #f8fafb; border-radius: 6px; border: 1.5px solid #ecf0f1; transition: all 0.2s;">
+                                <input type="checkbox" id="daySaturday" class="working-day-checkbox" onchange="updateWorkingDays()" style="cursor: pointer; width: 18px; height: 18px;"> <span style="font-weight: 500;">Sobota</span>
                             </label>
-                            <label style="display: flex; align-items: center; gap: 8px; font-size: 14px;">
-                                <input type="checkbox" id="daySunday" class="working-day-checkbox" onchange="updateWorkingDays()"> Nedelja
+                            <label style="display: flex; align-items: center; gap: 10px; font-size: 13px; cursor: pointer; padding: 10px; background: #f8fafb; border-radius: 6px; border: 1.5px solid #ecf0f1; transition: all 0.2s;">
+                                <input type="checkbox" id="daySunday" class="working-day-checkbox" onchange="updateWorkingDays()" style="cursor: pointer; width: 18px; height: 18px;"> <span style="font-weight: 500;">Nedelja</span>
                             </label>
                         </div>
                     </div>
 
                     <!-- Business Hours per Day -->
-                    <div style="margin-bottom: 20px;">
+                    <div style="margin-bottom: 22px;">
                         <label class="form-label-admin">Delovni Čas po Dnevih:</label>
-                        <div id="workingHoursContainer" style="display: grid; gap: 12px; margin-top: 10px;"></div>
+                        <div id="workingHoursContainer" style="display: grid; gap: 12px; margin-top: 12px;"></div>
                     </div>
 
                     <!-- Default Business Hours -->
@@ -625,9 +643,9 @@
 
                 <!-- APPOINTMENTS SECTION -->
                 <div class="admin-section">
-                    <div class="section-title">Naročila Termina</div>
-                    <p style="font-size: 12px; color: #666; margin-bottom: 15px;">Skupaj naročil: <strong id="appointmentCount">0</strong></p>
-                    <div id="appointmentsContainer" style="max-height: 500px; overflow-y: auto;"></div>
+                    <div class="section-title">📋 Naročila Termina</div>
+                    <p style="font-size: 13px; color: #7f8c8d; margin-bottom: 15px;">Skupaj naročil: <strong style="color: #2c3e50; font-size: 15px;" id="appointmentCount">0</strong></p>
+                    <div id="appointmentsContainer" style="max-height: 600px; overflow-y: auto; border: 1px solid #ecf0f1; border-radius: 6px; padding: 0;"></div>
                 </div>
 
                 <!-- EARNINGS SECTION -->
@@ -651,48 +669,48 @@
 
                 <!-- CALENDAR SECTION -->
                 <div class="admin-section">
-                    <div class="section-title">Koledar Naročil</div>
-                    <div style="background: white; padding: 15px; border: 1px solid #ddd; border-radius: 3px;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                            <button class="save-btn" onclick="prevMonth()" style="flex:0.5; padding:5px 10px; font-size:12px;">← Prejšnji</button>
-                            <h3 id="calendarMonthYear" style="font-size: 14px; font-weight: 600; color: #2c3e50; margin: 0;">Januar 2024</h3>
-                            <button class="save-btn" onclick="nextMonth()" style="flex:0.5; padding:5px 10px; font-size:12px;">Naslednji →</button>
+                    <div class="section-title">📅 Koledar Naročil</div>
+                    <div style="background: white; padding: 20px; border: 1px solid #e8ecf1; border-radius: 8px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 10px;">
+                            <button class="save-btn" onclick="prevMonth()" style="flex:0.3; padding:10px 15px; background-color:#e74c3c;">← Prejšnji</button>
+                            <h3 id="calendarMonthYear" style="font-size: 18px; font-weight: 700; color: #2c3e50; margin: 0; text-align: center; flex:1;">Januar 2024</h3>
+                            <button class="save-btn" onclick="nextMonth()" style="flex:0.3; padding:10px 15px; background-color:#27ae60;">Naslednji →</button>
                         </div>
-                        <div id="calendarGrid" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; margin-bottom: 15px;"></div>
-                        <div style="background: #f9f9f9; padding: 10px; border-radius: 3px; border: 1px solid #eee;">
-                            <p style="font-size: 12px; color: #666; margin: 0 0 10px 0;"><strong>Naročila za izbran dan:</strong></p>
-                            <div id="dayAppointments" style="font-size: 11px; max-height: 200px; overflow-y: auto;">Izberi dan...</div>
+                        <div id="calendarGrid" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; margin-bottom: 20px; background: #ecf0f1; padding: 10px; border-radius: 6px;"></div>
+                        <div style="background: #f8fafb; padding: 15px; border-radius: 6px; border: 1px solid #ecf0f1;">
+                            <p style="font-size: 13px; font-weight: 600; color: #2c3e50; margin: 0 0 12px 0;">📌 Naročila za izbran dan:</p>
+                            <div id="dayAppointments" style="font-size: 12px; max-height: 250px; overflow-y: auto; color: #555;">Izberi dan...</div>
                         </div>
                     </div>
                 </div>
 
                 <!-- MANUAL CUSTOMER ENTRY SECTION -->
                 <div class="admin-section">
-                    <div class="section-title">Ročni Vnos Stranke</div>
-                    <div style="background: white; padding: 15px; border: 1px solid #ddd; border-radius: 3px;">
+                    <div class="section-title">👤 Ročni Vnos Stranke</div>
+                    <div style="background: #f8fafb; padding: 18px; border: 1px solid #ecf0f1; border-radius: 8px;">
                         <div class="form-row">
-                            <input id="newCustFirstName" type="text" class="form-input-admin" placeholder="Ime">
-                            <input id="newCustLastName" type="text" class="form-input-admin" placeholder="Priimek">
+                            <input id="newCustFirstName" type="text" class="form-input-admin" placeholder="Ime" style="background: white;">
+                            <input id="newCustLastName" type="text" class="form-input-admin" placeholder="Priimek" style="background: white;">
                         </div>
                         <div class="form-row">
-                            <input id="newCustEmail" type="email" class="form-input-admin" placeholder="Email">
-                            <input id="newCustPhone" type="tel" class="form-input-admin" placeholder="Telefonska Številka">
+                            <input id="newCustEmail" type="email" class="form-input-admin" placeholder="Email" style="background: white;">
+                            <input id="newCustPhone" type="tel" class="form-input-admin" placeholder="Telefonska Številka" style="background: white;">
                         </div>
                         <div class="form-row">
-                            <select id="newCustService" class="form-input-admin" style="flex:1;">
+                            <select id="newCustService" class="form-input-admin" style="background: white; flex:1;">
                                 <option value="">Izberi Storitev</option>
                             </select>
-                            <select id="newCustBarber" class="form-input-admin" style="flex:1;">
+                            <select id="newCustBarber" class="form-input-admin" style="background: white; flex:1;">
                                 <option value="">Izberi Brivca</option>
                             </select>
                         </div>
                         <div class="form-row">
-                            <input id="newCustDate" type="date" class="form-input-admin" style="flex:1;">
-                            <input id="newCustTime" type="time" class="form-input-admin" style="flex:1;">
+                            <input id="newCustDate" type="date" class="form-input-admin" style="background: white; flex:1;">
+                            <input id="newCustTime" type="time" class="form-input-admin" style="background: white; flex:1;">
                         </div>
                         <div class="form-row">
-                            <input id="newCustNotes" type="text" class="form-input-admin" placeholder="Opombe" style="flex:1;">
-                            <button class="save-btn" onclick="addManualCustomer()" style="background-color: #28a745; flex:0.5;">Dodaj Stranko</button>
+                            <input id="newCustNotes" type="text" class="form-input-admin" placeholder="Opombe (opciono)" style="flex:1; background: white;">
+                            <button class="save-btn" onclick="addManualCustomer()" style="background-color: #27ae60; flex:0.4; align-self: flex-end;">✓ Dodaj Stranko</button>
                         </div>
                     </div>
                 </div>
@@ -1183,14 +1201,16 @@
                 const [year, month, day] = appt.date.split('-');
                 const dateStr = `${day}. ${month}. ${year}`;
                 container.innerHTML += `
-                    <div class="service-item" style="margin-bottom: 10px; padding: 12px; border-left: 3px solid #DC143C;">
-                        <p><strong>${appt.firstName} ${appt.surname}</strong></p>
-                        <p class="text-xs text-gray-600">${appt.email} | ${appt.phone}</p>
-                        <p class="text-sm mt-2"><strong>Termin:</strong> ${dateStr} ob ${appt.time}</p>
-                        <p class="text-sm"><strong>Storitve:</strong> ${appt.services.join(', ')}</p>
-                        <p class="text-sm"><strong>Trajanje:</strong> ${appt.totalDuration} min | <strong>Cena:</strong> €${appt.totalPrice}</p>
-                        <button onclick="deleteAppointment(${idx})" class="text-xs mt-2 px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600">Izbriši</button>
-                        <button onclick="generateInvoice(${idx})" class="text-xs mt-2 ml-2 px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700">Račun</button>
+                    <div style="margin-bottom: 0; padding: 14px; border-left: 4px solid #3498db; border-bottom: 1px solid #ecf0f1; background: white; transition: all 0.2s;">
+                        <p style="margin: 0 0 6px 0; font-weight: 600; color: #2c3e50; font-size: 13px;"><strong>${appt.firstName || 'N/A'} ${appt.surname || appt.lastName || 'N/A'}</strong></p>
+                        <p style="margin: 0 0 6px 0; font-size: 11px; color: #7f8c8d;">${appt.email || '-'} | ${appt.phone || '-'}</p>
+                        <p style="margin: 6px 0; font-size: 12px; color: #555;"><strong>📅 Termin:</strong> ${dateStr} ob ${appt.time}</p>
+                        <p style="margin: 6px 0; font-size: 12px; color: #555;"><strong>✂️ Storitve:</strong> ${(appt.services || []).join(', ') || appt.service || 'N/A'}</p>
+                        <p style="margin: 6px 0; font-size: 12px; color: #555;"><strong>⏱️ Trajanje:</strong> ${appt.totalDuration || '-'} min | <strong>💰 Cena:</strong> €${appt.totalPrice || appt.price || '0'}</p>
+                        <div style="margin-top: 8px; display: flex; gap: 6px;">
+                            <button onclick="deleteAppointment(${idx})" style="padding: 6px 12px; background: #e74c3c; color: white; border: none; border-radius: 4px; font-size: 11px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#c0392b'" onmouseout="this.style.background='#e74c3c'">🗑️ Izbriši</button>
+                            <button onclick="generateInvoice(${idx})" style="padding: 6px 12px; background: #3498db; color: white; border: none; border-radius: 4px; font-size: 11px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#2980b9'" onmouseout="this.style.background='#3498db'">📄 Račun</button>
+                        </div>
                     </div>
                 `;
             });
@@ -1949,7 +1969,7 @@
             dayHeaders.forEach(day => {
                 const header = document.createElement('div');
                 header.textContent = day;
-                header.style.cssText = 'font-weight:600; color:#2c3e50; text-align:center; padding:5px; font-size:11px;';
+                header.style.cssText = 'font-weight:700; color:#2c3e50; text-align:center; padding:8px; font-size:12px; background:#ecf0f1; border-radius:4px;';
                 grid.appendChild(header);
             });
             
@@ -1966,12 +1986,25 @@
                 const appointmentsOnDay = SITE_CONFIG.appointments.filter(appt => appt.date === dateStr);
                 
                 dayCell.textContent = day;
-                dayCell.style.cssText = 'padding:8px; border:1px solid #eee; border-radius:3px; text-align:center; cursor:pointer; background:#f9f9f9; font-size:12px;';
+                dayCell.style.cssText = 'padding:12px 4px; border:1.5px solid #ecf0f1; border-radius:6px; text-align:center; cursor:pointer; background:#ffffff; font-size:13px; font-weight:500; color:#2c3e50; transition:all 0.2s;';
                 
                 if (appointmentsOnDay.length > 0) {
-                    dayCell.style.cssText += 'background:#e8f4f8; border-color:#2c3e50; font-weight:600; color:#2c3e50;';
-                    dayCell.innerHTML += '<div style="font-size:9px; color:#0066cc;">●</div>';
+                    dayCell.style.cssText += 'background:linear-gradient(135deg, #3498db, #2980b9); border-color:#2980b9; font-weight:700; color:#fff; box-shadow:0 2px 8px rgba(52,152,219,0.4);';
+                    dayCell.innerHTML = `<div style="font-size:13px;">${day}</div><div style="font-size:10px; margin-top:2px;">●●●</div>`;
                 }
+                
+                dayCell.onmouseover = () => {
+                    if (appointmentsOnDay.length === 0) {
+                        dayCell.style.backgroundColor = '#ecf0f1';
+                        dayCell.style.borderColor = '#bdc3c7';
+                    }
+                };
+                dayCell.onmouseout = () => {
+                    if (appointmentsOnDay.length === 0) {
+                        dayCell.style.backgroundColor = '#ffffff';
+                        dayCell.style.borderColor = '#ecf0f1';
+                    }
+                };
                 
                 dayCell.onclick = () => showDayAppointments(dateStr);
                 grid.appendChild(dayCell);
