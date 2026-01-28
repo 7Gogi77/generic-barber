@@ -283,6 +283,19 @@
         <div id="footer-copy"></div>
     </footer>
 
+    <!-- Hidden Formspree form for appointments -->
+    <form id="formspreeForm" action="https://formspree.io/f/meegkorn" method="POST" style="display:none;">
+        <input type="email" name="email" id="formspreeEmail">
+        <input type="text" name="Ime" id="formspreeIme">
+        <input type="text" name="Priimek" id="formspreePriimek">
+        <input type="text" name="Telefon" id="formspreeTelefon">
+        <input type="text" name="Datum" id="formspreeDatum">
+        <input type="text" name="Cas" id="formspreeCas">
+        <input type="text" name="Storitve" id="formspreeStoritve">
+        <input type="text" name="Cena" id="formspreeCena">
+        <input type="text" name="Trajanje" id="formspreeTrajanje">
+    </form>
+
     <script>
         // ============ APPOINTMENT SYSTEM ============
         let currentStep = 1;
@@ -720,34 +733,19 @@
             });
             localStorage.setItem('ownerNotifications', JSON.stringify(notifications));
             
-            // Send via Formspree using fetch API (background, no redirect)
-            const ownerEmail = SITE_CONFIG.ownerContact?.email;
+            // Fill hidden form and submit to Formspree
+            document.getElementById('formspreeEmail').value = appointment.email;
+            document.getElementById('formspreeIme').value = appointment.firstName;
+            document.getElementById('formspreePriimek').value = appointment.surname;
+            document.getElementById('formspreeTelefon').value = appointment.phone;
+            document.getElementById('formspreeDatum').value = appointment.date;
+            document.getElementById('formspreeCas').value = appointment.time;
+            document.getElementById('formspreeStoritve').value = appointment.services.join(', ');
+            document.getElementById('formspreeCena').value = appointment.totalPrice + "€";
+            document.getElementById('formspreeTrajanje').value = appointment.totalDuration + " min";
             
-            if (ownerEmail && FORMSPREE_ENDPOINT) {
-                const formData = new FormData();
-                formData.append('email', appointment.email);
-                formData.append('Ime', appointment.firstName);
-                formData.append('Priimek', appointment.surname);
-                formData.append('Telefon', appointment.phone);
-                formData.append('Datum', appointment.date);
-                formData.append('Cas', appointment.time);
-                formData.append('Storitve', appointment.services.join(', '));
-                formData.append('Cena', appointment.totalPrice + "€");
-                formData.append('Trajanje', appointment.totalDuration + " min");
-                
-                fetch(FORMSPREE_ENDPOINT, {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(response => {
-                    if (response.ok) {
-                        console.log('✅ Email sent');
-                    }
-                })
-                .catch(error => {
-                    console.log('⚠️ Email sending failed, but appointment saved locally:', error);
-                });
-            }
+            // Submit form
+            document.getElementById('formspreeForm').submit();
         }
         
         function resetAppointment() {
