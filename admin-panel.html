@@ -127,17 +127,17 @@
                             <label class="form-label-admin">Logo (velik) - Navigacija</label>
                             <div style="display: flex; gap: 10px; align-items: center;">
                                 <input id="logoLargeInput" type="file" accept="image/*" class="form-input-admin">
-                                <input id="logoLargeUrl" type="text" class="form-input-admin" placeholder="URL ali base64" style="flex:1">
+                                <input id="logoLargeUrl" type="text" class="form-input-admin" placeholder="URL ali base64" style="flex:1; display:none;">
                             </div>
-                            <img id="logoLargePreview" src="" alt="Logo preview" style="max-height:60px; margin-top:8px; display:block">
+                            <img id="logoLargePreview" src="" alt="Logo preview" style="max-height:80px; max-width:200px; margin-top:8px; display:block; object-fit: contain;">
                         </div>
                         <div class="form-group-admin">
                             <label class="form-label-admin">Logo (mini) - Favicon</label>
                             <div style="display: flex; gap: 10px; align-items: center;">
                                 <input id="logoMiniInput" type="file" accept="image/*" class="form-input-admin">
-                                <input id="logoMiniUrl" type="text" class="form-input-admin" placeholder="URL ali base64" style="flex:1">
+                                <input id="logoMiniUrl" type="text" class="form-input-admin" placeholder="URL ali base64" style="flex:1; display:none;">
                             </div>
-                            <img id="logoMiniPreview" src="" alt="Mini logo preview" style="max-height:40px; margin-top:8px; display:block">
+                            <img id="logoMiniPreview" src="" alt="Mini logo preview" style="max-height:50px; max-width:100px; margin-top:8px; display:block; object-fit: contain;">
                         </div>
                     </div>
                     <div class="form-row">
@@ -315,8 +315,13 @@
                     </div>
                     <div class="form-row full">
                         <div class="form-group-admin">
-                            <label class="form-label-admin">Slika Naslovnice (URL)</label>
-                            <input id="heroImageUrl" type="text" class="form-input-admin">
+                            <label class="form-label-admin">Slika Naslovnice (URL ali Datoteka)</label>
+                            <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                                <input id="heroImageInput" type="file" accept="image/*" class="form-input-admin" placeholder="Izberi sliko...">
+                                <button class="save-btn" onclick="uploadHeroImage()">Naloži Sliko</button>
+                            </div>
+                            <input id="heroImageUrl" type="text" class="form-input-admin" placeholder="ali vnesi URL" style="display:none;">
+                            <img id="heroImagePreview" src="" alt="Hero preview" style="max-width:100%; max-height:200px; margin-top:10px; display:none; object-fit:contain; border:1px solid #ddd; padding:5px;">
                         </div>
                     </div>
                 </div>
@@ -567,6 +572,54 @@
                     </div>
                 </div>
 
+                <!-- CALENDAR SECTION -->
+                <div class="admin-section">
+                    <div class="section-title">Koledar Naročil</div>
+                    <div style="background: white; padding: 15px; border: 1px solid #ddd; border-radius: 3px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                            <button class="save-btn" onclick="prevMonth()" style="flex:0.5; padding:5px 10px; font-size:12px;">← Prejšnji</button>
+                            <h3 id="calendarMonthYear" style="font-size: 14px; font-weight: 600; color: #2c3e50; margin: 0;">Januar 2024</h3>
+                            <button class="save-btn" onclick="nextMonth()" style="flex:0.5; padding:5px 10px; font-size:12px;">Naslednji →</button>
+                        </div>
+                        <div id="calendarGrid" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; margin-bottom: 15px;"></div>
+                        <div style="background: #f9f9f9; padding: 10px; border-radius: 3px; border: 1px solid #eee;">
+                            <p style="font-size: 12px; color: #666; margin: 0 0 10px 0;"><strong>Naročila za izbran dan:</strong></p>
+                            <div id="dayAppointments" style="font-size: 11px; max-height: 200px; overflow-y: auto;">Izberi dan...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MANUAL CUSTOMER ENTRY SECTION -->
+                <div class="admin-section">
+                    <div class="section-title">Ročni Vnos Stranke</div>
+                    <div style="background: white; padding: 15px; border: 1px solid #ddd; border-radius: 3px;">
+                        <div class="form-row">
+                            <input id="newCustFirstName" type="text" class="form-input-admin" placeholder="Ime">
+                            <input id="newCustLastName" type="text" class="form-input-admin" placeholder="Priimek">
+                        </div>
+                        <div class="form-row">
+                            <input id="newCustEmail" type="email" class="form-input-admin" placeholder="Email">
+                            <input id="newCustPhone" type="tel" class="form-input-admin" placeholder="Telefonska Številka">
+                        </div>
+                        <div class="form-row">
+                            <select id="newCustService" class="form-input-admin" style="flex:1;">
+                                <option value="">Izberi Storitev</option>
+                            </select>
+                            <select id="newCustBarber" class="form-input-admin" style="flex:1;">
+                                <option value="">Izberi Brivca</option>
+                            </select>
+                        </div>
+                        <div class="form-row">
+                            <input id="newCustDate" type="date" class="form-input-admin" style="flex:1;">
+                            <input id="newCustTime" type="time" class="form-input-admin" style="flex:1;">
+                        </div>
+                        <div class="form-row">
+                            <input id="newCustNotes" type="text" class="form-input-admin" placeholder="Opombe" style="flex:1;">
+                            <button class="save-btn" onclick="addManualCustomer()" style="background-color: #28a745; flex:0.5;">Dodaj Stranko</button>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- CUSTOMERS SECTION -->
                 <div class="admin-section">
                     <div class="section-title">Stranke</div>
@@ -789,7 +842,13 @@
                             <input type="text" class="form-input-admin barber-role-${idx}" value="${barber.role}" placeholder="Vloga">
                         </div>
                         <div class="form-row full">
-                            <input type="text" class="form-input-admin barber-img-${idx}" value="${barber.img}" placeholder="URL slike">
+                            <div style="flex:1;">
+                                <label class="form-label-admin" style="font-size:11px; margin-bottom:5px;">Slika brivca:</label>
+                                <input type="file" accept="image/*" class="form-input-admin barber-img-input-${idx}" placeholder="Izberi sliko" style="margin-bottom:5px;">
+                                <button class="save-btn" onclick="uploadBarberImage(${idx})" style="font-size:11px; padding:5px 10px; background-color:#0066cc;">Naloži</button>
+                            </div>
+                            <input type="text" class="form-input-admin barber-img-${idx}" value="${barber.img}" placeholder="URL slike" style="flex:1; display:none;">
+                            <img class="barber-img-preview-${idx}" src="${barber.img}" alt="Barber preview" style="max-height:80px; max-width:100px; object-fit:contain; display:${barber.img && barber.img !== 'https://via.placeholder.com/300' ? 'block' : 'none'}; margin:5px; border:1px solid #ddd; padding:3px;">
                         </div>
                     </div>
                 `;
@@ -1572,6 +1631,60 @@
             syncToFirebase(SITE_CONFIG);
             showNotification('✅ Spremembe so bile shranjene in sinhronizirane', 'success');
         }
+
+        // Upload Hero Image
+        function uploadHeroImage() {
+            const fileInput = document.getElementById('heroImageInput');
+            const file = fileInput.files[0];
+            if (!file) {
+                showNotification('Izberi sliko za nalaganje', 'error');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                SITE_CONFIG.hero.backgroundImage = e.target.result;
+                document.getElementById('heroImageUrl').value = e.target.result;
+                const preview = document.getElementById('heroImagePreview');
+                preview.src = e.target.result;
+                preview.style.display = 'block';
+                saveConfig();
+                showNotification('Naslovnica slika naložena in shranjena', 'success');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Upload Barber Image
+        function uploadBarberImage(idx) {
+            const fileInput = document.querySelector('.barber-img-input-' + idx);
+            const file = fileInput.files[0];
+            if (!file) {
+                showNotification('Izberi sliko za brivca', 'error');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                SITE_CONFIG.barbersSection.list[idx].img = e.target.result;
+                document.querySelector('.barber-img-' + idx).value = e.target.result;
+                const preview = document.querySelector('.barber-img-preview-' + idx);
+                preview.src = e.target.result;
+                preview.style.display = 'block';
+                saveConfig();
+                showNotification(`Slika brivca "${SITE_CONFIG.barbersSection.list[idx].name}" naložena in shranjena`, 'success');
+            };
+            reader.readAsDataURL(file);
+        }
+        
+        function saveConfig() {
+            // Save locally
+            localStorage.setItem('site_config_backup', JSON.stringify(SITE_CONFIG));
+            localStorage.setItem('appointments', JSON.stringify(SITE_CONFIG.appointments || []));
+            
+            // Sync to Firebase REST API (simpler, no module issues)
+            syncToFirebase(SITE_CONFIG);
+            showNotification('✅ Spremembe so bile shranjene in sinhronizirane', 'success');
+        }
         
         // Simple Firebase REST API sync (no module dependencies)
         function syncToFirebase(config) {
@@ -1677,6 +1790,145 @@
             showNotification('Popust shranjen', 'success');
         }
 
+        // Calendar state
+        let currentCalendarDate = new Date();
+
+        // Render calendar
+        function renderCalendar() {
+            const year = currentCalendarDate.getFullYear();
+            const month = currentCalendarDate.getMonth();
+            
+            // Update header
+            const months = ['Januar', 'Februar', 'Marec', 'April', 'Maj', 'Junij', 'Julij', 'Avgust', 'September', 'Oktober', 'November', 'December'];
+            document.getElementById('calendarMonthYear').textContent = months[month] + ' ' + year;
+            
+            // Get calendar days
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            const daysInMonth = lastDay.getDate();
+            const startingDayOfWeek = firstDay.getDay();
+            
+            const grid = document.getElementById('calendarGrid');
+            grid.innerHTML = '';
+            
+            // Day headers
+            const dayHeaders = ['Pon', 'Tor', 'Sre', 'Čet', 'Pet', 'Sob', 'Ned'];
+            dayHeaders.forEach(day => {
+                const header = document.createElement('div');
+                header.textContent = day;
+                header.style.cssText = 'font-weight:600; color:#2c3e50; text-align:center; padding:5px; font-size:11px;';
+                grid.appendChild(header);
+            });
+            
+            // Empty cells before first day (adjust for Monday start)
+            const adjustedStart = startingDayOfWeek === 0 ? 6 : startingDayOfWeek - 1;
+            for (let i = 0; i < adjustedStart; i++) {
+                grid.appendChild(document.createElement('div'));
+            }
+            
+            // Calendar days
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dayCell = document.createElement('div');
+                const dateStr = year + '-' + String(month + 1).padStart(2, '0') + '-' + String(day).padStart(2, '0');
+                const appointmentsOnDay = SITE_CONFIG.appointments.filter(appt => appt.date === dateStr);
+                
+                dayCell.textContent = day;
+                dayCell.style.cssText = 'padding:8px; border:1px solid #eee; border-radius:3px; text-align:center; cursor:pointer; background:#f9f9f9; font-size:12px;';
+                
+                if (appointmentsOnDay.length > 0) {
+                    dayCell.style.cssText += 'background:#e8f4f8; border-color:#2c3e50; font-weight:600; color:#2c3e50;';
+                    dayCell.innerHTML += '<div style="font-size:9px; color:#0066cc;">●</div>';
+                }
+                
+                dayCell.onclick = () => showDayAppointments(dateStr);
+                grid.appendChild(dayCell);
+            }
+        }
+
+        // Show appointments for a specific day
+        function showDayAppointments(dateStr) {
+            const appts = SITE_CONFIG.appointments.filter(a => a.date === dateStr);
+            const container = document.getElementById('dayAppointments');
+            
+            if (appts.length === 0) {
+                container.innerHTML = '<span style="color:#999;">Ni naročil za ta dan</span>';
+            } else {
+                container.innerHTML = appts.map(a => `
+                    <div style="padding:8px; border-bottom:1px solid #eee; font-size:11px;">
+                        <strong>${a.firstName} ${a.lastName}</strong> - ${a.service}<br/>
+                        <span style="color:#666;">Ura: ${a.time}</span><br/>
+                        <span style="color:#999;">${a.email || ''}</span>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function prevMonth() {
+            currentCalendarDate.setMonth(currentCalendarDate.getMonth() - 1);
+            renderCalendar();
+        }
+
+        function nextMonth() {
+            currentCalendarDate.setMonth(currentCalendarDate.getMonth() + 1);
+            renderCalendar();
+        }
+
+        // Add manual customer/appointment
+        function addManualCustomer() {
+            const firstName = document.getElementById('newCustFirstName').value.trim();
+            const lastName = document.getElementById('newCustLastName').value.trim();
+            const email = document.getElementById('newCustEmail').value.trim();
+            const phone = document.getElementById('newCustPhone').value.trim();
+            const service = document.getElementById('newCustService').value;
+            const barber = document.getElementById('newCustBarber').value;
+            const date = document.getElementById('newCustDate').value;
+            const time = document.getElementById('newCustTime').value;
+            const notes = document.getElementById('newCustNotes').value.trim();
+
+            if (!firstName || !lastName || !service || !date || !time) {
+                showNotification('Izpolni vsa polja (Ime, Priimek, Storitev, Datum, Ura)', 'error');
+                return;
+            }
+
+            // Calculate price
+            const serviceObj = SITE_CONFIG.servicesSection.items.find(s => s.name === service);
+            const price = serviceObj ? parseFloat(serviceObj.price.replace('$', '').replace('€', '')) : 0;
+
+            // Create appointment
+            const appointment = {
+                id: 'manual-' + Date.now(),
+                firstName,
+                lastName,
+                email,
+                phone,
+                service,
+                barber: barber || 'Izbran brivec',
+                date,
+                time,
+                price,
+                notes,
+                status: 'pending'
+            };
+
+            SITE_CONFIG.appointments.push(appointment);
+            saveConfig();
+
+            // Clear form
+            document.getElementById('newCustFirstName').value = '';
+            document.getElementById('newCustLastName').value = '';
+            document.getElementById('newCustEmail').value = '';
+            document.getElementById('newCustPhone').value = '';
+            document.getElementById('newCustService').value = '';
+            document.getElementById('newCustBarber').value = '';
+            document.getElementById('newCustDate').value = '';
+            document.getElementById('newCustTime').value = '';
+            document.getElementById('newCustNotes').value = '';
+
+            renderCalendar();
+            refreshBusinessPanel();
+            showNotification(`Stranka ${firstName} ${lastName} dodana za ${date} ob ${time}`, 'success');
+        }
+
         // Initialize business panel on load
         document.addEventListener('DOMContentLoaded', function() {
             // wire file inputs to preview when user selects a file
@@ -1685,9 +1937,32 @@
             if (logoLargeInput) logoLargeInput.addEventListener('change', function(e) { const f = e.target.files[0]; if (f) { const r=new FileReader(); r.onload=function(ev){document.getElementById('logoLargePreview').src=ev.target.result; document.getElementById('logoLargeUrl').value = ev.target.result}; r.readAsDataURL(f);} });
             if (logoMiniInput) logoMiniInput.addEventListener('change', function(e) { const f = e.target.files[0]; if (f) { const r=new FileReader(); r.onload=function(ev){document.getElementById('logoMiniPreview').src=ev.target.result; document.getElementById('logoMiniUrl').value = ev.target.result}; r.readAsDataURL(f);} });
 
+            // Populate service and barber dropdowns for manual entry
+            const serviceSelect = document.getElementById('newCustService');
+            const barberSelect = document.getElementById('newCustBarber');
+            
+            if (serviceSelect) {
+                SITE_CONFIG.servicesSection.items.forEach(service => {
+                    const option = document.createElement('option');
+                    option.value = service.name;
+                    option.textContent = service.name + ' (' + service.price + ')';
+                    serviceSelect.appendChild(option);
+                });
+            }
+
+            if (barberSelect) {
+                SITE_CONFIG.barbersSection.list.forEach(barber => {
+                    const option = document.createElement('option');
+                    option.value = barber.name;
+                    option.textContent = barber.name;
+                    barberSelect.appendChild(option);
+                });
+            }
+
             // load defaults
             document.getElementById('discountDefault') && (document.getElementById('discountDefault').value = SITE_CONFIG.defaultDiscount || 0);
             refreshBusinessPanel();
+            renderCalendar();
         });
     </script>
 </body>
