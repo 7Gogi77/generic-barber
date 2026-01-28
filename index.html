@@ -194,7 +194,7 @@
                         </div>
                         <div class="flex justify-between items-center">
                             <span class="text-gray-400">Skupna cena:</span>
-                            <span class="text-gold font-serif text-lg" id="totalPrice">$0</span>
+                            <span class="text-gold font-serif text-lg" id="totalPrice">0€</span>
                         </div>
                     </div>
                     <button id="nextBtn1" onclick="nextStep()" class="w-full bg-gold text-dark py-3 font-bold uppercase tracking-widest text-sm hover:bg-white transition-all rounded disabled:opacity-50 disabled:cursor-not-allowed" disabled>Naprej</button>
@@ -373,7 +373,7 @@
                          onclick="toggleService(${idx})">
                         <h4 class="text-white font-serif mb-2">${service.name}</h4>
                         <p class="text-gray-400 text-xs mb-3">${duration} min</p>
-                        <p class="text-gold font-serif text-sm">${service.price}</p>
+                        <p class="text-gold font-serif text-sm">${service.price}€</p>
                         <p class="text-gray-500 text-xs mt-2">${service.desc}</p>
                     </div>
                 `;
@@ -868,7 +868,7 @@
             SITE_CONFIG.servicesSection.items.forEach(s => {
                 sList.innerHTML += `<div class="flex justify-between items-end border-b border-white/10 pb-4">
                     <div><h4 class="font-serif text-xl">${s.name}</h4><p class="text-[9px] text-gray-500 uppercase mt-1 tracking-widest">${s.desc}</p></div>
-                    <span class="text-xl text-gold font-serif">${s.price}</span></div>`;
+                    <span class="text-xl text-gold font-serif">${s.price}€</span></div>`;
             });
 
             // Barbers

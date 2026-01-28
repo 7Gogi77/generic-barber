@@ -926,14 +926,22 @@
                 container.innerHTML += `
                     <div class="service-item">
                         <div class="form-row">
-                            <input type="text" class="form-input-admin service-name-${idx}" value="${service.name}" placeholder="Ime storitve">
-                            <input type="text" class="form-input-admin service-price-${idx}" value="${service.price}" placeholder="Cena">
+                            <div>
+                                <label class="form-label">Ime storitve</label>
+                                <input type="text" class="form-input-admin service-name-${idx}" value="${service.name}" placeholder="npr. Frizerski prerez">
+                            </div>
+                            <div>
+                                <label class="form-label">Cena (samo številka)</label>
+                                <input type="text" class="form-input-admin service-price-${idx}" value="${service.price}" placeholder="npr. 25">
+                            </div>
                         </div>
                         <div class="form-row">
-                            <input type="number" class="form-input-admin service-duration-${idx}" value="${service.duration || 0}" placeholder="Trajanje (minut)" min="1" max="180">
+                            <label class="form-label">Trajanje (minut)</label>
+                            <input type="number" class="form-input-admin service-duration-${idx}" value="${service.duration || 0}" placeholder="npr. 30" min="1" max="180">
                         </div>
                         <div class="form-row full">
-                            <input type="text" class="form-input-admin service-desc-${idx}" value="${service.desc}" placeholder="Opis">
+                            <label class="form-label">Kratko opisivo (vidno na spletni strani)</label>
+                            <input type="text" class="form-input-admin service-desc-${idx}" value="${service.desc}" placeholder="npr. Klasični prerez + oblikovanje">
                         </div>
                     </div>
                 `;
