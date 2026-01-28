@@ -6,29 +6,34 @@ export default async function handler(req, res) {
   try {
     const { firstName, surname, email, phone, date, time, services, totalDuration, totalPrice, ownerEmail } = req.body;
 
-    const formData = new FormData();
-    formData.append('Ime', firstName);
-    formData.append('Priimek', surname);
-    formData.append('E-Mail stranke', email);
-    formData.append('Tel. št. stranke', phone);
-    formData.append('Datum termina', date);
-    formData.append('Čas termina', time);
-    formData.append('Storitve', services.join(', '));
-    formData.append('Končna cena', totalPrice + "€");
-    formData.append('Čas trajanja', totalDuration + " min");
-    formData.append('_subject', 'Novo Naročilo iz Spletne Strani');
-    formData.append('_replyto', email);
-    formData.append('_cc', ownerEmail);
+    // Use URLSearchParams for form-encoded data (Formspree expects this)
+    const params = new URLSearchParams();
+    params.append('Ime', firstName);
+    params.append('Priimek', surname);
+    params.append('E-Mail stranke', email);
+    params.append('Tel. št. stranke', phone);
+    params.append('Datum termina', date);
+    params.append('Čas termina', time);
+    params.append('Storitve', services.join(', '));
+    params.append('Končna cena', totalPrice + "€");
+    params.append('Čas trajanja', totalDuration + " min");
+    params.append('_subject', 'Novo Naročilo iz Spletne Strani');
+    params.append('_replyto', email);
+    params.append('_cc', ownerEmail);
 
     const response = await fetch('https://formspree.io/f/meegkorn', {
       method: 'POST',
-      body: formData
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: params.toString()
     });
 
     if (response.ok) {
       return res.status(200).json({ success: true, message: 'Email sent successfully' });
     } else {
-      return res.status(response.status).json({ success: false, error: 'Formspree error' });
+      const text = await response.text();
+      return res.status(response.status).json({ success: false, error: text });
     }
   } catch (error) {
     console.error('Error sending email:', error);
