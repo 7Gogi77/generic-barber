@@ -308,13 +308,32 @@
         // Load saved config from localStorage (admin changes)
         function loadSavedConfig() {
             const saved = localStorage.getItem('site_config_backup');
+            const savedAppts = localStorage.getItem('appointments');
+            
             if (saved) {
                 try {
                     const config = JSON.parse(saved);
+                    // Keep existing appointments before merging
+                    const currentAppts = SITE_CONFIG.appointments;
                     Object.assign(SITE_CONFIG, config);
+                    // Restore appointments if they existed
+                    if (currentAppts && currentAppts.length > 0) {
+                        SITE_CONFIG.appointments = currentAppts;
+                    }
                     applyThemeColors(); // Apply theme colors after loading config
                 } catch (e) {
                     console.log('Could not load saved config, using defaults');
+                }
+            }
+            
+            // Separately load appointments from appointments storage
+            if (savedAppts) {
+                try {
+                    const appts = JSON.parse(savedAppts);
+                    SITE_CONFIG.appointments = appts;
+                    console.log('Loaded ' + appts.length + ' appointments');
+                } catch (e) {
+                    console.log('Could not load appointments');
                 }
             }
         }
@@ -705,6 +724,7 @@
             // Save appointment
             SITE_CONFIG.appointments.push(appointment);
             localStorage.setItem('appointments', JSON.stringify(SITE_CONFIG.appointments));
+            localStorage.setItem('site_config_backup', JSON.stringify(SITE_CONFIG));
             
             // Show success
             document.getElementById('successFirstName').innerText = firstName;
@@ -775,13 +795,14 @@
         }
 
         function initSite() {
-            // Try to load from Firebase first (for global sync)
+            // Load saved config from localStorage first
+            loadSavedConfig();
+            loadAppointments();
+            
+            // Try to load from Firebase for cloud sync
             loadFromFirebase().then(() => {
                 renderSiteContent();
             }).catch(() => {
-                // Fallback to local storage
-                loadSavedConfig();
-                loadAppointments();
                 renderSiteContent();
             });
         }

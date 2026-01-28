@@ -234,14 +234,32 @@
         // ===== RESTORE FROM STORAGE =====
         function restoreFromStorage() {
             const saved = localStorage.getItem('site_config_backup');
+            const savedAppts = localStorage.getItem('appointments');
+            
             if (saved) {
                 try {
                     const config = JSON.parse(saved);
-                    // Merge saved config back into SITE_CONFIG
+                    // Merge saved config, but preserve existing appointments if they exist
+                    const currentAppts = SITE_CONFIG.appointments;
                     Object.assign(SITE_CONFIG, config);
+                    // If we had existing appointments, keep them
+                    if (currentAppts && currentAppts.length > 0) {
+                        SITE_CONFIG.appointments = currentAppts;
+                    }
                     console.log('Config restored from localStorage');
                 } catch (e) {
                     console.error('Error restoring config:', e);
+                }
+            }
+            
+            // Separately restore appointments
+            if (savedAppts) {
+                try {
+                    const appts = JSON.parse(savedAppts);
+                    SITE_CONFIG.appointments = appts;
+                    console.log('Appointments restored:', appts.length);
+                } catch (e) {
+                    console.error('Error restoring appointments:', e);
                 }
             }
         }
