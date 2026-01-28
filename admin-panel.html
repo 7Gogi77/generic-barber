@@ -9,42 +9,62 @@
     <script src="js/config.js"></script>
     <link rel="stylesheet" href="admin-style.css">
     <style>
+        body { background: #f5f5f5; }
+        
         .admin-tabs {
             display: flex;
-            gap: 15px;
-            margin-bottom: 30px;
-            border-bottom: 2px solid #e0e0e0;
-            padding: 0 20px;
+            gap: 0;
+            margin-bottom: 0;
+            border-bottom: 1px solid #ccc;
+            padding: 0;
+            background: white;
         }
         .tab-btn {
-            padding: 14px 24px;
-            background: none;
+            padding: 12px 20px;
+            background: white;
             border: none;
-            cursor: pointer;
-            font-size: 15px;
-            font-weight: 600;
-            color: #666;
             border-bottom: 3px solid transparent;
-            transition: all 0.3s ease;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            color: #555;
+            transition: all 0.2s;
         }
         .tab-btn:hover {
-            color: #DC143C;
+            background: #f9f9f9;
+            color: #333;
         }
         .tab-btn.active {
-            color: #DC143C;
-            border-bottom-color: #DC143C;
+            color: #2c3e50;
+            border-bottom-color: #2c3e50;
+            background: white;
         }
         .tab-content {
             display: none;
+            padding: 20px;
+            background: white;
         }
         .tab-content.active {
             display: block;
-            animation: fadeIn 0.3s ease;
         }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        
+        .admin-header { background: white; border-bottom: 1px solid #ddd; padding: 20px; }
+        .admin-header h1 { margin: 0; font-size: 20px; color: #2c3e50; }
+        .logout-btn { background: #555; color: white; border: none; padding: 8px 16px; border-radius: 3px; cursor: pointer; font-size: 13px; }
+        .logout-btn:hover { background: #333; }
+        
+        .admin-section { margin-bottom: 20px; padding: 15px; background: #fafafa; border: 1px solid #ddd; border-radius: 3px; }
+        .section-title { font-size: 14px; font-weight: 600; color: #2c3e50; margin-bottom: 15px; }
+        
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
+        .form-row.full { grid-template-columns: 1fr; }
+        .form-group-admin { display: flex; flex-direction: column; }
+        .form-label-admin { font-size: 12px; font-weight: 600; color: #555; margin-bottom: 5px; }
+        .form-input-admin { padding: 8px 10px; border: 1px solid #ccc; border-radius: 3px; font-size: 13px; font-family: Poppins, sans-serif; }
+        .form-input-admin:focus { outline: none; border-color: #2c3e50; }
+        
+        .save-btn { background: #2c3e50; color: white; border: none; padding: 10px 20px; border-radius: 3px; cursor: pointer; font-size: 13px; font-weight: 500; }
+        .save-btn:hover { background: #1a252f; }
     </style>
 </head>
 <body>
@@ -88,11 +108,11 @@
 
             <!-- ===== TAB 1: VIDEZ (APPEARANCE) ===== -->
             <div id="videz" class="tab-content active">
-                <h2 style="margin-top: 0; margin-bottom: 30px; color: #333; font-size: 24px; border-bottom: 2px solid #DC143C; padding-bottom: 10px;">🎨 Nastavitve Videza</h2>
+                <h2 style="margin: 0 0 20px 0; color: #2c3e50; font-size: 18px; border-bottom: 1px solid #ddd; padding-bottom: 10px;">Nastavitve Videza</h2>
                 
                 <!-- LOGO SECTION -->
                 <div class="admin-section">
-                    <div class="section-title">⚙️ Logotipi in Identiteta</div>
+                    <div class="section-title">Logotipi in Identiteta</div>
                     <div class="form-row">
                         <div class="form-group-admin">
                             <label class="form-label-admin">Prikaži Logo ali Ime Podjetja?</label>
@@ -128,7 +148,7 @@
 
                 <!-- COLORS SECTION -->
                 <div class="admin-section">
-                    <div class="section-title">🎨 Barvna Shema</div>
+                    <div class="section-title">Barvna Shema</div>
                     <p style="font-size: 12px; color: #666; margin-bottom: 15px;">Glavne barve za temo spletne strani</p>
                     <div class="form-row">
                         <div class="form-group-admin">
@@ -176,7 +196,7 @@
 
                 <!-- TEXT COLORS SECTION -->
                 <div class="admin-section">
-                    <div class="section-title">📝 Barve Besedila</div>
+                    <div class="section-title">Barve Besedila</div>
                     <div class="form-row">
                         <div class="form-group-admin">
                             <label class="form-label-admin">Primarna Barva Besedila</label>
@@ -198,7 +218,7 @@
 
                 <!-- BUTTON & NAV COLORS SECTION -->
                 <div class="admin-section">
-                    <div class="section-title">🔘 Gumbi in Navigacija</div>
+                    <div class="section-title">Gumbi in Navigacija</div>
                     <div class="form-row">
                         <div class="form-group-admin">
                             <label class="form-label-admin">Barva Gumbov</label>
@@ -236,7 +256,7 @@
 
                 <!-- FOOTER COLORS SECTION -->
                 <div class="admin-section">
-                    <div class="section-title">🦶 Noga Spletne Strani</div>
+                    <div class="section-title">Noga Spletne Strani</div>
                     <div class="form-row">
                         <div class="form-group-admin">
                             <label class="form-label-admin">Barva Ozadja Noge</label>
@@ -260,11 +280,11 @@
 
             <!-- ===== TAB 2: VSEBINA (CONTENT) ===== -->
             <div id="vsebina" class="tab-content">
-                <h2 style="margin-top: 0; margin-bottom: 30px; color: #333; font-size: 24px; border-bottom: 2px solid #DC143C; padding-bottom: 10px;">📝 Vsebina in Tekst</h2>
+                <h2 style="margin: 0 0 20px 0; color: #2c3e50; font-size: 18px; border-bottom: 1px solid #ddd; padding-bottom: 10px;">Vsebina in Tekst</h2>
                 
                 <!-- SHOP NAME SECTION -->
                 <div class="admin-section">
-                    <div class="section-title">🏢 Osnovni Podatki</div>
+                    <div class="section-title">Osnovni Podatki</div>
                     <div class="form-row">
                         <div class="form-group-admin">
                             <label class="form-label-admin">Ime Trgovine</label>
@@ -276,7 +296,7 @@
 
                 <!-- HERO SECTION -->
                 <div class="admin-section">
-                    <div class="section-title">🎬 Naslovnica (Hero Sekcija)</div>
+                    <div class="section-title">Naslovnica (Hero Sekcija)</div>
                     <div class="form-row">
                         <div class="form-group-admin">
                             <label class="form-label-admin">Podnaslov</label>
@@ -303,7 +323,7 @@
 
                 <!-- ABOUT SECTION -->
                 <div class="admin-section">
-                    <div class="section-title">📖 O Nas (Story)</div>
+                    <div class="section-title">O Nas (Story)</div>
                     <div class="form-row">
                         <div class="form-group-admin">
                             <label class="form-label-admin">Label Razdelka</label>
@@ -330,7 +350,7 @@
 
                 <!-- TESTIMONIAL SECTION -->
                 <div class="admin-section">
-                    <div class="section-title">💬 Priporočilo / Citat</div>
+                    <div class="section-title">Priporočilo / Citat</div>
                     <div class="form-row full">
                         <div class="form-group-admin">
                             <label class="form-label-admin">Citat</label>
@@ -389,11 +409,11 @@
 
             <!-- ===== TAB 3: STORITVE (SERVICES & BARBERS) ===== -->
             <div id="storitve" class="tab-content">
-                <h2 style="margin-top: 0; margin-bottom: 30px; color: #333; font-size: 24px; border-bottom: 2px solid #DC143C; padding-bottom: 10px;">💼 Storitve in Brivci</h2>
+                <h2 style="margin: 0 0 20px 0; color: #2c3e50; font-size: 18px; border-bottom: 1px solid #ddd; padding-bottom: 10px;">Storitve in Brivci</h2>
 
                 <!-- SERVICES SECTION -->
                 <div class="admin-section">
-                    <div class="section-title">✂️ Storitve in Cene</div>
+                    <div class="section-title">Storitve in Cene</div>
                     <p style="font-size: 12px; color: #666; margin-bottom: 15px;">Upravljaj s storitvami in cenami</p>
                     <div id="servicesContainer"></div>
                     <div class="form-row" style="gap: 10px;">
@@ -405,7 +425,7 @@
 
                 <!-- BARBERS SECTION -->
                 <div class="admin-section">
-                    <div class="section-title">💈 Brivci in Profili</div>
+                    <div class="section-title">Brivci in Profili</div>
                     <p style="font-size: 12px; color: #666; margin-bottom: 15px;">Upravljaj s profili brivcev</p>
                     <div id="barbersContainer"></div>
                     <div class="form-row" style="gap: 10px;">
@@ -417,7 +437,7 @@
 
                 <!-- BUSINESS HOURS SECTION -->
                 <div class="admin-section">
-                    <div class="section-title">⏰ Delovni Čas in Delovni Dnevi</div>
+                    <div class="section-title">Delovni Čas in Delovni Dnevi</div>
                     <p style="font-size: 12px; color: #666; margin-bottom: 15px;">Nastavi svoje delovne dneve in ure</p>
                     
                     <!-- Working Days Selection -->
@@ -482,40 +502,40 @@
 
             <!-- ===== TAB 4: PANEL (BUSINESS ANALYTICS) ===== -->
             <div id="panel" class="tab-content">
-                <h2 style="margin-top: 0; margin-bottom: 30px; color: #333; font-size: 24px; border-bottom: 2px solid #DC143C; padding-bottom: 10px;">📊 Poslovni Panel</h2>
+                <h2 style="margin: 0 0 20px 0; color: #2c3e50; font-size: 18px; border-bottom: 1px solid #ddd; padding-bottom: 10px;">Poslovni Panel</h2>
 
                 <!-- DASHBOARD -->
                 <div class="admin-section">
-                    <div class="section-title">📈 Kontrolna Plošča</div>
+                    <div class="section-title">Ključne Metrike</div>
                     
                     <!-- Key Metrics -->
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px;">
-                        <div style="background: linear-gradient(135deg, #DC143C 0%, #FF6B6B 100%); color: white; padding: 20px; border-radius: 8px; text-align: center;">
-                            <div style="font-size: 32px; font-weight: 700;" id="totalAppointments">0</div>
-                            <div style="font-size: 13px; opacity: 0.9; margin-top: 5px;">Skupaj Naročil</div>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 20px;">
+                        <div style="background: white; border: 1px solid #ddd; padding: 15px; border-radius: 3px; text-align: center;">
+                            <div style="font-size: 28px; font-weight: 700; color: #2c3e50;" id="totalAppointments">0</div>
+                            <div style="font-size: 12px; color: #666; margin-top: 5px;">Skupaj Naročil</div>
                         </div>
-                        <div style="background: linear-gradient(135deg, #4F46E5 0%, #6366F1 100%); color: white; padding: 20px; border-radius: 8px; text-align: center;">
-                            <div style="font-size: 32px; font-weight: 700;" id="monthlyRevenue">€0</div>
-                            <div style="font-size: 13px; opacity: 0.9; margin-top: 5px;">Prihodek Ta Mesec</div>
+                        <div style="background: white; border: 1px solid #ddd; padding: 15px; border-radius: 3px; text-align: center;">
+                            <div style="font-size: 28px; font-weight: 700; color: #2c3e50;" id="monthlyRevenue">€0</div>
+                            <div style="font-size: 12px; color: #666; margin-top: 5px;">Prihodek Ta Mesec</div>
                         </div>
-                        <div style="background: linear-gradient(135deg, #10B981 0%, #34D399 100%); color: white; padding: 20px; border-radius: 8px; text-align: center;">
-                            <div style="font-size: 32px; font-weight: 700;" id="monthlyAppointments">0</div>
-                            <div style="font-size: 13px; opacity: 0.9; margin-top: 5px;">Naročila Ta Mesec</div>
+                        <div style="background: white; border: 1px solid #ddd; padding: 15px; border-radius: 3px; text-align: center;">
+                            <div style="font-size: 28px; font-weight: 700; color: #2c3e50;" id="monthlyAppointments">0</div>
+                            <div style="font-size: 12px; color: #666; margin-top: 5px;">Naročila Ta Mesec</div>
                         </div>
-                        <div style="background: linear-gradient(135deg, #F59E0B 0%, #FBBF24 100%); color: white; padding: 20px; border-radius: 8px; text-align: center;">
-                            <div style="font-size: 32px; font-weight: 700;" id="averagePrice">€0</div>
-                            <div style="font-size: 13px; opacity: 0.9; margin-top: 5px;">Povprečna Cena</div>
+                        <div style="background: white; border: 1px solid #ddd; padding: 15px; border-radius: 3px; text-align: center;">
+                            <div style="font-size: 28px; font-weight: 700; color: #2c3e50;" id="averagePrice">€0</div>
+                            <div style="font-size: 12px; color: #666; margin-top: 5px;">Povprečna Cena</div>
                         </div>
                     </div>
 
                     <!-- Charts -->
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
-                        <div style="background: #f9f9f9; padding: 20px; border-radius: 8px; border: 1px solid #e0e0e0;">
-                            <h3 style="font-size: 14px; font-weight: 600; color: #333; margin-bottom: 15px;">Storitve Po Priljubljenosti</h3>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+                        <div style="background: white; padding: 15px; border: 1px solid #ddd; border-radius: 3px;">
+                            <h3 style="font-size: 13px; font-weight: 600; color: #2c3e50; margin: 0 0 15px 0;">Storitve Po Priljubljenosti</h3>
                             <canvas id="servicesChart"></canvas>
                         </div>
-                        <div style="background: #f9f9f9; padding: 20px; border-radius: 8px; border: 1px solid #e0e0e0;">
-                            <h3 style="font-size: 14px; font-weight: 600; color: #333; margin-bottom: 15px;">Naročila Po Dneh</h3>
+                        <div style="background: white; padding: 15px; border: 1px solid #ddd; border-radius: 3px;">
+                            <h3 style="font-size: 13px; font-weight: 600; color: #2c3e50; margin: 0 0 15px 0;">Naročila Po Dneh</h3>
                             <canvas id="appointmentsChart"></canvas>
                         </div>
                     </div>
@@ -523,14 +543,14 @@
 
                 <!-- APPOINTMENTS SECTION -->
                 <div class="admin-section">
-                    <div class="section-title">📅 Naročila Termina</div>
-                    <p class="text-gray-600 mb-4 text-sm">Skupaj naročil: <strong id="appointmentCount">0</strong></p>
-                    <div id="appointmentsContainer" class="max-h-96 overflow-y-auto"></div>
+                    <div class="section-title">Naročila Termina</div>
+                    <p style="font-size: 12px; color: #666; margin-bottom: 15px;">Skupaj naročil: <strong id="appointmentCount">0</strong></p>
+                    <div id="appointmentsContainer" style="max-height: 500px; overflow-y: auto;"></div>
                 </div>
 
                 <!-- EARNINGS SECTION -->
                 <div class="admin-section">
-                    <div class="section-title">💰 Zaslužek in Popusti</div>
+                    <div class="section-title">Zaslužek in Popusti</div>
                     <div class="form-row">
                         <div class="form-group-admin">
                             <label class="form-label-admin">Skupni Zaslužek</label>
@@ -549,8 +569,8 @@
 
                 <!-- CUSTOMERS SECTION -->
                 <div class="admin-section">
-                    <div class="section-title">👥 Seznam Strank</div>
-                    <div id="customersList" class="form-input-admin" style="padding:10px; max-height:400px; overflow:auto; background: #f9f9f9; border-radius: 4px;"></div>
+                    <div class="section-title">Stranke</div>
+                    <div id="customersList" style="padding: 10px; max-height: 400px; overflow-y: auto; background: white; border: 1px solid #ddd; border-radius: 3px; font-size: 12px;"></div>
                 </div>
 
             </div> <!-- END panel tab -->
