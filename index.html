@@ -723,32 +723,26 @@
             // Send via Formspree using fetch API (background, no redirect)
             const ownerEmail = SITE_CONFIG.ownerContact?.email;
             
-            if (ownerEmail) {
-                // Send via Vercel API endpoint (server-side)
-                fetch('/api/sendAppointment', {
+            if (ownerEmail && FORMSPREE_ENDPOINT) {
+                const formData = new FormData();
+                formData.append('Ime', appointment.firstName);
+                formData.append('Priimek', appointment.surname);
+                formData.append('email', appointment.email);
+                formData.append('phone', appointment.phone);
+                formData.append('Datum termina', appointment.date);
+                formData.append('Čas termina', appointment.time);
+                formData.append('Storitve', appointment.services.join(', '));
+                formData.append('Končna cena', appointment.totalPrice + "€");
+                formData.append('Čas trajanja', appointment.totalDuration + " min");
+                
+                // Send directly to Formspree (simple form submission)
+                fetch(FORMSPREE_ENDPOINT, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        firstName: appointment.firstName,
-                        surname: appointment.surname,
-                        email: appointment.email,
-                        phone: appointment.phone,
-                        date: appointment.date,
-                        time: appointment.time,
-                        services: appointment.services,
-                        totalDuration: appointment.totalDuration,
-                        totalPrice: appointment.totalPrice,
-                        ownerEmail: ownerEmail
-                    })
+                    body: formData
                 })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        console.log('✅ Email sent successfully');
-                    } else {
-                        console.log('⚠️ Email sending failed, but appointment saved locally');
+                .then(response => {
+                    if (response.ok) {
+                        console.log('✅ Email sent to Formspree');
                     }
                 })
                 .catch(error => {
