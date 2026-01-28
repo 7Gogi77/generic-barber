@@ -723,32 +723,36 @@
             // Send via Formspree using fetch API (background, no redirect)
             const ownerEmail = SITE_CONFIG.ownerContact?.email;
             
-            if (ownerEmail && FORMSPREE_ENDPOINT) {
-                const formData = new FormData();
-                formData.append('Ime', appointment.firstName);
-                formData.append('Priimek', appointment.surname);
-                formData.append('E-Mail stranke', appointment.email);
-                formData.append('Tel. št. stranke', appointment.phone);
-                formData.append('Datum termina', appointment.date);
-                formData.append('Čas termina', appointment.time);
-                formData.append('Storitve', appointment.services.join(', '));
-                formData.append('Končna cena', appointment.totalPrice + "€");
-                formData.append('Čas trajanja', appointment.totalDuration + " min");
-                formData.append('_subject', 'Novo Naročilo iz Spletne Strani');
-                formData.append('_replyto', appointment.email);
-                formData.append('_cc', ownerEmail);
-                
-                // Send using FormData with no-cors mode
-                fetch(FORMSPREE_ENDPOINT, {
+            if (ownerEmail) {
+                // Send via Vercel API endpoint (server-side)
+                fetch('/api/sendAppointment', {
                     method: 'POST',
-                    body: formData,
-                    mode: 'no-cors'
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        firstName: appointment.firstName,
+                        surname: appointment.surname,
+                        email: appointment.email,
+                        phone: appointment.phone,
+                        date: appointment.date,
+                        time: appointment.time,
+                        services: appointment.services,
+                        totalDuration: appointment.totalDuration,
+                        totalPrice: appointment.totalPrice,
+                        ownerEmail: ownerEmail
+                    })
                 })
-                .then(response => {
-                    console.log('✅ Email sent to Formspree (submission confirmed)');
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        console.log('✅ Email sent successfully');
+                    } else {
+                        console.log('⚠️ Email sending failed, but appointment saved locally');
+                    }
                 })
                 .catch(error => {
-                    console.log('⚠️ Could not send to Formspree, but appointment saved locally:', error);
+                    console.log('⚠️ Could not send email, but appointment saved locally:', error);
                 });
             }
         }
