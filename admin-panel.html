@@ -630,13 +630,17 @@
 
                     <!-- Charts -->
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;" class="dashboard-grid">
-                        <div style="background: white; padding: 15px; border: 1px solid #ddd; border-radius: 3px;">
+                        <div style="background: white; padding: 15px; border: 1.5px solid #e8ecf1; border-radius: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); min-height: 300px; display: flex; flex-direction: column;">
                             <h3 style="font-size: 13px; font-weight: 600; color: #2c3e50; margin: 0 0 15px 0;">Storitve Po Priljubljenosti</h3>
-                            <canvas id="servicesChart"></canvas>
+                            <div style="flex: 1; position: relative; min-height: 250px;">
+                                <canvas id="servicesChart" style="display: block; width: 100% !important; height: 100% !important;"></canvas>
+                            </div>
                         </div>
-                        <div style="background: white; padding: 15px; border: 1px solid #ddd; border-radius: 3px;">
+                        <div style="background: white; padding: 15px; border: 1.5px solid #e8ecf1; border-radius: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); min-height: 300px; display: flex; flex-direction: column;">
                             <h3 style="font-size: 13px; font-weight: 600; color: #2c3e50; margin: 0 0 15px 0;">Naročila Po Dneh</h3>
-                            <canvas id="appointmentsChart"></canvas>
+                            <div style="flex: 1; position: relative; min-height: 250px;">
+                                <canvas id="appointmentsChart" style="display: block; width: 100% !important; height: 100% !important;"></canvas>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1105,39 +1109,47 @@
             // Services chart data
             const serviceCount = {};
             appointments.forEach(appt => {
-                appt.services.forEach(service => {
-                    serviceCount[service] = (serviceCount[service] || 0) + 1;
-                });
+                if (appt.services && Array.isArray(appt.services)) {
+                    appt.services.forEach(service => {
+                        serviceCount[service] = (serviceCount[service] || 0) + 1;
+                    });
+                } else if (appt.service) {
+                    serviceCount[appt.service] = (serviceCount[appt.service] || 0) + 1;
+                }
             });
             
             const serviceLabels = Object.keys(serviceCount);
             const serviceData = Object.values(serviceCount);
             
             // Create services chart
-            if (serviceLabels.length > 0) {
-                const servicesCtx = document.getElementById('servicesChart').getContext('2d');
-                if (window.servicesChartInstance) {
-                    window.servicesChartInstance.destroy();
-                }
-                window.servicesChartInstance = new Chart(servicesCtx, {
-                    type: 'doughnut',
-                    data: {
-                        labels: serviceLabels,
-                        datasets: [{
-                            data: serviceData,
-                            backgroundColor: ['#DC143C', '#4F46E5', '#10B981', '#F59E0B', '#EF4444'],
-                            borderColor: '#fff',
-                            borderWidth: 2
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: true,
-                        plugins: {
-                            legend: { position: 'bottom' }
-                        }
+            if (serviceLabels.length > 0 && document.getElementById('servicesChart')) {
+                try {
+                    const servicesCtx = document.getElementById('servicesChart').getContext('2d');
+                    if (window.servicesChartInstance) {
+                        window.servicesChartInstance.destroy();
                     }
-                });
+                    window.servicesChartInstance = new Chart(servicesCtx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: serviceLabels,
+                            datasets: [{
+                                data: serviceData,
+                                backgroundColor: ['#3498db', '#27ae60', '#e74c3c', '#f39c12', '#9b59b6', '#1abc9c'],
+                                borderColor: '#fff',
+                                borderWidth: 2
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: true,
+                            plugins: {
+                                legend: { position: 'bottom', labels: { font: { size: 12 } } }
+                            }
+                        }
+                    });
+                } catch (e) {
+                    console.error('Error rendering services chart:', e);
+                }
             }
             
             // Appointments by day chart
@@ -1150,35 +1162,39 @@
             const dayLabels = Object.keys(dayCount).sort((a, b) => parseInt(a) - parseInt(b)).slice(0, 7);
             const dayData = dayLabels.map(day => dayCount[day] || 0);
             
-            if (dayLabels.length > 0) {
-                const appointmentsCtx = document.getElementById('appointmentsChart').getContext('2d');
-                if (window.appointmentsChartInstance) {
-                    window.appointmentsChartInstance.destroy();
-                }
-                window.appointmentsChartInstance = new Chart(appointmentsCtx, {
-                    type: 'bar',
-                    data: {
-                        labels: dayLabels.map(d => d + '.'),
-                        datasets: [{
-                            label: 'Naročila',
-                            data: dayData,
-                            backgroundColor: '#DC143C',
-                            borderColor: '#FF6B6B',
-                            borderWidth: 1,
-                            borderRadius: 4
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: true,
-                        plugins: {
-                            legend: { display: false }
-                        },
-                        scales: {
-                            y: { beginAtZero: true }
-                        }
+            if (dayLabels.length > 0 && document.getElementById('appointmentsChart')) {
+                try {
+                    const appointmentsCtx = document.getElementById('appointmentsChart').getContext('2d');
+                    if (window.appointmentsChartInstance) {
+                        window.appointmentsChartInstance.destroy();
                     }
-                });
+                    window.appointmentsChartInstance = new Chart(appointmentsCtx, {
+                        type: 'bar',
+                        data: {
+                            labels: dayLabels.map(d => d + '.'),
+                            datasets: [{
+                                label: 'Naročila',
+                                data: dayData,
+                                backgroundColor: '#3498db',
+                                borderColor: '#2980b9',
+                                borderWidth: 1,
+                                borderRadius: 4
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: true,
+                            plugins: {
+                                legend: { display: false }
+                            },
+                            scales: {
+                                y: { beginAtZero: true, ticks: { stepSize: 1 } }
+                            }
+                        }
+                    });
+                } catch (e) {
+                    console.error('Error rendering appointments chart:', e);
+                }
             }
         }
 
@@ -1921,6 +1937,9 @@
                 if (a.email) customers[a.email] = a;
             });
             document.getElementById('earningsTotal') && (document.getElementById('earningsTotal').innerText = SITE_CONFIG.currency + total.toFixed(2));
+
+            // Update dashboard charts
+            updateDashboard(appointments);
 
             // Customers list
             const customersEl = document.getElementById('customersList');
