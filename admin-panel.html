@@ -231,6 +231,24 @@
         console.log('Admin panel loaded');
         console.log('SITE_CONFIG:', SITE_CONFIG);
 
+        // ===== RESTORE FROM STORAGE =====
+        function restoreFromStorage() {
+            const saved = localStorage.getItem('site_config_backup');
+            if (saved) {
+                try {
+                    const config = JSON.parse(saved);
+                    // Merge saved config back into SITE_CONFIG
+                    Object.assign(SITE_CONFIG, config);
+                    console.log('Config restored from localStorage');
+                } catch (e) {
+                    console.error('Error restoring config:', e);
+                }
+            }
+        }
+
+        // Restore immediately after config loads
+        restoreFromStorage();
+
         // ===== AUTH =====
         function handleLogin(e) {
             e.preventDefault();
@@ -270,9 +288,11 @@
 
         // ===== SAVE =====
         function saveConfig() {
-            console.log('Saving config...');
-            localStorage.setItem('site_config_backup', JSON.stringify(SITE_CONFIG));
+            console.log('Saving config...', SITE_CONFIG);
+            const configStr = JSON.stringify(SITE_CONFIG);
+            localStorage.setItem('site_config_backup', configStr);
             localStorage.setItem('appointments', JSON.stringify(SITE_CONFIG.appointments || []));
+            console.log('✅ Saved to localStorage:', configStr.substring(0, 100) + '...');
             alert('✅ Spremembe shranjene!');
         }
 
