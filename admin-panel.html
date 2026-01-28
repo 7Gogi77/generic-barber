@@ -72,6 +72,9 @@
 
         /* Chart Container Class */
         .chart-container { background: white; padding: 15px; border: 1.5px solid #e8ecf1; border-radius: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); min-height: 300px; display: flex; flex-direction: column; }
+        
+        /* Working Hours Container Class */
+        .working-hours-container { display: grid; gap: 12px; margin-top: 12px; }
 
         /* Responsive Design */
         @media (max-width: 1200px) {
@@ -159,6 +162,7 @@
             canvas { max-height: 200px; }
             .chart-container { min-height: 280px !important; }
             .chart-container > div { min-height: 200px !important; }
+            .working-hours-container { grid-template-columns: 1fr !important; }
             .form-input-admin { padding: 8px 10px; font-size: 12px; max-width: 100%; }
             select.form-input-admin { padding: 8px 10px; font-size: 12px; }
             .dashboard-grid { grid-template-columns: 1fr !important; }
@@ -178,12 +182,22 @@
                 margin-bottom: 12px !important;
             }
             .chart-container > div { min-height: 180px !important; }
+            .working-hours-container { 
+                grid-template-columns: 1fr !important;
+                gap: 8px !important;
+            }
+            .working-hours-container > div {
+                display: flex !important;
+                flex-direction: column !important;
+                gap: 4px !important;
+            }
             canvas { max-height: 150px !important; }
             .form-input-admin { 
                 padding: 7px 8px !important; 
                 font-size: 11px !important; 
                 max-width: 100% !important;
                 box-sizing: border-box !important;
+                width: 100% !important;
             }
             select.form-input-admin { 
                 padding: 7px 8px !important; 
@@ -212,6 +226,19 @@
             }
             .chart-container > div { 
                 min-height: 160px !important;
+            }
+            .working-hours-container { 
+                grid-template-columns: 1fr !important;
+                gap: 6px !important;
+            }
+            .working-hours-container > div {
+                display: flex !important;
+                flex-direction: column !important;
+                gap: 3px !important;
+            }
+            .working-hours-container label {
+                font-size: 10px !important;
+                margin-bottom: 2px !important;
             }
             canvas { max-height: 120px !important; }
             .form-input-admin { 
@@ -654,7 +681,7 @@
                     <!-- Business Hours per Day -->
                     <div style="margin-bottom: 22px;">
                         <label class="form-label-admin">Delovni Čas po Dnevih:</label>
-                        <div id="workingHoursContainer" style="display: grid; gap: 12px; margin-top: 12px;"></div>
+                        <div id="workingHoursContainer" class="working-hours-container"></div>
                     </div>
 
                     <!-- Default Business Hours -->
