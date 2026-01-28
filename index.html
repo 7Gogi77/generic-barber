@@ -725,29 +725,27 @@
             
             if (ownerEmail && FORMSPREE_ENDPOINT) {
                 const formData = new FormData();
+                formData.append('email', appointment.email);
                 formData.append('Ime', appointment.firstName);
                 formData.append('Priimek', appointment.surname);
-                formData.append('email', appointment.email);
-                formData.append('phone', appointment.phone);
-                formData.append('Datum termina', appointment.date);
-                formData.append('Čas termina', appointment.time);
+                formData.append('Telefon', appointment.phone);
+                formData.append('Datum', appointment.date);
+                formData.append('Cas', appointment.time);
                 formData.append('Storitve', appointment.services.join(', '));
-                formData.append('Končna cena', appointment.totalPrice + "€");
-                formData.append('Čas trajanja', appointment.totalDuration + " min");
-                formData.append('_subject', 'Novo Naročilo iz Spletne Strani');
+                formData.append('Cena', appointment.totalPrice + "€");
+                formData.append('Trajanje', appointment.totalDuration + " min");
                 
-                // Send directly to Formspree (simple form submission)
                 fetch(FORMSPREE_ENDPOINT, {
                     method: 'POST',
                     body: formData
                 })
                 .then(response => {
                     if (response.ok) {
-                        console.log('✅ Email sent to Formspree');
+                        console.log('✅ Email sent');
                     }
                 })
                 .catch(error => {
-                    console.log('⚠️ Could not send email, but appointment saved locally:', error);
+                    console.log('⚠️ Email sending failed, but appointment saved locally:', error);
                 });
             }
         }
