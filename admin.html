@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Administracija | Blade & Bourbon</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="js/config.js"></script>
     <style>
         * {
@@ -775,6 +776,43 @@
                 <button class="save-btn" onclick="saveBooking()">Shrani Nastavitve</button>
             </div>
 
+            <!-- DASHBOARD -->
+            <div class="admin-section">
+                <div class="section-title">Kontrolna Plošča</div>
+                
+                <!-- Key Metrics -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px;">
+                    <div style="background: linear-gradient(135deg, #DC143C 0%, #FF6B6B 100%); color: white; padding: 20px; border-radius: 8px; text-align: center;">
+                        <div style="font-size: 32px; font-weight: 700;" id="totalAppointments">0</div>
+                        <div style="font-size: 13px; opacity: 0.9; margin-top: 5px;">Skupaj Naročil</div>
+                    </div>
+                    <div style="background: linear-gradient(135deg, #4F46E5 0%, #6366F1 100%); color: white; padding: 20px; border-radius: 8px; text-align: center;">
+                        <div style="font-size: 32px; font-weight: 700;" id="monthlyRevenue">€0</div>
+                        <div style="font-size: 13px; opacity: 0.9; margin-top: 5px;">Prihodek Ta Mesec</div>
+                    </div>
+                    <div style="background: linear-gradient(135deg, #10B981 0%, #34D399 100%); color: white; padding: 20px; border-radius: 8px; text-align: center;">
+                        <div style="font-size: 32px; font-weight: 700;" id="monthlyAppointments">0</div>
+                        <div style="font-size: 13px; opacity: 0.9; margin-top: 5px;">Naročila Ta Mesec</div>
+                    </div>
+                    <div style="background: linear-gradient(135deg, #F59E0B 0%, #FBBF24 100%); color: white; padding: 20px; border-radius: 8px; text-align: center;">
+                        <div style="font-size: 32px; font-weight: 700;" id="averagePrice">€0</div>
+                        <div style="font-size: 13px; opacity: 0.9; margin-top: 5px;">Povprečna Cena</div>
+                    </div>
+                </div>
+
+                <!-- Charts -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                    <div style="background: #f9f9f9; padding: 20px; border-radius: 8px; border: 1px solid #e0e0e0;">
+                        <h3 style="font-size: 14px; font-weight: 600; color: #333; margin-bottom: 15px;">Storitve Po Priljubljenosti</h3>
+                        <canvas id="servicesChart"></canvas>
+                    </div>
+                    <div style="background: #f9f9f9; padding: 20px; border-radius: 8px; border: 1px solid #e0e0e0;">
+                        <h3 style="font-size: 14px; font-weight: 600; color: #333; margin-bottom: 15px;">Naročila Po Dneh</h3>
+                        <canvas id="appointmentsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
             <!-- APPOINTMENTS -->
             <div class="admin-section">
                 <div class="section-title">Naročila Termina</div>
@@ -1056,6 +1094,104 @@
             saveConfig();
         }
 
+        // Update dashboard with metrics and charts
+        function updateDashboard(appointments) {
+            // Calculate metrics
+            const totalAppointments = appointments.length;
+            const now = new Date();
+            const currentMonth = now.getMonth() + 1;
+            const currentYear = now.getFullYear();
+            
+            const monthlyAppts = appointments.filter(appt => {
+                const [year, month] = appt.date.split('-');
+                return parseInt(month) === currentMonth && parseInt(year) === currentYear;
+            });
+            
+            const monthlyRevenue = monthlyAppts.reduce((sum, appt) => sum + (appt.totalPrice || 0), 0);
+            const averagePrice = monthlyAppts.length > 0 ? Math.round(monthlyRevenue / monthlyAppts.length) : 0;
+            
+            // Update metric displays
+            document.getElementById('totalAppointments').textContent = totalAppointments;
+            document.getElementById('monthlyRevenue').textContent = '€' + monthlyRevenue;
+            document.getElementById('monthlyAppointments').textContent = monthlyAppts.length;
+            document.getElementById('averagePrice').textContent = '€' + averagePrice;
+            
+            // Services chart data
+            const serviceCount = {};
+            appointments.forEach(appt => {
+                appt.services.forEach(service => {
+                    serviceCount[service] = (serviceCount[service] || 0) + 1;
+                });
+            });
+            
+            const serviceLabels = Object.keys(serviceCount);
+            const serviceData = Object.values(serviceCount);
+            
+            // Create services chart
+            const servicesCtx = document.getElementById('servicesChart').getContext('2d');
+            if (window.servicesChartInstance) {
+                window.servicesChartInstance.destroy();
+            }
+            window.servicesChartInstance = new Chart(servicesCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: serviceLabels,
+                    datasets: [{
+                        data: serviceData,
+                        backgroundColor: ['#DC143C', '#4F46E5', '#10B981', '#F59E0B', '#EF4444'],
+                        borderColor: '#fff',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+            
+            // Appointments by day chart
+            const dayCount = {};
+            appointments.forEach(appt => {
+                const [year, month, day] = appt.date.split('-');
+                dayCount[day] = (dayCount[day] || 0) + 1;
+            });
+            
+            const dayLabels = Object.keys(dayCount).sort((a, b) => parseInt(a) - parseInt(b)).slice(0, 7);
+            const dayData = dayLabels.map(day => dayCount[day] || 0);
+            
+            const appointmentsCtx = document.getElementById('appointmentsChart').getContext('2d');
+            if (window.appointmentsChartInstance) {
+                window.appointmentsChartInstance.destroy();
+            }
+            window.appointmentsChartInstance = new Chart(appointmentsCtx, {
+                type: 'bar',
+                data: {
+                    labels: dayLabels.map(d => d + '.'),
+                    datasets: [{
+                        label: 'Naročila',
+                        data: dayData,
+                        backgroundColor: '#DC143C',
+                        borderColor: '#FF6B6B',
+                        borderWidth: 1,
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+        }
+
         // Load and display appointments
         function loadAppointments() {
             const container = document.getElementById('appointmentsContainer');
@@ -1063,6 +1199,7 @@
             const appointments = SITE_CONFIG.appointments || [];
             
             count.innerText = appointments.length;
+            updateDashboard(appointments);
             
             if (appointments.length === 0) {
                 container.innerHTML = '<p class="text-gray-500 text-center py-4">Ni nobenega naročila</p>';
@@ -1076,11 +1213,11 @@
                 const dateStr = `${day}. ${month}. ${year}`;
                 container.innerHTML += `
                     <div class="service-item" style="margin-bottom: 10px; padding: 12px; border-left: 3px solid #DC143C;">
-                        <p><strong>${appt.name}</strong></p>
+                        <p><strong>${appt.firstName} ${appt.surname}</strong></p>
                         <p class="text-xs text-gray-600">${appt.email} | ${appt.phone}</p>
                         <p class="text-sm mt-2"><strong>Termin:</strong> ${dateStr} ob ${appt.time}</p>
                         <p class="text-sm"><strong>Storitve:</strong> ${appt.services.join(', ')}</p>
-                        <p class="text-sm"><strong>Trajanje:</strong> ${appt.totalDuration} min | <strong>Cena:</strong> $${appt.totalPrice}</p>
+                        <p class="text-sm"><strong>Trajanje:</strong> ${appt.totalDuration} min | <strong>Cena:</strong> €${appt.totalPrice}</p>
                         <button onclick="deleteAppointment(${idx})" class="text-xs mt-2 px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600">Izbriši</button>
                         <button onclick="generateInvoice(${idx})" class="text-xs mt-2 ml-2 px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700">Račun</button>
                     </div>
