@@ -123,8 +123,9 @@
             .form-row { gap: 8px; margin-bottom: 10px; }
             .logout-btn { padding: 6px 10px; font-size: 11px; }
             .login-card { padding: 14px !important; }
-            #calendarGrid { grid-template-columns: repeat(7, 1fr) !important; }
-            #dayAppointments { font-size: 11px; }
+            #calendarGrid { grid-template-columns: repeat(7, 1fr) !important; gap: 1px !important; }
+            #dayAppointments { font-size: 10px; max-height: 150px !important; overflow-y: auto !important; }
+            #calendarMonthYear { font-size: 14px !important; }
         }
 
         @media (max-width: 480px) {
@@ -145,13 +146,46 @@
             .upload-area { padding: 12px !important; }
             .image-gallery { grid-template-columns: 1fr !important; }
             .logout-btn { padding: 5px 8px; font-size: 10px; }
-            #calendarMonthYear { font-size: 14px; }
-            #dayAppointments { font-size: 10px; }
+            #calendarMonthYear { font-size: 12px !important; }
+            #dayAppointments { font-size: 9px; max-height: 120px !important; overflow-y: auto !important; padding: 5px !important; }
+            #calendarGrid { gap: 0px !important; grid-template-columns: repeat(7, 1fr) !important; padding: 3px !important; }
         }
 
         /* Responsive Charts */
         @media (max-width: 768px) {
             canvas { max-height: 200px; }
+            .dashboard-grid > div { min-height: 280px !important; }
+            .dashboard-grid > div > div { min-height: 200px !important; }
+        }
+        
+        @media (max-width: 600px) {
+            .dashboard-grid { gap: 10px !important; }
+            .dashboard-grid > div { 
+                min-height: 250px !important;
+                padding: 12px !important;
+            }
+            .dashboard-grid > div > h3 { 
+                font-size: 12px !important;
+                margin-bottom: 12px !important;
+            }
+            .dashboard-grid > div > div { min-height: 180px !important; }
+        }
+        
+        @media (max-width: 480px) {
+            .dashboard-grid { gap: 8px !important; }
+            .dashboard-grid > div { 
+                min-height: 220px !important;
+                padding: 10px !important;
+                border-radius: 4px !important;
+            }
+            .dashboard-grid > div > h3 { 
+                font-size: 11px !important;
+                margin-bottom: 10px !important;
+            }
+            .dashboard-grid > div > div { 
+                min-height: 160px !important;
+            }
+            canvas { max-height: 150px !important; }
         }
     </style>
 </head>
@@ -1128,6 +1162,7 @@
                     if (window.servicesChartInstance) {
                         window.servicesChartInstance.destroy();
                     }
+                    const isMobile = window.innerWidth < 768;
                     window.servicesChartInstance = new Chart(servicesCtx, {
                         type: 'doughnut',
                         data: {
@@ -1143,7 +1178,13 @@
                             responsive: true,
                             maintainAspectRatio: true,
                             plugins: {
-                                legend: { position: 'bottom', labels: { font: { size: 12 } } }
+                                legend: { 
+                                    position: 'bottom', 
+                                    labels: { 
+                                        font: { size: isMobile ? 10 : 12 },
+                                        padding: isMobile ? 8 : 15
+                                    } 
+                                }
                             }
                         }
                     });
@@ -1168,6 +1209,7 @@
                     if (window.appointmentsChartInstance) {
                         window.appointmentsChartInstance.destroy();
                     }
+                    const isMobile = window.innerWidth < 768;
                     window.appointmentsChartInstance = new Chart(appointmentsCtx, {
                         type: 'bar',
                         data: {
@@ -1188,7 +1230,18 @@
                                 legend: { display: false }
                             },
                             scales: {
-                                y: { beginAtZero: true, ticks: { stepSize: 1 } }
+                                y: { 
+                                    beginAtZero: true, 
+                                    ticks: { 
+                                        stepSize: 1,
+                                        font: { size: isMobile ? 9 : 11 }
+                                    }
+                                },
+                                x: {
+                                    ticks: {
+                                        font: { size: isMobile ? 9 : 11 }
+                                    }
+                                }
                             }
                         }
                     });
@@ -1590,6 +1643,18 @@
                 loadAdminForms();
             }
         });
+        
+        // Handle window resize for mobile charts
+        let resizeTimeout;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                // Redraw charts on resize for better mobile responsiveness
+                if (SITE_CONFIG.appointments && SITE_CONFIG.appointments.length > 0) {
+                    updateDashboard(SITE_CONFIG.appointments);
+                }
+            }, 300);
+        });
 
         // Auto-save on input change
         document.addEventListener('change', function(e) {
@@ -1969,6 +2034,8 @@
         function renderCalendar() {
             const year = currentCalendarDate.getFullYear();
             const month = currentCalendarDate.getMonth();
+            const isMobile = window.innerWidth < 600;
+            const isSmallMobile = window.innerWidth < 480;
             
             // Update header
             const months = ['Januar', 'Februar', 'Marec', 'April', 'Maj', 'Junij', 'Julij', 'Avgust', 'September', 'Oktober', 'November', 'December'];
@@ -1983,12 +2050,14 @@
             const grid = document.getElementById('calendarGrid');
             grid.innerHTML = '';
             
-            // Day headers
-            const dayHeaders = ['Pon', 'Tor', 'Sre', 'Čet', 'Pet', 'Sob', 'Ned'];
+            // Day headers - adjust for mobile
+            const dayHeaders = isSmallMobile ? ['P', 'T', 'S', 'Č', 'P', 'S', 'N'] : isMobile ? ['Po', 'To', 'Sr', 'Če', 'Pe', 'So', 'Ne'] : ['Pon', 'Tor', 'Sre', 'Čet', 'Pet', 'Sob', 'Ned'];
+            const headerPadding = isSmallMobile ? '3px' : isMobile ? '5px' : '8px';
+            const headerFontSize = isSmallMobile ? '9px' : isMobile ? '10px' : '12px';
             dayHeaders.forEach(day => {
                 const header = document.createElement('div');
                 header.textContent = day;
-                header.style.cssText = 'font-weight:700; color:#2c3e50; text-align:center; padding:8px; font-size:12px; background:#ecf0f1; border-radius:4px;';
+                header.style.cssText = `font-weight:700; color:#2c3e50; text-align:center; padding:${headerPadding}; font-size:${headerFontSize}; background:#ecf0f1; border-radius:2px; min-height:22px; display:flex; align-items:center; justify-content:center;`;
                 grid.appendChild(header);
             });
             
@@ -1999,21 +2068,28 @@
             }
             
             // Calendar days
+            const cellPadding = isSmallMobile ? '2px 1px' : isMobile ? '4px 2px' : '12px 4px';
+            const cellFontSize = isSmallMobile ? '9px' : isMobile ? '10px' : '13px';
+            const borderRadius = isSmallMobile ? '2px' : isMobile ? '3px' : '6px';
+            const borderWidth = isSmallMobile ? '0.5px' : isMobile ? '1px' : '1.5px';
+            const minHeight = isSmallMobile ? '20px' : isMobile ? '24px' : '36px';
+            
             for (let day = 1; day <= daysInMonth; day++) {
                 const dayCell = document.createElement('div');
                 const dateStr = year + '-' + String(month + 1).padStart(2, '0') + '-' + String(day).padStart(2, '0');
                 const appointmentsOnDay = SITE_CONFIG.appointments.filter(appt => appt.date === dateStr);
                 
                 dayCell.textContent = day;
-                dayCell.style.cssText = 'padding:12px 4px; border:1.5px solid #ecf0f1; border-radius:6px; text-align:center; cursor:pointer; background:#ffffff; font-size:13px; font-weight:500; color:#2c3e50; transition:all 0.2s;';
+                dayCell.style.cssText = `padding:${cellPadding}; border:${borderWidth} solid #ecf0f1; border-radius:${borderRadius}; text-align:center; cursor:pointer; background:#ffffff; font-size:${cellFontSize}; font-weight:500; color:#2c3e50; transition:all 0.2s; min-height:${minHeight}; display:flex; align-items:center; justify-content:center;`;
                 
                 if (appointmentsOnDay.length > 0) {
-                    dayCell.style.cssText += 'background:linear-gradient(135deg, #3498db, #2980b9); border-color:#2980b9; font-weight:700; color:#fff; box-shadow:0 2px 8px rgba(52,152,219,0.4);';
-                    dayCell.innerHTML = `<div style="font-size:13px;">${day}</div><div style="font-size:10px; margin-top:2px;">●●●</div>`;
+                    const dotSize = isSmallMobile ? '5px' : isMobile ? '6px' : '8px';
+                    dayCell.style.cssText = `padding:${cellPadding}; border:${borderWidth} solid #2980b9; border-radius:${borderRadius}; text-align:center; cursor:pointer; background:linear-gradient(135deg, #3498db, #2980b9); font-size:${cellFontSize}; font-weight:700; color:#fff; transition:all 0.2s; min-height:${minHeight}; display:flex; align-items:center; justify-content:center; box-shadow:0 1px 3px rgba(52,152,219,0.3);`;
+                    dayCell.innerHTML = `<div style="text-align:center; width:100%;"><div style="line-height:1;">${day}</div><div style="font-size:${dotSize}; margin-top:1px; letter-spacing:-2px; line-height:0.8;">●●●</div></div>`;
                 }
                 
                 dayCell.onmouseover = () => {
-                    if (appointmentsOnDay.length === 0) {
+                    if (appointmentsOnDay.length === 0 && !isMobile) {
                         dayCell.style.backgroundColor = '#ecf0f1';
                         dayCell.style.borderColor = '#bdc3c7';
                     }
