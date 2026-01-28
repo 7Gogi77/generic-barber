@@ -146,8 +146,116 @@
                             </div>
                         </div>
                     </div>
+                    <div class="form-row">
+                        <div class="form-group-admin">
+                            <label class="form-label-admin">Barva Kartice</label>
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                <input id="theme-card" type="color" class="form-input-admin" style="width: 60px; height: 40px; cursor: pointer;">
+                                <input id="theme-card-text" type="text" class="form-input-admin" placeholder="#ffffff" style="flex: 1;">
+                            </div>
+                        </div>
+                        <div class="form-group-admin">
+                            <label class="form-label-admin">Barva Gradienta - Start</label>
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                <input id="theme-gradient-start" type="color" class="form-input-admin" style="width: 60px; height: 40px; cursor: pointer;">
+                                <input id="theme-gradient-start-text" type="text" class="form-input-admin" placeholder="#DC143C" style="flex: 1;">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group-admin">
+                            <label class="form-label-admin">Barva Gradienta - Konec</label>
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                <input id="theme-gradient-end" type="color" class="form-input-admin" style="width: 60px; height: 40px; cursor: pointer;">
+                                <input id="theme-gradient-end-text" type="text" class="form-input-admin" placeholder="#FF6B6B" style="flex: 1;">
+                            </div>
+                        </div>
+                    </div>
                     <button class="save-btn" onclick="saveTheme()">Shrani Barve</button>
                 </div>
+
+                <!-- TEXT COLORS SECTION -->
+                <div class="admin-section">
+                    <div class="section-title">📝 Barve Besedila</div>
+                    <div class="form-row">
+                        <div class="form-group-admin">
+                            <label class="form-label-admin">Primarna Barva Besedila</label>
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                <input id="text-primary" type="color" class="form-input-admin" style="width: 60px; height: 40px; cursor: pointer;">
+                                <input id="text-primary-text" type="text" class="form-input-admin" placeholder="#FFFFFF" style="flex: 1;">
+                            </div>
+                        </div>
+                        <div class="form-group-admin">
+                            <label class="form-label-admin">Sekundarna Barva Besedila</label>
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                <input id="text-secondary" type="color" class="form-input-admin" style="width: 60px; height: 40px; cursor: pointer;">
+                                <input id="text-secondary-text" type="text" class="form-input-admin" placeholder="#A0A0A0" style="flex: 1;">
+                            </div>
+                        </div>
+                    </div>
+                    <button class="save-btn" onclick="saveTextColors()">Shrani Barve Besedila</button>
+                </div>
+
+                <!-- BUTTON & NAV COLORS SECTION -->
+                <div class="admin-section">
+                    <div class="section-title">🔘 Gumbi in Navigacija</div>
+                    <div class="form-row">
+                        <div class="form-group-admin">
+                            <label class="form-label-admin">Barva Gumbov</label>
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                <input id="button-color" type="color" class="form-input-admin" style="width: 60px; height: 40px; cursor: pointer;">
+                                <input id="button-color-text" type="text" class="form-input-admin" placeholder="#DC143C" style="flex: 1;">
+                            </div>
+                        </div>
+                        <div class="form-group-admin">
+                            <label class="form-label-admin">Barva Besedila na Gumbih</label>
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                <input id="button-text-color" type="color" class="form-input-admin" style="width: 60px; height: 40px; cursor: pointer;">
+                                <input id="button-text-color-text" type="text" class="form-input-admin" placeholder="#0A0A0A" style="flex: 1;">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group-admin">
+                            <label class="form-label-admin">Barva Navigacijskih Povezav</label>
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                <input id="nav-text-color" type="color" class="form-input-admin" style="width: 60px; height: 40px; cursor: pointer;">
+                                <input id="nav-text-color-text" type="text" class="form-input-admin" placeholder="#A0A0A0" style="flex: 1;">
+                            </div>
+                        </div>
+                        <div class="form-group-admin">
+                            <label class="form-label-admin">Barva Podčrtave Navigacije</label>
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                <input id="nav-hover-color" type="color" class="form-input-admin" style="width: 60px; height: 40px; cursor: pointer;">
+                                <input id="nav-hover-color-text" type="text" class="form-input-admin" placeholder="#DC143C" style="flex: 1;">
+                            </div>
+                        </div>
+                    </div>
+                    <button class="save-btn" onclick="saveNavFooterColors()">Shrani Nastavitve</button>
+                </div>
+
+                <!-- FOOTER COLORS SECTION -->
+                <div class="admin-section">
+                    <div class="section-title">🦶 Noga Spletne Strani</div>
+                    <div class="form-row">
+                        <div class="form-group-admin">
+                            <label class="form-label-admin">Barva Ozadja Noge</label>
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                <input id="footer-bg-color" type="color" class="form-input-admin" style="width: 60px; height: 40px; cursor: pointer;">
+                                <input id="footer-bg-color-text" type="text" class="form-input-admin" placeholder="#0A0A0A" style="flex: 1;">
+                            </div>
+                        </div>
+                        <div class="form-group-admin">
+                            <label class="form-label-admin">Barva Besedila v Nogi</label>
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                <input id="footer-text-color" type="color" class="form-input-admin" style="width: 60px; height: 40px; cursor: pointer;">
+                                <input id="footer-text-color-text" type="text" class="form-input-admin" placeholder="#606060" style="flex: 1;">
+                            </div>
+                        </div>
+                    </div>
+                    <button class="save-btn" onclick="saveNavFooterColors()">Shrani Nastavitve Noge</button>
+                </div>
+
             </div> <!-- END videz tab -->
 
             <!-- ===== TAB 2: VSEBINA (CONTENT) ===== -->
@@ -179,12 +287,28 @@
                             <input id="heroTitle" type="text" class="form-input-admin">
                         </div>
                     </div>
+                    <div class="form-row full">
+                        <div class="form-group-admin">
+                            <label class="form-label-admin">Besedilo Gumba</label>
+                            <input id="heroButton" type="text" class="form-input-admin">
+                        </div>
+                    </div>
+                    <div class="form-row full">
+                        <div class="form-group-admin">
+                            <label class="form-label-admin">Slika Naslovnice (URL)</label>
+                            <input id="heroImageUrl" type="text" class="form-input-admin">
+                        </div>
+                    </div>
                 </div>
 
                 <!-- ABOUT SECTION -->
                 <div class="admin-section">
                     <div class="section-title">📖 O Nas (Story)</div>
                     <div class="form-row">
+                        <div class="form-group-admin">
+                            <label class="form-label-admin">Label Razdelka</label>
+                            <input id="storySectionLabel" type="text" class="form-input-admin" placeholder="Our Story">
+                        </div>
                         <div class="form-group-admin">
                             <label class="form-label-admin">Naslov</label>
                             <input id="storyTitle" type="text" class="form-input-admin">
@@ -194,6 +318,12 @@
                         <div class="form-group-admin">
                             <label class="form-label-admin">Besedilo</label>
                             <textarea id="storyText" class="form-input-admin" style="min-height: 120px;"></textarea>
+                        </div>
+                    </div>
+                    <div class="form-row full">
+                        <div class="form-group-admin">
+                            <label class="form-label-admin">Story Slika (URL)</label>
+                            <input id="storyImage" type="text" class="form-input-admin">
                         </div>
                     </div>
                 </div>
@@ -214,6 +344,47 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- SECTION TITLES -->
+                <div class="admin-section">
+                    <div class="section-title">📌 Naslovi Razdelkov</div>
+                    <div class="form-row">
+                        <div class="form-group-admin">
+                            <label class="form-label-admin">Naslov Brivcev ("The Craftsmen")</label>
+                            <input id="barbersSectionTitle" type="text" class="form-input-admin" placeholder="The Craftsmen">
+                        </div>
+                        <div class="form-group-admin">
+                            <label class="form-label-admin">Naslov Naročanja ("Request Appointment")</label>
+                            <input id="bookingHeading" type="text" class="form-input-admin" placeholder="Request Appointment">
+                        </div>
+                    </div>
+                    <button class="save-btn" onclick="saveSectionTitles()">Shrani Naslove</button>
+                </div>
+
+                <!-- NAVIGATION BUTTON -->
+                <div class="admin-section">
+                    <div class="section-title">🔗 Navigacijski Gumb</div>
+                    <div class="form-row full">
+                        <div class="form-group-admin">
+                            <label class="form-label-admin">Besedilo Gumba "Rezerviraj"</label>
+                            <input id="navButtonText" type="text" class="form-input-admin" placeholder="Book Now">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- GALLERY -->
+                <div class="admin-section">
+                    <div class="section-title">📸 Galerija Slik</div>
+                    <div class="upload-area" id="uploadArea" onclick="document.getElementById('imageInput').click()" style="margin-bottom: 15px;">
+                        <div class="upload-icon">📷</div>
+                        <div class="upload-text">Klikni za prenos slike</div>
+                        <div class="upload-hint">ali vleci slike sem</div>
+                        <input id="imageInput" type="file" class="upload-input" accept="image/*" multiple>
+                    </div>
+                    <div class="image-gallery" id="imageGallery"></div>
+                    <button class="save-btn" onclick="saveGallery()">Shrani Galerijo</button>
+                </div>
+
             </div> <!-- END vsebina tab -->
 
             <!-- ===== TAB 3: STORITVE (SERVICES & BARBERS) ===== -->
@@ -243,15 +414,81 @@
                         <button class="save-btn" onclick="saveBarbers()" style="flex: 2;">Shrani Brivce</button>
                     </div>
                 </div>
+
+                <!-- BUSINESS HOURS SECTION -->
+                <div class="admin-section">
+                    <div class="section-title">⏰ Delovni Čas in Delovni Dnevi</div>
+                    <p style="font-size: 12px; color: #666; margin-bottom: 15px;">Nastavi svoje delovne dneve in ure</p>
+                    
+                    <!-- Working Days Selection -->
+                    <div style="margin-bottom: 20px;">
+                        <label class="form-label-admin">Delovni Dnevi:</label>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-top: 10px;">
+                            <label style="display: flex; align-items: center; gap: 8px; font-size: 14px;">
+                                <input type="checkbox" id="dayMonday" class="working-day-checkbox" onchange="updateWorkingDays()"> Ponedeljek
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 8px; font-size: 14px;">
+                                <input type="checkbox" id="dayTuesday" class="working-day-checkbox" onchange="updateWorkingDays()"> Torek
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 8px; font-size: 14px;">
+                                <input type="checkbox" id="dayWednesday" class="working-day-checkbox" onchange="updateWorkingDays()"> Sreda
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 8px; font-size: 14px;">
+                                <input type="checkbox" id="dayThursday" class="working-day-checkbox" onchange="updateWorkingDays()"> Četrtek
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 8px; font-size: 14px;">
+                                <input type="checkbox" id="dayFriday" class="working-day-checkbox" onchange="updateWorkingDays()"> Petek
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 8px; font-size: 14px;">
+                                <input type="checkbox" id="daySaturday" class="working-day-checkbox" onchange="updateWorkingDays()"> Sobota
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 8px; font-size: 14px;">
+                                <input type="checkbox" id="daySunday" class="working-day-checkbox" onchange="updateWorkingDays()"> Nedelja
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Business Hours per Day -->
+                    <div style="margin-bottom: 20px;">
+                        <label class="form-label-admin">Delovni Čas po Dnevih:</label>
+                        <div id="workingHoursContainer" style="display: grid; gap: 12px; margin-top: 10px;"></div>
+                    </div>
+
+                    <!-- Default Business Hours -->
+                    <div class="form-row">
+                        <div class="form-group-admin">
+                            <label class="form-label-admin">Privzeti Začetek Časa (ura)</label>
+                            <input id="businessStart" type="number" min="0" max="23" class="form-input-admin">
+                        </div>
+                        <div class="form-group-admin">
+                            <label class="form-label-admin">Privzeti Konec Časa (ura)</label>
+                            <input id="businessEnd" type="number" min="0" max="23" class="form-input-admin">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group-admin">
+                            <label class="form-label-admin">E-pošta Lasnika</label>
+                            <input id="ownerEmail" type="email" class="form-input-admin">
+                        </div>
+                        <div class="form-group-admin">
+                            <label class="form-label-admin">Telefonska Številka Lasnika</label>
+                            <input id="ownerPhone" type="tel" class="form-input-admin">
+                        </div>
+                    </div>
+                    <button class="save-btn" onclick="saveBooking()">Shrani Nastavitve</button>
+                </div>
+
             </div> <!-- END storitve tab -->
 
             <!-- ===== TAB 4: PANEL (BUSINESS ANALYTICS) ===== -->
             <div id="panel" class="tab-content">
-            <div id="dashboard" class="tab-content active">
-                <h2 style="margin-top: 0; margin-bottom: 30px; color: #333; font-size: 24px; border-bottom: 2px solid #DC143C; padding-bottom: 10px;">📈 Poslovni Panel</h2>
-                
+                <h2 style="margin-top: 0; margin-bottom: 30px; color: #333; font-size: 24px; border-bottom: 2px solid #DC143C; padding-bottom: 10px;">📊 Poslovni Panel</h2>
+
+                <!-- DASHBOARD -->
                 <div class="admin-section">
-                    <div class="section-title">Kontrolna Plošča</div>
+                    <div class="section-title">📈 Kontrolna Plošča</div>
+                    
+                    <!-- Key Metrics -->
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px;">
                         <div style="background: linear-gradient(135deg, #DC143C 0%, #FF6B6B 100%); color: white; padding: 20px; border-radius: 8px; text-align: center;">
                             <div style="font-size: 32px; font-weight: 700;" id="totalAppointments">0</div>
@@ -271,250 +508,397 @@
                         </div>
                     </div>
 
+                    <!-- Charts -->
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
                         <div style="background: #f9f9f9; padding: 20px; border-radius: 8px; border: 1px solid #e0e0e0;">
-                            <div style="font-size: 14px; font-weight: 600; color: #333; margin-bottom: 15px;">Storitve Po Priljubljenosti</div>
+                            <h3 style="font-size: 14px; font-weight: 600; color: #333; margin-bottom: 15px;">Storitve Po Priljubljenosti</h3>
                             <canvas id="servicesChart"></canvas>
                         </div>
                         <div style="background: #f9f9f9; padding: 20px; border-radius: 8px; border: 1px solid #e0e0e0;">
-                            <div style="font-size: 14px; font-weight: 600; color: #333; margin-bottom: 15px;">Naročila Po Dneh</div>
+                            <h3 style="font-size: 14px; font-weight: 600; color: #333; margin-bottom: 15px;">Naročila Po Dneh</h3>
                             <canvas id="appointmentsChart"></canvas>
                         </div>
                     </div>
                 </div>
 
+                <!-- APPOINTMENTS SECTION -->
                 <div class="admin-section">
                     <div class="section-title">📅 Naročila Termina</div>
-                    <p style="color: #666; font-size: 14px; margin-bottom: 20px;">Skupaj naročil: <strong id="appointmentCount">0</strong></p>
-                    <div id="appointmentsContainer" style="max-height: 500px; overflow-y: auto;"></div>
+                    <p class="text-gray-600 mb-4 text-sm">Skupaj naročil: <strong id="appointmentCount">0</strong></p>
+                    <div id="appointmentsContainer" class="max-h-96 overflow-y-auto"></div>
                 </div>
-            </div>
 
-            <!-- TAB: CONTENT -->
-            <div id="content" class="tab-content">
-                <h2 style="margin-top: 0; margin-bottom: 30px; color: #333; font-size: 24px; border-bottom: 2px solid #DC143C; padding-bottom: 10px;">📝 Vsebina in Tekst</h2>
-                
+                <!-- EARNINGS SECTION -->
                 <div class="admin-section">
-                    <div class="section-title">Osnovna Vsebina</div>
+                    <div class="section-title">💰 Zaslužek in Popusti</div>
                     <div class="form-row">
                         <div class="form-group-admin">
-                            <label class="form-label-admin">Ime Podjetja</label>
-                            <input id="shopName" type="text" class="form-input-admin">
+                            <label class="form-label-admin">Skupni Zaslužek</label>
+                            <div id="earningsTotal" class="form-input-admin" style="padding:8px; font-weight:bold; color:#DC143C; font-size:18px;">€0.00</div>
                         </div>
                         <div class="form-group-admin">
-                            <label class="form-label-admin">Email</label>
-                            <input id="ownerEmail" type="email" class="form-input-admin">
+                            <label class="form-label-admin">Privzeti Popust (%)</label>
+                            <input id="discountDefault" type="number" min="0" max="100" class="form-input-admin" placeholder="0">
                         </div>
                     </div>
                     <div class="form-row">
-                        <div class="form-group-admin">
-                            <label class="form-label-admin">Telefon</label>
-                            <input id="ownerPhone" type="tel" class="form-input-admin">
-                        </div>
+                        <button class="save-btn" onclick="saveDiscount()">Shrani Popust</button>
+                        <button class="save-btn" onclick="refreshBusinessPanel()">Osveži Panel</button>
                     </div>
                 </div>
 
+                <!-- CUSTOMERS SECTION -->
                 <div class="admin-section">
-                    <div class="section-title">Hero Sekcija</div>
-                    <div class="form-row">
-                        <div class="form-group-admin">
-                            <label class="form-label-admin">Naslov</label>
-                            <input id="heroTitle" type="text" class="form-input-admin">
-                        </div>
-                        <div class="form-group-admin">
-                            <label class="form-label-admin">Podnaslov</label>
-                            <input id="heroSubtitle" type="text" class="form-input-admin">
-                        </div>
-                    </div>
+                    <div class="section-title">👥 Seznam Strank</div>
+                    <div id="customersList" class="form-input-admin" style="padding:10px; max-height:400px; overflow:auto; background: #f9f9f9; border-radius: 4px;"></div>
                 </div>
 
-                <div class="admin-section">
-                    <div class="section-title">Naša Zgodba</div>
-                    <div class="form-row">
-                        <div class="form-group-admin">
-                            <label class="form-label-admin">Naslov</label>
-                            <input id="storyTitle" type="text" class="form-input-admin">
-                        </div>
-                    </div>
-                    <div class="form-row full">
-                        <div class="form-group-admin">
-                            <label class="form-label-admin">Besedilo</label>
-                            <textarea id="storyText" class="form-input-admin" rows="5"></textarea>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="admin-section">
-                    <div class="section-title">Priporočilo</div>
-                    <div class="form-row full">
-                        <div class="form-group-admin">
-                            <label class="form-label-admin">Citat</label>
-                            <textarea id="testimonialQuote" class="form-input-admin" rows="3"></textarea>
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group-admin">
-                            <label class="form-label-admin">Avtor</label>
-                            <input id="testimonialAuthor" type="text" class="form-input-admin">
-                        </div>
-                    </div>
-                </div>
-
-                <button class="save-btn" onclick="saveContent()">💾 Shrani Vsebino</button>
-            </div>
-
-            <!-- TAB: APPEARANCE -->
-            <div id="appearance" class="tab-content">
-                <h2 style="margin-top: 0; margin-bottom: 30px; color: #333; font-size: 24px; border-bottom: 2px solid #DC143C; padding-bottom: 10px;">🎨 Videz Spletne Strani</h2>
-                
-                <div class="admin-section">
-                    <div class="section-title">Boje in Tema</div>
-                    <div class="form-row">
-                        <div class="form-group-admin">
-                            <label class="form-label-admin">Primarna Barva</label>
-                            <input id="primaryColor" type="color" class="form-input-admin">
-                        </div>
-                        <div class="form-group-admin">
-                            <label class="form-label-admin">Temna Barva</label>
-                            <input id="darkColor" type="color" class="form-input-admin">
-                        </div>
-                    </div>
-                </div>
-
-                <div class="admin-section">
-                    <div class="section-title">Logotipi</div>
-                    <div class="form-row">
-                        <div class="form-group-admin">
-                            <label class="form-label-admin">Prikaži Logo?</label>
-                            <select id="showLogo" class="form-input-admin" style="width: 100%;">
-                                <option value="true">Da</option>
-                                <option value="false">Ne</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group-admin">
-                            <label class="form-label-admin">Veliki Logo (URL)</label>
-                            <input id="logoLarge" type="text" class="form-input-admin">
-                        </div>
-                        <div class="form-group-admin">
-                            <label class="form-label-admin">Mali Logo (URL)</label>
-                            <input id="logoSmall" type="text" class="form-input-admin">
-                        </div>
-                    </div>
-                </div>
-
-                <button class="save-btn" onclick="saveAppearance()">💾 Shrani Videz</button>
-            </div>
-
-            <!-- TAB: SERVICES -->
-            <div id="services" class="tab-content">
-                <h2 style="margin-top: 0; margin-bottom: 30px; color: #333; font-size: 24px; border-bottom: 2px solid #DC143C; padding-bottom: 10px;">💼 Storitve in Brivci</h2>
-                
-                <div class="admin-section">
-                    <div class="section-title">Storitve</div>
-                    <div id="servicesContainer"></div>
-                    <button class="save-btn" style="margin-top: 20px;" onclick="saveServices()">💾 Shrani Storitve</button>
-                </div>
-
-                <div class="admin-section">
-                    <div class="section-title">Brivci</div>
-                    <div id="barbersContainer"></div>
-                    <button class="save-btn" style="margin-top: 20px;" onclick="saveBarbers()">💾 Shrani Brivce</button>
-                </div>
-            </div>
-        </div>
-    </div>
+            </div> <!-- END panel tab -->
 
     <script>
-        console.log('Admin panel loaded');
-        console.log('SITE_CONFIG:', SITE_CONFIG);
-
-        // ===== RESTORE FROM STORAGE =====
-        function restoreFromStorage() {
-            const saved = localStorage.getItem('site_config_backup');
-            const savedAppts = localStorage.getItem('appointments');
+        // Tab switching function
+        function switchTab(event, tabName) {
+            event.preventDefault();
             
+            // Hide all tabs
+            const tabs = document.querySelectorAll('.tab-content');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            
+            // Remove active from all buttons
+            const buttons = document.querySelectorAll('.tab-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            
+            // Show selected tab and activate button
+            const selectedTab = document.getElementById(tabName);
+            if (selectedTab) {
+                selectedTab.classList.add('active');
+            }
+            event.target.classList.add('active');
+        }
+
+        // Default admin credentials
+        const ADMIN_NAME = "admin";
+        const ADMIN_PASSWORD = "admin123";
+
+        // Load configuration from localStorage
+        function loadConfig() {
+            const saved = localStorage.getItem('site_config_backup');
             if (saved) {
                 try {
                     const config = JSON.parse(saved);
-                    // Merge saved config, but preserve existing appointments if they exist
-                    const currentAppts = SITE_CONFIG.appointments;
                     Object.assign(SITE_CONFIG, config);
-                    // If we had existing appointments, keep them
-                    if (currentAppts && currentAppts.length > 0) {
-                        SITE_CONFIG.appointments = currentAppts;
-                    }
-                    console.log('Config restored from localStorage');
                 } catch (e) {
-                    console.error('Error restoring config:', e);
-                }
-            }
-            
-            // Separately restore appointments
-            if (savedAppts) {
-                try {
-                    const appts = JSON.parse(savedAppts);
-                    SITE_CONFIG.appointments = appts;
-                    console.log('Appointments restored:', appts.length);
-                } catch (e) {
-                    console.error('Error restoring appointments:', e);
+                    console.log('Could not load saved config');
                 }
             }
         }
 
-        // Restore immediately after config loads
-        restoreFromStorage();
-
-        // ===== AUTH =====
+        // Handle login
         function handleLogin(e) {
             e.preventDefault();
-            const user = document.getElementById('adminName').value;
-            const pass = document.getElementById('adminPassword').value;
-            
-            console.log('Login attempt:', user);
-            
-            if (user === SITE_CONFIG.admin.username && pass === SITE_CONFIG.admin.password) {
-                localStorage.setItem('adminLoggedIn', 'true');
-                showAdminPanel();
+            const name = document.getElementById('adminName').value;
+            const password = document.getElementById('adminPassword').value;
+            const errorEl = document.getElementById('loginError');
+
+            if (name === ADMIN_NAME && password === ADMIN_PASSWORD) {
+                sessionStorage.setItem('admin_logged_in', 'true');
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('adminPanel').classList.add('active');
+                loadAdminForms();
+                errorEl.style.display = 'none';
             } else {
-                const error = document.getElementById('loginError');
-                error.style.display = 'block';
-                error.textContent = 'Napačno uporabniško ime ali geslo';
+                errorEl.textContent = 'Napačno uporabniško ime ali geslo';
+                errorEl.style.display = 'block';
             }
         }
 
+        // Handle logout
         function handleLogout() {
-            localStorage.removeItem('adminLoggedIn');
+            sessionStorage.removeItem('admin_logged_in');
             location.reload();
         }
 
-        function showAdminPanel() {
-            document.getElementById('loginScreen').style.display = 'none';
-            document.getElementById('adminPanel').classList.add('active');
-            loadAllData();
+        // Load forms with current data
+        function loadAdminForms() {
+            // Shop
+            document.getElementById('shopName').value = SITE_CONFIG.shopName;
+
+            // Hero
+            document.getElementById('heroSubtitle').value = SITE_CONFIG.hero.subtitle;
+            document.getElementById('heroTitle').value = SITE_CONFIG.hero.title;
+            document.getElementById('heroButton').value = SITE_CONFIG.hero.buttonText;
+            document.getElementById('heroImageUrl').value = SITE_CONFIG.hero.backgroundImage || '';
+
+            // Story/About
+            document.getElementById('storyTitle').value = SITE_CONFIG.ourStory.title || '';
+            document.getElementById('storySectionLabel').value = SITE_CONFIG.ourStory.sectionTitle || '';
+            document.getElementById('storyText').value = SITE_CONFIG.ourStory.text || '';
+            document.getElementById('storyImage').value = SITE_CONFIG.ourStory.image || '';
+
+            // Testimonial
+            document.getElementById('testimonialQuote').value = SITE_CONFIG.testimonial?.quote || '';
+            document.getElementById('testimonialAuthor').value = SITE_CONFIG.testimonial?.author || '';
+
+            // Navigation
+            document.getElementById('navButtonText').value = SITE_CONFIG.navButtonText || 'Book Now';
+
+            // Logo display preference
+            if (SITE_CONFIG.logo) {
+                document.getElementById('showLogo').value = SITE_CONFIG.logo.showLogo !== false ? 'true' : 'false';
+            }
+
+            // Section titles
+            document.getElementById('barbersSectionTitle').value = SITE_CONFIG.barbersSection.title || 'The Craftsmen';
+            document.getElementById('bookingHeading').value = SITE_CONFIG.booking.heading || 'Request Appointment';
+
+            // Colors
+            if (SITE_CONFIG.theme) {
+                document.getElementById('theme-primary').value = SITE_CONFIG.theme.primary || '#DC143C';
+                document.getElementById('theme-primary-text').value = SITE_CONFIG.theme.primary || '#DC143C';
+                document.getElementById('theme-dark').value = SITE_CONFIG.theme.dark || '#1a1a1a';
+                document.getElementById('theme-dark-text').value = SITE_CONFIG.theme.dark || '#1a1a1a';
+                document.getElementById('theme-card').value = SITE_CONFIG.theme.card || '#ffffff';
+                document.getElementById('theme-card-text').value = SITE_CONFIG.theme.card || '#ffffff';
+                document.getElementById('theme-gradient-start').value = SITE_CONFIG.theme.gradientStart || '#DC143C';
+                document.getElementById('theme-gradient-start-text').value = SITE_CONFIG.theme.gradientStart || '#DC143C';
+                document.getElementById('theme-gradient-end').value = SITE_CONFIG.theme.gradientEnd || '#FF6B6B';
+                document.getElementById('theme-gradient-end-text').value = SITE_CONFIG.theme.gradientEnd || '#FF6B6B';
+                
+                // Text & UI Colors
+                document.getElementById('text-primary').value = SITE_CONFIG.theme.textPrimary || '#FFFFFF';
+                document.getElementById('text-primary-text').value = SITE_CONFIG.theme.textPrimary || '#FFFFFF';
+                document.getElementById('text-secondary').value = SITE_CONFIG.theme.textSecondary || '#A0A0A0';
+                document.getElementById('text-secondary-text').value = SITE_CONFIG.theme.textSecondary || '#A0A0A0';
+                document.getElementById('button-color').value = SITE_CONFIG.theme.buttonColor || '#DC143C';
+                document.getElementById('button-color-text').value = SITE_CONFIG.theme.buttonColor || '#DC143C';
+                document.getElementById('button-text-color').value = SITE_CONFIG.theme.buttonTextColor || '#0A0A0A';
+                document.getElementById('button-text-color-text').value = SITE_CONFIG.theme.buttonTextColor || '#0A0A0A';
+                
+                // Nav & Footer Colors
+                document.getElementById('nav-text-color').value = SITE_CONFIG.theme.navTextColor || '#A0A0A0';
+                document.getElementById('nav-text-color-text').value = SITE_CONFIG.theme.navTextColor || '#A0A0A0';
+                document.getElementById('nav-hover-color').value = SITE_CONFIG.theme.navHoverColor || '#DC143C';
+                document.getElementById('nav-hover-color-text').value = SITE_CONFIG.theme.navHoverColor || '#DC143C';
+                document.getElementById('footer-bg-color').value = SITE_CONFIG.theme.footerBgColor || '#0A0A0A';
+                document.getElementById('footer-bg-color-text').value = SITE_CONFIG.theme.footerBgColor || '#0A0A0A';
+                document.getElementById('footer-text-color').value = SITE_CONFIG.theme.footerTextColor || '#606060';
+                document.getElementById('footer-text-color-text').value = SITE_CONFIG.theme.footerTextColor || '#606060';
+
+                // Sync color pickers with text inputs
+                syncColorInputs();
+            }
+
+
+            // Appearance: logos, hero image
+            if (SITE_CONFIG.logo) {
+                document.getElementById('logoLargeUrl').value = SITE_CONFIG.logo.large || '';
+                document.getElementById('logoMiniUrl').value = SITE_CONFIG.logo.mini || '';
+                if (SITE_CONFIG.logo.large) document.getElementById('logoLargePreview').src = SITE_CONFIG.logo.large;
+                if (SITE_CONFIG.logo.mini) document.getElementById('logoMiniPreview').src = SITE_CONFIG.logo.mini;
+            }
+
+            // Booking
+            document.getElementById('businessStart').value = (SITE_CONFIG.booking.businessHours?.start) || 9;
+            document.getElementById('businessEnd').value = (SITE_CONFIG.booking.businessHours?.end) || 19;
+            document.getElementById('ownerEmail').value = (SITE_CONFIG.ownerContact?.email) || '';
+            document.getElementById('ownerPhone').value = (SITE_CONFIG.ownerContact?.phone) || '';
+
+            // Services
+            loadServices();
+
+            // Barbers
+            loadBarbers();
+
+            // Gallery
+            loadGallery();
+            
+            // Appointments
+            loadAppointments();
+
+            // Working Days
+            loadWorkingDays();
         }
 
-        // ===== TABS =====
-        function switchTab(e, tabId) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-            document.getElementById(tabId).classList.add('active');
-            e.target.classList.add('active');
+        // Load services
+        function loadServices() {
+            const container = document.getElementById('servicesContainer');
+            container.innerHTML = '';
+            SITE_CONFIG.servicesSection.items.forEach((service, idx) => {
+                container.innerHTML += `
+                    <div class="service-item">
+                        <div class="form-row">
+                            <input type="text" class="form-input-admin service-name-${idx}" value="${service.name}" placeholder="Ime storitve">
+                            <input type="text" class="form-input-admin service-price-${idx}" value="${service.price}" placeholder="Cena">
+                        </div>
+                        <div class="form-row">
+                            <input type="number" class="form-input-admin service-duration-${idx}" value="${service.duration || 0}" placeholder="Trajanje (minut)" min="1" max="180">
+                        </div>
+                        <div class="form-row full">
+                            <input type="text" class="form-input-admin service-desc-${idx}" value="${service.desc}" placeholder="Opis">
+                        </div>
+                    </div>
+                `;
+            });
         }
 
-        // ===== SAVE =====
-        function saveConfig() {
-            console.log('Saving config...', SITE_CONFIG);
-            const configStr = JSON.stringify(SITE_CONFIG);
-            localStorage.setItem('site_config_backup', configStr);
-            localStorage.setItem('appointments', JSON.stringify(SITE_CONFIG.appointments || []));
-            console.log('✅ Saved to localStorage:', configStr.substring(0, 100) + '...');
-            alert('✅ Spremembe shranjene!');
+        // Save services
+        function saveServices() {
+            SITE_CONFIG.servicesSection.items.forEach((service, idx) => {
+                const nameEl = document.querySelector('.service-name-' + idx);
+                const priceEl = document.querySelector('.service-price-' + idx);
+                const durationEl = document.querySelector('.service-duration-' + idx);
+                const descEl = document.querySelector('.service-desc-' + idx);
+                
+                if (nameEl) service.name = nameEl.value;
+                if (priceEl) service.price = priceEl.value;
+                if (durationEl) service.duration = parseInt(durationEl.value) || 0;
+                if (descEl) service.desc = descEl.value;
+            });
+            saveConfig();
         }
 
-        // ===== DASHBOARD =====
+        // Load barbers
+        function loadBarbers() {
+            const container = document.getElementById('barbersContainer');
+            container.innerHTML = '';
+            SITE_CONFIG.barbersSection.list.forEach((barber, idx) => {
+                container.innerHTML += `
+                    <div class="service-item">
+                        <div class="form-row">
+                            <input type="text" class="form-input-admin barber-name-${idx}" value="${barber.name}" placeholder="Ime brivca">
+                            <input type="text" class="form-input-admin barber-role-${idx}" value="${barber.role}" placeholder="Vloga">
+                        </div>
+                        <div class="form-row full">
+                            <input type="text" class="form-input-admin barber-img-${idx}" value="${barber.img}" placeholder="URL slike">
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        // Add new service
+        function addService() {
+            SITE_CONFIG.servicesSection.items.push({
+                name: 'Nova Storitev',
+                price: '$0',
+                duration: 30,
+                desc: 'Opis storitve'
+            });
+            loadServices();
+            showNotification('Storitev dodana', 'success');
+        }
+
+        // Remove last service
+        function removeService() {
+            if (SITE_CONFIG.servicesSection.items.length > 1) {
+                SITE_CONFIG.servicesSection.items.pop();
+                loadServices();
+                showNotification('Storitev odstranjena', 'success');
+            } else {
+                showNotification('Morali ste imeti vsaj eno storitev', 'error');
+            }
+        }
+
+        // Save barbers
+        function saveBarbers() {
+            SITE_CONFIG.barbersSection.list.forEach((barber, idx) => {
+                const nameEl = document.querySelector('.barber-name-' + idx);
+                const roleEl = document.querySelector('.barber-role-' + idx);
+                const imgEl = document.querySelector('.barber-img-' + idx);
+                
+                if (nameEl) barber.name = nameEl.value;
+                if (roleEl) barber.role = roleEl.value;
+                if (imgEl) barber.img = imgEl.value;
+            });
+            saveConfig();
+        }
+
+        // Add new barber
+        function addBarber() {
+            SITE_CONFIG.barbersSection.list.push({
+                name: 'Nov Brivec',
+                role: 'Brivec',
+                img: 'https://via.placeholder.com/300'
+            });
+            loadBarbers();
+            showNotification('Brivec dodan', 'success');
+        }
+
+        // Remove last barber
+        function removeBarber() {
+            if (SITE_CONFIG.barbersSection.list.length > 1) {
+                SITE_CONFIG.barbersSection.list.pop();
+                loadBarbers();
+                showNotification('Brivec odstranjen', 'success');
+            } else {
+                showNotification('Morali ste imeti vsaj enega brivca', 'error');
+            }
+        }
+
+        // Load gallery
+        function loadGallery() {
+            const gallery = document.getElementById('imageGallery');
+            gallery.innerHTML = '';
+            SITE_CONFIG.gallery.forEach((img, idx) => {
+                gallery.innerHTML += `
+                    <div class="image-item">
+                        <img src="${img}" alt="Galerija slika" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23eee%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22 font-family=%22Poppins%22 font-size=%2214%22 fill=%22%23999%22%3ESlika%3C/text%3E%3C/svg%3E'">
+                        <button class="image-remove" onclick="removeImage(${idx})">×</button>
+                    </div>
+                `;
+            });
+        }
+
+        // Handle image upload
+        document.getElementById('imageInput').addEventListener('change', function(e) {
+            const files = e.target.files;
+            for (let file of files) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    SITE_CONFIG.gallery.push(event.target.result);
+                    loadGallery();
+                    saveConfig();
+                };
+                reader.readAsDataURL(file);
+            }
+            e.target.value = '';
+        });
+
+        // Drag and drop
+        const uploadArea = document.getElementById('uploadArea');
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            document.getElementById('imageInput').files = files;
+            const event = new Event('change', { bubbles: true });
+            document.getElementById('imageInput').dispatchEvent(event);
+        });
+
+        // Remove image
+        function removeImage(idx) {
+            SITE_CONFIG.gallery.splice(idx, 1);
+            loadGallery();
+            saveConfig();
+        }
+
+        // Save gallery
+        function saveGallery() {
+            saveConfig();
+        }
+
+        // Load and display appointments
+        // Update dashboard with metrics and charts
         function updateDashboard(appointments) {
+            // Calculate metrics
+            const totalAppointments = appointments.length;
             const now = new Date();
             const currentMonth = now.getMonth() + 1;
             const currentYear = now.getFullYear();
@@ -527,12 +911,13 @@
             const monthlyRevenue = monthlyAppts.reduce((sum, appt) => sum + (appt.totalPrice || 0), 0);
             const averagePrice = monthlyAppts.length > 0 ? Math.round(monthlyRevenue / monthlyAppts.length) : 0;
             
-            document.getElementById('totalAppointments').textContent = appointments.length;
+            // Update metric displays
+            document.getElementById('totalAppointments').textContent = totalAppointments;
             document.getElementById('monthlyRevenue').textContent = '€' + monthlyRevenue;
             document.getElementById('monthlyAppointments').textContent = monthlyAppts.length;
             document.getElementById('averagePrice').textContent = '€' + averagePrice;
             
-            // Services chart
+            // Services chart data
             const serviceCount = {};
             appointments.forEach(appt => {
                 appt.services.forEach(service => {
@@ -540,200 +925,750 @@
                 });
             });
             
-            const labels = Object.keys(serviceCount);
-            const data = Object.values(serviceCount);
+            const serviceLabels = Object.keys(serviceCount);
+            const serviceData = Object.values(serviceCount);
             
-            if (labels.length > 0 && document.getElementById('servicesChart')) {
-                const ctx = document.getElementById('servicesChart').getContext('2d');
-                if (window.servicesChartInstance) window.servicesChartInstance.destroy();
-                window.servicesChartInstance = new Chart(ctx, {
+            // Create services chart
+            if (serviceLabels.length > 0) {
+                const servicesCtx = document.getElementById('servicesChart').getContext('2d');
+                if (window.servicesChartInstance) {
+                    window.servicesChartInstance.destroy();
+                }
+                window.servicesChartInstance = new Chart(servicesCtx, {
                     type: 'doughnut',
-                    data: { 
-                        labels: labels, 
-                        datasets: [{ data: data, backgroundColor: ['#DC143C', '#4F46E5', '#10B981', '#F59E0B', '#EF4444'], borderColor: '#fff', borderWidth: 2 }] 
+                    data: {
+                        labels: serviceLabels,
+                        datasets: [{
+                            data: serviceData,
+                            backgroundColor: ['#DC143C', '#4F46E5', '#10B981', '#F59E0B', '#EF4444'],
+                            borderColor: '#fff',
+                            borderWidth: 2
+                        }]
                     },
-                    options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: {
+                            legend: { position: 'bottom' }
+                        }
+                    }
+                });
+            }
+            
+            // Appointments by day chart
+            const dayCount = {};
+            appointments.forEach(appt => {
+                const [year, month, day] = appt.date.split('-');
+                dayCount[day] = (dayCount[day] || 0) + 1;
+            });
+            
+            const dayLabels = Object.keys(dayCount).sort((a, b) => parseInt(a) - parseInt(b)).slice(0, 7);
+            const dayData = dayLabels.map(day => dayCount[day] || 0);
+            
+            if (dayLabels.length > 0) {
+                const appointmentsCtx = document.getElementById('appointmentsChart').getContext('2d');
+                if (window.appointmentsChartInstance) {
+                    window.appointmentsChartInstance.destroy();
+                }
+                window.appointmentsChartInstance = new Chart(appointmentsCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: dayLabels.map(d => d + '.'),
+                        datasets: [{
+                            label: 'Naročila',
+                            data: dayData,
+                            backgroundColor: '#DC143C',
+                            borderColor: '#FF6B6B',
+                            borderWidth: 1,
+                            borderRadius: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: {
+                            legend: { display: false }
+                        },
+                        scales: {
+                            y: { beginAtZero: true }
+                        }
+                    }
                 });
             }
         }
 
         function loadAppointments() {
-            const appts = SITE_CONFIG.appointments || [];
-            document.getElementById('appointmentCount').textContent = appts.length;
-            updateDashboard(appts);
-            
             const container = document.getElementById('appointmentsContainer');
-            if (appts.length === 0) {
-                container.innerHTML = '<p style="color: #999;">Ni naročil</p>';
+            const count = document.getElementById('appointmentCount');
+            const appointments = SITE_CONFIG.appointments || [];
+            
+            count.innerText = appointments.length;
+            updateDashboard(appointments);
+            
+            if (appointments.length === 0) {
+                container.innerHTML = '<p class="text-gray-500 text-center py-4">Ni nobenega naročila</p>';
                 return;
             }
             
-            container.innerHTML = appts.map((appt, idx) => {
-                const [y, m, d] = appt.date.split('-');
-                return `
-                    <div style="padding: 12px; border-left: 3px solid #DC143C; margin-bottom: 10px; background: #f9f9f9; border-radius: 4px;">
-                        <p style="font-weight: 600; margin: 0;">${appt.firstName} ${appt.surname}</p>
-                        <p style="font-size: 12px; color: #666; margin: 4px 0;">${appt.email} | ${appt.phone}</p>
-                        <p style="font-size: 12px; margin: 4px 0;"><b>Termin:</b> ${d}.${m}.${y} ob ${appt.time}</p>
-                        <p style="font-size: 12px; margin: 4px 0;"><b>Storitve:</b> ${appt.services.join(', ')}</p>
-                        <p style="font-size: 12px; margin: 4px 0;"><b>Cena:</b> €${appt.totalPrice}</p>
-                        <button onclick="deleteAppointment(${idx})" style="font-size: 11px; padding: 5px 10px; background: #F87171; color: white; border: none; border-radius: 3px; cursor: pointer;">Izbriši</button>
+            container.innerHTML = '';
+            appointments.forEach((appt, idx) => {
+                // Parse date correctly without timezone issues
+                const [year, month, day] = appt.date.split('-');
+                const dateStr = `${day}. ${month}. ${year}`;
+                container.innerHTML += `
+                    <div class="service-item" style="margin-bottom: 10px; padding: 12px; border-left: 3px solid #DC143C;">
+                        <p><strong>${appt.firstName} ${appt.surname}</strong></p>
+                        <p class="text-xs text-gray-600">${appt.email} | ${appt.phone}</p>
+                        <p class="text-sm mt-2"><strong>Termin:</strong> ${dateStr} ob ${appt.time}</p>
+                        <p class="text-sm"><strong>Storitve:</strong> ${appt.services.join(', ')}</p>
+                        <p class="text-sm"><strong>Trajanje:</strong> ${appt.totalDuration} min | <strong>Cena:</strong> €${appt.totalPrice}</p>
+                        <button onclick="deleteAppointment(${idx})" class="text-xs mt-2 px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600">Izbriši</button>
+                        <button onclick="generateInvoice(${idx})" class="text-xs mt-2 ml-2 px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700">Račun</button>
                     </div>
                 `;
-            }).join('');
+            });
         }
-
+        
+        // Delete appointment
         function deleteAppointment(idx) {
-            if (confirm('Izbriši?')) {
+            if (confirm('Ali si prepričan?')) {
                 SITE_CONFIG.appointments.splice(idx, 1);
                 saveConfig();
                 loadAppointments();
             }
         }
 
-        // ===== CONTENT =====
-        function loadContent() {
-            document.getElementById('shopName').value = SITE_CONFIG.shopName || '';
-            document.getElementById('heroTitle').value = SITE_CONFIG.hero?.title || '';
-            document.getElementById('heroSubtitle').value = SITE_CONFIG.hero?.subtitle || '';
-            document.getElementById('storyTitle').value = SITE_CONFIG.ourStory?.title || '';
-            document.getElementById('storyText').value = SITE_CONFIG.ourStory?.text || '';
-            document.getElementById('testimonialQuote').value = SITE_CONFIG.testimonial?.quote || '';
-            document.getElementById('testimonialAuthor').value = SITE_CONFIG.testimonial?.author || '';
-            document.getElementById('ownerEmail').value = SITE_CONFIG.ownerContact?.email || '';
-            document.getElementById('ownerPhone').value = SITE_CONFIG.ownerContact?.phone || '';
+                // Generate printable invoice for an appointment
+                function generateInvoice(idx) {
+                        const appt = (SITE_CONFIG.appointments || [])[idx];
+                        if (!appt) return alert('Ni najdenega naročila');
+
+                        // Build service rows with prices
+                        const serviceRows = appt.services.map(serviceName => {
+                            const service = SITE_CONFIG.servicesSection.items.find(s => s.name === serviceName);
+                            const price = service ? service.price : '€0';
+                            return `<tr><td>${serviceName}</td><td class="right">${price}</td></tr>`;
+                        }).join('');
+
+                        const invoiceHtml = `
+                                            <html>
+                                            <head>
+                                                <title>Račun - ${SITE_CONFIG.shopName}</title>
+                                                <style>body{font-family:Arial,Helvetica,sans-serif;padding:20px} .header{display:flex;align-items:center;gap:20px} .logo{max-height:80px} table{width:100%;border-collapse:collapse;margin-top:20px} td,th{border:1px solid #ddd;padding:8px;text-align:left} .right{text-align:right}</style>
+                                            </head>
+                                            <body>
+                                                <div class="header">
+                                                    ${SITE_CONFIG.logo && SITE_CONFIG.logo.large ? ('<img src="' + SITE_CONFIG.logo.large + '" class="logo">') : ('<h2>' + SITE_CONFIG.shopName + '</h2>')}
+                                                    <div>
+                                                        <div>${SITE_CONFIG.ownerContact?.email || ''}</div>
+                                                        <div>${SITE_CONFIG.ownerContact?.phone || ''}</div>
+                                                    </div>
+                                                </div>
+                                                <h3>Račun za: ${appt.name}</h3>
+                                                <div>Email: ${appt.email} | Tel: ${appt.phone}</div>
+                                                <div>Termin: ${appt.date} ob ${appt.time}</div>
+                                                <table>
+                                                    <thead><tr><th>Storitev</th><th class="right">Cena</th></tr></thead>
+                                                    <tbody>
+                                                        ${serviceRows}
+                                                        <tr><td><strong>Skupaj</strong></td><td class="right"><strong>${SITE_CONFIG.currency}${appt.totalPrice}</strong></td></tr>
+                                                    </tbody>
+                                                </table>
+                                                <div style="margin-top:20px">Hvala za obisk!</div>
+                                                <script>window.print();<\/script>
+                                            </body>
+                                            </html>
+                                    `;
+
+                        const w = window.open('', '_blank');
+                        w.document.write(invoiceHtml);
+                        w.document.close();
+                }
+        
+        // Save booking settings
+        function saveBooking() {
+            SITE_CONFIG.booking.title = document.getElementById('bookingTitle').value;
+            
+            // Ensure nested objects exist
+            if (!SITE_CONFIG.booking.businessHours) SITE_CONFIG.booking.businessHours = {};
+            if (!SITE_CONFIG.ownerContact) SITE_CONFIG.ownerContact = {};
+            
+            SITE_CONFIG.booking.businessHours.start = parseInt(document.getElementById('businessStart').value) || 9;
+            SITE_CONFIG.booking.businessHours.end = parseInt(document.getElementById('businessEnd').value) || 19;
+            SITE_CONFIG.ownerContact.email = document.getElementById('ownerEmail').value;
+            SITE_CONFIG.ownerContact.phone = document.getElementById('ownerPhone').value;
+            saveConfig();
         }
 
-        function saveContent() {
-            SITE_CONFIG.shopName = document.getElementById('shopName').value;
-            SITE_CONFIG.hero = SITE_CONFIG.hero || {};
-            SITE_CONFIG.hero.title = document.getElementById('heroTitle').value;
-            SITE_CONFIG.hero.subtitle = document.getElementById('heroSubtitle').value;
-            SITE_CONFIG.ourStory = SITE_CONFIG.ourStory || {};
-            SITE_CONFIG.ourStory.title = document.getElementById('storyTitle').value;
-            SITE_CONFIG.ourStory.text = document.getElementById('storyText').value;
-            SITE_CONFIG.testimonial = SITE_CONFIG.testimonial || {};
-            SITE_CONFIG.testimonial.quote = document.getElementById('testimonialQuote').value;
-            SITE_CONFIG.testimonial.author = document.getElementById('testimonialAuthor').value;
-            SITE_CONFIG.ownerContact = { 
-                email: document.getElementById('ownerEmail').value, 
-                phone: document.getElementById('ownerPhone').value 
+        // Update working days
+        function updateWorkingDays() {
+            if (!SITE_CONFIG.booking) SITE_CONFIG.booking = {};
+            if (!SITE_CONFIG.booking.workingDays) SITE_CONFIG.booking.workingDays = {};
+            
+            const dayMap = {
+                'Monday': 1,
+                'Tuesday': 2,
+                'Wednesday': 3,
+                'Thursday': 4,
+                'Friday': 5,
+                'Saturday': 6,
+                'Sunday': 0
             };
+            
+            const dayIds = ['dayMonday', 'dayTuesday', 'dayWednesday', 'dayThursday', 'dayFriday', 'daySaturday', 'daySunday'];
+            const dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+            
+            // Reset working days
+            SITE_CONFIG.booking.workingDays = {};
+            const daysClosed = [];
+            
+            // Check which days are working days
+            dayIds.forEach((id, idx) => {
+                const checkbox = document.getElementById(id);
+                const dayNum = dayMap[dayNames[idx]];
+                
+                if (checkbox && checkbox.checked) {
+                    SITE_CONFIG.booking.workingDays[dayNum] = true;
+                } else {
+                    daysClosed.push(dayNum);
+                }
+            });
+            
+            // Store days closed for calendar (inverse of working days)
+            SITE_CONFIG.booking.daysClosed = daysClosed;
+            
+            // Render hours for each working day
+            renderWorkingHoursInputs();
             saveConfig();
         }
 
-        // ===== APPEARANCE =====
-        function loadAppearance() {
-            document.getElementById('primaryColor').value = SITE_CONFIG.theme?.primary || '#DC143C';
-            document.getElementById('darkColor').value = SITE_CONFIG.theme?.dark || '#0A0A0A';
-            document.getElementById('showLogo').value = (SITE_CONFIG.logo?.showLogo !== false).toString();
-            document.getElementById('logoLarge').value = SITE_CONFIG.logo?.large || '';
-            document.getElementById('logoSmall').value = SITE_CONFIG.logo?.mini || '';
+        // Render working hours inputs for each day
+        function renderWorkingHoursInputs() {
+            const container = document.getElementById('workingHoursContainer');
+            if (!container) return;
+            
+            container.innerHTML = '';
+            
+            if (!SITE_CONFIG.booking) SITE_CONFIG.booking = {};
+            if (!SITE_CONFIG.booking.workingDays) SITE_CONFIG.booking.workingDays = {};
+            
+            const dayNames = ['Nedelja', 'Ponedeljek', 'Torek', 'Sreda', 'Četrtek', 'Petek', 'Sobota'];
+            const dayNamesEn = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+            
+            for (let dayNum = 0; dayNum < 7; dayNum++) {
+                if (SITE_CONFIG.booking.workingDays[dayNum]) {
+                    const hoursStart = SITE_CONFIG.booking.hours?.[dayNum]?.start || SITE_CONFIG.booking.businessHours?.start || 9;
+                    const hoursEnd = SITE_CONFIG.booking.hours?.[dayNum]?.end || SITE_CONFIG.booking.businessHours?.end || 19;
+                    
+                    const dayRow = document.createElement('div');
+                    dayRow.style.cssText = 'display: grid; grid-template-columns: 150px 1fr 1fr; gap: 10px; align-items: center; padding: 10px; background: #f9f9f9; border-radius: 5px;';
+                    dayRow.innerHTML = `
+                        <label style="font-weight: 500; font-size: 14px;">${dayNames[dayNum]}:</label>
+                        <input type="number" min="0" max="23" value="${hoursStart}" placeholder="Od ure" 
+                            onchange="setDayHours(${dayNum}, this.value, null)" style="padding: 8px; border: 1px solid #ddd; border-radius: 3px;">
+                        <input type="number" min="0" max="23" value="${hoursEnd}" placeholder="Do ure"
+                            onchange="setDayHours(${dayNum}, null, this.value)" style="padding: 8px; border: 1px solid #ddd; border-radius: 3px;">
+                    `;
+                    container.appendChild(dayRow);
+                }
+            }
         }
 
+        // Set custom hours for a specific day
+        function setDayHours(dayNum, startHour, endHour) {
+            if (!SITE_CONFIG.booking) SITE_CONFIG.booking = {};
+            if (!SITE_CONFIG.booking.hours) SITE_CONFIG.booking.hours = {};
+            if (!SITE_CONFIG.booking.hours[dayNum]) SITE_CONFIG.booking.hours[dayNum] = {};
+            
+            if (startHour !== null) {
+                SITE_CONFIG.booking.hours[dayNum].start = parseInt(startHour) || 9;
+            }
+            if (endHour !== null) {
+                SITE_CONFIG.booking.hours[dayNum].end = parseInt(endHour) || 19;
+            }
+            
+            saveConfig();
+        }
+
+        // Load and populate working days on admin panel load
+        function loadWorkingDays() {
+            if (!SITE_CONFIG.booking) SITE_CONFIG.booking = {};
+            
+            const dayIds = ['dayMonday', 'dayTuesday', 'dayWednesday', 'dayThursday', 'dayFriday', 'daySaturday', 'daySunday'];
+            const dayNums = [1, 2, 3, 4, 5, 6, 0];
+            
+            // Check working days
+            dayNums.forEach((dayNum, idx) => {
+                const checkbox = document.getElementById(dayIds[idx]);
+                if (checkbox) {
+                    checkbox.checked = SITE_CONFIG.booking.workingDays?.[dayNum] || false;
+                }
+            });
+            
+            // Render hours
+            renderWorkingHoursInputs();
+        }
+
+        // Save appearance settings (logos, hero image, footer)
         function saveAppearance() {
-            SITE_CONFIG.theme = SITE_CONFIG.theme || {};
-            SITE_CONFIG.theme.primary = document.getElementById('primaryColor').value;
-            SITE_CONFIG.theme.dark = document.getElementById('darkColor').value;
-            SITE_CONFIG.logo = SITE_CONFIG.logo || {};
+            if (!SITE_CONFIG.logo) SITE_CONFIG.logo = {};
+
+            // If text URL provided, use it; otherwise keep existing
+            const largeUrlEl = document.getElementById('logoLargeUrl');
+            const miniUrlEl = document.getElementById('logoMiniUrl');
+            const heroUrlEl = document.getElementById('heroImageUrl');
+            const footerEl = document.getElementById('footerText');
+            
+            const largeUrl = largeUrlEl ? largeUrlEl.value.trim() : '';
+            const miniUrl = miniUrlEl ? miniUrlEl.value.trim() : '';
+            const heroUrl = heroUrlEl ? heroUrlEl.value.trim() : '';
+            const footer = footerEl ? footerEl.value.trim() : '';
+
+            if (largeUrl) SITE_CONFIG.logo.large = largeUrl;
+            if (miniUrl) SITE_CONFIG.logo.mini = miniUrl;
+            if (heroUrl) SITE_CONFIG.hero.backgroundImage = heroUrl;
+            if (footer) SITE_CONFIG.footerText = footer;
+
+            // If files uploaded, read them as data URLs
+            const largeInputEl = document.getElementById('logoLargeInput');
+            const miniInputEl = document.getElementById('logoMiniInput');
+            
+            const largeFile = largeInputEl ? largeInputEl.files[0] : null;
+            const miniFile = miniInputEl ? miniInputEl.files[0] : null;
+
+            if (largeFile) {
+                const r = new FileReader();
+                r.onload = function(e) { SITE_CONFIG.logo.large = e.target.result; document.getElementById('logoLargePreview').src = e.target.result; saveConfig(); };
+                r.readAsDataURL(largeFile);
+            }
+            if (miniFile) {
+                const r2 = new FileReader();
+                r2.onload = function(e) { SITE_CONFIG.logo.mini = e.target.result; document.getElementById('logoMiniPreview').src = e.target.result; saveConfig(); };
+                r2.readAsDataURL(miniFile);
+            }
+
+            // Update previews for URL inputs
+            if (SITE_CONFIG.logo.large) document.getElementById('logoLargePreview').src = SITE_CONFIG.logo.large;
+            if (SITE_CONFIG.logo.mini) document.getElementById('logoMiniPreview').src = SITE_CONFIG.logo.mini;
+
+            applyThemeToPage();
+            saveConfig();
+            showNotification('Videz shranjen', 'success');
+        }
+
+        // Save logo display preference
+        function saveLogo() {
+            if (!SITE_CONFIG.logo) SITE_CONFIG.logo = {};
             SITE_CONFIG.logo.showLogo = document.getElementById('showLogo').value === 'true';
-            SITE_CONFIG.logo.large = document.getElementById('logoLarge').value;
-            SITE_CONFIG.logo.mini = document.getElementById('logoSmall').value;
             saveConfig();
+            showNotification('Logo izbira shranjena', 'success');
         }
 
-        // ===== SERVICES =====
-        function loadServices() {
-            const container = document.getElementById('servicesContainer');
-            const items = SITE_CONFIG.servicesSection?.items || [];
+        // Save section titles
+        function saveSectionTitles() {
+            if (document.getElementById('barbersSectionTitle').value) {
+                SITE_CONFIG.barbersSection.title = document.getElementById('barbersSectionTitle').value;
+            }
+            if (document.getElementById('bookingHeading').value) {
+                SITE_CONFIG.booking.heading = document.getElementById('bookingHeading').value;
+            }
+            saveConfig();
+            showNotification('Naslovi shranjeni', 'success');
+        }
+
+        // Save theme colors
+        function saveTheme() {
+            // Get values from color inputs or text inputs
+            const primaryColor = document.getElementById('theme-primary-text').value || document.getElementById('theme-primary').value;
+            const darkColor = document.getElementById('theme-dark-text').value || document.getElementById('theme-dark').value;
+            const cardColor = document.getElementById('theme-card-text').value || document.getElementById('theme-card').value;
+            const gradientStart = document.getElementById('theme-gradient-start-text').value || document.getElementById('theme-gradient-start').value;
+            const gradientEnd = document.getElementById('theme-gradient-end-text').value || document.getElementById('theme-gradient-end').value;
+
+            // Ensure theme object exists
+            if (!SITE_CONFIG.theme) SITE_CONFIG.theme = {};
+
+            // Update config
+            SITE_CONFIG.theme.primary = primaryColor;
+            SITE_CONFIG.theme.dark = darkColor;
+            SITE_CONFIG.theme.card = cardColor;
+            SITE_CONFIG.theme.gradientStart = gradientStart;
+            SITE_CONFIG.theme.gradientEnd = gradientEnd;
+
+            // Apply colors to page immediately
+            applyThemeToPage();
+
+            // Save config
+            saveConfig();
+            showNotification('Barve so bile shranjene!', 'success');
+        }
+
+        // Save text and UI colors
+        function saveTextColors() {
+            const textPrimaryColor = document.getElementById('text-primary-text').value || document.getElementById('text-primary').value;
+            const textSecondaryColor = document.getElementById('text-secondary-text').value || document.getElementById('text-secondary').value;
+            const buttonColor = document.getElementById('button-color-text').value || document.getElementById('button-color').value;
+            const buttonTextColor = document.getElementById('button-text-color-text').value || document.getElementById('button-text-color').value;
+
+            // Ensure theme object exists
+            if (!SITE_CONFIG.theme) SITE_CONFIG.theme = {};
+
+            // Update config
+            SITE_CONFIG.theme.textPrimary = textPrimaryColor;
+            SITE_CONFIG.theme.textSecondary = textSecondaryColor;
+            SITE_CONFIG.theme.buttonColor = buttonColor;
+            SITE_CONFIG.theme.buttonTextColor = buttonTextColor;
+
+            // Apply colors to page immediately
+            applyThemeToPage();
+
+            // Save config
+            saveConfig();
+            showNotification('Barve besedila in gumbov so bile shranjene!', 'success');
+        }
+
+        // Save navigation and footer colors
+        function saveNavFooterColors() {
+            const navTextColor = document.getElementById('nav-text-color-text').value || document.getElementById('nav-text-color').value;
+            const navHoverColor = document.getElementById('nav-hover-color-text').value || document.getElementById('nav-hover-color').value;
+            const footerBgColor = document.getElementById('footer-bg-color-text').value || document.getElementById('footer-bg-color').value;
+            const footerTextColor = document.getElementById('footer-text-color-text').value || document.getElementById('footer-text-color').value;
+
+            // Ensure theme object exists
+            if (!SITE_CONFIG.theme) SITE_CONFIG.theme = {};
+
+            // Update config
+            SITE_CONFIG.theme.navTextColor = navTextColor;
+            SITE_CONFIG.theme.navHoverColor = navHoverColor;
+            SITE_CONFIG.theme.footerBgColor = footerBgColor;
+            SITE_CONFIG.theme.footerTextColor = footerTextColor;
+
+            // Apply colors to page immediately
+            applyThemeToPage();
+
+            // Save config
+            saveConfig();
+            showNotification('Barve navigacije in noge so bile shranjene!', 'success');
+        }
+
+        // Apply theme colors to the page
+        function applyThemeToPage() {
+            const t = SITE_CONFIG.theme;
+            const root = document.documentElement;
+            root.style.setProperty('--color-primary', t.primary);
+            root.style.setProperty('--color-dark', t.dark);
+            root.style.setProperty('--color-card', t.card);
+            root.style.setProperty('--gradient-start', t.gradientStart);
+            root.style.setProperty('--gradient-end', t.gradientEnd);
+            root.style.setProperty('--text-primary', t.textPrimary || '#FFFFFF');
+            root.style.setProperty('--text-secondary', t.textSecondary || '#A0A0A0');
+            root.style.setProperty('--button-color', t.buttonColor || '#DC143C');
+            root.style.setProperty('--button-text-color', t.buttonTextColor || '#0A0A0A');
+            root.style.setProperty('--nav-text-color', t.navTextColor || '#A0A0A0');
+            root.style.setProperty('--nav-hover-color', t.navHoverColor || '#DC143C');
+            root.style.setProperty('--footer-bg-color', t.footerBgColor || '#0A0A0A');
+            root.style.setProperty('--footer-text-color', t.footerTextColor || '#606060');
+        }
+
+        function showNotification(message, type) {
+            const notif = document.createElement('div');
+            notif.className = `notification ${type}`;
+            notif.textContent = message;
+            document.body.appendChild(notif);
+            setTimeout(() => notif.remove(), 3000);
+        }
+
+        // Check authentication
+        window.addEventListener('load', () => {
+            loadConfig();
+            if (sessionStorage.getItem('admin_logged_in') === 'true') {
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('adminPanel').classList.add('active');
+                loadAdminForms();
+            }
+        });
+
+        // Auto-save on input change
+        document.addEventListener('change', function(e) {
+            if (e.target.id === 'shopName') SITE_CONFIG.shopName = e.target.value;
+            if (e.target.id === 'heroSubtitle') SITE_CONFIG.hero.subtitle = e.target.value;
+            if (e.target.id === 'heroTitle') SITE_CONFIG.hero.title = e.target.value;
+            if (e.target.id === 'heroButton') SITE_CONFIG.hero.buttonText = e.target.value;
+            if (e.target.id === 'heroImageUrl') SITE_CONFIG.hero.backgroundImage = e.target.value;
+            if (e.target.id === 'storyTitle') SITE_CONFIG.ourStory.title = e.target.value;
+            if (e.target.id === 'storyText') SITE_CONFIG.ourStory.text = e.target.value;
+            if (e.target.id === 'storySectionLabel') SITE_CONFIG.ourStory.sectionTitle = e.target.value;
+            if (e.target.id === 'storyImage') SITE_CONFIG.ourStory.image = e.target.value;
+            if (e.target.id === 'testimonialQuote') {
+                if (!SITE_CONFIG.testimonial) SITE_CONFIG.testimonial = {};
+                SITE_CONFIG.testimonial.quote = e.target.value;
+            }
+            if (e.target.id === 'testimonialAuthor') {
+                if (!SITE_CONFIG.testimonial) SITE_CONFIG.testimonial = {};
+                SITE_CONFIG.testimonial.author = e.target.value;
+            }
+            if (e.target.id === 'navButtonText') SITE_CONFIG.navButtonText = e.target.value;
+            if (e.target.id === 'businessStart') {
+                if (!SITE_CONFIG.booking.businessHours) SITE_CONFIG.booking.businessHours = {};
+                SITE_CONFIG.booking.businessHours.start = parseInt(e.target.value);
+            }
+            if (e.target.id === 'businessEnd') {
+                if (!SITE_CONFIG.booking.businessHours) SITE_CONFIG.booking.businessHours = {};
+                SITE_CONFIG.booking.businessHours.end = parseInt(e.target.value);
+            }
+            if (e.target.id === 'ownerEmail') {
+                if (!SITE_CONFIG.ownerContact) SITE_CONFIG.ownerContact = {};
+                SITE_CONFIG.ownerContact.email = e.target.value;
+            }
+            if (e.target.id === 'ownerPhone') {
+                if (!SITE_CONFIG.ownerContact) SITE_CONFIG.ownerContact = {};
+                SITE_CONFIG.ownerContact.phone = e.target.value;
+            }
+            // Handle color changes
+            if (e.target.id === 'theme-primary' || e.target.id === 'theme-primary-text') {
+                const val = document.getElementById('theme-primary-text').value || document.getElementById('theme-primary').value;
+                SITE_CONFIG.theme.primary = val;
+                document.getElementById('theme-primary').value = val;
+                document.getElementById('theme-primary-text').value = val;
+            }
+            if (e.target.id === 'theme-dark' || e.target.id === 'theme-dark-text') {
+                const val = document.getElementById('theme-dark-text').value || document.getElementById('theme-dark').value;
+                SITE_CONFIG.theme.dark = val;
+                document.getElementById('theme-dark').value = val;
+                document.getElementById('theme-dark-text').value = val;
+            }
+            if (e.target.id === 'theme-card' || e.target.id === 'theme-card-text') {
+                const val = document.getElementById('theme-card-text').value || document.getElementById('theme-card').value;
+                SITE_CONFIG.theme.card = val;
+                document.getElementById('theme-card').value = val;
+                document.getElementById('theme-card-text').value = val;
+            }
+            if (e.target.id === 'theme-gradient-start' || e.target.id === 'theme-gradient-start-text') {
+                const val = document.getElementById('theme-gradient-start-text').value || document.getElementById('theme-gradient-start').value;
+                SITE_CONFIG.theme.gradientStart = val;
+                document.getElementById('theme-gradient-start').value = val;
+                document.getElementById('theme-gradient-start-text').value = val;
+            }
+            if (e.target.id === 'theme-gradient-end' || e.target.id === 'theme-gradient-end-text') {
+                const val = document.getElementById('theme-gradient-end-text').value || document.getElementById('theme-gradient-end').value;
+                SITE_CONFIG.theme.gradientEnd = val;
+                document.getElementById('theme-gradient-end').value = val;
+                document.getElementById('theme-gradient-end-text').value = val;
+            }
+            // Text & UI Colors
+            if (e.target.id === 'text-primary' || e.target.id === 'text-primary-text') {
+                const val = document.getElementById('text-primary-text').value || document.getElementById('text-primary').value;
+                SITE_CONFIG.theme.textPrimary = val;
+                document.getElementById('text-primary').value = val;
+                document.getElementById('text-primary-text').value = val;
+            }
+            if (e.target.id === 'text-secondary' || e.target.id === 'text-secondary-text') {
+                const val = document.getElementById('text-secondary-text').value || document.getElementById('text-secondary').value;
+                SITE_CONFIG.theme.textSecondary = val;
+                document.getElementById('text-secondary').value = val;
+                document.getElementById('text-secondary-text').value = val;
+            }
+            if (e.target.id === 'button-color' || e.target.id === 'button-color-text') {
+                const val = document.getElementById('button-color-text').value || document.getElementById('button-color').value;
+                SITE_CONFIG.theme.buttonColor = val;
+                document.getElementById('button-color').value = val;
+                document.getElementById('button-color-text').value = val;
+            }
+            if (e.target.id === 'button-text-color' || e.target.id === 'button-text-color-text') {
+                const val = document.getElementById('button-text-color-text').value || document.getElementById('button-text-color').value;
+                SITE_CONFIG.theme.buttonTextColor = val;
+                document.getElementById('button-text-color').value = val;
+                document.getElementById('button-text-color-text').value = val;
+            }
+            // Nav & Footer Colors
+            if (e.target.id === 'nav-text-color' || e.target.id === 'nav-text-color-text') {
+                const val = document.getElementById('nav-text-color-text').value || document.getElementById('nav-text-color').value;
+                SITE_CONFIG.theme.navTextColor = val;
+                document.getElementById('nav-text-color').value = val;
+                document.getElementById('nav-text-color-text').value = val;
+            }
+            if (e.target.id === 'nav-hover-color' || e.target.id === 'nav-hover-color-text') {
+                const val = document.getElementById('nav-hover-color-text').value || document.getElementById('nav-hover-color').value;
+                SITE_CONFIG.theme.navHoverColor = val;
+                document.getElementById('nav-hover-color').value = val;
+                document.getElementById('nav-hover-color-text').value = val;
+            }
+            if (e.target.id === 'footer-bg-color' || e.target.id === 'footer-bg-color-text') {
+                const val = document.getElementById('footer-bg-color-text').value || document.getElementById('footer-bg-color').value;
+                SITE_CONFIG.theme.footerBgColor = val;
+                document.getElementById('footer-bg-color').value = val;
+                document.getElementById('footer-bg-color-text').value = val;
+            }
+            if (e.target.id === 'footer-text-color' || e.target.id === 'footer-text-color-text') {
+                const val = document.getElementById('footer-text-color-text').value || document.getElementById('footer-text-color').value;
+                SITE_CONFIG.theme.footerTextColor = val;
+                document.getElementById('footer-text-color').value = val;
+                document.getElementById('footer-text-color-text').value = val;
+            }
+            // Apply theme and save config whenever any of these fields change
+            applyThemeToPage();
+            saveConfig();
+        });
+        
+        // Load appointments on init
+        function loadConfig() {
+            const saved = localStorage.getItem('site_config_backup');
+            if (saved) {
+                try {
+                    const config = JSON.parse(saved);
+                    Object.assign(SITE_CONFIG, config);
+                } catch (e) {
+                    console.log('Could not load saved config');
+                }
+            }
             
-            container.innerHTML = items.map((svc, i) => `
-                <div style="padding: 15px; background: #f9f9f9; border-radius: 6px; margin-bottom: 15px;">
-                    <div class="form-row">
-                        <div class="form-group-admin">
-                            <label class="form-label-admin">Ime</label>
-                            <input type="text" class="svc-name-${i} form-input-admin" value="${svc.name || ''}">
-                        </div>
-                        <div class="form-group-admin">
-                            <label class="form-label-admin">Cena (samo številka)</label>
-                            <input type="text" class="svc-price-${i} form-input-admin" value="${(svc.price || '').replace('€', '')}">
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group-admin">
-                            <label class="form-label-admin">Trajanje (min)</label>
-                            <input type="number" class="svc-duration-${i} form-input-admin" value="${svc.duration || 30}">
-                        </div>
-                        <div class="form-group-admin">
-                            <label class="form-label-admin">Opis</label>
-                            <input type="text" class="svc-desc-${i} form-input-admin" value="${svc.desc || ''}">
-                        </div>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function saveServices() {
-            const items = SITE_CONFIG.servicesSection?.items || [];
-            items.forEach((svc, i) => {
-                svc.name = document.querySelector('.svc-name-' + i)?.value || '';
-                const price = document.querySelector('.svc-price-' + i)?.value || '0';
-                svc.price = '€' + price;
-                svc.duration = parseInt(document.querySelector('.svc-duration-' + i)?.value) || 30;
-                svc.desc = document.querySelector('.svc-desc-' + i)?.value || '';
-            });
-            saveConfig();
-        }
-
-        // ===== BARBERS =====
-        function loadBarbers() {
-            const container = document.getElementById('barbersContainer');
-            const list = SITE_CONFIG.barbersSection?.list || [];
+            // Ensure default values exist
+            if (!SITE_CONFIG.booking.businessHours) {
+                SITE_CONFIG.booking.businessHours = { start: 9, end: 19 };
+            }
+            if (!SITE_CONFIG.ownerContact) {
+                SITE_CONFIG.ownerContact = { email: 'owner@example.com', phone: '+386 1 000 0000' };
+            }
+            if (!SITE_CONFIG.appointments) {
+                SITE_CONFIG.appointments = [];
+            }
             
-            container.innerHTML = list.map((barber, i) => `
-                <div style="padding: 15px; background: #f9f9f9; border-radius: 6px; margin-bottom: 15px;">
-                    <div class="form-row">
-                        <div class="form-group-admin">
-                            <label class="form-label-admin">Ime</label>
-                            <input type="text" class="barb-name-${i} form-input-admin" value="${barber.name || ''}">
-                        </div>
-                        <div class="form-group-admin">
-                            <label class="form-label-admin">Vloga</label>
-                            <input type="text" class="barb-role-${i} form-input-admin" value="${barber.role || ''}">
-                        </div>
-                    </div>
-                    <div class="form-row full">
-                        <div class="form-group-admin">
-                            <label class="form-label-admin">Slika (URL)</label>
-                            <input type="text" class="barb-img-${i} form-input-admin" value="${barber.img || ''}">
-                        </div>
-                    </div>
-                </div>
-            `).join('');
+            const savedAppts = localStorage.getItem('appointments');
+            if (savedAppts) {
+                try {
+                    SITE_CONFIG.appointments = JSON.parse(savedAppts);
+                } catch (e) {
+                    console.log('Could not load appointments');
+                }
+            }
         }
-
-        function saveBarbers() {
-            const list = SITE_CONFIG.barbersSection?.list || [];
-            list.forEach((barber, i) => {
-                barber.name = document.querySelector('.barb-name-' + i)?.value || '';
-                barber.role = document.querySelector('.barb-role-' + i)?.value || '';
-                barber.img = document.querySelector('.barb-img-' + i)?.value || '';
+        
+        function saveConfig() {
+            // Save locally
+            localStorage.setItem('site_config_backup', JSON.stringify(SITE_CONFIG));
+            localStorage.setItem('appointments', JSON.stringify(SITE_CONFIG.appointments || []));
+            
+            // Sync to Firebase REST API (simpler, no module issues)
+            syncToFirebase(SITE_CONFIG);
+            showNotification('✅ Spremembe so bile shranjene in sinhronizirane', 'success');
+        }
+        
+        // Simple Firebase REST API sync (no module dependencies)
+        function syncToFirebase(config) {
+            const dbUrl = 'https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app/site_config.json';
+            
+            fetch(dbUrl, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(config)
+            })
+            .then(response => {
+                if (response.ok) {
+                    console.log('✅ Synced to Firebase');
+                } else {
+                    console.warn('⚠️ Firebase sync failed');
+                }
+            })
+            .catch(error => {
+                console.warn('⚠️ Firebase sync error:', error);
             });
+        }
+
+        // Sync color picker and text inputs
+        function syncColorInputs() {
+            const colorPairs = [
+                { picker: 'theme-primary', text: 'theme-primary-text' },
+                { picker: 'theme-dark', text: 'theme-dark-text' },
+                { picker: 'theme-card', text: 'theme-card-text' },
+                { picker: 'theme-gradient-start', text: 'theme-gradient-start-text' },
+                { picker: 'theme-gradient-end', text: 'theme-gradient-end-text' },
+                { picker: 'text-primary', text: 'text-primary-text' },
+                { picker: 'text-secondary', text: 'text-secondary-text' },
+                { picker: 'button-color', text: 'button-color-text' },
+                { picker: 'button-text-color', text: 'button-text-color-text' },
+                { picker: 'nav-text-color', text: 'nav-text-color-text' },
+                { picker: 'nav-hover-color', text: 'nav-hover-color-text' },
+                { picker: 'footer-bg-color', text: 'footer-bg-color-text' },
+                { picker: 'footer-text-color', text: 'footer-text-color-text' }
+            ];
+
+            colorPairs.forEach(pair => {
+                const pickerInput = document.getElementById(pair.picker);
+                const textInput = document.getElementById(pair.text);
+
+                if (pickerInput && textInput) {
+                    // When color picker changes, update text input
+                    pickerInput.addEventListener('change', function() {
+                        textInput.value = this.value;
+                    });
+
+                    // When text input changes, update color picker
+                    textInput.addEventListener('change', function() {
+                        if (/^#[0-9A-F]{6}$/i.test(this.value)) {
+                            pickerInput.value = this.value;
+                        }
+                    });
+
+                    // Live update as user types
+                    textInput.addEventListener('input', function() {
+                        if (/^#[0-9A-F]{6}$/i.test(this.value)) {
+                            pickerInput.value = this.value;
+                        }
+                    });
+                }
+            });
+        }
+
+        // Initialize color inputs when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            syncColorInputs();
+        });
+        
+        // Business panel helpers
+        function refreshBusinessPanel() {
+            // Earnings
+            const appointments = SITE_CONFIG.appointments || [];
+            let total = 0;
+            const customers = {};
+            appointments.forEach(a => {
+                total += Number(a.totalPrice) || 0;
+                if (a.email) customers[a.email] = a;
+            });
+            document.getElementById('earningsTotal') && (document.getElementById('earningsTotal').innerText = SITE_CONFIG.currency + total.toFixed(2));
+
+            // Customers list
+            const customersEl = document.getElementById('customersList');
+            if (customersEl) {
+                customersEl.innerHTML = '';
+                Object.values(customers).forEach(c => {
+                    const div = document.createElement('div');
+                    div.style.borderBottom = '1px solid #eee';
+                    div.style.padding = '6px 0';
+                    div.innerHTML = `<strong>${c.name}</strong><br>${c.email} | ${c.phone}`;
+                    customersEl.appendChild(div);
+                });
+            }
+        }
+
+        function saveDiscount() {
+            const d = parseFloat(document.getElementById('discountDefault').value) || 0;
+            SITE_CONFIG.defaultDiscount = d;
             saveConfig();
+            showNotification('Popust shranjen', 'success');
         }
 
-        function loadAllData() {
-            loadAppointments();
-            loadContent();
-            loadAppearance();
-            loadServices();
-            loadBarbers();
-        }
+        // Initialize business panel on load
+        document.addEventListener('DOMContentLoaded', function() {
+            // wire file inputs to preview when user selects a file
+            const logoLargeInput = document.getElementById('logoLargeInput');
+            const logoMiniInput = document.getElementById('logoMiniInput');
+            if (logoLargeInput) logoLargeInput.addEventListener('change', function(e) { const f = e.target.files[0]; if (f) { const r=new FileReader(); r.onload=function(ev){document.getElementById('logoLargePreview').src=ev.target.result; document.getElementById('logoLargeUrl').value = ev.target.result}; r.readAsDataURL(f);} });
+            if (logoMiniInput) logoMiniInput.addEventListener('change', function(e) { const f = e.target.files[0]; if (f) { const r=new FileReader(); r.onload=function(ev){document.getElementById('logoMiniPreview').src=ev.target.result; document.getElementById('logoMiniUrl').value = ev.target.result}; r.readAsDataURL(f);} });
 
-        // INIT
-        if (localStorage.getItem('adminLoggedIn')) {
-            showAdminPanel();
-        }
+            // load defaults
+            document.getElementById('discountDefault') && (document.getElementById('discountDefault').value = SITE_CONFIG.defaultDiscount || 0);
+            refreshBusinessPanel();
+        });
     </script>
 </body>
 </html>
