@@ -65,6 +65,76 @@
         
         .save-btn { background: #2c3e50; color: white; border: none; padding: 10px 20px; border-radius: 3px; cursor: pointer; font-size: 13px; font-weight: 500; }
         .save-btn:hover { background: #1a252f; }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .form-row { grid-template-columns: 1fr; }
+            .tab-content { padding: 15px; }
+            .admin-section { padding: 12px; }
+        }
+
+        @media (max-width: 768px) {
+            .admin-tabs {
+                overflow-x: auto;
+                flex-wrap: nowrap;
+            }
+            .tab-btn {
+                padding: 10px 15px;
+                font-size: 12px;
+                white-space: nowrap;
+            }
+            .tab-content { padding: 12px; }
+            .admin-section { padding: 10px; margin-bottom: 15px; }
+            .section-title { font-size: 13px; margin-bottom: 10px; }
+            .form-label-admin { font-size: 11px; }
+            .form-input-admin { padding: 6px 8px; font-size: 12px; }
+            .save-btn { padding: 8px 12px; font-size: 12px; }
+            .form-row { gap: 10px; margin-bottom: 10px; }
+            #loginScreen { padding: 20px; }
+            .login-card { padding: 20px !important; width: 100%; }
+        }
+
+        @media (max-width: 480px) {
+            .admin-header { padding: 15px; }
+            .admin-header h1 { font-size: 16px; }
+            .tab-btn {
+                padding: 8px 10px;
+                font-size: 11px;
+            }
+            .tab-content { padding: 10px; }
+            .admin-section { padding: 8px; margin-bottom: 12px; }
+            .section-title { font-size: 12px; margin-bottom: 8px; }
+            .form-label-admin { font-size: 10px; }
+            .form-input-admin { padding: 5px 6px; font-size: 11px; }
+            .save-btn { padding: 6px 10px; font-size: 11px; }
+            .form-row { gap: 8px; margin-bottom: 8px; }
+            .logout-btn { padding: 6px 12px; font-size: 11px; }
+            .login-card { padding: 15px !important; }
+        }
+
+        /* Responsive Grid for Dashboard Metrics */
+        @media (max-width: 1200px) {
+            .dashboard-grid {
+                grid-template-columns: repeat(2, 1fr) !important;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr !important;
+            }
+        }
+
+        /* Responsive Forms */
+        @media (max-width: 768px) {
+            .upload-area { padding: 20px !important; }
+            .image-gallery { grid-template-columns: repeat(2, 1fr) !important; }
+        }
+
+        @media (max-width: 480px) {
+            .upload-area { padding: 15px !important; }
+            .image-gallery { grid-template-columns: 1fr !important; }
+        }
     </style>
 </head>
 <body>
@@ -318,9 +388,12 @@
                             <label class="form-label-admin">Slika Naslovnice (URL ali Datoteka)</label>
                             <div style="display: flex; gap: 10px; margin-bottom: 10px;">
                                 <input id="heroImageInput" type="file" accept="image/*" class="form-input-admin" placeholder="Izberi sliko...">
-                                <button class="save-btn" onclick="uploadHeroImage()">Naloži Sliko</button>
+                                <button class="save-btn" onclick="uploadHeroImage()" style="background-color:#0066cc;">Naloži Sliko</button>
                             </div>
-                            <input id="heroImageUrl" type="text" class="form-input-admin" placeholder="ali vnesi URL" style="display:none;">
+                            <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                                <input id="heroImageUrl" type="text" class="form-input-admin" placeholder="Vnesi URL slike" style="flex:1;">
+                                <button class="save-btn" onclick="saveHeroImageUrl()" style="background-color:#0066cc;">Shrani URL</button>
+                            </div>
                             <img id="heroImagePreview" src="" alt="Hero preview" style="max-width:100%; max-height:200px; margin-top:10px; display:none; object-fit:contain; border:1px solid #ddd; padding:5px;">
                         </div>
                     </div>
@@ -405,6 +478,10 @@
                         <div class="upload-text">Klikni za prenos slike</div>
                         <div class="upload-hint">ali vleci slike sem</div>
                         <input id="imageInput" type="file" class="upload-input" accept="image/*" multiple>
+                    </div>
+                    <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                        <input id="galleryUrlInput" type="text" class="form-input-admin" placeholder="Vnesi URL slike" style="flex:1;">
+                        <button class="save-btn" onclick="addGalleryFromUrl()" style="background-color:#0066cc;">Dodaj s URL</button>
                     </div>
                     <div class="image-gallery" id="imageGallery"></div>
                     <button class="save-btn" onclick="saveGallery()">Shrani Galerijo</button>
@@ -514,7 +591,7 @@
                     <div class="section-title">Ključne Metrike</div>
                     
                     <!-- Key Metrics -->
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 20px;">
+                    <div class="dashboard-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 20px;">
                         <div style="background: white; border: 1px solid #ddd; padding: 15px; border-radius: 3px; text-align: center;">
                             <div style="font-size: 28px; font-weight: 700; color: #2c3e50;" id="totalAppointments">0</div>
                             <div style="font-size: 12px; color: #666; margin-top: 5px;">Skupaj Naročil</div>
@@ -534,7 +611,7 @@
                     </div>
 
                     <!-- Charts -->
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;" class="dashboard-grid">
                         <div style="background: white; padding: 15px; border: 1px solid #ddd; border-radius: 3px;">
                             <h3 style="font-size: 13px; font-weight: 600; color: #2c3e50; margin: 0 0 15px 0;">Storitve Po Priljubljenosti</h3>
                             <canvas id="servicesChart"></canvas>
@@ -621,10 +698,7 @@
                 </div>
 
                 <!-- CUSTOMERS SECTION -->
-                <div class="admin-section">
-                    <div class="section-title">Stranke</div>
-                    <div id="customersList" style="padding: 10px; max-height: 400px; overflow-y: auto; background: white; border: 1px solid #ddd; border-radius: 3px; font-size: 12px;"></div>
-                </div>
+                <!-- REMOVED: Stranke section no longer displayed in poslovni panel -->
 
             </div> <!-- END panel tab -->
 
@@ -769,6 +843,15 @@
                 if (SITE_CONFIG.logo.large) document.getElementById('logoLargePreview').src = SITE_CONFIG.logo.large;
                 if (SITE_CONFIG.logo.mini) document.getElementById('logoMiniPreview').src = SITE_CONFIG.logo.mini;
             }
+            
+            // Hero image preview
+            if (SITE_CONFIG.hero && SITE_CONFIG.hero.backgroundImage) {
+                const heroPreview = document.getElementById('heroImagePreview');
+                if (heroPreview) {
+                    heroPreview.src = SITE_CONFIG.hero.backgroundImage;
+                    heroPreview.style.display = 'block';
+                }
+            }
 
             // Booking
             document.getElementById('businessStart').value = (SITE_CONFIG.booking.businessHours?.start) || 9;
@@ -843,13 +926,18 @@
                         </div>
                         <div class="form-row full">
                             <div style="flex:1;">
-                                <label class="form-label-admin" style="font-size:11px; margin-bottom:5px;">Slika brivca:</label>
+                                <label class="form-label-admin" style="font-size:11px; margin-bottom:5px;">Slika brivca (datoteka):</label>
                                 <input type="file" accept="image/*" class="form-input-admin barber-img-input-${idx}" placeholder="Izberi sliko" style="margin-bottom:5px;">
                                 <button class="save-btn" onclick="uploadBarberImage(${idx})" style="font-size:11px; padding:5px 10px; background-color:#0066cc;">Naloži</button>
                             </div>
-                            <input type="text" class="form-input-admin barber-img-${idx}" value="${barber.img}" placeholder="URL slike" style="flex:1; display:none;">
+                            <div style="flex:1;">
+                                <label class="form-label-admin" style="font-size:11px; margin-bottom:5px;">ali vnesi URL:</label>
+                                <input type="text" class="form-input-admin barber-img-url-${idx}" value="" placeholder="URL slike" style="margin-bottom:5px;">
+                                <button class="save-btn" onclick="saveBarberImageUrl(${idx})" style="font-size:11px; padding:5px 10px; background-color:#0066cc;">Shrani URL</button>
+                            </div>
                             <img class="barber-img-preview-${idx}" src="${barber.img}" alt="Barber preview" style="max-height:80px; max-width:100px; object-fit:contain; display:${barber.img && barber.img !== 'https://via.placeholder.com/300' ? 'block' : 'none'}; margin:5px; border:1px solid #ddd; padding:3px;">
                         </div>
+                        <input type="text" class="form-input-admin barber-img-${idx}" value="${barber.img}" placeholder="URL slike" style="display:none;">
                     </div>
                 `;
             });
@@ -1675,6 +1763,51 @@
             };
             reader.readAsDataURL(file);
         }
+
+        // Save Hero Image from URL
+        function saveHeroImageUrl() {
+            const url = document.getElementById('heroImageUrl').value.trim();
+            if (!url) {
+                showNotification('Vnesi URL slike', 'error');
+                return;
+            }
+            SITE_CONFIG.hero.backgroundImage = url;
+            const preview = document.getElementById('heroImagePreview');
+            preview.src = url;
+            preview.style.display = 'block';
+            saveConfig();
+            showNotification('URL naslovnice slike shranjen', 'success');
+        }
+
+        // Save Barber Image from URL
+        function saveBarberImageUrl(idx) {
+            const url = document.querySelector('.barber-img-url-' + idx).value.trim();
+            if (!url) {
+                showNotification('Vnesi URL slike za brivca', 'error');
+                return;
+            }
+            SITE_CONFIG.barbersSection.list[idx].img = url;
+            document.querySelector('.barber-img-' + idx).value = url;
+            const preview = document.querySelector('.barber-img-preview-' + idx);
+            preview.src = url;
+            preview.style.display = 'block';
+            saveConfig();
+            showNotification(`URL slike brivca "${SITE_CONFIG.barbersSection.list[idx].name}" shranjen`, 'success');
+        }
+
+        // Add gallery image from URL
+        function addGalleryFromUrl() {
+            const url = document.getElementById('galleryUrlInput').value.trim();
+            if (!url) {
+                showNotification('Vnesi URL slike', 'error');
+                return;
+            }
+            SITE_CONFIG.gallery.push(url);
+            loadGallery();
+            saveConfig();
+            document.getElementById('galleryUrlInput').value = '';
+            showNotification('Slika dodana v galerijo', 'success');
+        }
         
         function saveConfig() {
             // Save locally
@@ -1853,13 +1986,17 @@
             if (appts.length === 0) {
                 container.innerHTML = '<span style="color:#999;">Ni naročil za ta dan</span>';
             } else {
-                container.innerHTML = appts.map(a => `
+                container.innerHTML = appts.map(a => {
+                    const firstName = a.firstName || a.name || 'Neznano';
+                    const lastName = a.lastName || a.surname || '';
+                    return `
                     <div style="padding:8px; border-bottom:1px solid #eee; font-size:11px;">
-                        <strong>${a.firstName} ${a.lastName}</strong> - ${a.service}<br/>
+                        <strong>${firstName} ${lastName}</strong> - ${a.service || ''}<br/>
                         <span style="color:#666;">Ura: ${a.time}</span><br/>
                         <span style="color:#999;">${a.email || ''}</span>
                     </div>
-                `).join('');
+                `;
+                }).join('');
             }
         }
 
@@ -1906,6 +2043,7 @@
                 date,
                 time,
                 price,
+                totalPrice: price,
                 notes,
                 status: 'pending'
             };
@@ -1925,6 +2063,7 @@
             document.getElementById('newCustNotes').value = '';
 
             renderCalendar();
+            showDayAppointments(date);
             refreshBusinessPanel();
             showNotification(`Stranka ${firstName} ${lastName} dodana za ${date} ob ${time}`, 'success');
         }
