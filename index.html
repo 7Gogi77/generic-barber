@@ -734,6 +734,7 @@
                 formData.append('Storitve', appointment.services.join(', '));
                 formData.append('Končna cena', appointment.totalPrice + "€");
                 formData.append('Čas trajanja', appointment.totalDuration + " min");
+                formData.append('_subject', 'Novo Naročilo iz Spletne Strani');
                 
                 // Send directly to Formspree (simple form submission)
                 fetch(FORMSPREE_ENDPOINT, {
