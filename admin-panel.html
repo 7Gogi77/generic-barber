@@ -708,13 +708,13 @@
                 <!-- CALENDAR SECTION -->
                 <div class="admin-section">
                     <div class="section-title">📅 Koledar Naročil</div>
-                    <div style="background: white; padding: 20px; border: 1px solid #e8ecf1; border-radius: 8px;">
+                    <div style="background: white; padding: 0px; border: 1px solid #e8ecf1; border-radius: 8px;">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 10px;">
                             <button class="save-btn" onclick="prevMonth()" style="flex:0.3; padding:10px 15px; background-color:#e74c3c;">← Prejšnji</button>
                             <h3 id="calendarMonthYear" style="font-size: 18px; font-weight: 700; color: #2c3e50; margin: 0; text-align: center; flex:1;">Januar 2024</h3>
                             <button class="save-btn" onclick="nextMonth()" style="flex:0.3; padding:10px 15px; background-color:#27ae60;">Naslednji →</button>
                         </div>
-                        <div id="calendarGrid" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; margin-bottom: 20px; background: #ecf0f1; padding: 10px; border-radius: 6px;"></div>
+                        <div id="calendarGrid" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin-bottom: 20px; background: #ecf0f1; padding: 12px; border-radius: 6px;"></div>
                         <div style="background: #f8fafb; padding: 15px; border-radius: 6px; border: 1px solid #ecf0f1;">
                             <p style="font-size: 13px; font-weight: 600; color: #2c3e50; margin: 0 0 12px 0;">📌 Naročila za izbran dan:</p>
                             <div id="dayAppointments" style="font-size: 12px; max-height: 250px; overflow-y: auto; color: #555;">Izberi dan...</div>
@@ -727,29 +727,56 @@
                     <div class="section-title">👤 Ročni Vnos Stranke</div>
                     <div style="background: #f8fafb; padding: 18px; border: 1px solid #ecf0f1; border-radius: 8px;">
                         <div class="form-row">
-                            <input id="newCustFirstName" type="text" class="form-input-admin" placeholder="Ime" style="background: white;">
-                            <input id="newCustLastName" type="text" class="form-input-admin" placeholder="Priimek" style="background: white;">
+                            <div class="form-group-admin">
+                                <label class="form-label-admin">Ime</label>
+                                <input id="newCustFirstName" type="text" class="form-input-admin" placeholder="Ime" style="background: white;">
+                            </div>
+                            <div class="form-group-admin">
+                                <label class="form-label-admin">Priimek</label>
+                                <input id="newCustLastName" type="text" class="form-input-admin" placeholder="Priimek" style="background: white;">
+                            </div>
                         </div>
                         <div class="form-row">
-                            <input id="newCustEmail" type="email" class="form-input-admin" placeholder="Email" style="background: white;">
-                            <input id="newCustPhone" type="tel" class="form-input-admin" placeholder="Telefonska Številka" style="background: white;">
+                            <div class="form-group-admin">
+                                <label class="form-label-admin">Email</label>
+                                <input id="newCustEmail" type="email" class="form-input-admin" placeholder="Email" style="background: white;">
+                            </div>
+                            <div class="form-group-admin">
+                                <label class="form-label-admin">Telefon</label>
+                                <input id="newCustPhone" type="tel" class="form-input-admin" placeholder="Telefonska Številka" style="background: white;">
+                            </div>
                         </div>
                         <div class="form-row">
-                            <select id="newCustService" class="form-input-admin" style="background: white; flex:1;">
-                                <option value="">Izberi Storitev</option>
-                            </select>
-                            <select id="newCustBarber" class="form-input-admin" style="background: white; flex:1;">
-                                <option value="">Izberi Brivca</option>
-                            </select>
+                            <div class="form-group-admin">
+                                <label class="form-label-admin">Storitev</label>
+                                <select id="newCustService" class="form-input-admin" style="background: white;">
+                                    <option value="">Izberi Storitev</option>
+                                </select>
+                            </div>
+                            <div class="form-group-admin">
+                                <label class="form-label-admin">Brivec</label>
+                                <select id="newCustBarber" class="form-input-admin" style="background: white;">
+                                    <option value="">Izberi Brivca</option>
+                                </select>
+                            </div>
                         </div>
                         <div class="form-row">
-                            <input id="newCustDate" type="date" class="form-input-admin" style="background: white; flex:1;">
-                            <input id="newCustTime" type="time" class="form-input-admin" style="background: white; flex:1;">
+                            <div class="form-group-admin">
+                                <label class="form-label-admin">Datum</label>
+                                <input id="newCustDate" type="date" class="form-input-admin" style="background: white;">
+                            </div>
+                            <div class="form-group-admin">
+                                <label class="form-label-admin">Ura</label>
+                                <input id="newCustTime" type="time" class="form-input-admin" style="background: white;">
+                            </div>
                         </div>
-                        <div class="form-row">
-                            <input id="newCustNotes" type="text" class="form-input-admin" placeholder="Opombe (opciono)" style="flex:1; background: white;">
-                            <button class="save-btn" onclick="addManualCustomer()" style="background-color: #27ae60; flex:0.4; align-self: flex-end;">✓ Dodaj Stranko</button>
+                        <div class="form-row full">
+                            <div class="form-group-admin">
+                                <label class="form-label-admin">Opombe (opciono)</label>
+                                <input id="newCustNotes" type="text" class="form-input-admin" placeholder="Opombe" style="background: white;">
+                            </div>
                         </div>
+                        <button class="save-btn" onclick="addManualCustomer()" style="background-color: #27ae60; width: 100%; margin-top: 10px;">✓ Dodaj Stranko</button>
                     </div>
                 </div>
 
@@ -1258,6 +1285,7 @@
             
             count.innerText = appointments.length;
             updateDashboard(appointments);
+            renderCalendar();
             
             if (appointments.length === 0) {
                 container.innerHTML = '<p class="text-gray-500 text-center py-4">Ni nobenega naročila</p>';
@@ -2050,14 +2078,15 @@
             const grid = document.getElementById('calendarGrid');
             grid.innerHTML = '';
             
-            // Day headers - adjust for mobile
+            // Day headers - adjust for mobile - LARGER on mobile
             const dayHeaders = isSmallMobile ? ['P', 'T', 'S', 'Č', 'P', 'S', 'N'] : isMobile ? ['Po', 'To', 'Sr', 'Če', 'Pe', 'So', 'Ne'] : ['Pon', 'Tor', 'Sre', 'Čet', 'Pet', 'Sob', 'Ned'];
-            const headerPadding = isSmallMobile ? '3px' : isMobile ? '5px' : '8px';
-            const headerFontSize = isSmallMobile ? '9px' : isMobile ? '10px' : '12px';
+            const headerPadding = isSmallMobile ? '8px 5px' : isMobile ? '10px 5px' : '8px';
+            const headerFontSize = isSmallMobile ? '13px' : isMobile ? '14px' : '12px';
+            const headerHeight = isSmallMobile ? '40px' : isMobile ? '45px' : '30px';
             dayHeaders.forEach(day => {
                 const header = document.createElement('div');
                 header.textContent = day;
-                header.style.cssText = `font-weight:700; color:#2c3e50; text-align:center; padding:${headerPadding}; font-size:${headerFontSize}; background:#ecf0f1; border-radius:2px; min-height:22px; display:flex; align-items:center; justify-content:center;`;
+                header.style.cssText = `font-weight:700; color:#2c3e50; text-align:center; padding:${headerPadding}; font-size:${headerFontSize}; background:#ecf0f1; border-radius:4px; height:${headerHeight}; display:flex; align-items:center; justify-content:center;`;
                 grid.appendChild(header);
             });
             
@@ -2067,12 +2096,12 @@
                 grid.appendChild(document.createElement('div'));
             }
             
-            // Calendar days
-            const cellPadding = isSmallMobile ? '2px 1px' : isMobile ? '4px 2px' : '12px 4px';
-            const cellFontSize = isSmallMobile ? '9px' : isMobile ? '10px' : '13px';
-            const borderRadius = isSmallMobile ? '2px' : isMobile ? '3px' : '6px';
-            const borderWidth = isSmallMobile ? '0.5px' : isMobile ? '1px' : '1.5px';
-            const minHeight = isSmallMobile ? '20px' : isMobile ? '24px' : '36px';
+            // Calendar days - MUCH LARGER on mobile for finger-friendly tapping
+            const cellPadding = isSmallMobile ? '8px 5px' : isMobile ? '10px 5px' : '12px 4px';
+            const cellFontSize = isSmallMobile ? '16px' : isMobile ? '18px' : '13px';
+            const borderRadius = isSmallMobile ? '4px' : isMobile ? '4px' : '6px';
+            const borderWidth = isSmallMobile ? '1px' : isMobile ? '1px' : '1.5px';
+            const minHeight = isSmallMobile ? '60px' : isMobile ? '70px' : '36px';  // MUCH LARGER
             
             for (let day = 1; day <= daysInMonth; day++) {
                 const dayCell = document.createElement('div');
@@ -2080,12 +2109,12 @@
                 const appointmentsOnDay = SITE_CONFIG.appointments.filter(appt => appt.date === dateStr);
                 
                 dayCell.textContent = day;
-                dayCell.style.cssText = `padding:${cellPadding}; border:${borderWidth} solid #ecf0f1; border-radius:${borderRadius}; text-align:center; cursor:pointer; background:#ffffff; font-size:${cellFontSize}; font-weight:500; color:#2c3e50; transition:all 0.2s; min-height:${minHeight}; display:flex; align-items:center; justify-content:center;`;
+                dayCell.style.cssText = `padding:${cellPadding}; border:${borderWidth} solid #ecf0f1; border-radius:${borderRadius}; text-align:center; cursor:pointer; background:#ffffff; font-size:${cellFontSize}; font-weight:600; color:#2c3e50; transition:all 0.2s; min-height:${minHeight}; display:flex; align-items:center; justify-content:center; user-select:none; -webkit-user-select:none;`;
                 
                 if (appointmentsOnDay.length > 0) {
-                    const dotSize = isSmallMobile ? '5px' : isMobile ? '6px' : '8px';
-                    dayCell.style.cssText = `padding:${cellPadding}; border:${borderWidth} solid #2980b9; border-radius:${borderRadius}; text-align:center; cursor:pointer; background:linear-gradient(135deg, #3498db, #2980b9); font-size:${cellFontSize}; font-weight:700; color:#fff; transition:all 0.2s; min-height:${minHeight}; display:flex; align-items:center; justify-content:center; box-shadow:0 1px 3px rgba(52,152,219,0.3);`;
-                    dayCell.innerHTML = `<div style="text-align:center; width:100%;"><div style="line-height:1;">${day}</div><div style="font-size:${dotSize}; margin-top:1px; letter-spacing:-2px; line-height:0.8;">●●●</div></div>`;
+                    const dotSize = isSmallMobile ? '8px' : isMobile ? '10px' : '8px';
+                    dayCell.style.cssText = `padding:${cellPadding}; border:${borderWidth} solid #2980b9; border-radius:${borderRadius}; text-align:center; cursor:pointer; background:linear-gradient(135deg, #3498db, #2980b9); font-size:${cellFontSize}; font-weight:700; color:#fff; transition:all 0.2s; min-height:${minHeight}; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 6px rgba(52,152,219,0.4); user-select:none; -webkit-user-select:none;`;
+                    dayCell.innerHTML = `<div style="text-align:center; width:100%;"><div style="line-height:1; font-size:${cellFontSize};">${day}</div><div style="font-size:${dotSize}; margin-top:2px; letter-spacing:-2px; line-height:0.8;">●●●</div></div>`;
                 }
                 
                 dayCell.onmouseover = () => {
