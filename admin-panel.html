@@ -708,6 +708,113 @@
                     <button class="save-btn" onclick="saveBooking()">Shrani Nastavitve</button>
                 </div>
 
+                <!-- ADMIN SCHEDULE SECTION -->
+                <div class="admin-section">
+                    <div class="section-title">📅 Urnik Lastnika (Proste dneve, Pavze, Dopust, Bolniška)</div>
+                    <p style="font-size: 13px; color: #7f8c8d; margin-bottom: 18px;">Upravljaj s svojo razpoložljivostjo in časom</p>
+                    
+                    <!-- Quick Add Schedule Entry -->
+                    <div style="background: #f8fafb; padding: 18px; border: 1px solid #ecf0f1; border-radius: 8px; margin-bottom: 20px;">
+                        <h4 style="margin: 0 0 15px 0; color: #2c3e50; font-size: 14px; font-weight: 600;">Dodaj Vnos v Urnik</h4>
+                        <div class="form-row">
+                            <div class="form-group-admin">
+                                <label class="form-label-admin">Tip</label>
+                                <select id="scheduleType" class="form-input-admin">
+                                    <option value="prost_dan">Prost Dan</option>
+                                    <option value="pavza">Pavza</option>
+                                    <option value="malica">Malica</option>
+                                    <option value="dopust">Dopust</option>
+                                    <option value="bolniska">Bolniška</option>
+                                </select>
+                            </div>
+                            <div class="form-group-admin">
+                                <label class="form-label-admin">Datum Začetka</label>
+                                <input id="scheduleStartDate" type="date" class="form-input-admin">
+                            </div>
+                            <div class="form-group-admin">
+                                <label class="form-label-admin">Čas Začetka (ura)</label>
+                                <input id="scheduleStartTime" type="number" min="0" max="23" class="form-input-admin" placeholder="9">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group-admin">
+                                <label class="form-label-admin">Datum Konca</label>
+                                <input id="scheduleEndDate" type="date" class="form-input-admin">
+                            </div>
+                            <div class="form-group-admin">
+                                <label class="form-label-admin">Čas Konca (ura)</label>
+                                <input id="scheduleEndTime" type="number" min="0" max="23" class="form-input-admin" placeholder="17">
+                            </div>
+                            <div class="form-group-admin">
+                                <label class="form-label-admin">Opombe</label>
+                                <input id="scheduleNotes" type="text" class="form-input-admin" placeholder="Opcional">
+                            </div>
+                        </div>
+                        <button class="save-btn" onclick="addScheduleEntry()" style="background-color: #27ae60; width: 100%;">+ Dodaj Vnos</button>
+                    </div>
+
+                    <!-- View Tabs for Schedule -->
+                    <div style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;">
+                        <button class="save-btn" onclick="switchScheduleView('monthly')" id="viewMonthlyBtn" style="background-color: #3498db; flex: 1; min-width: 120px;">📅 Mesečni Pogled</button>
+                        <button class="save-btn" onclick="switchScheduleView('weekly')" id="viewWeeklyBtn" style="background-color: #95a5a6; flex: 1; min-width: 120px;">📋 Tedenski Pogled</button>
+                        <button class="save-btn" onclick="switchScheduleView('daily')" id="viewDailyBtn" style="background-color: #95a5a6; flex: 1; min-width: 120px;">⏰ Dnevni Pogled</button>
+                        <button class="save-btn" onclick="switchScheduleView('list')" id="viewListBtn" style="background-color: #95a5a6; flex: 1; min-width: 120px;">📝 Seznam Vnosov</button>
+                    </div>
+
+                    <!-- Monthly Calendar View -->
+                    <div id="monthlyScheduleView" style="background: white; padding: 20px; border: 1px solid #ecf0f1; border-radius: 8px; margin-bottom: 20px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 10px;">
+                            <button class="save-btn" onclick="prevScheduleMonth()" style="flex: 0.3; padding: 8px 12px; background-color: #e74c3c; font-size: 12px;">← Prejšnji</button>
+                            <h3 id="scheduleMonthYear" style="font-size: 16px; font-weight: 600; color: #2c3e50; margin: 0; text-align: center; flex: 1;">Januar 2026</h3>
+                            <button class="save-btn" onclick="nextScheduleMonth()" style="flex: 0.3; padding: 8px 12px; background-color: #27ae60; font-size: 12px;">Naslednji →</button>
+                        </div>
+                        <div id="scheduleMonthCalendar" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; background: #f8fafb; padding: 15px; border-radius: 6px;"></div>
+                    </div>
+
+                    <!-- Weekly Hours View -->
+                    <div id="weeklyScheduleView" style="background: white; padding: 20px; border: 1px solid #ecf0f1; border-radius: 8px; margin-bottom: 20px; display: none;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 10px;">
+                            <button class="save-btn" onclick="prevScheduleWeek()" style="flex: 0.3; padding: 8px 12px; background-color: #e74c3c; font-size: 12px;">← Prejšnji</button>
+                            <h3 id="scheduleWeekRange" style="font-size: 16px; font-weight: 600; color: #2c3e50; margin: 0; text-align: center; flex: 1;">Teden 1</h3>
+                            <button class="save-btn" onclick="nextScheduleWeek()" style="flex: 0.3; padding: 8px 12px; background-color: #27ae60; font-size: 12px;">Naslednji →</button>
+                        </div>
+                        <div id="scheduleWeekTable" style="overflow-x: auto; background: #f8fafb; padding: 15px; border-radius: 6px; border: 1px solid #ecf0f1;"></div>
+                    </div>
+
+                    <!-- Daily Hours View -->
+                    <div id="dailyScheduleView" style="background: white; padding: 20px; border: 1px solid #ecf0f1; border-radius: 8px; margin-bottom: 20px; display: none;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 10px;">
+                            <button class="save-btn" onclick="prevScheduleDay()" style="flex: 0.3; padding: 8px 12px; background-color: #e74c3c; font-size: 12px;">← Prejšnji</button>
+                            <div style="flex: 1;">
+                                <input id="selectedScheduleDay" type="date" class="form-input-admin" onchange="updateDailyScheduleView()">
+                            </div>
+                            <button class="save-btn" onclick="nextScheduleDay()" style="flex: 0.3; padding: 8px 12px; background-color: #27ae60; font-size: 12px;">Naslednji →</button>
+                        </div>
+                        <div id="scheduleDayTable" style="background: #f8fafb; padding: 15px; border-radius: 6px; border: 1px solid #ecf0f1; font-size: 13px;"></div>
+                    </div>
+
+                    <!-- Schedule Entries List -->
+                    <div id="scheduleListView" style="background: white; padding: 20px; border: 1px solid #ecf0f1; border-radius: 8px; margin-bottom: 20px; display: none;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                            <h3 style="margin: 0; color: #2c3e50; font-size: 14px; font-weight: 600;">Vsi Vnosi v Urniku</h3>
+                            <input id="filterScheduleType" type="text" class="form-input-admin" placeholder="Filtriraj po tipu..." style="width: 200px;">
+                        </div>
+                        <div id="scheduleEntriesList" style="max-height: 600px; overflow-y: auto; border: 1px solid #ecf0f1; border-radius: 6px;"></div>
+                    </div>
+
+                    <!-- Legend -->
+                    <div style="background: #f8fafb; padding: 15px; border-radius: 6px; border-left: 4px solid #3498db; margin-top: 20px; font-size: 12px;">
+                        <p style="margin: 0 0 10px 0; font-weight: 600; color: #2c3e50;">Legenda Barv:</p>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px;">
+                            <div style="display: flex; align-items: center; gap: 8px;"><span style="width: 20px; height: 20px; background: #e74c3c; border-radius: 3px;"></span>Prost Dan</div>
+                            <div style="display: flex; align-items: center; gap: 8px;"><span style="width: 20px; height: 20px; background: #f39c12; border-radius: 3px;"></span>Pavza</div>
+                            <div style="display: flex; align-items: center; gap: 8px;"><span style="width: 20px; height: 20px; background: #e67e22; border-radius: 3px;"></span>Malica</div>
+                            <div style="display: flex; align-items: center; gap: 8px;"><span style="width: 20px; height: 20px; background: #3498db; border-radius: 3px;"></span>Dopust</div>
+                            <div style="display: flex; align-items: center; gap: 8px;"><span style="width: 20px; height: 20px; background: #9b59b6; border-radius: 3px;"></span>Bolniška</div>
+                        </div>
+                    </div>
+                </div>
+
             </div> <!-- END storitve tab -->
 
             <!-- ===== TAB 4: PANEL (BUSINESS ANALYTICS) ===== -->
@@ -2335,7 +2442,412 @@
             document.getElementById('discountDefault') && (document.getElementById('discountDefault').value = SITE_CONFIG.defaultDiscount || 0);
             refreshBusinessPanel();
             renderCalendar();
+            initAdminSchedule();
         });
+
+        // ========================================
+        // ADMIN SCHEDULE MANAGEMENT
+        // ========================================
+
+        let currentScheduleMonth = new Date();
+        let currentScheduleWeek = new Date();
+        let currentScheduleDay = new Date();
+        let currentScheduleView = 'monthly';
+
+        // Initialize admin schedule
+        function initAdminSchedule() {
+            if (!SITE_CONFIG.adminSchedule) {
+                SITE_CONFIG.adminSchedule = {
+                    entries: []
+                };
+            }
+            currentScheduleDay.setHours(0, 0, 0, 0);
+            document.getElementById('selectedScheduleDay').valueAsDate = new Date(currentScheduleDay);
+            renderScheduleView();
+        }
+
+        // Add schedule entry
+        function addScheduleEntry() {
+            const type = document.getElementById('scheduleType').value;
+            const startDate = document.getElementById('scheduleStartDate').value;
+            const startTime = parseInt(document.getElementById('scheduleStartTime').value) || 0;
+            const endDate = document.getElementById('scheduleEndDate').value;
+            const endTime = parseInt(document.getElementById('scheduleEndTime').value) || 23;
+            const notes = document.getElementById('scheduleNotes').value;
+
+            if (!startDate || !endDate) {
+                showNotification('Prosim vnesi datume začetka in konca', 'error');
+                return;
+            }
+
+            if (new Date(startDate) > new Date(endDate)) {
+                showNotification('Datum začetka ne sme biti poznejši od datuma konca', 'error');
+                return;
+            }
+
+            const entry = {
+                id: Date.now(),
+                type: type,
+                startDate: startDate,
+                startTime: startTime,
+                endDate: endDate,
+                endTime: endTime,
+                notes: notes,
+                createdAt: new Date().toISOString()
+            };
+
+            SITE_CONFIG.adminSchedule.entries.push(entry);
+            saveConfig();
+            
+            // Clear form
+            document.getElementById('scheduleType').value = 'prost_dan';
+            document.getElementById('scheduleStartDate').value = '';
+            document.getElementById('scheduleStartTime').value = '9';
+            document.getElementById('scheduleEndDate').value = '';
+            document.getElementById('scheduleEndTime').value = '17';
+            document.getElementById('scheduleNotes').value = '';
+
+            renderScheduleView();
+            showNotification('Vnos dodan v urnik', 'success');
+        }
+
+        // Switch schedule view
+        function switchScheduleView(view) {
+            currentScheduleView = view;
+            
+            // Update button states
+            document.getElementById('viewMonthlyBtn').style.backgroundColor = view === 'monthly' ? '#3498db' : '#95a5a6';
+            document.getElementById('viewWeeklyBtn').style.backgroundColor = view === 'weekly' ? '#3498db' : '#95a5a6';
+            document.getElementById('viewDailyBtn').style.backgroundColor = view === 'daily' ? '#3498db' : '#95a5a6';
+            document.getElementById('viewListBtn').style.backgroundColor = view === 'list' ? '#3498db' : '#95a5a6';
+
+            // Hide all views
+            document.getElementById('monthlyScheduleView').style.display = 'none';
+            document.getElementById('weeklyScheduleView').style.display = 'none';
+            document.getElementById('dailyScheduleView').style.display = 'none';
+            document.getElementById('scheduleListView').style.display = 'none';
+
+            // Show selected view
+            if (view === 'monthly') {
+                document.getElementById('monthlyScheduleView').style.display = 'block';
+                renderMonthlySchedule();
+            } else if (view === 'weekly') {
+                document.getElementById('weeklyScheduleView').style.display = 'block';
+                renderWeeklySchedule();
+            } else if (view === 'daily') {
+                document.getElementById('dailyScheduleView').style.display = 'block';
+                updateDailyScheduleView();
+            } else if (view === 'list') {
+                document.getElementById('scheduleListView').style.display = 'block';
+                renderScheduleList();
+            }
+        }
+
+        // Get color for schedule type
+        function getScheduleTypeColor(type) {
+            const colors = {
+                'prost_dan': '#e74c3c',
+                'pavza': '#f39c12',
+                'malica': '#e67e22',
+                'dopust': '#3498db',
+                'bolniska': '#9b59b6'
+            };
+            return colors[type] || '#95a5a6';
+        }
+
+        // Get label for schedule type
+        function getScheduleTypeLabel(type) {
+            const labels = {
+                'prost_dan': 'Prost Dan',
+                'pavza': 'Pavza',
+                'malica': 'Malica',
+                'dopust': 'Dopust',
+                'bolniska': 'Bolniška'
+            };
+            return labels[type] || type;
+        }
+
+        // Check if date has schedule entries
+        function getEntriesForDate(dateStr) {
+            return SITE_CONFIG.adminSchedule.entries.filter(entry => {
+                return dateStr >= entry.startDate && dateStr <= entry.endDate;
+            });
+        }
+
+        // Render monthly schedule
+        function renderMonthlySchedule() {
+            const year = currentScheduleMonth.getFullYear();
+            const month = currentScheduleMonth.getMonth();
+            
+            document.getElementById('scheduleMonthYear').textContent = 
+                new Date(year, month).toLocaleDateString('sl-SI', { month: 'long', year: 'numeric' });
+
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            const startDate = new Date(firstDay);
+            startDate.setDate(startDate.getDate() - firstDay.getDay() + 1);
+
+            const calendar = document.getElementById('scheduleMonthCalendar');
+            calendar.innerHTML = '';
+
+            // Add day headers
+            const dayHeaders = ['Pon', 'Tor', 'Sre', 'Čet', 'Pet', 'Sob', 'Ned'];
+            dayHeaders.forEach(day => {
+                const header = document.createElement('div');
+                header.style.cssText = 'background: #e74c3c; color: white; padding: 8px; text-align: center; font-weight: 600; border-radius: 4px;';
+                header.textContent = day;
+                calendar.appendChild(header);
+            });
+
+            // Add day cells
+            for (let i = 0; i < 42; i++) {
+                const date = new Date(startDate);
+                date.setDate(date.getDate() + i);
+                const dateStr = date.toISOString().split('T')[0];
+                const isCurrentMonth = date.getMonth() === month;
+                
+                const entries = getEntriesForDate(dateStr);
+                
+                const cell = document.createElement('div');
+                const primaryColor = entries.length > 0 ? getScheduleTypeColor(entries[0].type) : (isCurrentMonth ? '#fff' : '#f0f0f0');
+                const textColor = entries.length > 0 ? 'white' : (isCurrentMonth ? '#333' : '#999');
+                
+                cell.style.cssText = `
+                    padding: 12px 8px;
+                    border: 1px solid #ddd;
+                    border-radius: 4px;
+                    background: ${primaryColor};
+                    color: ${textColor};
+                    font-weight: ${isCurrentMonth ? '600' : '400'};
+                    cursor: pointer;
+                    transition: all 0.2s;
+                    min-height: 60px;
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: space-between;
+                    font-size: 12px;
+                `;
+                
+                const dayNum = document.createElement('div');
+                dayNum.style.cssText = 'font-size: 14px; font-weight: 700;';
+                dayNum.textContent = date.getDate();
+                cell.appendChild(dayNum);
+
+                if (entries.length > 0) {
+                    const typeLabel = document.createElement('div');
+                    typeLabel.style.cssText = 'font-size: 10px; margin-top: 4px;';
+                    typeLabel.textContent = getScheduleTypeLabel(entries[0].type);
+                    cell.appendChild(typeLabel);
+                }
+
+                cell.onmouseover = () => cell.style.boxShadow = '0 2px 8px rgba(0,0,0,0.15)';
+                cell.onmouseout = () => cell.style.boxShadow = 'none';
+
+                calendar.appendChild(cell);
+            }
+        }
+
+        // Render weekly schedule
+        function renderWeeklySchedule() {
+            const year = currentScheduleWeek.getFullYear();
+            const week = getWeekNumber(currentScheduleWeek);
+            
+            document.getElementById('scheduleWeekRange').textContent = `Teden ${week} (${year})`;
+
+            const weekStart = getWeekStart(currentScheduleWeek);
+            const weekEnd = new Date(weekStart);
+            weekEnd.setDate(weekEnd.getDate() + 6);
+
+            let html = '<table style="width: 100%; border-collapse: collapse; font-size: 12px;">';
+            html += '<tr style="background: #e74c3c; color: white;">';
+            html += '<td style="padding: 10px; border: 1px solid #ddd; font-weight: 600; width: 60px;">Ura</td>';
+
+            // Day headers
+            for (let i = 0; i < 7; i++) {
+                const date = new Date(weekStart);
+                date.setDate(date.getDate() + i);
+                const dayName = date.toLocaleDateString('sl-SI', { weekday: 'short', day: '2-digit' });
+                html += `<td style="padding: 10px; border: 1px solid #ddd; font-weight: 600; text-align: center;">${dayName}</td>`;
+            }
+            html += '</tr>';
+
+            // Hours
+            for (let hour = 0; hour < 24; hour++) {
+                html += `<tr>`;
+                html += `<td style="padding: 8px; border: 1px solid #ddd; background: #f8fafb; font-weight: 600;">${hour}:00</td>`;
+
+                for (let day = 0; day < 7; day++) {
+                    const date = new Date(weekStart);
+                    date.setDate(date.getDate() + day);
+                    const dateStr = date.toISOString().split('T')[0];
+                    const entries = getEntriesForDate(dateStr);
+                    
+                    let cellContent = '';
+                    let bgColor = '#fff';
+                    
+                    if (entries.length > 0) {
+                        for (const entry of entries) {
+                            if ((hour >= entry.startTime && hour < entry.endTime) || 
+                                (entry.startDate === dateStr && hour >= entry.startTime) ||
+                                (entry.endDate === dateStr && hour < entry.endTime)) {
+                                bgColor = getScheduleTypeColor(entry.type);
+                                cellContent = getScheduleTypeLabel(entry.type);
+                                break;
+                            }
+                        }
+                    }
+                    
+                    html += `<td style="padding: 8px; border: 1px solid #ddd; background: ${bgColor}; color: ${bgColor !== '#fff' ? 'white' : '#333'}; text-align: center; font-weight: 600; font-size: 11px;">${cellContent}</td>`;
+                }
+                html += '</tr>';
+            }
+            html += '</table>';
+
+            document.getElementById('scheduleWeekTable').innerHTML = html;
+        }
+
+        // Render daily schedule
+        function updateDailyScheduleView() {
+            const selectedDate = document.getElementById('selectedScheduleDay').value;
+            const date = new Date(selectedDate);
+            const dateStr = selectedDate;
+            const entries = getEntriesForDate(dateStr);
+
+            const dayName = date.toLocaleDateString('sl-SI', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            
+            let html = `<div style="margin-bottom: 15px;"><strong>${dayName}</strong></div>`;
+
+            if (entries.length === 0) {
+                html += '<div style="padding: 15px; background: #e8f8f5; border-left: 4px solid #27ae60; color: #27ae60;">Nobenih vnosov za ta dan</div>';
+            } else {
+                html += '<table style="width: 100%; border-collapse: collapse;">';
+                html += '<tr style="background: #ecf0f1;"><td style="padding: 10px; border: 1px solid #ddd; font-weight: 600;">Ura</td><td style="padding: 10px; border: 1px solid #ddd; font-weight: 600;">Tip</td><td style="padding: 10px; border: 1px solid #ddd; font-weight: 600;">Opombe</td></tr>';
+
+                for (let hour = 0; hour < 24; hour++) {
+                    for (const entry of entries) {
+                        if ((hour >= entry.startTime && hour < entry.endTime) || 
+                            (entry.startDate === dateStr && hour >= entry.startTime) ||
+                            (entry.endDate === dateStr && hour < entry.endTime)) {
+                            html += `<tr>
+                                <td style="padding: 10px; border: 1px solid #ddd; background: ${getScheduleTypeColor(entry.type)}; color: white; font-weight: 600;">${hour}:00 - ${hour + 1}:00</td>
+                                <td style="padding: 10px; border: 1px solid #ddd; background: ${getScheduleTypeColor(entry.type)}; color: white;">${getScheduleTypeLabel(entry.type)}</td>
+                                <td style="padding: 10px; border: 1px solid #ddd; background: ${getScheduleTypeColor(entry.type)}; color: white;">${entry.notes || '-'}</td>
+                            </tr>`;
+                            break;
+                        }
+                    }
+                }
+                html += '</table>';
+            }
+
+            document.getElementById('scheduleDayTable').innerHTML = html;
+        }
+
+        // Render schedule entries list
+        function renderScheduleList() {
+            const entries = SITE_CONFIG.adminSchedule.entries.sort((a, b) => new Date(b.startDate) - new Date(a.startDate));
+            const container = document.getElementById('scheduleEntriesList');
+
+            if (entries.length === 0) {
+                container.innerHTML = '<div style="padding: 20px; text-align: center; color: #999;">Ni vnosov v urniku</div>';
+                return;
+            }
+
+            let html = '';
+            entries.forEach(entry => {
+                const startDate = new Date(entry.startDate).toLocaleDateString('sl-SI');
+                const endDate = new Date(entry.endDate).toLocaleDateString('sl-SI');
+                const bgColor = getScheduleTypeColor(entry.type);
+                
+                html += `
+                    <div style="padding: 12px 15px; border-bottom: 1px solid #ecf0f1; display: flex; justify-content: space-between; align-items: center;">
+                        <div style="flex: 1;">
+                            <div style="display: inline-block; background: ${bgColor}; color: white; padding: 3px 10px; border-radius: 3px; font-size: 11px; font-weight: 600; margin-bottom: 8px;">
+                                ${getScheduleTypeLabel(entry.type)}
+                            </div>
+                            <div style="font-size: 12px; color: #333;">
+                                <strong>${startDate}</strong> (${entry.startTime}:00) - <strong>${endDate}</strong> (${entry.endTime}:00)
+                            </div>
+                            ${entry.notes ? `<div style="font-size: 11px; color: #666; margin-top: 5px;">💬 ${entry.notes}</div>` : ''}
+                        </div>
+                        <button onclick="deleteScheduleEntry(${entry.id})" style="background: #e74c3c; color: white; border: none; padding: 6px 12px; border-radius: 3px; cursor: pointer; font-size: 12px; font-weight: 600;">Izbriši</button>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        // Delete schedule entry
+        function deleteScheduleEntry(id) {
+            if (confirm('Ali si prepričan, da želiš izbrisati ta vnos?')) {
+                SITE_CONFIG.adminSchedule.entries = SITE_CONFIG.adminSchedule.entries.filter(e => e.id !== id);
+                saveConfig();
+                renderScheduleView();
+                showNotification('Vnos izbrisan', 'success');
+            }
+        }
+
+        // Navigation functions
+        function prevScheduleMonth() {
+            currentScheduleMonth.setMonth(currentScheduleMonth.getMonth() - 1);
+            renderMonthlySchedule();
+        }
+
+        function nextScheduleMonth() {
+            currentScheduleMonth.setMonth(currentScheduleMonth.getMonth() + 1);
+            renderMonthlySchedule();
+        }
+
+        function prevScheduleWeek() {
+            currentScheduleWeek.setDate(currentScheduleWeek.getDate() - 7);
+            renderWeeklySchedule();
+        }
+
+        function nextScheduleWeek() {
+            currentScheduleWeek.setDate(currentScheduleWeek.getDate() + 7);
+            renderWeeklySchedule();
+        }
+
+        function prevScheduleDay() {
+            currentScheduleDay.setDate(currentScheduleDay.getDate() - 1);
+            document.getElementById('selectedScheduleDay').valueAsDate = new Date(currentScheduleDay);
+            updateDailyScheduleView();
+        }
+
+        function nextScheduleDay() {
+            currentScheduleDay.setDate(currentScheduleDay.getDate() + 1);
+            document.getElementById('selectedScheduleDay').valueAsDate = new Date(currentScheduleDay);
+            updateDailyScheduleView();
+        }
+
+        // Helper functions
+        function getWeekNumber(date) {
+            const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+            const dayNum = d.getUTCDay() || 7;
+            d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+            const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+            return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+        }
+
+        function getWeekStart(date) {
+            const d = new Date(date);
+            const day = d.getDay();
+            const diff = d.getDate() - day + 1;
+            return new Date(d.setDate(diff));
+        }
+
+        function renderScheduleView() {
+            if (currentScheduleView === 'monthly') {
+                renderMonthlySchedule();
+            } else if (currentScheduleView === 'weekly') {
+                renderWeeklySchedule();
+            } else if (currentScheduleView === 'daily') {
+                updateDailyScheduleView();
+            } else if (currentScheduleView === 'list') {
+                renderScheduleList();
+            }
+        }
     </script>
 </body>
 </html>
