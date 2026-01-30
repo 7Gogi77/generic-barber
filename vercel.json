@@ -1,0 +1,59 @@
+{
+  "buildCommand": "npm run build",
+  "devCommand": "next dev",
+  "installCommand": "npm install",
+  "framework": "other",
+  "outputDirectory": "public",
+  "git": {
+    "deploymentEnabled": true
+  },
+  "functions": {
+    "api/schedule.js": {
+      "memory": 128,
+      "maxDuration": 10
+    }
+  },
+  "env": [
+    {
+      "key": "KV_URL",
+      "value": "@kv_url",
+      "description": "Vercel KV database URL"
+    },
+    {
+      "key": "KV_REST_API_TOKEN",
+      "value": "@kv_rest_api_token",
+      "description": "Vercel KV REST API token"
+    }
+  ],
+  "crons": [],
+  "ignoreCommand": "git diff --quiet HEAD~1 HEAD -- . ':(exclude)README.md'",
+  "regions": [
+    "iad1"
+  ],
+  "headers": [
+    {
+      "source": "/api/:path*",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, no-store, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/:path*",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600, s-maxage=3600"
+        }
+      ]
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "/api/:path*"
+    }
+  ]
+}

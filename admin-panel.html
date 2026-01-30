@@ -263,6 +263,251 @@
                 box-sizing: border-box !important;
             }
         }
+
+        /* FullCalendar Mobile Responsiveness */
+        @media (max-width: 768px) {
+            #scheduleCalendar {
+                padding: 8px !important;
+                border-radius: 6px !important;
+                min-height: 400px !important;
+            }
+            
+            .fc-header-toolbar {
+                margin-bottom: 12px !important;
+                padding: 8px 0 !important;
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+            
+            .fc-toolbar-chunk {
+                flex: 0 1 auto !important;
+            }
+            
+            .fc-button-primary {
+                padding: 6px 12px !important;
+                font-size: 12px !important;
+                border-radius: 4px !important;
+            }
+            
+            .fc-button-primary:not(:disabled):hover {
+                background-color: #2980b9 !important;
+            }
+            
+            .fc .fc-button-primary {
+                background-color: #3498db !important;
+                border-color: #3498db !important;
+            }
+            
+            .fc .fc-col-header-cell {
+                padding: 8px 2px !important;
+                font-size: 12px !important;
+            }
+            
+            .fc .fc-daygrid-day-frame {
+                min-height: 80px !important;
+            }
+            
+            .fc .fc-daygrid-day {
+                padding: 4px !important;
+            }
+            
+            .fc .fc-event {
+                padding: 4px 6px !important;
+                font-size: 12px !important;
+                border-radius: 4px !important;
+                margin-bottom: 3px !important;
+            }
+            
+            .fc .fc-event-title {
+                font-weight: 600;
+                white-space: normal;
+                overflow: visible;
+                text-overflow: clip;
+            }
+            
+            .fc .fc-daygrid-day-number {
+                padding: 6px 2px !important;
+                font-size: 12px !important;
+            }
+        }
+        
+        @media (max-width: 600px) {
+            #scheduleCalendar {
+                padding: 6px !important;
+                min-height: 350px !important;
+                margin: 12px 0 !important;
+            }
+            
+            .fc-header-toolbar {
+                margin-bottom: 10px !important;
+                padding: 6px 0 !important;
+            }
+            
+            .fc-button-primary {
+                padding: 5px 10px !important;
+                font-size: 11px !important;
+            }
+            
+            .fc .fc-col-header-cell {
+                padding: 6px 1px !important;
+                font-size: 11px !important;
+                height: auto !important;
+            }
+            
+            .fc .fc-daygrid-day-frame {
+                min-height: 70px !important;
+            }
+            
+            .fc .fc-event {
+                padding: 3px 4px !important;
+                font-size: 11px !important;
+                margin-bottom: 2px !important;
+            }
+            
+            .fc .fc-daygrid-day-number {
+                padding: 4px 1px !important;
+                font-size: 11px !important;
+            }
+            
+            /* Event Modal on Mobile */
+            #eventModal {
+                padding: 10px !important;
+                align-items: flex-end !important;
+            }
+            
+            .modal-content {
+                width: 95% !important;
+                max-width: 100% !important;
+                max-height: 85vh !important;
+                border-radius: 12px 12px 0 0 !important;
+                padding: 16px !important;
+            }
+            
+            #eventTitle {
+                font-size: 14px !important;
+                padding: 8px !important;
+            }
+            
+            .type-selector-grid {
+                grid-template-columns: 2fr 2fr !important;
+                gap: 8px !important;
+                margin: 12px 0 !important;
+            }
+            
+            .type-btn {
+                padding: 10px !important;
+                font-size: 11px !important;
+                border-radius: 6px !important;
+            }
+            
+            .form-group-modal {
+                margin-bottom: 12px !important;
+            }
+            
+            .form-group-modal label {
+                font-size: 12px !important;
+                margin-bottom: 6px !important;
+            }
+            
+            .form-group-modal input {
+                padding: 8px !important;
+                font-size: 14px !important;
+                border-radius: 4px !important;
+            }
+            
+            .modal-buttons {
+                gap: 8px !important;
+                margin-top: 16px !important;
+                flex-wrap: wrap;
+            }
+            
+            .modal-buttons button {
+                flex: 1;
+                padding: 10px !important;
+                font-size: 12px !important;
+                border-radius: 6px !important;
+                min-width: 80px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            #scheduleCalendar {
+                padding: 4px !important;
+                min-height: 300px !important;
+                margin: 10px 0 !important;
+            }
+            
+            .fc-header-toolbar {
+                margin-bottom: 8px !important;
+                padding: 4px 0 !important;
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .fc-button-primary {
+                padding: 4px 8px !important;
+                font-size: 10px !important;
+                width: 100%;
+            }
+            
+            .fc .fc-col-header-cell {
+                padding: 4px 0 !important;
+                font-size: 10px !important;
+                overflow: hidden;
+            }
+            
+            .fc .fc-daygrid-day-frame {
+                min-height: 60px !important;
+            }
+            
+            .fc .fc-event {
+                padding: 2px 3px !important;
+                font-size: 10px !important;
+                margin-bottom: 2px !important;
+            }
+            
+            .fc .fc-daygrid-day-number {
+                padding: 3px 0 !important;
+                font-size: 10px !important;
+            }
+            
+            .modal-content {
+                width: 98% !important;
+                max-width: 100% !important;
+                max-height: 80vh !important;
+                padding: 12px !important;
+                border-radius: 10px 10px 0 0 !important;
+            }
+            
+            #eventTitle {
+                font-size: 13px !important;
+                padding: 6px !important;
+            }
+            
+            .type-selector-grid {
+                grid-template-columns: 1fr 1fr !important;
+                gap: 6px !important;
+                margin: 10px 0 !important;
+            }
+            
+            .type-btn {
+                padding: 8px !important;
+                font-size: 10px !important;
+                border-radius: 4px !important;
+            }
+            
+            .form-group-modal input {
+                padding: 6px !important;
+                font-size: 13px !important;
+                border-radius: 3px !important;
+            }
+            
+            .modal-buttons button {
+                padding: 8px !important;
+                font-size: 11px !important;
+                min-width: 70px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -708,118 +953,173 @@
                     <button class="save-btn" onclick="saveBooking()">Shrani Nastavitve</button>
                 </div>
 
-                <!-- ADMIN SCHEDULE SECTION -->
-                <div class="admin-section">
-                    <div class="section-title">📅 Urnik Lastnika (Proste dneve, Pavze, Dopust, Bolniška)</div>
-                    <p style="font-size: 13px; color: #7f8c8d; margin-bottom: 18px;">Upravljaj s svojo razpoložljivostjo in časom</p>
-                    
-                    <!-- Quick Add Schedule Entry -->
-                    <div style="background: #f8fafb; padding: 18px; border: 1px solid #ecf0f1; border-radius: 8px; margin-bottom: 20px;">
-                        <h4 style="margin: 0 0 15px 0; color: #2c3e50; font-size: 14px; font-weight: 600;">Dodaj Vnos v Urnik</h4>
-                        <div class="form-row">
-                            <div class="form-group-admin">
-                                <label class="form-label-admin">Tip</label>
-                                <select id="scheduleType" class="form-input-admin">
-                                    <option value="prost_dan">Prost Dan</option>
-                                    <option value="pavza">Pavza</option>
-                                    <option value="malica">Malica</option>
-                                    <option value="dopust">Dopust</option>
-                                    <option value="bolniska">Bolniška</option>
-                                </select>
-                            </div>
-                            <div class="form-group-admin">
-                                <label class="form-label-admin">Datum Začetka</label>
-                                <input id="scheduleStartDate" type="date" class="form-input-admin">
-                            </div>
-                            <div class="form-group-admin">
-                                <label class="form-label-admin">Čas Začetka (ura)</label>
-                                <input id="scheduleStartTime" type="number" min="0" max="23" class="form-input-admin" placeholder="9">
-                            </div>
-                        </div>
-                        <div class="form-row">
-                            <div class="form-group-admin">
-                                <label class="form-label-admin">Datum Konca</label>
-                                <input id="scheduleEndDate" type="date" class="form-input-admin">
-                            </div>
-                            <div class="form-group-admin">
-                                <label class="form-label-admin">Čas Konca (ura)</label>
-                                <input id="scheduleEndTime" type="number" min="0" max="23" class="form-input-admin" placeholder="17">
-                            </div>
-                            <div class="form-group-admin">
-                                <label class="form-label-admin">Opombe</label>
-                                <input id="scheduleNotes" type="text" class="form-input-admin" placeholder="Opcional">
-                            </div>
-                        </div>
-                        <button class="save-btn" onclick="addScheduleEntry()" style="background-color: #27ae60; width: 100%;">+ Dodaj Vnos</button>
-                    </div>
-
-                    <!-- View Tabs for Schedule -->
-                    <div style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;">
-                        <button class="save-btn" onclick="switchScheduleView('monthly')" id="viewMonthlyBtn" style="background-color: #3498db; flex: 1; min-width: 120px;">📅 Mesečni Pogled</button>
-                        <button class="save-btn" onclick="switchScheduleView('weekly')" id="viewWeeklyBtn" style="background-color: #95a5a6; flex: 1; min-width: 120px;">📋 Tedenski Pogled</button>
-                        <button class="save-btn" onclick="switchScheduleView('daily')" id="viewDailyBtn" style="background-color: #95a5a6; flex: 1; min-width: 120px;">⏰ Dnevni Pogled</button>
-                        <button class="save-btn" onclick="switchScheduleView('list')" id="viewListBtn" style="background-color: #95a5a6; flex: 1; min-width: 120px;">📝 Seznam Vnosov</button>
-                    </div>
-
-                    <!-- Monthly Calendar View -->
-                    <div id="monthlyScheduleView" style="background: white; padding: 20px; border: 1px solid #ecf0f1; border-radius: 8px; margin-bottom: 20px;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 10px;">
-                            <button class="save-btn" onclick="prevScheduleMonth()" style="flex: 0.3; padding: 8px 12px; background-color: #e74c3c; font-size: 12px;">← Prejšnji</button>
-                            <h3 id="scheduleMonthYear" style="font-size: 16px; font-weight: 600; color: #2c3e50; margin: 0; text-align: center; flex: 1;">Januar 2026</h3>
-                            <button class="save-btn" onclick="nextScheduleMonth()" style="flex: 0.3; padding: 8px 12px; background-color: #27ae60; font-size: 12px;">Naslednji →</button>
-                        </div>
-                        <div id="scheduleMonthCalendar" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; background: #f8fafb; padding: 15px; border-radius: 6px;"></div>
-                    </div>
-
-                    <!-- Weekly Hours View -->
-                    <div id="weeklyScheduleView" style="background: white; padding: 20px; border: 1px solid #ecf0f1; border-radius: 8px; margin-bottom: 20px; display: none;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 10px;">
-                            <button class="save-btn" onclick="prevScheduleWeek()" style="flex: 0.3; padding: 8px 12px; background-color: #e74c3c; font-size: 12px;">← Prejšnji</button>
-                            <h3 id="scheduleWeekRange" style="font-size: 16px; font-weight: 600; color: #2c3e50; margin: 0; text-align: center; flex: 1;">Teden 1</h3>
-                            <button class="save-btn" onclick="nextScheduleWeek()" style="flex: 0.3; padding: 8px 12px; background-color: #27ae60; font-size: 12px;">Naslednji →</button>
-                        </div>
-                        <div id="scheduleWeekTable" style="overflow-x: auto; background: #f8fafb; padding: 15px; border-radius: 6px; border: 1px solid #ecf0f1;"></div>
-                    </div>
-
-                    <!-- Daily Hours View -->
-                    <div id="dailyScheduleView" style="background: white; padding: 20px; border: 1px solid #ecf0f1; border-radius: 8px; margin-bottom: 20px; display: none;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 10px;">
-                            <button class="save-btn" onclick="prevScheduleDay()" style="flex: 0.3; padding: 8px 12px; background-color: #e74c3c; font-size: 12px;">← Prejšnji</button>
-                            <div style="flex: 1;">
-                                <input id="selectedScheduleDay" type="date" class="form-input-admin" onchange="updateDailyScheduleView()">
-                            </div>
-                            <button class="save-btn" onclick="nextScheduleDay()" style="flex: 0.3; padding: 8px 12px; background-color: #27ae60; font-size: 12px;">Naslednji →</button>
-                        </div>
-                        <div id="scheduleDayTable" style="background: #f8fafb; padding: 15px; border-radius: 6px; border: 1px solid #ecf0f1; font-size: 13px;"></div>
-                    </div>
-
-                    <!-- Schedule Entries List -->
-                    <div id="scheduleListView" style="background: white; padding: 20px; border: 1px solid #ecf0f1; border-radius: 8px; margin-bottom: 20px; display: none;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                            <h3 style="margin: 0; color: #2c3e50; font-size: 14px; font-weight: 600;">Vsi Vnosi v Urniku</h3>
-                            <input id="filterScheduleType" type="text" class="form-input-admin" placeholder="Filtriraj po tipu..." style="width: 200px;">
-                        </div>
-                        <div id="scheduleEntriesList" style="max-height: 600px; overflow-y: auto; border: 1px solid #ecf0f1; border-radius: 6px;"></div>
-                    </div>
-
-                    <!-- Legend -->
-                    <div style="background: #f8fafb; padding: 15px; border-radius: 6px; border-left: 4px solid #3498db; margin-top: 20px; font-size: 12px;">
-                        <p style="margin: 0 0 10px 0; font-weight: 600; color: #2c3e50;">Legenda Barv:</p>
-                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px;">
-                            <div style="display: flex; align-items: center; gap: 8px;"><span style="width: 20px; height: 20px; background: #e74c3c; border-radius: 3px;"></span>Prost Dan</div>
-                            <div style="display: flex; align-items: center; gap: 8px;"><span style="width: 20px; height: 20px; background: #f39c12; border-radius: 3px;"></span>Pavza</div>
-                            <div style="display: flex; align-items: center; gap: 8px;"><span style="width: 20px; height: 20px; background: #e67e22; border-radius: 3px;"></span>Malica</div>
-                            <div style="display: flex; align-items: center; gap: 8px;"><span style="width: 20px; height: 20px; background: #3498db; border-radius: 3px;"></span>Dopust</div>
-                            <div style="display: flex; align-items: center; gap: 8px;"><span style="width: 20px; height: 20px; background: #9b59b6; border-radius: 3px;"></span>Bolniška</div>
-                        </div>
-                    </div>
-                </div>
-
             </div> <!-- END storitve tab -->
 
             <!-- ===== TAB 4: PANEL (BUSINESS ANALYTICS) ===== -->
             <div id="panel" class="tab-content">
                 <h2 style="margin: 0 0 20px 0; color: #2c3e50; font-size: 18px; border-bottom: 1px solid #ddd; padding-bottom: 10px;">Poslovni Panel</h2>
+
+                <!-- DEBUG SEKCIJA -->
+                <div id="debugSection" class="admin-section" style="background: #fff3cd; border: 1px solid #ffc107;">
+                    <div class="section-title">🔧 Debug Info</div>
+                    <div id="debugOutput" style="font-size: 12px; color: #333; line-height: 1.6; font-family: monospace; white-space: pre-wrap; word-break: break-all; max-height: 300px; overflow-y: auto; background: white; padding: 10px; border-radius: 4px;">
+                        Učitavanje...
+                    </div>
+                </div>
+
+                <!-- WORKING HOURS SETUP -->
+                <div class="admin-section">
+                    <div class="section-title">⏰ Obavezni Radni Sati</div>
+                    <p style="font-size: 13px; color: #7f8c8d; margin-bottom: 18px;">Postavi svoje redovne radne sate. Automatski će se puniti kao "Delo" događaj za sve dane.</p>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
+                        <!-- Start Time -->
+                        <div style="display: flex; flex-direction: column;">
+                            <label style="font-weight: 600; color: #34495e; margin-bottom: 8px; font-size: 13px;">⏰ Početak rada</label>
+                            <input type="time" id="workStartTime" value="09:00" style="padding: 10px; border: 1.5px solid #ecf0f1; border-radius: 6px; font-size: 13px; font-family: inherit;">
+                        </div>
+                        
+                        <!-- End Time -->
+                        <div style="display: flex; flex-direction: column;">
+                            <label style="font-weight: 600; color: #34495e; margin-bottom: 8px; font-size: 13px;">⏰ Kraj rada</label>
+                            <input type="time" id="workEndTime" value="17:00" style="padding: 10px; border: 1.5px solid #ecf0f1; border-radius: 6px; font-size: 13px; font-family: inherit;">
+                        </div>
+                        
+                        <!-- Save Button -->
+                        <div style="display: flex; align-items: flex-end;">
+                            <button onclick="saveWorkingHours()" style="width: 100%; padding: 10px; background: #27ae60; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.3s;">💾 Spremi Sate</button>
+                        </div>
+                    </div>
+                    
+                    <div id="workingHoursInfo" style="margin-top: 15px; padding: 12px; background: #e8f5e9; border-radius: 6px; border-left: 4px solid #27ae60; display: none;">
+                        <p style="margin: 0; color: #2e7d32; font-size: 13px;">✓ Radni sati postavljeni: <strong id="workingHoursDisplay"></strong></p>
+                    </div>
+                </div>
+
+                <!-- ADMIN SCHEDULE SECTION - FULLCALENDAR -->
+                <div class="admin-section">
+                    <div class="section-title">📅 Urnik Lastnika (FullCalendar)</div>
+                    <p style="font-size: 13px; color: #7f8c8d; margin-bottom: 18px;">Upravljaj s svojo razpoložljivostjo in časom. Klikni na datum ali dragi, da ustvariš dogodek.</p>
+                    
+                    <!-- Event Legend -->
+                    <div style="margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #3498db; width: 100%; box-sizing: border-box;">
+                        <div style="font-weight: 600; color: #2c3e50; margin-bottom: 10px; font-size: 14px;">📋 Legenda Dogodkov:</div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 13px;">
+                            <div style="display: flex; align-items: center; gap: 8px;"><span style="font-size: 16px;">💼</span><span>Dejlo (Delovni čas)</span></div>
+                            <div style="display: flex; align-items: center; gap: 8px;"><span style="font-size: 16px;">☕</span><span>Pauza</span></div>
+                            <div style="display: flex; align-items: center; gap: 8px;"><span style="font-size: 16px;">🍽️</span><span>Kosilo</span></div>
+                            <div style="display: flex; align-items: center; gap: 8px;"><span style="font-size: 16px;">🏖️</span><span>Počitnice</span></div>
+                            <div style="display: flex; align-items: center; gap: 8px;"><span style="font-size: 16px;">🏥</span><span>Bolniška</span></div>
+                            <div style="display: flex; align-items: center; gap: 8px;"><span style="font-size: 16px;">❌</span><span>Prosti Dan</span></div>
+                            <div style="display: flex; align-items: center; gap: 8px;"><span style="font-size: 16px;">🕒</span><span>Termin (Rezervacija)</span></div>
+                        </div>
+                    </div>
+                    
+                    <!-- FullCalendar Container (visible but empty until initialized) -->
+                    <div id="scheduleCalendar" style="margin: 20px 0; background: white; border-radius: 8px; padding: 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border: 1px solid #ecf0f1; display: block; width: 100%; box-sizing: border-box; color: #999; font-size: 14px; height: 700px; max-height: 700px; overflow: hidden; overflow-y: auto; overflow-x: clip;">⏳ Nalagam koledar...</div>
+                    
+                    <!-- Event Modal -->
+                    <div id="eventModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 10000; justify-content: center; align-items: center; flex-direction: column; padding: 20px;">
+                        <div style="background: white; border-radius: 12px; padding: 30px; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 40px rgba(0,0,0,0.3);" class="modal-content">
+                            <h3 style="margin: 0 0 20px 0; color: #2c3e50; font-size: 24px;">📅 Novi Dogodek</h3>
+                            
+                            <form id="eventForm" style="display: flex; flex-direction: column; gap: 15px;">
+                                <!-- Title Input -->
+                                <div style="display: flex; flex-direction: column;">
+                                    <label style="font-weight: 600; color: #34495e; margin-bottom: 5px; font-size: 14px;">Naziv dogodka</label>
+                                    <input type="text" id="eventTitle" placeholder="npr. Tekmovanje" style="padding: 10px; border: 2px solid #ecf0f1; border-radius: 6px; font-size: 14px; font-family: inherit;" />
+                                </div>
+
+                                <!-- Type Selection -->
+                                <div style="display: flex; flex-direction: column;">
+                                    <label style="font-weight: 600; color: #34495e; margin-bottom: 10px; font-size: 14px;">Vrsta dogodka</label>
+                                    <div id="typeSelection" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                                        <button type="button" data-type="working_hours" style="padding: 12px; border: 2px solid #ecf0f1; background: #f8fafb; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500; transition: all 0.2s;">💼 Delovni čas</button>
+                                        <button type="button" data-type="break" style="padding: 12px; border: 2px solid #ecf0f1; background: #f8fafb; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500; transition: all 0.2s;">☕ Pavza</button>
+                                        <button type="button" data-type="lunch" style="padding: 12px; border: 2px solid #ecf0f1; background: #f8fafb; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500; transition: all 0.2s;">🍽️ Malica</button>
+                                        <button type="button" data-type="vacation" style="padding: 12px; border: 2px solid #ecf0f1; background: #f8fafb; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500; transition: all 0.2s;">🏖️ Dopust</button>
+                                        <button type="button" data-type="sick_leave" style="padding: 12px; border: 2px solid #ecf0f1; background: #f8fafb; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500; transition: all 0.2s;">🏥 Bolniška</button>
+                                        <button type="button" data-type="day_off" style="padding: 12px; border: 2px solid #ecf0f1; background: #f8fafb; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500; transition: all 0.2s;">❌ Prost Dan</button>
+                                    </div>
+                                    <input type="hidden" id="eventType" value="working_hours" />
+                                </div>
+
+                                <!-- DateTime Inputs -->
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                                    <div style="display: flex; flex-direction: column;">
+                                        <label style="font-weight: 600; color: #34495e; margin-bottom: 5px; font-size: 14px;">Začetek</label>
+                                        <input type="datetime-local" id="eventStart" style="padding: 10px; border: 2px solid #ecf0f1; border-radius: 6px; font-size: 14px; font-family: inherit;" />
+                                    </div>
+                                    <div style="display: flex; flex-direction: column;">
+                                        <label style="font-weight: 600; color: #34495e; margin-bottom: 5px; font-size: 14px;">Konec</label>
+                                        <input type="datetime-local" id="eventEnd" style="padding: 10px; border: 2px solid #ecf0f1; border-radius: 6px; font-size: 14px; font-family: inherit;" />
+                                    </div>
+                                </div>
+
+                                <!-- Action Buttons -->
+                                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                                    <button type="submit" style="flex: 1; padding: 12px; background: #27ae60; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 14px; transition: background 0.2s;">✓ Shrani</button>
+                                    <button type="button" id="eventDeleteBtn" style="flex: 1; padding: 12px; background: #e74c3c; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 14px; transition: background 0.2s; display: none;">🗑️ Izbriši</button>
+                                    <button type="button" id="eventCancelBtn" style="flex: 1; padding: 12px; background: #95a5a6; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 14px; transition: background 0.2s;">✕ Prekliči</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    
+                    <!-- Legend -->
+                    <div style="background: #f8fafb; padding: 15px; border-radius: 6px; border-left: 4px solid #3498db; margin-top: 20px; font-size: 12px;">
+                        <p style="margin: 0 0 10px 0; font-weight: 600; color: #2c3e50;">Vrste Dogodkov:</p>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px;">
+                            <div style="padding: 10px; background: white; border-radius: 4px;">
+                                <span style="display: inline-block; width: 16px; height: 16px; background: #27ae60; border-radius: 2px; margin-right: 8px; vertical-align: middle;"></span>
+                                <strong>💼 Delovni čas</strong> - Redni delovni čas
+                            </div>
+                            <div style="padding: 10px; background: white; border-radius: 4px;">
+                                <span style="display: inline-block; width: 16px; height: 16px; background: #f39c12; border-radius: 2px; margin-right: 8px; vertical-align: middle;"></span>
+                                <strong>☕ Pavza</strong> - Kratka pavza
+                            </div>
+                            <div style="padding: 10px; background: white; border-radius: 4px;">
+                                <span style="display: inline-block; width: 16px; height: 16px; background: #e67e22; border-radius: 2px; margin-right: 8px; vertical-align: middle;"></span>
+                                <strong>🍽️ Malica</strong> - Malica
+                            </div>
+                            <div style="padding: 10px; background: white; border-radius: 4px;">
+                                <span style="display: inline-block; width: 16px; height: 16px; background: #3498db; border-radius: 2px; margin-right: 8px; vertical-align: middle;"></span>
+                                <strong>🏖️ Dopust</strong> - Nedosegljiv
+                            </div>
+                            <div style="padding: 10px; background: white; border-radius: 4px;">
+                                <span style="display: inline-block; width: 16px; height: 16px; background: #9b59b6; border-radius: 2px; margin-right: 8px; vertical-align: middle;"></span>
+                                <strong>🏥 Bolniška</strong> - Nedosegljiv
+                            </div>
+                            <div style="padding: 10px; background: white; border-radius: 4px;">
+                                <span style="display: inline-block; width: 16px; height: 16px; background: #e74c3c; border-radius: 2px; margin-right: 8px; vertical-align: middle;"></span>
+                                <strong>❌ Prost Dan</strong> - Nedosegljiv
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Instructions -->
+                    <div style="margin-top: 20px; padding: 15px; background: #e8f4f8; border-radius: 4px; border-left: 4px solid #3498db;">
+                        <strong>💡 Kako uporabljati:</strong>
+                        <ul style="margin: 10px 0 0 0; padding-left: 20px;">
+                            <li>Klikni na datum, da ustvariš nov dogodek</li>
+                            <li>Klikni na dogodek, da ga urediš</li>
+                            <li>Dragi dogodek, da ga premakneš v drug čas/datum</li>
+                            <li>Dragi spodnji rob dogodka, da spremenišč trajanje</li>
+                            <li>Uporabi gumbe v levem zgornjem kotu, da spremenišč pogled (mesec/teden/dan)</li>
+                            <li>Uporabi gumb 🔄 za ročno sinhronizacijo s spletom</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- EVENT LIST SECTION -->
+                <div class="admin-section">
+                    <div class="section-title">📋 Sve Vrste Dogod Event</div>
+                    <p style="font-size: 13px; color: #7f8c8d; margin-bottom: 18px;">Pregled svih aktivnih dogođaja i rasporeda.</p>
+                    
+                    <div id="eventsList" style="display: grid; gap: 12px; max-height: 400px; overflow-y: auto;">
+                        <p style="color: #95a5a6; text-align: center; padding: 20px;">Nema događaja - dodajte novi klikanjem na kalendarijum!</p>
+                    </div>
+                </div>
 
                 <!-- DASHBOARD -->
                 <div class="admin-section">
@@ -1499,8 +1799,22 @@
         // Delete appointment
         function deleteAppointment(idx) {
             if (confirm('Ali si prepričan?')) {
+                const deletedAppt = SITE_CONFIG.appointments[idx];
                 SITE_CONFIG.appointments.splice(idx, 1);
                 saveConfig();
+                
+                // CRITICAL: Also remove from localStorage so it doesn't reappear
+                const localAppointments = JSON.parse(localStorage.getItem('appointments') || '[]');
+                const filteredAppointments = localAppointments.filter(apt => 
+                  !(apt.date === deletedAppt.date && apt.time === deletedAppt.time && apt.fullName === deletedAppt.name)
+                );
+                localStorage.setItem('appointments', JSON.stringify(filteredAppointments));
+                
+                // Refresh calendar if it exists
+                if (window.calendar) {
+                  loadAppointmentsToCalendarNow();
+                }
+                
                 loadAppointments();
             }
         }
@@ -2461,9 +2775,13 @@
                     entries: []
                 };
             }
-            currentScheduleDay.setHours(0, 0, 0, 0);
-            document.getElementById('selectedScheduleDay').valueAsDate = new Date(currentScheduleDay);
-            renderScheduleView();
+            // Only update daily schedule view if element exists (FullCalendar system doesn't use this)
+            const dayInput = document.getElementById('selectedScheduleDay');
+            if (dayInput) {
+                currentScheduleDay.setHours(0, 0, 0, 0);
+                dayInput.valueAsDate = new Date(currentScheduleDay);
+                renderScheduleView();
+            }
         }
 
         // Add schedule entry
@@ -2849,5 +3167,253 @@
             }
         }
     </script>
+
+    <!-- ========== FULLCALENDAR SCHEDULING SYSTEM ========== -->
+    <!-- FullCalendar Library CSS from CDN -->
+    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css' rel='stylesheet' />
+    
+    <!-- FullCalendar Library JS -->
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
+    
+    <!-- Fallback: Create FullCalendar stub if CDN failed -->
+    <script>
+      window.addEventListener('load', () => {
+        if (typeof FullCalendar === 'undefined') {
+          console.warn('⚠️ FullCalendar failed to load from CDN');
+          // Try to load from alternate source
+          const script = document.createElement('script');
+          script.src = 'https://unpkg.com/fullcalendar@6.1.10/index.global.min.js';
+          script.onload = () => console.log('✅ FullCalendar loaded from unpkg fallback');
+          script.onerror = () => {
+            console.error('❌ All FullCalendar JS sources failed');
+            const container = document.getElementById('scheduleCalendar');
+            if (container) {
+              container.innerHTML = '<p style="color:#e74c3c;padding:20px">❌ Calendar library failed to load. Check your internet connection.</p>';
+            }
+          };
+          document.head.appendChild(script);
+        } else {
+          console.log('✅ FullCalendar loaded successfully from primary CDN');
+        }
+      });
+    </script>
+    
+    <script>
+      // Check if FullCalendar CSS loaded
+      window.addEventListener('load', () => {
+        const fcElement = document.querySelector('.fc');
+        if (fcElement) {
+          const styles = window.getComputedStyle(fcElement);
+          console.log('✅ FullCalendar CSS loaded, display:', styles.display);
+        }
+      });
+    </script>
+
+    <!-- Schedule System Modules -->
+    <script src="/js/schedule-model.js"></script>
+    <script src="/js/storage-manager.js"></script>
+    <script src="/js/calendar-engine.js"></script>
+
+    <!-- Schedule Styles -->
+    <link rel="stylesheet" href="/css/calendar.css">
+
+    <!-- Initialize Schedule Calendar -->
+    <script>
+      // Add visible debug panel
+      
+      let calendarInitialized = false;
+      
+      async function initializeAdminSchedule() {
+        const container = document.getElementById('scheduleCalendar');
+        
+        if (!container) {
+          return;
+        }
+
+        container.style.minHeight = '700px';
+        container.style.height = '700px';
+        container.style.width = '100%';
+        container.style.display = 'block';
+
+        try {
+          
+          await new Promise(resolve => {
+            let attempts = 0;
+            const checkModules = () => {
+              const fc = typeof FullCalendar !== 'undefined';
+              const sm = typeof StorageManager !== 'undefined';
+              const ce = typeof CalendarEngine !== 'undefined';
+              
+              
+              if (fc && sm && ce) {
+                resolve();
+              } else if (attempts < 150) {
+                attempts++;
+                setTimeout(checkModules, 100);
+              } else {
+                resolve();
+              }
+            };
+            checkModules();
+          });
+
+          if (typeof FullCalendar === 'undefined') {
+            return;
+          }
+
+          const scheduleData = await StorageManager.load('schedule');
+          const calendar = CalendarEngine.initializeCalendar(container, scheduleData);
+          
+          if (!calendar) {
+            return;
+          }
+
+          // Store calendar reference globally for other functions to use
+          window.calendar = calendar;
+
+          // Load and display saved working hours
+          const workingHoursJSON = localStorage.getItem('workingHours');
+          if (workingHoursJSON) {
+            const workingHours = JSON.parse(workingHoursJSON);
+            document.getElementById('workStartTime').value = workingHours.start;
+            document.getElementById('workEndTime').value = workingHours.end;
+            document.getElementById('workingHoursDisplay').textContent = `${workingHours.start} - ${workingHours.end}`;
+            document.getElementById('workingHoursInfo').style.display = 'block';
+          }
+          
+          // Load appointments from index.html bookings
+
+          
+          // Check what's in localStorage first
+          const aptsRaw = localStorage.getItem('appointments');
+
+          
+          try {
+            await loadAppointmentsToCalendarNow();
+
+          } catch (err) {
+
+          }
+          
+          // AUTO-REFRESH: Listen for changes to appointments in localStorage
+          // This allows real-time updates when bookings are made in index.html
+          window.addEventListener('storage', (event) => {
+            if (event.key === 'appointments') {
+
+              loadAppointmentsToCalendarNow().catch(err => {
+
+              });
+            }
+          });
+
+          
+          // Update events list with all events
+
+          CalendarEngine.updateEventsList(scheduleData);
+
+          
+          // Switch to the panel tab to show the calendar
+
+          const panelBtn = Array.from(document.querySelectorAll('.tab-btn')).find(btn => btn.textContent.includes('Poslovni Panel'));
+          if (panelBtn) {
+            panelBtn.click();
+
+          }
+          
+          // Check if calendar DOM exists
+          setTimeout(() => {
+            const fcRoot = container.querySelector('.fc') || container;
+
+            if (fcRoot) {
+              const styles = window.getComputedStyle(fcRoot);
+
+              
+              // Force visibility and height - CRITICAL
+              container.style.display = 'block !important';
+              container.style.visibility = 'visible !important';
+              container.style.opacity = '1 !important';
+              container.style.height = '700px !important';
+              container.style.minHeight = '700px !important';
+              container.style.overflow = 'visible !important';
+              
+              // Scroll to calendar
+              container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+              
+              // Force redraw
+              setTimeout(() => {
+                container.style.height = '700px';
+                if (calendar && calendar.updateSize) {
+                  calendar.updateSize();
+                }
+              }, 100);
+            }
+          }, 500);
+          
+          window.onScheduleUpdated = async (newScheduleData) => {
+            const events = await CalendarEngine.generateCalendarEvents(newScheduleData);
+            if (calendar && calendar.getEvents) {
+              calendar.getEvents().forEach(e => e.remove());
+              events.forEach(e => calendar.addEvent(e));
+            }
+          };
+          
+          StorageManager.setupSync(window.onScheduleUpdated);
+
+        } catch (error) {
+
+        }
+      }
+
+
+      
+      // Setup lazy-loading: only initialize calendar when "Poslovni Panel" tab is clicked
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => {
+
+          setupTabListener();
+        });
+      } else {
+
+        setupTabListener();
+      }
+      
+      function setupTabListener() {
+        // Find and attach listener to "Poslovni Panel" tab button
+        const tabButtons = document.querySelectorAll('.tab-btn');
+
+        
+        tabButtons.forEach((btn, idx) => {
+          console.log(`Tab ${idx}: "${btn.textContent}"`);
+          if (btn.textContent.includes('Poslovni Panel')) {
+
+            btn.addEventListener('click', () => {
+
+              console.log('Tab click detected, calendarInitialized:', calendarInitialized);
+              if (!calendarInitialized) {
+
+                calendarInitialized = true;
+                initializeAdminSchedule();
+              } else {
+
+              }
+            });
+
+          }
+        });
+        
+        // If no tabs found, try to initialize anyway after delay
+        if (tabButtons.length === 0) {
+
+          setTimeout(() => {
+            if (!calendarInitialized) {
+              calendarInitialized = true;
+              initializeAdminSchedule();
+            }
+          }, 2000);
+        }
+      }
+    </script>
+    <!-- ========== END FULLCALENDAR SYSTEM ========== -->
 </body>
 </html>

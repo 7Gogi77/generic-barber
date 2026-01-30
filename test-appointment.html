@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Termin</title>
+</head>
+<body>
+    <h1>Test Kreiranja Termina</h1>
+    <button onclick="createTestAppointment()">Kreiraj Test Termin</button>
+    <button onclick="checkAppointments()">Provjeri Termine</button>
+    <button onclick="goToAdmin()">Idi na Admin Panel</button>
+    
+    <pre id="output"></pre>
+    
+    <script>
+        function createTestAppointment() {
+            const testAppointment = {
+                date: "2026-01-30",
+                time: "14:00",
+                firstName: "Test",
+                surname: "Korisnik",
+                fullName: "Test Korisnik",
+                email: "test@example.com",
+                phone: "+38612345678",
+                services: ["Haircut"],
+                totalDuration: 30,
+                totalPrice: 20,
+                id: Date.now()
+            };
+            
+            let appointments = JSON.parse(localStorage.getItem('appointments') || '[]');
+            appointments.push(testAppointment);
+            localStorage.setItem('appointments', JSON.stringify(appointments));
+            
+            document.getElementById('output').textContent = 'Test termin kreiran:\n' + JSON.stringify(testAppointment, null, 2);
+            console.log('✓ Test termin kreiran');
+        }
+        
+        function checkAppointments() {
+            const appointments = JSON.parse(localStorage.getItem('appointments') || '[]');
+            document.getElementById('output').textContent = 'Termini u storage:\n' + JSON.stringify(appointments, null, 2);
+            console.log('Termini:', appointments);
+        }
+        
+        function goToAdmin() {
+            window.location.href = 'admin-panel.html';
+        }
+        
+        // Check on load
+        window.addEventListener('load', checkAppointments);
+    </script>
+</body>
+</html>

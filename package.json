@@ -1,0 +1,34 @@
+{
+  "name": "generic-barber-scheduling",
+  "version": "1.0.0",
+  "description": "Lightweight scheduling system for barber shop",
+  "type": "module",
+  "scripts": {
+    "dev": "node -e \"console.log('Static site - open index.html')\"",
+    "build": "echo 'Static build complete'",
+    "start": "npx http-server . -p 3000"
+  },
+  "dependencies": {
+    "@fullcalendar/core": "^6.1.10",
+    "@fullcalendar/daygrid": "^6.1.10",
+    "@fullcalendar/timegrid": "^6.1.10",
+    "@fullcalendar/interaction": "^6.1.10",
+    "@fullcalendar/rrule": "^6.1.10",
+    "@vercel/kv": "^0.2.1"
+  },
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "license": "MIT",
+  "author": "Blade & Bourbon",
+  "keywords": [
+    "scheduling",
+    "calendar",
+    "barber",
+    "booking",
+    "fullcalendar"
+  ]
+}
