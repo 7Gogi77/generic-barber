@@ -13,23 +13,13 @@
       "maxDuration": 10
     }
   },
-  "env": [
-    {
-      "key": "KV_URL",
-      "value": "@kv_url",
-      "description": "Vercel KV database URL"
-    },
-    {
-      "key": "KV_REST_API_TOKEN",
-      "value": "@kv_rest_api_token",
-      "description": "Vercel KV REST API token"
-    }
-  ],
+  "env": {
+    "KV_URL": "@kv_url",
+    "KV_REST_API_TOKEN": "@kv_rest_api_token"
+  },
   "crons": [],
   "ignoreCommand": "git diff --quiet HEAD~1 HEAD -- . ':(exclude)README.md'",
-  "regions": [
-    "iad1"
-  ],
+  "regions": ["iad1"],
   "headers": [
     {
       "source": "/api/:path*",
