@@ -1,14 +1,15 @@
 {
-  "buildCommand": "npm run build",
-  "devCommand": "next dev",
+  "buildCommand": "echo 'Static build complete'",
+  "devCommand": "npx http-server . -p 3000",
   "installCommand": "npm install",
-  "framework": "nextjs",
-  "outputDirectory": "public",
+  "framework": null,
+  "public": true,
   "git": {
     "deploymentEnabled": true
   },
   "functions": {
     "api/schedule.js": {
+      "runtime": "nodejs18.x",
       "memory": 128,
       "maxDuration": 10
     }
@@ -31,11 +32,11 @@
       ]
     },
     {
-      "source": "/:path*",
+      "source": "/(.*)?",
       "headers": [
         {
           "key": "Cache-Control",
-          "value": "public, max-age=3600, s-maxage=3600"
+          "value": "public, max-age=3600"
         }
       ]
     }

@@ -13,11 +13,7 @@
     "@fullcalendar/daygrid": "^6.1.10",
     "@fullcalendar/timegrid": "^6.1.10",
     "@fullcalendar/interaction": "^6.1.10",
-    "@fullcalendar/rrule": "^6.1.10",
-    "@vercel/kv": "^0.2.1",
-    "next": "^14.0.0",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "@fullcalendar/rrule": "^6.1.10"
   },
   "devDependencies": {
     "http-server": "^14.1.1"
