@@ -1296,7 +1296,7 @@
         const ADMIN_PASSWORD = "admin123";
 
         // Load configuration from localStorage
-        function loadConfig() {
+        async function loadConfig() {
             const saved = localStorage.getItem('site_config_backup');
             if (saved) {
                 try {
@@ -1805,18 +1805,18 @@
                 SITE_CONFIG.appointments.splice(idx, 1);
                 saveConfig();
                 
-                // CRITICAL: Also remove from localStorage so it doesn't reappear
-                const localAppointments = JSON.parse(localStorage.getItem('appointments') || '[]');
-                const filteredAppointments = localAppointments.filter(apt => 
-                  !(apt.date === deletedAppt.date && apt.time === deletedAppt.time && apt.fullName === deletedAppt.name)
-                );
-                localStorage.setItem('appointments', JSON.stringify(filteredAppointments));
-                
-                // Refresh calendar if it exists
-                if (window.calendar) {
-                  loadAppointmentsToCalendarNow();
+                // Sync updated appointments into StorageManager schedule
+                if (typeof syncAppointmentsToSchedule === 'function') {
+                    syncAppointmentsToSchedule().then(() => {
+                        if (window.calendar) loadAppointmentsToCalendarNow();
+                    }).catch(() => {
+                        if (window.calendar) loadAppointmentsToCalendarNow();
+                    });
+                } else {
+                    if (window.calendar) loadAppointmentsToCalendarNow();
                 }
                 
+                // Refresh admin UI list
                 loadAppointments();
             }
         }
@@ -2328,12 +2328,40 @@
                 SITE_CONFIG.appointments = [];
             }
             
-            const savedAppts = localStorage.getItem('appointments');
-            if (savedAppts) {
-                try {
-                    SITE_CONFIG.appointments = JSON.parse(savedAppts);
-                } catch (e) {
-                    console.log('Could not load appointments');
+            // Try to load bookings from StorageManager schedule (DB-backed)
+            try {
+                if (typeof StorageManager !== 'undefined' && StorageManager.load) {
+                    const schedule = await StorageManager.load('schedule');
+                    const bookings = (schedule && Array.isArray(schedule.events))
+                        ? schedule.events.filter(e => (e.extendedProps && e.extendedProps.isBooking) || e.isBooking || e.type === 'booking')
+                        : [];
+                    if (bookings.length > 0) {
+                        SITE_CONFIG.appointments = bookings.map(b => ({
+                            id: b.id || Date.now(),
+                            date: (b.start || '').split('T')[0] || '',
+                            time: (b.start || '').split('T')[1] || '',
+                            firstName: (b.extendedProps && b.extendedProps.customer) ? (b.extendedProps.customer.split(' ')[0] || '') : (b.title || ''),
+                            surname: (b.extendedProps && b.extendedProps.customer) ? (b.extendedProps.customer.split(' ').slice(1).join(' ') || '') : '',
+                            fullName: (b.extendedProps && b.extendedProps.customer) || b.title || '',
+                            email: b.extendedProps?.email || '',
+                            phone: b.extendedProps?.phone || '',
+                            services: b.extendedProps?.services || [],
+                            totalDuration: b.extendedProps?.duration || 0,
+                            totalPrice: b.extendedProps?.price || 0
+                        }));
+                    } else {
+                        // Fallback to legacy localStorage if no bookings found
+                        const savedAppts = localStorage.getItem('appointments');
+                        if (savedAppts) {
+                            try { SITE_CONFIG.appointments = JSON.parse(savedAppts); } catch (e) { console.log('Could not load appointments'); }
+                        }
+                    }
+                }
+            } catch (e) {
+                console.warn('⚠ Could not load bookings from StorageManager, falling back to localStorage', e);
+                const savedAppts = localStorage.getItem('appointments');
+                if (savedAppts) {
+                    try { SITE_CONFIG.appointments = JSON.parse(savedAppts); } catch (err) { console.log('Could not load appointments'); }
                 }
             }
         }
@@ -2341,11 +2369,52 @@
         function saveConfig() {
             // Save locally
             localStorage.setItem('site_config_backup', JSON.stringify(SITE_CONFIG));
-            localStorage.setItem('appointments', JSON.stringify(SITE_CONFIG.appointments || []));
-            
+
             // Sync to Firebase REST API (simpler, no module issues)
             syncToFirebase(SITE_CONFIG);
             showNotification('✅ Spremembe so bile shranjene in sinhronizirane', 'success');
+
+            // Also sync appointments into schedule (DB-backed)
+            if (typeof syncAppointmentsToSchedule === 'function') syncAppointmentsToSchedule();
+        }
+
+        // Sync SITE_CONFIG.appointments into StorageManager schedule
+        async function syncAppointmentsToSchedule() {
+            try {
+                if (typeof StorageManager === 'undefined' || !StorageManager.load) return;
+                const schedule = await StorageManager.load('schedule');
+                // Remove existing booking events
+                schedule.events = (schedule.events || []).filter(e => !(e.extendedProps && e.extendedProps.isBooking) && !String(e.id).startsWith('apt_'));
+
+                // Map SITE_CONFIG.appointments into schedule events
+                const appts = SITE_CONFIG.appointments || [];
+                const mapped = appts.map(a => {
+                    const start = (a.date && a.time) ? `${a.date}T${a.time}` : (a.start || '');
+                    const end = a.end || (a.date && a.time ? new Date(new Date(`${a.date}T${a.time}`).getTime() + ((a.totalDuration || a.duration || 60) * 60000)).toISOString() : (a.end || ''));
+                    return {
+                        id: a.id ? String(a.id).startsWith('apt_') ? a.id : `apt_${a.id}` : `apt_${Date.now()}_${Math.random().toString(36).slice(2,8)}`,
+                        title: a.fullName || `${a.firstName || ''} ${a.surname || ''}`.trim() || 'Rezervacija',
+                        start: start,
+                        end: end,
+                        type: 'booking',
+                        extendedProps: {
+                            isBooking: true,
+                            customer: a.fullName || `${a.firstName || ''} ${a.surname || ''}`.trim(),
+                            email: a.email || '',
+                            phone: a.phone || '',
+                            services: a.services || [],
+                            duration: a.totalDuration || a.duration || 0,
+                            price: a.totalPrice || a.price || 0
+                        }
+                    };
+                });
+
+                schedule.events.push(...mapped);
+                await StorageManager.save('schedule', schedule);
+                console.log('✓ Appointments synced to StorageManager schedule');
+            } catch (e) {
+                console.warn('⚠ syncAppointmentsToSchedule failed', e);
+            }
         }
 
         // Upload Hero Image
@@ -2440,11 +2509,12 @@
         function saveConfig() {
             // Save locally
             localStorage.setItem('site_config_backup', JSON.stringify(SITE_CONFIG));
-            localStorage.setItem('appointments', JSON.stringify(SITE_CONFIG.appointments || []));
-            
+
             // Sync to Firebase REST API (simpler, no module issues)
             syncToFirebase(SITE_CONFIG);
             showNotification('✅ Spremembe so bile shranjene in sinhronizirane', 'success');
+
+            if (typeof syncAppointmentsToSchedule === 'function') syncAppointmentsToSchedule();
         }
         
         // Simple Firebase REST API sync (no module dependencies)
@@ -3286,27 +3356,17 @@
           // Load appointments from index.html bookings
 
           
-          // Check what's in localStorage first
-          const aptsRaw = localStorage.getItem('appointments');
+                    try {
+                        await loadAppointmentsToCalendarNow();
+                    } catch (err) {}
 
-          
-          try {
-            await loadAppointmentsToCalendarNow();
-
-          } catch (err) {
-
-          }
-          
-          // AUTO-REFRESH: Listen for changes to appointments in localStorage
-          // This allows real-time updates when bookings are made in index.html
-          window.addEventListener('storage', (event) => {
-            if (event.key === 'appointments') {
-
-              loadAppointmentsToCalendarNow().catch(err => {
-
-              });
-            }
-          });
+                    // Setup BroadcastChannel-based sync (StorageManager) to listen for schedule updates
+                    if (typeof StorageManager !== 'undefined' && StorageManager.setupSync) {
+                        StorageManager.setupSync((scheduleData) => {
+                            console.log('📢 Received schedule update via StorageManager');
+                            loadAppointmentsToCalendarNow().catch(() => {});
+                        });
+                    }
 
           
           // Update events list with all events

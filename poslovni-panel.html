@@ -937,33 +937,43 @@
             })();
 
             // ========== CUSTOMER LIST PANEL ========== //
-            function showCustomerListPanel() {
+            async function showCustomerListPanel() {
                 const panel = document.getElementById('customerListPanel');
                 const content = document.getElementById('customerListContent');
-                // Load appointments from localStorage
-                let appointments = [];
+
+                // Ensure scheduleData is loaded from DB
                 try {
-                    const apptRaw = localStorage.getItem('appointments');
-                    if (apptRaw) appointments = JSON.parse(apptRaw);
-                } catch (e) {}
-                // Aggregate by fullName
+                    if (!scheduleData || !Array.isArray(scheduleData.events)) {
+                        scheduleData = await StorageManager.load('schedule');
+                    }
+                } catch (e) {
+                    console.warn('⚠ Failed to load schedule for customers view', e);
+                }
+
+                // Derive customers from booking events in scheduleData
+                const bookings = (scheduleData && Array.isArray(scheduleData.events))
+                    ? scheduleData.events.filter(e => (e.extendedProps && e.extendedProps.isBooking) || e.isBooking || e.extendedProps?.tab === 'customer')
+                    : [];
+
                 const customerMap = {};
-                appointments.forEach(appt => {
-                    const key = (appt.fullName || '').trim().toLowerCase();
+                bookings.forEach(ev => {
+                    const name = (ev.extendedProps && ev.extendedProps.customer) || ev.title || '';
+                    const key = name.trim().toLowerCase();
                     if (!key) return;
                     if (!customerMap[key]) {
+                        const parts = name.split(' ');
                         customerMap[key] = {
-                            firstName: appt.firstName,
-                            surname: appt.surname,
-                            fullName: appt.fullName,
+                            firstName: parts[0] || name,
+                            surname: parts.slice(1).join(' ') || '',
+                            fullName: name,
                             count: 0
                         };
                     }
                     customerMap[key].count++;
                 });
-                // Render list
+
                 let html = '';
-                const customers = Object.values(customerMap).sort((a, b) => a.surname.localeCompare(b.surname));
+                const customers = Object.values(customerMap).sort((a, b) => (a.surname || '').localeCompare(b.surname || ''));
                 if (customers.length === 0) {
                     html = '<div style="color:#888;">Ni strank.</div>';
                 } else {
@@ -974,6 +984,7 @@
                     });
                     html += '</tbody></table>';
                 }
+
                 content.innerHTML = html;
                 panel.style.display = 'block';
             }
@@ -1154,14 +1165,17 @@
             const start = startTime ? `${startDate}T${startTime}` : `${startDate}T00:00`;
             const end = endTime ? `${endDate}T${endTime}` : `${endDate}T23:59`;
 
-            // Shrani tab v extendedProps
+            // Shrani tab v extendedProps and mark bookings for DB persistence
             const eventPayload = {
                 title,
                 type,
                 start,
                 end,
                 description,
-                tab: currentEventTab
+                tab: currentEventTab,
+                isBooking: currentEventTab === 'customer',
+                // For bookings keep customer info in extendedProps.customer
+                customer: currentEventTab === 'customer' ? title : undefined
             };
 
             const eventId = (typeof window.addScheduleEvent === 'function')
@@ -1198,7 +1212,9 @@
                 extendedProps: {
                     type: type,
                     description: description,
-                    tab: currentEventTab
+                    tab: currentEventTab,
+                    isBooking: currentEventTab === 'customer',
+                    customer: currentEventTab === 'customer' ? title : undefined
                 }
             });
 
@@ -1305,9 +1321,39 @@
                 scheduleData = await StorageManager.load('schedule');
                 debugLog(`✅ Schedule data loaded (${scheduleData.events ? scheduleData.events.length : 0} events)`);
                 
-                // Also check appointments in localStorage
-                const aptsRaw = localStorage.getItem('appointments');
-                debugLog(`📋 Appointments in localStorage: ${aptsRaw ? 'YES' : 'NO'}`);
+                // Migrate legacy localStorage 'appointments' into schedule (DB-backed) if present
+                try {
+                    const legacyRaw = localStorage.getItem('appointments');
+                    if (legacyRaw) {
+                        const legacy = JSON.parse(legacyRaw || '[]');
+                        if (Array.isArray(legacy) && legacy.length > 0) {
+                            debugLog(`📥 Migrating ${legacy.length} legacy appointments from localStorage`);
+                            scheduleData.events = scheduleData.events || [];
+                            const migrated = legacy.map(appt => {
+                                const title = appt.fullName || `${appt.firstName || ''} ${appt.surname || ''}`.trim() || 'Stranka';
+                                return {
+                                    id: `appt_${Date.now()}_${Math.random().toString(36).slice(2,8)}`,
+                                    title: title,
+                                    start: appt.start || appt.datetime || null,
+                                    end: appt.end || null,
+                                    extendedProps: {
+                                        isBooking: true,
+                                        customer: title,
+                                        email: appt.email || '',
+                                        phone: appt.phone || '',
+                                        services: appt.services || [],
+                                        duration: appt.duration || appt.length || 0,
+                                        price: appt.price || 0
+                                    }
+                                };
+                            });
+                            scheduleData.events.push(...migrated);
+                            try { await StorageManager.save('schedule', scheduleData); localStorage.removeItem('appointments'); debugLog('✅ Migrated legacy appointments to DB'); } catch(e) { console.warn('⚠ Migration save failed', e); }
+                        }
+                    }
+                } catch (e) {
+                    console.warn('⚠ Legacy appointments migration failed', e);
+                }
 
                 // Check if CalendarEngine is available
                 if (typeof CalendarEngine === 'undefined') {

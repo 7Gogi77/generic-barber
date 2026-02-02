@@ -27,18 +27,52 @@
                 id: Date.now()
             };
             
-            let appointments = JSON.parse(localStorage.getItem('appointments') || '[]');
-            appointments.push(testAppointment);
-            localStorage.setItem('appointments', JSON.stringify(appointments));
+            try {
+                if (typeof window.addScheduleEvent === 'function') {
+                    window.addScheduleEvent({
+                        id: `apt_${testAppointment.id}`,
+                        title: testAppointment.fullName,
+                        start: `${testAppointment.date}T${testAppointment.time}`,
+                        end: new Date(new Date(`${testAppointment.date}T${testAppointment.time}`).getTime() + (testAppointment.totalDuration || 60) * 60000).toISOString(),
+                        extendedProps: {
+                            isBooking: true,
+                            customer: testAppointment.fullName,
+                            email: testAppointment.email,
+                            phone: testAppointment.phone,
+                            services: testAppointment.services,
+                            duration: testAppointment.totalDuration,
+                            price: testAppointment.totalPrice
+                        }
+                    });
+                } else if (typeof StorageManager !== 'undefined' && StorageManager.load) {
+                    const schedule = await StorageManager.load('schedule');
+                    schedule.events = schedule.events || [];
+                    schedule.events.push({
+                        id: `apt_${testAppointment.id}`,
+                        title: testAppointment.fullName,
+                        start: `${testAppointment.date}T${testAppointment.time}`,
+                        end: new Date(new Date(`${testAppointment.date}T${testAppointment.time}`).getTime() + (testAppointment.totalDuration || 60) * 60000).toISOString(),
+                        extendedProps: { isBooking: true, customer: testAppointment.fullName }
+                    });
+                    await StorageManager.save('schedule', schedule);
+                }
+            } catch (e) {
+                console.warn('Could not save test appointment to schedule', e);
+            }
             
             document.getElementById('output').textContent = 'Test termin kreiran:\n' + JSON.stringify(testAppointment, null, 2);
             console.log('✓ Test termin kreiran');
         }
         
         function checkAppointments() {
-            const appointments = JSON.parse(localStorage.getItem('appointments') || '[]');
-            document.getElementById('output').textContent = 'Termini u storage:\n' + JSON.stringify(appointments, null, 2);
-            console.log('Termini:', appointments);
+            try {
+                const schedule = await StorageManager.load('schedule');
+                const bookings = (schedule && Array.isArray(schedule.events)) ? schedule.events.filter(e => e.extendedProps?.isBooking) : [];
+                document.getElementById('output').textContent = 'Termini v schedule:\n' + JSON.stringify(bookings, null, 2);
+                console.log('Termini:', bookings);
+            } catch (e) {
+                document.getElementById('output').textContent = 'Could not load bookings: ' + e.message;
+            }
         }
         
         function goToAdmin() {

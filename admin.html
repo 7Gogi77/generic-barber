@@ -858,7 +858,7 @@
 </html>
 
         // Load configuration from localStorage
-        function loadConfig() {
+        async function loadConfig() {
             const saved = localStorage.getItem('site_config_backup');
             if (saved) {
                 try {
@@ -1434,20 +1434,52 @@
                 SITE_CONFIG.appointments = [];
             }
             
-            const savedAppts = localStorage.getItem('appointments');
-            if (savedAppts) {
-                try {
-                    SITE_CONFIG.appointments = JSON.parse(savedAppts);
-                } catch (e) {
-                    console.log('Could not load appointments');
+            try {
+                if (typeof StorageManager !== 'undefined' && StorageManager.load) {
+                    const schedule = await StorageManager.load('schedule');
+                    const bookings = (schedule && Array.isArray(schedule.events)) ? schedule.events.filter(e => e.extendedProps?.isBooking) : [];
+                    if (bookings.length > 0) {
+                        SITE_CONFIG.appointments = bookings.map(b => ({
+                            id: b.id || Date.now(),
+                            date: (b.start || '').split('T')[0] || '',
+                            time: (b.start || '').split('T')[1] || '',
+                            fullName: b.extendedProps?.customer || b.title || ''
+                        }));
+                    } else {
+                        const savedAppts = localStorage.getItem('appointments');
+                        if (savedAppts) {
+                            try { SITE_CONFIG.appointments = JSON.parse(savedAppts); } catch (e) { console.log('Could not load appointments'); }
+                        }
+                    }
+                }
+            } catch (e) {
+                const savedAppts = localStorage.getItem('appointments');
+                if (savedAppts) {
+                    try { SITE_CONFIG.appointments = JSON.parse(savedAppts); } catch (err) { console.log('Could not load appointments'); }
                 }
             }
         }
         
         function saveConfig() {
             localStorage.setItem('site_config_backup', JSON.stringify(SITE_CONFIG));
-            localStorage.setItem('appointments', JSON.stringify(SITE_CONFIG.appointments || []));
             showNotification('Spremembe so bile shranjene', 'success');
+            // Sync appointments into schedule
+            (async () => {
+                try {
+                    if (typeof StorageManager === 'undefined' || !StorageManager.load) return;
+                    const schedule = await StorageManager.load('schedule');
+                    schedule.events = (schedule.events || []).filter(e => !e.extendedProps?.isBooking);
+                    const mapped = (SITE_CONFIG.appointments || []).map(a => ({
+                        id: a.id ? (String(a.id).startsWith('apt_') ? a.id : `apt_${a.id}`) : `apt_${Date.now()}`,
+                        title: a.fullName || '',
+                        start: `${a.date}T${a.time}`,
+                        end: a.end || '',
+                        extendedProps: { isBooking: true, customer: a.fullName }
+                    }));
+                    schedule.events.push(...mapped);
+                    await StorageManager.save('schedule', schedule);
+                } catch (e) { console.warn('Could not sync appointments to schedule', e); }
+            })();
         }
 
         // Sync color picker and text inputs

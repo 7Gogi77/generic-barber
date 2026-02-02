@@ -326,51 +326,9 @@ const CalendarEngine = {
             console.log('📅 Loading events...');
             const events = await CalendarEngine.generateCalendarEvents(scheduleData);
             console.log('📅 Loaded', events.length, 'schedule events');
-            
-            // Also load appointments from localStorage
-            const appointmentsJSON = localStorage.getItem('appointments');
-            if (appointmentsJSON) {
-              try {
-                const appointments = JSON.parse(appointmentsJSON);
-                console.log('📅 Loaded', appointments.length, 'appointments from localStorage');
-                
-                // Convert appointments to events
-                const appointmentEvents = appointments.map(apt => {
-                  const startDateTime = apt.date + 'T' + apt.time;
-                  const startDate = new Date(`${apt.date}T${apt.time}`);
-                  const endDate = new Date(startDate.getTime() + (apt.totalDuration || 60) * 60000);
-                  const endDateTime = endDate.toISOString().slice(0, 16);
-                  
-                  return {
-                    id: 'apt_' + apt.id,
-                    title: apt.fullName || 'Rezervacija',
-                    start: startDateTime,
-                    end: endDateTime,
-                    allDay: false,
-                    display: 'auto',
-                    editable: false,
-                    backgroundColor: 'rgba(46, 204, 113, 0.2)',
-                    borderColor: '#2ecc71',
-                    textColor: '#27ae60',
-                    classNames: ['schedule-event', 'event-type-booking', 'event-normal'],
-                    extendedProps: {
-                      isBooking: true,
-                      customer: apt.fullName,
-                      email: apt.email,
-                      phone: apt.phone,
-                      services: apt.services,
-                      duration: apt.totalDuration,
-                      price: apt.totalPrice
-                    }
-                  };
-                });
-                
-                console.log('📅 Converted', appointmentEvents.length, 'appointments to events');
-                events.push(...appointmentEvents);
-              } catch (e) {
-                console.warn('Failed to parse appointments:', e);
-              }
-            }
+            // Bookings are now stored in scheduleData.events and will be
+            // converted by generateCalendarEvents. No legacy localStorage
+            // appointment parsing is required here.
             
             console.log('📊 Total events being passed to FullCalendar:', events.length);
             events.forEach((e, i) => {
@@ -1258,98 +1216,19 @@ function debugLog(msg) {
 
 // Load appointments from bookings (global function)
 async function loadAppointmentsToCalendarNow() {
-  debugLog('🚀🚀🚀 FUNKCIJA STARTALA 🚀🚀🚀');
+  debugLog('🔄 Loading bookings from StorageManager schedule');
   try {
-    const appointmentsJSON = localStorage.getItem('appointments');
-    debugLog(`📦 localStorage.appointments: ${appointmentsJSON ? appointmentsJSON.substring(0, 100) + '...' : 'PRAZNO'}`);
-    
-    if (!appointmentsJSON) {
-      debugLog('❌ Nema rezervacija za učitavanje (appointments je prazno)');
-      return;
-    }
-    
-    const appointments = JSON.parse(appointmentsJSON);
-    debugLog(`✓ Parsirao sam JSON: ${appointments.length} termina`);
-    
-    if (!Array.isArray(appointments) || appointments.length === 0) {
-      debugLog('❌ Nema rezervacija - niz je prazan');
-      return;
-    }
-    
-    debugLog(`📌 Pronađeno ${appointments.length} rezervacija`);
-    appointments.forEach((apt, i) => {
-      debugLog(`  [${i}] ${apt.fullName} - ${apt.date} ${apt.time}`);
-    });
-    
-    // Load existing schedule using proper StorageManager method
     const schedule = await StorageManager.load('schedule');
-    debugLog(`✓ Učitao sam schedule, trenutno ${schedule.events.length} eventov`);
-    
-    // Remove old booking events
-    const oldCount = schedule.events.length;
-    schedule.events = schedule.events.filter(e => !e.id?.startsWith('apt_'));
-    debugLog(`✓ Uklonio sam ${oldCount - schedule.events.length} starih termin-eventov`);
-    
-    // Convert appointments to calendar events
-      const appointmentEvents = appointments.map(apt => {
-      const startDateTime = apt.date + 'T' + apt.time;
-      const startDate = new Date(`${apt.date}T${apt.time}`);
-      const endDate = new Date(startDate.getTime() + apt.totalDuration * 60000);
-      const endDateTime = endDate.toISOString().slice(0, 16);
-      
-      return {
-        id: 'apt_' + apt.id,
-        // Single-line title (FullCalendar may not render newlines reliably)
-        title: `🕒 ${apt.fullName} (${apt.totalDuration}min)`,
-        type: 'booking',
-        start: startDateTime,
-        end: endDateTime,
-        allDay: false,
-        // Don't set inline colors - let CSS handle it via classNames
-        display: 'auto',
-        editable: false,
-        classNames: ['schedule-event', 'event-type-booking', 'event-normal'],
-        extendedProps: {
-          isBooking: true,
-          customer: apt.fullName,
-          email: apt.email,
-          phone: apt.phone,
-          services: apt.services,
-          duration: apt.totalDuration,
-          price: apt.totalPrice
-        }
-      };
-    });
-    
-    debugLog(`✓ Konvertovao sam ${appointmentEvents.length} termina u event-e`);
-    appointmentEvents.forEach((evt, i) => {
-      debugLog(`  [${i}] ${evt.title} - ${evt.start} do ${evt.end}`);
-    });
-    
-    // Add appointment events to schedule
-    schedule.events.push(...appointmentEvents);
-    debugLog(`✓ Dodao sam u schedule, sad ima ${schedule.events.length} eventov`);
-    
-    // Save updated schedule using proper StorageManager method
-    await StorageManager.save('schedule', schedule);
-    debugLog('✓ Sprema schedule u storage');
-    
-    // IMPORTANT: Don't manually add to calendar with addEvent() 
-    // The calendar will re-render from storage and pick them up automatically
-    // This prevents duplicates!
-    debugLog('✓ Kalendar će se automatski osvežiti sa novim terminima');
-    
-    // Refresh calendar to pick up newly saved bookings from storage
+    debugLog(`✓ Schedule loaded, events: ${schedule.events ? schedule.events.length : 0}`);
+
     if (window.calendar) {
-      debugLog('🔄 Osvežavam kalendar...');
-      window.calendar.refetchEvents();
-      debugLog('✓ Kalendar osvežen');
+      const newEvents = await CalendarEngine.generateCalendarEvents(schedule);
+      window.calendar.removeAllEvents();
+      window.calendar.addEventSource(newEvents);
+      debugLog(`✅ Calendar refreshed with ${newEvents.length} events from schedule`);
     }
-    
-    debugLog(`✅ GOTOVO - Učitano ${appointments.length} rezervacij(a)`);
   } catch (error) {
-    debugLog(`❌ GREŠKA: ${error.message}`);
-    debugLog(`Stack: ${error.stack}`);
+    debugLog(`❌ loadAppointmentsToCalendarNow error: ${error.message}`);
   }
 }
 
