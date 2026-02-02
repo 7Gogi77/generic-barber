@@ -1001,31 +1001,41 @@
         }
 
         // Save scheduleData using StorageManager and notify other tabs
-        function saveScheduleData() {
+        window.saveScheduleData = function saveScheduleData() {
             try {
                 // Ensure scheduleData has metadata
                 scheduleData.metadata = scheduleData.metadata || {};
                 scheduleData.metadata.lastModified = Date.now();
 
                 // Use StorageManager to persist (will fallback to localStorage in dev)
-                StorageManager.save('schedule', scheduleData).then(result => {
-                    console.log('✓ schedule saved', result);
+                if (typeof StorageManager !== 'undefined' && StorageManager.save) {
+                    StorageManager.save('schedule', scheduleData).then(result => {
+                        console.log('✓ schedule saved', result);
+                        try {
+                            if (StorageManager.broadcastUpdate) StorageManager.broadcastUpdate(scheduleData);
+                        } catch (e) {
+                            console.warn('⚠ broadcast failed', e);
+                        }
+                        if (window.onScheduleUpdated) window.onScheduleUpdated(scheduleData);
+                    }).catch(err => {
+                        console.error('✗ Error saving scheduleData', err);
+                    });
+                } else {
                     try {
-                        StorageManager.broadcastUpdate(scheduleData);
+                        localStorage.setItem('schedule', JSON.stringify(scheduleData));
+                        console.log('✓ schedule saved to localStorage (StorageManager missing)');
+                        if (window.onScheduleUpdated) window.onScheduleUpdated(scheduleData);
                     } catch (e) {
-                        console.warn('⚠ broadcast failed', e);
+                        console.error('✗ Fallback localStorage save failed', e);
                     }
-                    if (window.onScheduleUpdated) window.onScheduleUpdated(scheduleData);
-                }).catch(err => {
-                    console.error('✗ Error saving scheduleData', err);
-                });
+                }
             } catch (err) {
                 console.error('✗ saveScheduleData failed', err);
             }
-        }
+        };
 
         // Add a new event to scheduleData and persist; returns the new event id
-        function addScheduleEvent(event) {
+        window.addScheduleEvent = function addScheduleEvent(event) {
             try {
                 // Normalize event if ScheduleValidation available
                 let normalized = event;
@@ -1037,13 +1047,13 @@
 
                 scheduleData.events = scheduleData.events || [];
                 scheduleData.events.push(normalized);
-                saveScheduleData();
+                if (window.saveScheduleData) window.saveScheduleData();
                 return normalized.id;
             } catch (err) {
                 console.error('✗ addScheduleEvent failed', err);
                 return null;
             }
-        }
+        };
 
         // Modal functions
         function openAddEventModal(startDate = null) {
