@@ -1150,9 +1150,11 @@
             try {
                 const existing = scheduleData.events.find(e => e.id === eventId);
 
-                // Remove from in-memory schedule and persist
+                // Remove from in-memory schedule and persist without broadcasting
                 scheduleData.events = scheduleData.events.filter(e => e.id !== eventId);
-                if (window.saveScheduleData) {
+                if (window.saveScheduleDataNoBroadcast) {
+                    try { await window.saveScheduleDataNoBroadcast(); console.log('✓ schedule saved (no broadcast) after delete'); } catch(e) { console.warn('✗ save after delete failed', e); }
+                } else if (window.saveScheduleData) {
                     try { await window.saveScheduleData(); console.log('✓ schedule saved after delete'); } catch(e) { console.warn('✗ save after delete failed', e); }
                 } else {
                     try { localStorage.setItem('schedule', JSON.stringify(scheduleData)); } catch(e) { }
@@ -1175,6 +1177,25 @@
                             const delRes2 = await fetch(delUrl2, { method: 'DELETE' });
                             console.log('deleteScheduleEvent mirror delete (entries) status:', delRes2.status);
                         } catch(e) { console.warn('deleteScheduleEvent mirror delete (entries) failed', e); }
+
+                        // Additionally remove any adminSchedule children that reference this event id
+                        try {
+                            const pushedRes = await fetch(base + 'adminSchedule/entries.json');
+                            if (pushedRes.ok) {
+                                const pushed = await pushedRes.json().catch(() => null);
+                                if (pushed && typeof pushed === 'object') {
+                                    for (const [k, it] of Object.entries(pushed)) {
+                                        try {
+                                            if (it && (String(it.id) === String(existing?.id) || it.customer === existing?.extendedProps?.customer)) {
+                                                await fetch(base + `adminSchedule/entries/${k}.json`, { method: 'DELETE' });
+                                                console.log('deleteScheduleEvent removed pushed child', k);
+                                            }
+                                        } catch(_){}
+                                    }
+                                }
+                            }
+                        } catch(_){}
+
                         return true;
                     }
 
@@ -1204,7 +1225,7 @@
                                         const r = await fetch(delUrl, { method: 'DELETE' });
                                         console.log('deleteScheduleEvent fallback delete', k, r.status);
                                         // also remove under adminSchedule/entries
-                                        try { await fetch(`${base}adminSchedule/entries/${k}.json`, { method: 'DELETE' }); } catch(e) {}
+                                        try { await fetch(`${base}adminSchedule/entries/${k}.json`, { method: 'DELETE' }); console.log('deleteScheduleEvent fallback delete pushed', k); } catch(e) { console.warn('deleteScheduleEvent fallback delete pushed failed', e); }
                                     } catch(e) { console.warn('deleteScheduleEvent fallback delete failed', e); }
                                 }
                                 if (matches.length > 0) return true;
@@ -1256,6 +1277,38 @@
                 }
             } catch (err) {
                 console.error('✗ saveScheduleData failed', err);
+                return Promise.reject(err);
+            }
+        };
+
+        // Save scheduleData without broadcasting to other tabs
+        window.saveScheduleDataNoBroadcast = function saveScheduleDataNoBroadcast() {
+            try {
+                scheduleData.metadata = scheduleData.metadata || {};
+                scheduleData.metadata.lastModified = Date.now();
+
+                if (typeof StorageManager !== 'undefined' && StorageManager.save) {
+                    const p = StorageManager.save('schedule', scheduleData);
+                    p.then(result => {
+                        console.log('✓ schedule saved (no broadcast)', result);
+                        if (window.onScheduleUpdated) window.onScheduleUpdated(scheduleData);
+                    }).catch(err => {
+                        console.error('✗ Error saving scheduleData (no broadcast)', err);
+                    });
+                    return p;
+                } else {
+                    try {
+                        localStorage.setItem('schedule', JSON.stringify(scheduleData));
+                        console.log('✓ schedule saved to localStorage (no broadcast)');
+                        if (window.onScheduleUpdated) window.onScheduleUpdated(scheduleData);
+                        return Promise.resolve({ ok: true, method: 'localStorage' });
+                    } catch (e) {
+                        console.error('✗ Fallback localStorage save failed (no broadcast)', e);
+                        return Promise.reject(e);
+                    }
+                }
+            } catch (err) {
+                console.error('✗ saveScheduleDataNoBroadcast failed', err);
                 return Promise.reject(err);
             }
         };
@@ -1398,12 +1451,22 @@
             if (deleteBtn) {
                 deleteBtn.onclick = function() {
                     if (confirm('Sigurno želiš izbrisati to rezervacijo?')) {
-                        // remove from calendar
-                        try { window.calendar.getEventById(event.id).remove(); } catch(e) {}
-                        // remove from scheduleData and persist
-                        scheduleData.events = scheduleData.events.filter(e => e.id !== event.id);
-                        if (window.saveScheduleData) window.saveScheduleData();
-                        closeBookingDetailsModal();
+                        // Use centralized delete logic which also removes DB nodes and avoids broadcasting
+                        try {
+                            // remove from calendar UI immediately
+                            try { window.calendar.getEventById(event.id).remove(); } catch(e) {}
+                            // perform delete (await) and then close modal
+                            deleteScheduleEvent(event.id).then(ok => {
+                                console.log('deleteScheduleEvent result:', ok);
+                                closeBookingDetailsModal();
+                            }).catch(err => {
+                                console.error('deleteScheduleEvent failed', err);
+                                closeBookingDetailsModal();
+                            });
+                        } catch (e) {
+                            console.error('delete button handler failed', e);
+                            closeBookingDetailsModal();
+                        }
                     }
                 };
             }
