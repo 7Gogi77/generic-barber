@@ -122,9 +122,17 @@ const CalendarEngine = {
         eventId: event.id,
         isBlocking: event.rules?.isBlocking || false,
         isSubtractive: event.rules?.isSubtractive || false,
-        notes: event.extendedProps?.notes || '',
         priority: event.rules?.conflictPriority || 0,
-        isMultiDay: isMultiDay
+        isMultiDay: isMultiDay,
+        // Merge booking-specific extended props (customer, email, phone, services, price, duration, notes)
+        isBooking: event.extendedProps?.isBooking || false,
+        customer: event.extendedProps?.customer || event.extendedProps?.customerName || null,
+        email: event.extendedProps?.email || null,
+        phone: event.extendedProps?.phone || null,
+        services: event.extendedProps?.services || null,
+        price: typeof event.extendedProps?.price !== 'undefined' ? event.extendedProps.price : null,
+        duration: event.extendedProps?.duration || null,
+        notes: event.extendedProps?.notes || ''
       },
       // Blocking events (vacation, sick leave, day off) show as background
       display: event.rules?.isBlocking ? 'background' : 'auto',

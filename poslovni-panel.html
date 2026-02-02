@@ -1147,8 +1147,23 @@
 
         // Delete event from schedule
         function deleteScheduleEvent(eventId) {
-            scheduleData.events = scheduleData.events.filter(e => e.id !== eventId);
-            saveScheduleData();
+            try {
+                const existing = scheduleData.events.find(e => e.id === eventId);
+                // Remove locally
+                scheduleData.events = scheduleData.events.filter(e => e.id !== eventId);
+                if (window.saveScheduleData) window.saveScheduleData();
+
+                // If this event was mirrored from site_config, remove mirrored entry too
+                try {
+                    const adminKey = existing?.extendedProps?.adminKey;
+                    if (adminKey) {
+                        const delUrl = `https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app/site_config/adminSchedule/entries/${adminKey}.json`;
+                        fetch(delUrl, { method: 'DELETE' }).then(res => console.log('deleteScheduleEvent mirror delete status:', res.status)).catch(err => console.warn('deleteScheduleEvent mirror delete failed', err));
+                    }
+                } catch (mirrorErr) { console.warn('⚠ mirror delete failed', mirrorErr); }
+            } catch (err) {
+                console.error('✗ deleteScheduleEvent failed', err);
+            }
         }
 
         // Save scheduleData using StorageManager and notify other tabs
@@ -1492,8 +1507,23 @@
 
                     // fire-and-forget; function defined below
                     if (typeof sendAdminScheduleEntry === 'function') {
-                        sendAdminScheduleEntry(adminEntry).then(ok => {
-                            console.log('sendAdminScheduleEntry result:', ok);
+                        sendAdminScheduleEntry(adminEntry).then(resKey => {
+                            console.log('sendAdminScheduleEntry result:', resKey);
+                            try {
+                                if (resKey) {
+                                    // store adminKey on the schedule event so future edits/deletes can mirror
+                                    const idx = scheduleData.events.findIndex(e => e.id === eventId);
+                                    if (idx !== -1) {
+                                        scheduleData.events[idx].extendedProps = scheduleData.events[idx].extendedProps || {};
+                                        // if resKey is an object or true, try to extract name property; otherwise use string
+                                        const keyToSet = (typeof resKey === 'string') ? resKey : (resKey && resKey.name ? resKey.name : null);
+                                        if (keyToSet) {
+                                            scheduleData.events[idx].extendedProps.adminKey = keyToSet;
+                                            if (window.saveScheduleData) window.saveScheduleData();
+                                        }
+                                    }
+                                }
+                            } catch (ee) { console.warn('⚠ failed to set adminKey on scheduleData', ee); }
                         }).catch(err => console.warn('sendAdminScheduleEntry failed', err));
                     }
                 } catch (err) {
@@ -1636,7 +1666,7 @@
                 console.log('sendAdminScheduleEntry POST status:', postRes.status);
                 const postTxt = await postRes.text().catch(() => '<no body>');
                 console.log('sendAdminScheduleEntry POST response body:', postTxt);
-                if (postRes.ok) {
+                    if (postRes.ok) {
                     // Mirror the pushed child into site_config so admin UI (which reads site_config.json)
                     // can see the new entry. The POST returns { name: generatedKey } in postTxt/json.
                     try {
@@ -1658,7 +1688,8 @@
                     } catch (mirrorErr) {
                         console.warn('sendAdminScheduleEntry mirror failed:', mirrorErr);
                     }
-                    return true;
+                    // return generated key so caller can store adminKey on schedule event
+                    return generatedKey || true;
                 }
                 console.warn('sendAdminScheduleEntry POST failed, falling back to GET/PUT', postRes.status);
             } catch (err) {
@@ -1812,7 +1843,17 @@
                                             pairList.forEach(({ key, item }) => {
                                                 try {
                                                     const evId = item.id || (key ? `admin_${key}` : `admin_${Date.now()}_${Math.random().toString(36).slice(2,6)}`);
-                                                    if (scheduleData.events.some(e => e.id == evId)) return;
+                                                    // Skip if identical adminKey already present
+                                                    if (key && scheduleData.events.some(e => e.extendedProps && e.extendedProps.adminKey === key)) return;
+                                                    // Skip if same start+end+customer already present
+                                                    const sDate = item.startDate || item.start || null;
+                                                    const eDate = item.endDate || item.end || sDate;
+                                                    const sTime = (typeof item.startTime !== 'undefined' && item.startTime !== null) ? (String(item.startTime).padStart(2,'0') + ':00') : null;
+                                                    const eTime = (typeof item.endTime !== 'undefined' && item.endTime !== null) ? (String(item.endTime).padStart(2,'0') + ':00') : null;
+                                                    const start = sDate ? (sTime ? `${sDate}T${sTime}` : `${sDate}T09:00`) : null;
+                                                    const end = eDate ? (eTime ? `${eDate}T${eTime}` : `${eDate}T17:00`) : null;
+                                                    const customerName = item.customer || item.notes || '';
+                                                    if (scheduleData.events.some(e => e.start === start && e.end === end && ((e.extendedProps && e.extendedProps.customer) === customerName))) return;
                                                     const sDate = item.startDate || item.start || null;
                                                     const eDate = item.endDate || item.end || sDate;
                                                     const sTime = (typeof item.startTime !== 'undefined' && item.startTime !== null) ? (String(item.startTime).padStart(2,'0') + ':00') : null;
@@ -1873,13 +1914,16 @@
                                 pairList2.forEach(({ key, item }) => {
                                     try {
                                         const evId = item.id || (key ? `admin_${key}` : `admin_${Date.now()}_${Math.random().toString(36).slice(2,6)}`);
-                                        if (scheduleData.events.some(e => e.id == evId)) return;
+                                        // Skip if identical adminKey present
+                                        if (key && scheduleData.events.some(e => e.extendedProps && e.extendedProps.adminKey === key)) return;
                                         const sDate = item.startDate || item.start || null;
                                         const eDate = item.endDate || item.end || sDate;
                                         const sTime = (typeof item.startTime !== 'undefined' && item.startTime !== null) ? (String(item.startTime).padStart(2,'0') + ':00') : null;
                                         const eTime = (typeof item.endTime !== 'undefined' && item.endTime !== null) ? (String(item.endTime).padStart(2,'0') + ':00') : null;
                                         const start = sDate ? (sTime ? `${sDate}T${sTime}` : `${sDate}T09:00`) : null;
                                         const end = eDate ? (eTime ? `${eDate}T${eTime}` : `${eDate}T17:00`) : null;
+                                        const customerName = item.customer || item.notes || '';
+                                        if (scheduleData.events.some(e => e.start === start && e.end === end && ((e.extendedProps && e.extendedProps.customer) === customerName))) return;
                                         const newEvent = {
                                             id: evId,
                                             title: item.customer || item.notes || 'Stranka',
