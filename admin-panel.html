@@ -1792,8 +1792,14 @@
             if (confirm('Ali si prepričan?')) {
                 const deletedAppt = SITE_CONFIG.appointments[idx];
                 SITE_CONFIG.appointments.splice(idx, 1);
+                // Clear localStorage backup and appointments
+                localStorage.removeItem('site_config_backup');
+                localStorage.removeItem('appointments');
+                // Clear StorageManager schedule
+                if (typeof StorageManager !== 'undefined' && StorageManager.save) {
+                    StorageManager.save('schedule', { events: [] });
+                }
                 saveConfig();
-                
                 // Sync updated appointments into StorageManager schedule
                 if (typeof syncAppointmentsToSchedule === 'function') {
                     syncAppointmentsToSchedule().then(() => {
@@ -1804,7 +1810,6 @@
                 } else {
                     if (window.calendar) loadAppointmentsToCalendarNow();
                 }
-                
                 // Refresh admin UI list
                 loadAppointments();
             }
