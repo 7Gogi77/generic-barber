@@ -837,7 +837,7 @@
                                             options.slice(1).forEach(opt => {
                                                 const id = `evtype_chk_${opt.value.replace(/[^a-z0-9]/gi,'_')}_${Math.random().toString(36).slice(2,6)}`;
                                                 const wrapper = document.createElement('div');
-                                                wrapper.style.marginBottom = '6px';
+                                                wrapper.style.cssText = 'display:flex; align-items:center; gap:8px; margin-bottom:6px;';
                                                 const chk = document.createElement('input');
                                                 chk.type = 'checkbox';
                                                 chk.id = id;
@@ -846,6 +846,7 @@
                                                 const lbl = document.createElement('label');
                                                 lbl.htmlFor = id;
                                                 lbl.textContent = opt.label;
+                                                lbl.style.margin = '0';
                                                 wrapper.appendChild(chk);
                                                 wrapper.appendChild(lbl);
                                                 checkboxContainer.appendChild(wrapper);
