@@ -2059,6 +2059,26 @@
             }
         };
 
+        // Nuclear option: PUT empty object to both paths to overwrite and clear all entries
+        // This bypasses any re-sync from admin-panel.html
+        window.nukeAdminSchedule = async function() {
+            if (!confirm('NUKE all adminSchedule entries from Firebase? This will completely clear both adminSchedule/entries and site_config/adminSchedule/entries.')) return;
+            const base = 'https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app/';
+            try {
+                // PUT empty object to overwrite at both paths
+                const empty = {};
+                const [r1, r2] = await Promise.all([
+                    fetch(base + 'adminSchedule/entries.json', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(empty) }),
+                    fetch(base + 'site_config/adminSchedule/entries.json', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(empty) })
+                ]);
+                console.log('nukeAdminSchedule: adminSchedule/entries PUT', r1.status);
+                console.log('nukeAdminSchedule: site_config/adminSchedule/entries PUT', r2.status);
+                console.log('nukeAdminSchedule: done. Run listAdminEntries() to verify.');
+            } catch (err) {
+                console.error('nukeAdminSchedule failed', err);
+            }
+        };
+
         async function initializeBusinessCalendar() {
             debugLog('🚀 Initialization started');
             const container = document.getElementById('scheduleCalendar');
