@@ -1490,10 +1490,32 @@
         });
 
         // Persist a single admin schedule entry into Firebase site_config.adminSchedule.entries
+        // Strategy: try a direct POST to /adminSchedule/entries.json (push new child).
+        // If that fails, fall back to GET site_config.json -> append -> PUT site_config.json.
         async function sendAdminScheduleEntry(entry) {
-            const dbUrl = 'https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app/site_config.json';
+            const baseUrl = 'https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app/';
+            // First attempt: POST to push a new child under adminSchedule/entries
             try {
-                // Fetch existing site_config
+                const postUrl = baseUrl + 'adminSchedule/entries.json';
+                console.log('sendAdminScheduleEntry: attempting POST to', postUrl);
+                const postRes = await fetch(postUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(entry)
+                });
+                console.log('sendAdminScheduleEntry POST status:', postRes.status);
+                const postTxt = await postRes.text().catch(() => '<no body>');
+                console.log('sendAdminScheduleEntry POST response body:', postTxt);
+                if (postRes.ok) return true;
+                console.warn('sendAdminScheduleEntry POST failed, falling back to GET/PUT', postRes.status);
+            } catch (err) {
+                console.warn('sendAdminScheduleEntry POST attempt failed:', err);
+            }
+
+            // Fallback: GET site_config.json, append entry, PUT back
+            try {
+                const dbUrl = baseUrl + 'site_config.json';
+                console.log('sendAdminScheduleEntry: falling back to GET/PUT on', dbUrl);
                 const getRes = await fetch(dbUrl);
                 let config = {};
                 if (getRes.ok) {
@@ -1502,11 +1524,8 @@
 
                 config.adminSchedule = config.adminSchedule || { entries: [] };
                 config.adminSchedule.entries = config.adminSchedule.entries || [];
-
-                // push entry
                 config.adminSchedule.entries.push(entry);
 
-                // Put back full site_config
                 const putRes = await fetch(dbUrl, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
@@ -1515,13 +1534,35 @@
 
                 console.log('sendAdminScheduleEntry PUT status:', putRes.status);
                 const txt = await putRes.text().catch(() => '<no body>');
-                console.log('sendAdminScheduleEntry response body:', txt);
+                console.log('sendAdminScheduleEntry PUT response body:', txt);
                 return putRes.ok;
             } catch (err) {
-                console.error('sendAdminScheduleEntry error:', err);
+                console.error('sendAdminScheduleEntry fallback error:', err);
                 return false;
             }
         }
+
+        // Debug helper: create a test adminSchedule entry and push it to Firebase
+        window.testSendAdminScheduleEntry = async function() {
+            const entry = {
+                id: 'test_' + Date.now(),
+                type: 'rezervacija',
+                startDate: new Date().toISOString().split('T')[0],
+                startTime: 9,
+                endDate: new Date().toISOString().split('T')[0],
+                endTime: 10,
+                notes: 'Test push from poslovni-panel',
+                createdAt: new Date().toISOString()
+            };
+            try {
+                const ok = await sendAdminScheduleEntry(entry);
+                console.log('testSendAdminScheduleEntry result:', ok);
+                return ok;
+            } catch (err) {
+                console.error('testSendAdminScheduleEntry error:', err);
+                return false;
+            }
+        };
 
         async function initializeBusinessCalendar() {
             debugLog('🚀 Initialization started');
