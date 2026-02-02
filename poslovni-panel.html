@@ -1871,6 +1871,61 @@
             }
         };
 
+        // Debug helper: list all adminSchedule and mirrored site_config entries
+        window.listAdminEntries = async function() {
+            const base = 'https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app/';
+            try {
+                const [cfgRes, pushedRes] = await Promise.all([
+                    fetch(base + 'site_config/adminSchedule/entries.json'),
+                    fetch(base + 'adminSchedule/entries.json')
+                ]);
+                const cfgMap = cfgRes.ok ? await cfgRes.json().catch(() => null) : null;
+                const pushedMap = pushedRes.ok ? await pushedRes.json().catch(() => null) : null;
+                console.log('site_config/adminSchedule/entries:', cfgMap ? Object.keys(cfgMap).length : 0, 'items');
+                console.log(cfgMap);
+                console.log('adminSchedule/entries:', pushedMap ? Object.keys(pushedMap).length : 0, 'items');
+                console.log(pushedMap);
+                return { cfgMap, pushedMap };
+            } catch (err) {
+                console.error('listAdminEntries failed', err);
+                return null;
+            }
+        };
+
+        // Debug helper: force-delete a specific admin entry by key (deletes both mirrored and pushed nodes)
+        window.forceDeleteAdminEntry = async function(key) {
+            const base = 'https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app/';
+            if (!key) return console.warn('forceDeleteAdminEntry requires a key');
+            try {
+                const res1 = await fetch(base + `site_config/adminSchedule/entries/${key}.json`, { method: 'DELETE' });
+                console.log('site_config delete', key, res1.status);
+            } catch (e) { console.warn('site_config delete failed', e); }
+            try {
+                const res2 = await fetch(base + `adminSchedule/entries/${key}.json`, { method: 'DELETE' });
+                console.log('adminSchedule delete', key, res2.status);
+            } catch (e) { console.warn('adminSchedule delete failed', e); }
+        };
+
+        // Debug helper: delete all adminSchedule entries (CONFIRM first)
+        window.deleteAllAdminEntries = async function() {
+            if (!confirm('Delete ALL adminSchedule entries from Firebase? This cannot be undone.')) return;
+            const base = 'https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app/';
+            try {
+                const pushedRes = await fetch(base + 'adminSchedule/entries.json');
+                const pushedMap = pushedRes.ok ? await pushedRes.json().catch(() => null) : null;
+                if (!pushedMap) return console.log('No pushed entries found');
+                const keys = Object.keys(pushedMap);
+                console.log('Deleting', keys.length, 'pushed entries');
+                for (const k of keys) {
+                    try { await fetch(base + `adminSchedule/entries/${k}.json`, { method: 'DELETE' }); console.log('deleted pushed', k); } catch(e){console.warn('delete pushed failed', k, e)}
+                    try { await fetch(base + `site_config/adminSchedule/entries/${k}.json`, { method: 'DELETE' }); console.log('deleted mirrored', k); } catch(e){console.warn('delete mirrored failed', k, e)}
+                }
+                console.log('deleteAllAdminEntries: done');
+            } catch (err) {
+                console.error('deleteAllAdminEntries failed', err);
+            }
+        };
+
         async function initializeBusinessCalendar() {
             debugLog('🚀 Initialization started');
             const container = document.getElementById('scheduleCalendar');
