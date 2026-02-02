@@ -1855,6 +1855,60 @@
                     console.warn('⚠ Legacy appointments migration failed', e);
                 }
 
+                // Ensure adminSchedule entries from site_config are merged even when there
+                // are no legacy localStorage appointments. This ensures appointments created
+                // via admin or from other clients appear in the calendar.
+                try {
+                    const cfgRes2 = await fetch('https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app/site_config.json');
+                    if (cfgRes2.ok) {
+                        const cfg2 = await cfgRes2.json().catch(() => ({}));
+                        const entries2 = cfg2?.adminSchedule?.entries || cfg2?.adminSchedule || null;
+                        if (entries2) {
+                            const pairList2 = [];
+                            if (Array.isArray(entries2)) entries2.forEach(it => pairList2.push({ key: null, item: it }));
+                            else if (entries2 && typeof entries2 === 'object') Object.entries(entries2).forEach(([k,it]) => pairList2.push({ key: k, item: it }));
+                            if (pairList2.length > 0) {
+                                debugLog(`📥 Merging ${pairList2.length} adminSchedule entries into scheduleData (post-load)`);
+                                scheduleData.events = scheduleData.events || [];
+                                pairList2.forEach(({ key, item }) => {
+                                    try {
+                                        const evId = item.id || (key ? `admin_${key}` : `admin_${Date.now()}_${Math.random().toString(36).slice(2,6)}`);
+                                        if (scheduleData.events.some(e => e.id == evId)) return;
+                                        const sDate = item.startDate || item.start || null;
+                                        const eDate = item.endDate || item.end || sDate;
+                                        const sTime = (typeof item.startTime !== 'undefined' && item.startTime !== null) ? (String(item.startTime).padStart(2,'0') + ':00') : null;
+                                        const eTime = (typeof item.endTime !== 'undefined' && item.endTime !== null) ? (String(item.endTime).padStart(2,'0') + ':00') : null;
+                                        const start = sDate ? (sTime ? `${sDate}T${sTime}` : `${sDate}T09:00`) : null;
+                                        const end = eDate ? (eTime ? `${eDate}T${eTime}` : `${eDate}T17:00`) : null;
+                                        const newEvent = {
+                                            id: evId,
+                                            title: item.customer || item.notes || 'Stranka',
+                                            type: 'booking',
+                                            start: start,
+                                            end: end,
+                                            extendedProps: {
+                                                isBooking: true,
+                                                adminKey: key || null,
+                                                customer: item.customer || null,
+                                                email: item.email || null,
+                                                phone: item.phone || null,
+                                                services: Array.isArray(item.services) ? item.services : (item.services ? [item.services] : []),
+                                                price: (typeof item.price !== 'undefined' && item.price !== null) ? item.price : (item.cena || 0),
+                                                duration: item.duration || null,
+                                                notes: item.notes || ''
+                                            }
+                                        };
+                                        scheduleData.events.push(newEvent);
+                                    } catch (inner2) { console.warn('⚠ failed merging adminSchedule item (post-load)', inner2); }
+                                });
+                                try { await saveScheduleData(); debugLog('✅ Merged adminSchedule into scheduleData (post-load) and saved'); } catch(e){ console.warn('⚠ save after post-load merge failed', e); }
+                            }
+                        }
+                    }
+                } catch (mergeErr2) {
+                    console.warn('⚠ Could not fetch/merge site_config adminSchedule entries (post-load)', mergeErr2);
+                }
+
                 // Check if CalendarEngine is available
                 if (typeof CalendarEngine === 'undefined') {
                     debugLog('❌ CalendarEngine not available, trying to create stub');
