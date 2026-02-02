@@ -765,6 +765,26 @@
                     <label>Opis</label>
                     <textarea id="editEventDescription"></textarea>
                 </div>
+                <div class="form-group" id="editCustomerFields" style="display:none;">
+                    <label>Email</label>
+                    <input type="email" id="editEventEmail" placeholder="stranka@example.com">
+                </div>
+                <div class="form-group" id="editCustomerPhoneField" style="display:none;">
+                    <label>Telefon</label>
+                    <input type="tel" id="editEventPhone" placeholder="+386 40 123 456">
+                </div>
+                <div class="form-group" id="editEventServicesField" style="display:none;">
+                    <label>Storitve</label>
+                    <textarea id="editEventServices" placeholder="Seznam storitev, ločen z vejico"></textarea>
+                </div>
+                <div class="form-group" id="editEventPriceField" style="display:none;">
+                    <label>Cena</label>
+                    <input type="text" id="editEventPrice" placeholder="0€">
+                </div>
+                <div class="form-group" id="editEventDurationField" style="display:none;">
+                    <label>Trajanje (min)</label>
+                    <input type="number" id="editEventDuration" min="0" placeholder="0">
+                </div>
                 <div class="form-buttons">
                     <button type="submit" class="btn btn-primary">Shrani</button>
                     <button type="button" class="btn btn-danger" onclick="deleteCurrentEvent()">Izbriši</button>
@@ -1247,9 +1267,35 @@
             document.getElementById('editEventEndDate').value = endDate;
             document.getElementById('editEventEndTime').value = endTime;
             document.getElementById('editEventDescription').value = event.extendedProps?.description || '';
-            
-            console.log('Opening event modal with:', { title, type: event.extendedProps?.type, startDate, startTime });
-            
+
+            // Show customer-specific fields when this is a booking
+            const isBooking = event.extendedProps?.isBooking || event.extendedProps?.tab === 'customer' || event.isBooking;
+            const custWrapper = document.getElementById('editCustomerFields');
+            const phoneWrapper = document.getElementById('editCustomerPhoneField');
+            const servicesWrapper = document.getElementById('editEventServicesField');
+            const priceWrapper = document.getElementById('editEventPriceField');
+            const durWrapper = document.getElementById('editEventDurationField');
+            if (isBooking) {
+                if (custWrapper) custWrapper.style.display = '';
+                if (phoneWrapper) phoneWrapper.style.display = '';
+                if (servicesWrapper) servicesWrapper.style.display = '';
+                if (priceWrapper) priceWrapper.style.display = '';
+                if (durWrapper) durWrapper.style.display = '';
+                document.getElementById('editEventEmail').value = event.extendedProps?.email || '';
+                document.getElementById('editEventPhone').value = event.extendedProps?.phone || '';
+                document.getElementById('editEventServices').value = (event.extendedProps && Array.isArray(event.extendedProps.services)) ? event.extendedProps.services.join(', ') : (event.extendedProps?.services || '');
+                document.getElementById('editEventPrice').value = (event.extendedProps && typeof event.extendedProps.price !== 'undefined') ? event.extendedProps.price : '';
+                document.getElementById('editEventDuration').value = event.extendedProps?.duration || '';
+            } else {
+                if (custWrapper) custWrapper.style.display = 'none';
+                if (phoneWrapper) phoneWrapper.style.display = 'none';
+                if (servicesWrapper) servicesWrapper.style.display = 'none';
+                if (priceWrapper) priceWrapper.style.display = 'none';
+                if (durWrapper) durWrapper.style.display = 'none';
+            }
+
+            console.log('Opening event modal with:', { title, type: event.extendedProps?.type, startDate, startTime, isBooking });
+
             modal.classList.add('show');
         }
 
@@ -1459,7 +1505,7 @@
         });
 
         // Handle edit event form
-        document.getElementById('editEventForm').addEventListener('submit', (e) => {
+        document.getElementById('editEventForm').addEventListener('submit', async (e) => {
             e.preventDefault();
 
             if (!currentEditingEvent) return;
@@ -1490,6 +1536,71 @@
                 event.setEnd(new Date(end).toISOString());
                 event.setExtendedProp('type', type);
                 event.setExtendedProp('description', description);
+                // Update booking-related extendedProps if present in the edit form
+                try {
+                    const email = document.getElementById('editEventEmail') ? document.getElementById('editEventEmail').value : null;
+                    const phone = document.getElementById('editEventPhone') ? document.getElementById('editEventPhone').value : null;
+                    const servicesRaw = document.getElementById('editEventServices') ? document.getElementById('editEventServices').value : '';
+                    const services = servicesRaw ? servicesRaw.split(',').map(s=>s.trim()).filter(Boolean) : [];
+                    const priceRaw = document.getElementById('editEventPrice') ? document.getElementById('editEventPrice').value : null;
+                    const price = priceRaw ? Number(String(priceRaw).replace(/[^0-9.,-]/g,'')) || 0 : null;
+                    const duration = document.getElementById('editEventDuration') ? Number(document.getElementById('editEventDuration').value) || 0 : null;
+
+                    if (typeof event.setExtendedProp === 'function') {
+                        if (email !== null) event.setExtendedProp('email', email);
+                        if (phone !== null) event.setExtendedProp('phone', phone);
+                        if (services.length) event.setExtendedProp('services', services);
+                        if (price !== null) event.setExtendedProp('price', price);
+                        if (!isNaN(duration)) event.setExtendedProp('duration', duration);
+                    }
+
+                    // Also update scheduleData in-memory and persist
+                    const idx = scheduleData.events.findIndex(e => e.id === currentEditingEvent.id);
+                    if (idx !== -1) {
+                        scheduleData.events[idx].extendedProps = scheduleData.events[idx].extendedProps || {};
+                        if (email !== null) scheduleData.events[idx].extendedProps.email = email;
+                        if (phone !== null) scheduleData.events[idx].extendedProps.phone = phone;
+                        if (services.length) scheduleData.events[idx].extendedProps.services = services;
+                        if (price !== null) scheduleData.events[idx].extendedProps.price = price;
+                        if (!isNaN(duration)) scheduleData.events[idx].extendedProps.duration = duration;
+                        // Keep customer name in extendedProps in sync with title for bookings
+                        try {
+                            scheduleData.events[idx].title = title;
+                            scheduleData.events[idx].extendedProps.customer = title;
+                        } catch (_) {}
+                        // persist
+                        if (window.saveScheduleData) await window.saveScheduleData();
+                        // If this event was originally mirrored from site_config, update that entry too
+                        try {
+                            const adminKey = scheduleData.events[idx].extendedProps.adminKey;
+                            if (adminKey) {
+                                const mirrorUrl = `https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app/site_config/adminSchedule/entries/${adminKey}.json`;
+                                const mirrorPayload = Object.assign({}, {
+                                    id: scheduleData.events[idx].id,
+                                    customer: scheduleData.events[idx].extendedProps.customer,
+                                    email: scheduleData.events[idx].extendedProps.email,
+                                    phone: scheduleData.events[idx].extendedProps.phone,
+                                    services: scheduleData.events[idx].extendedProps.services,
+                                    price: scheduleData.events[idx].extendedProps.price,
+                                    duration: scheduleData.events[idx].extendedProps.duration,
+                                    notes: scheduleData.events[idx].extendedProps.notes || '' ,
+                                    startDate: scheduleData.events[idx].start ? scheduleData.events[idx].start.split('T')[0] : null,
+                                    endDate: scheduleData.events[idx].end ? scheduleData.events[idx].end.split('T')[0] : null,
+                                    startTime: scheduleData.events[idx].start ? new Date(scheduleData.events[idx].start).getHours() : null,
+                                    endTime: scheduleData.events[idx].end ? new Date(scheduleData.events[idx].end).getHours() : null
+                                });
+                                const mirrorRes = await fetch(mirrorUrl, {
+                                    method: 'PUT',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify(mirrorPayload)
+                                });
+                                console.log('editEvent: mirrored update status', mirrorRes.status);
+                            }
+                        } catch (mirrorErr) { console.warn('⚠ failed to mirror edit to site_config', mirrorErr); }
+                    }
+                } catch (e) {
+                    console.warn('⚠ failed to update booking extendedProps', e);
+                }
             }
 
             closeEditEventModal();
@@ -1682,6 +1793,60 @@
                                     }
                                 };
                             });
+                            // Also attempt to merge any adminSchedule entries from site_config into scheduleData
+                            try {
+                                const cfgRes = await fetch('https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app/site_config.json');
+                                if (cfgRes.ok) {
+                                    const cfg = await cfgRes.json().catch(() => ({}));
+                                    const entries = cfg?.adminSchedule?.entries || cfg?.adminSchedule || null;
+                                    if (entries) {
+                                        const pairList = [];
+                                        if (Array.isArray(entries)) {
+                                            entries.forEach(it => pairList.push({ key: null, item: it }));
+                                        } else if (entries && typeof entries === 'object') {
+                                            Object.entries(entries).forEach(([k, it]) => pairList.push({ key: k, item: it }));
+                                        }
+                                        if (pairList.length > 0) {
+                                            debugLog(`📥 Merging ${pairList.length} adminSchedule entries into scheduleData`);
+                                            scheduleData.events = scheduleData.events || [];
+                                            pairList.forEach(({ key, item }) => {
+                                                try {
+                                                    const evId = item.id || (key ? `admin_${key}` : `admin_${Date.now()}_${Math.random().toString(36).slice(2,6)}`);
+                                                    if (scheduleData.events.some(e => e.id == evId)) return;
+                                                    const sDate = item.startDate || item.start || null;
+                                                    const eDate = item.endDate || item.end || sDate;
+                                                    const sTime = (typeof item.startTime !== 'undefined' && item.startTime !== null) ? (String(item.startTime).padStart(2,'0') + ':00') : null;
+                                                    const eTime = (typeof item.endTime !== 'undefined' && item.endTime !== null) ? (String(item.endTime).padStart(2,'0') + ':00') : null;
+                                                    const start = sDate ? (sTime ? `${sDate}T${sTime}` : `${sDate}T09:00`) : null;
+                                                    const end = eDate ? (eTime ? `${eDate}T${eTime}` : `${eDate}T17:00`) : null;
+                                                    const newEvent = {
+                                                        id: evId,
+                                                        title: item.customer || item.notes || 'Stranka',
+                                                        type: 'booking',
+                                                        start: start,
+                                                        end: end,
+                                                        extendedProps: {
+                                                            isBooking: true,
+                                                            adminKey: key || null,
+                                                            customer: item.customer || null,
+                                                            email: item.email || null,
+                                                            phone: item.phone || null,
+                                                            services: Array.isArray(item.services) ? item.services : (item.services ? [item.services] : []),
+                                                            price: (typeof item.price !== 'undefined' && item.price !== null) ? item.price : (item.cena || 0),
+                                                            duration: item.duration || null,
+                                                            notes: item.notes || ''
+                                                        }
+                                                    };
+                                                    scheduleData.events.push(newEvent);
+                                                } catch (inner) { console.warn('⚠ failed merging adminSchedule item', inner); }
+                                            });
+                                            try { await saveScheduleData(); debugLog('✅ Merged adminSchedule into scheduleData and saved'); } catch(e){ console.warn('⚠ save after merge failed', e); }
+                                        }
+                                    }
+                                }
+                            } catch (mergeErr) {
+                                console.warn('⚠ Could not fetch/merge site_config adminSchedule entries', mergeErr);
+                            }
                             scheduleData.events.push(...migrated);
                             try { await StorageManager.save('schedule', scheduleData); localStorage.removeItem('appointments'); debugLog('✅ Migrated legacy appointments to DB'); } catch(e) { console.warn('⚠ Migration save failed', e); }
                         }
