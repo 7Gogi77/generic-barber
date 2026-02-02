@@ -1228,6 +1228,32 @@
                                         try { await fetch(`${base}adminSchedule/entries/${k}.json`, { method: 'DELETE' }); console.log('deleteScheduleEvent fallback delete pushed', k); } catch(e) { console.warn('deleteScheduleEvent fallback delete pushed failed', e); }
                                     } catch(e) { console.warn('deleteScheduleEvent fallback delete failed', e); }
                                 }
+                                // Finally, ensure site_config.json root has these entries removed to avoid future re-PUTs
+                                try {
+                                    const cfgUrl = base + 'site_config.json';
+                                    const cfgRes = await fetch(cfgUrl);
+                                    if (cfgRes.ok) {
+                                        const cfg = await cfgRes.json().catch(() => null);
+                                        if (cfg && cfg.adminSchedule && cfg.adminSchedule.entries) {
+                                            // entries may be array or object
+                                            if (Array.isArray(cfg.adminSchedule.entries)) {
+                                                cfg.adminSchedule.entries = cfg.adminSchedule.entries.filter(it => {
+                                                    const itId = it && it.id ? String(it.id) : null;
+                                                    return !matches.includes(itId);
+                                                });
+                                            } else if (typeof cfg.adminSchedule.entries === 'object') {
+                                                for (const mk of Object.keys(cfg.adminSchedule.entries)) {
+                                                    if (matches.includes(mk)) delete cfg.adminSchedule.entries[mk];
+                                                }
+                                            }
+                                            // PUT updated config back
+                                            try {
+                                                await fetch(cfgUrl, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(cfg) });
+                                                console.log('deleteScheduleEvent: updated site_config.json to remove adminSchedule entries');
+                                            } catch(e) { console.warn('deleteScheduleEvent: failed to PUT updated site_config.json', e); }
+                                        }
+                                    }
+                                } catch(e) { console.warn('deleteScheduleEvent: failed to clean site_config.json', e); }
                                 if (matches.length > 0) return true;
                             }
                         }
