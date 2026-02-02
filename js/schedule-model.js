@@ -334,27 +334,29 @@ const ScheduleValidation = {
    * Normalize event data
    */
   normalizeEvent(event) {
+    const cfg = ScheduleRules.TYPE_CONFIG[event.type] || ScheduleRules.TYPE_CONFIG.booking;
+
     return {
       id: event.id || `event_${Date.now()}`,
-      title: event.title || ScheduleRules.TYPE_CONFIG[event.type]?.icon + ' Event',
-      type: event.type,
+      title: event.title || (cfg.icon ? cfg.icon + ' Event' : 'Event'),
+      type: event.type || 'booking',
       start: event.start,
       end: event.end,
       recurring: event.recurring || 'once',
       daysOfWeek: event.daysOfWeek || [0, 1, 2, 3, 4, 5, 6],
-      color: ScheduleRules.TYPE_CONFIG[event.type].color,
-      backgroundColor: ScheduleRules.TYPE_CONFIG[event.type].backgroundColor,
-      borderColor: ScheduleRules.TYPE_CONFIG[event.type].borderColor,
+      color: cfg.color,
+      backgroundColor: cfg.backgroundColor,
+      borderColor: cfg.borderColor,
       rules: {
-        isBlocking: ScheduleRules.TYPE_CONFIG[event.type].isBlocking,
-        isSubtractive: ScheduleRules.TYPE_CONFIG[event.type].isSubtractive,
-        conflictPriority: ScheduleRules.TYPE_CONFIG[event.type].priority
+        isBlocking: cfg.isBlocking,
+        isSubtractive: cfg.isSubtractive,
+        conflictPriority: cfg.priority
       },
-      extendedProps: {
+      extendedProps: Object.assign({
         notes: event.notes || '',
         createdAt: event.createdAt || Date.now(),
         lastModified: Date.now()
-      }
+      }, event.extendedProps || {})
     };
   }
 };

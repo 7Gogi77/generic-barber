@@ -679,10 +679,22 @@
                     <label>Naziv</label>
                     <input type="text" id="eventTitle" required placeholder="Npr. Bolniška, Praznik, Striženje...">
                 </div>
+                <div class="form-group" id="customerContactFields" style="display:none;">
+                    <label>Email</label>
+                    <input type="email" id="eventEmail" placeholder="stranka@example.com">
+                </div>
+                <div class="form-group" id="customerPhoneField" style="display:none;">
+                    <label>Telefon</label>
+                    <input type="tel" id="eventPhone" placeholder="+386 40 123 456">
+                </div>
                 <div class="form-group">
                     <label id="eventTypeLabel">Tip</label>
                     <select id="eventType" required></select>
                     <div id="eventTypeCheckboxes" style="display:none; margin-top:8px;"></div>
+                    <div id="eventPriceWrapper" style="display:none; margin-top:8px;">
+                        <label>Skupna cena</label>
+                        <input type="text" id="eventPrice" readonly style="background:#f5f5f5;" value="0€">
+                    </div>
                 </div>
                 <div class="form-group">
                     <label>Datuma - Od</label>
@@ -795,8 +807,9 @@
                     <strong>Cena:</strong>
                     <p id="bookingPrice" style="margin: 5px 0;">-</p>
                 </div>
-                <div style="margin-top: 20px;">
-                    <button type="button" class="btn btn-secondary" onclick="closeBookingDetailsModal()" style="width: 100%;">Zapri</button>
+                <div style="margin-top: 20px; display:flex; gap:10px;">
+                    <button type="button" id="bookingDeleteBtn" class="btn btn-danger" style="flex:1;">Izbriši</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeBookingDetailsModal()" style="flex:1;">Zapri</button>
                 </div>
             </div>
         </div>
@@ -885,6 +898,8 @@
                                                 wrapper.appendChild(chk);
                                                 wrapper.appendChild(lbl);
                                                 checkboxContainer.appendChild(wrapper);
+                                                // recalc price when checkbox toggled
+                                                chk.addEventListener('change', recalcServicePrice);
                                             });
                                             checkboxContainer.style.display = options.length > 1 ? 'block' : 'none';
                                         }
@@ -899,6 +914,19 @@
                                         select.required = true;
                                     }
                                 document.getElementById('eventTypeLabel').textContent = tab === 'worker' ? 'Tip' : 'Storitev';
+                                // show/hide contact fields and price for customer tab
+                                const contactWrapper = document.getElementById('customerContactFields');
+                                const phoneWrapper = document.getElementById('customerPhoneField');
+                                const priceWrapper = document.getElementById('eventPriceWrapper');
+                                if (tab === 'customer') {
+                                    if (contactWrapper) contactWrapper.style.display = '';
+                                    if (phoneWrapper) phoneWrapper.style.display = '';
+                                    if (priceWrapper) priceWrapper.style.display = '';
+                                } else {
+                                    if (contactWrapper) contactWrapper.style.display = 'none';
+                                    if (phoneWrapper) phoneWrapper.style.display = 'none';
+                                    if (priceWrapper) priceWrapper.style.display = 'none';
+                                }
                                 document.getElementById('eventTitle').setAttribute('placeholder', tab === 'worker' ? 'Npr. Bolniška, Praznik, Striženje...' : 'Ime in priimek stranke...');
                         }
             function setEventTab(tab) {
@@ -945,6 +973,24 @@
           document.head.appendChild(script);
         } else {
           console.log('✅ FullCalendar loaded successfully from primary CDN');
+        }
+
+        // Recalculate total price from selected services
+        function recalcServicePrice() {
+            const checkboxContainer = document.getElementById('eventTypeCheckboxes');
+            const priceInput = document.getElementById('eventPrice');
+            if (!checkboxContainer || !priceInput) return;
+            const checked = Array.from(checkboxContainer.querySelectorAll('input[type=checkbox]:checked')).map(i => i.value);
+            let total = 0;
+            if (window.SITE_CONFIG && window.SITE_CONFIG.servicesSection && Array.isArray(window.SITE_CONFIG.servicesSection.items)) {
+                checked.forEach(name => {
+                    const svc = window.SITE_CONFIG.servicesSection.items.find(s => s.name === name);
+                    if (svc && typeof svc.price === 'number') total += svc.price;
+                    else if (svc && svc.price) total += Number(svc.price) || 0;
+                });
+            }
+            priceInput.value = total + '€';
+            return total;
         }
       </script>
     <script src="/js/config.js?v=2"></script>
@@ -1205,6 +1251,20 @@
             document.getElementById('bookingPrice').textContent = `${booking.price || 0}€`;
             
             const modal = document.getElementById('bookingDetailsModal');
+            // attach delete handler
+            const deleteBtn = document.getElementById('bookingDeleteBtn');
+            if (deleteBtn) {
+                deleteBtn.onclick = function() {
+                    if (confirm('Sigurno želiš izbrisati to rezervacijo?')) {
+                        // remove from calendar
+                        try { window.calendar.getEventById(event.id).remove(); } catch(e) {}
+                        // remove from scheduleData and persist
+                        scheduleData.events = scheduleData.events.filter(e => e.id !== event.id);
+                        if (window.saveScheduleData) window.saveScheduleData();
+                        closeBookingDetailsModal();
+                    }
+                };
+            }
             modal.classList.add('show');
         }
 
@@ -1233,12 +1293,24 @@
             // Support multiple services via checkboxes when available
             let type = '';
             let services = [];
+            let price = 0;
             if (currentEventTab === 'customer' && checkboxContainer) {
                 services = Array.from(checkboxContainer.querySelectorAll('input[type=checkbox]:checked')).map(i => i.value).filter(v => v && v.length > 0);
-                type = services.length > 0 ? services[0] : 'booking';
+                // Always use generic 'booking' type for customer-created appointments
+                type = 'booking';
+                // compute price from services
+                const computed = typeof recalcServicePrice === 'function' ? recalcServicePrice() : 0;
+                price = computed;
             } else if (currentEventTab === 'customer' && typeSelect && typeSelect.multiple) {
                 services = Array.from(typeSelect.selectedOptions).map(o => o.value).filter(v => v && v.length > 0);
-                type = services.length > 0 ? services[0] : 'booking';
+                type = 'booking';
+                // compute price for select-based services
+                if (window.SITE_CONFIG && window.SITE_CONFIG.servicesSection && Array.isArray(window.SITE_CONFIG.servicesSection.items)) {
+                    price = services.reduce((sum, name) => {
+                        const svc = window.SITE_CONFIG.servicesSection.items.find(s => s.name === name);
+                        return sum + (svc && svc.price ? Number(svc.price) || 0 : 0);
+                    }, 0);
+                }
             } else {
                 type = typeSelect ? typeSelect.value : '';
             }
@@ -1260,9 +1332,14 @@
                 description,
                 tab: currentEventTab,
                 isBooking: currentEventTab === 'customer',
-                // For bookings keep customer info in extendedProps.customer
-                customer: currentEventTab === 'customer' ? title : undefined,
-                services: currentEventTab === 'customer' ? services : []
+                // For bookings keep customer info in extendedProps
+                extendedProps: {
+                    customer: currentEventTab === 'customer' ? title : undefined,
+                    email: document.getElementById('eventEmail') ? document.getElementById('eventEmail').value : undefined,
+                    phone: document.getElementById('eventPhone') ? document.getElementById('eventPhone').value : undefined,
+                    services: currentEventTab === 'customer' ? services : [],
+                    price: price || 0
+                }
             };
 
             const eventId = (typeof window.addScheduleEvent === 'function')
@@ -1296,14 +1373,12 @@
                 end: new Date(end).toISOString(),
                 backgroundColor: 'rgba(52, 152, 219, 0.2)',
                 borderColor: '#3498db',
-                extendedProps: {
+                extendedProps: Object.assign({
                     type: type,
                     description: description,
                     tab: currentEventTab,
-                    isBooking: currentEventTab === 'customer',
-                    customer: currentEventTab === 'customer' ? title : undefined,
-                    services: currentEventTab === 'customer' ? services : []
-                }
+                    isBooking: currentEventTab === 'customer'
+                }, eventPayload.extendedProps || {})
             });
 
             closeAddEventModal();
