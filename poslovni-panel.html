@@ -1155,14 +1155,38 @@
             const end = endTime ? `${endDate}T${endTime}` : `${endDate}T23:59`;
 
             // Shrani tab v extendedProps
-            const eventId = addScheduleEvent({
+            const eventPayload = {
                 title,
                 type,
                 start,
                 end,
                 description,
                 tab: currentEventTab
-            });
+            };
+
+            const eventId = (typeof window.addScheduleEvent === 'function')
+                ? window.addScheduleEvent(eventPayload)
+                : (function fallbackAdd(ev) {
+                    try {
+                        let normalized = ev;
+                        if (typeof ScheduleValidation !== 'undefined' && ScheduleValidation.normalizeEvent) {
+                            normalized = ScheduleValidation.normalizeEvent(ev);
+                        } else {
+                            normalized.id = normalized.id || `event_${Date.now()}`;
+                        }
+                        scheduleData.events = scheduleData.events || [];
+                        scheduleData.events.push(normalized);
+                        if (typeof window.saveScheduleData === 'function') {
+                            window.saveScheduleData();
+                        } else {
+                            try { localStorage.setItem('schedule', JSON.stringify(scheduleData)); } catch(e) { }
+                        }
+                        return normalized.id;
+                    } catch (err) {
+                        console.error('✗ fallback addScheduleEvent failed', err);
+                        return null;
+                    }
+                })(eventPayload);
 
             window.calendar.addEvent({
                 id: eventId,
