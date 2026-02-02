@@ -51,7 +51,10 @@ window.CloudSync = {
                 console.log('☁️ Synced config from cloud:', remoteConfig);
                 
                 // Merge remote config with local
-                Object.assign(window.SITE_CONFIG, remoteConfig);
+                if (!window.SITE_CONFIG || typeof window.SITE_CONFIG !== 'object') {
+                    window.SITE_CONFIG = {};
+                }
+                Object.assign(window.SITE_CONFIG, remoteConfig || {});
                 
                 // Update localStorage backup
                 localStorage.setItem('site_config_backup', JSON.stringify(window.SITE_CONFIG));
@@ -89,7 +92,10 @@ window.CloudSync = {
             const snapshot = await get(configRef);
             if (snapshot.exists()) {
                 const cloudConfig = snapshot.val();
-                Object.assign(window.SITE_CONFIG, cloudConfig);
+                if (!window.SITE_CONFIG || typeof window.SITE_CONFIG !== 'object') {
+                    window.SITE_CONFIG = {};
+                }
+                Object.assign(window.SITE_CONFIG, cloudConfig || {});
                 localStorage.setItem('site_config_backup', JSON.stringify(window.SITE_CONFIG));
                 console.log('✅ Config loaded from cloud');
                 return true;

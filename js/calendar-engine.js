@@ -147,6 +147,82 @@ const CalendarEngine = {
   calendar: null,
   currentScheduleData: null,
 
+  /**
+   * Limit events shown per day in month view
+   */
+  limitEventsPerDay(maxEvents) {
+    try {
+      console.log(`🔍 limitEventsPerDay called with maxEvents=${maxEvents}`);
+      
+      // Get all event elements
+      const allEvents = Array.from(document.querySelectorAll('.fc-daygrid-event'));
+      console.log(`📍 Found ${allEvents.length} total event elements`);
+      
+      if (allEvents.length === 0) {
+        console.log('⚠️ No events found');
+        return;
+      }
+      
+      // Group events by their parent row/day
+      const eventsByDay = new Map();
+      
+      allEvents.forEach((eventEl, idx) => {
+        try {
+          // Find the parent row (which contains all events for that day)
+          let parent = eventEl.parentElement;
+          
+          // Go up until we find a unique container for this day
+          while (parent && parent.classList && !parent.classList.contains('fc-daygrid-day-frame')) {
+            parent = parent.parentElement;
+          }
+          
+          if (!parent) {
+            parent = eventEl.parentElement; // fallback
+          }
+          
+          const key = parent ? parent.getAttribute('data-datekey') || String(Math.random()) : String(idx);
+          
+          if (!eventsByDay.has(key)) {
+            eventsByDay.set(key, []);
+          }
+          eventsByDay.get(key).push(eventEl);
+        } catch (e) {
+          console.warn(`⚠️ Error processing event ${idx}:`, e);
+        }
+      });
+      
+      console.log(`📊 Grouped into ${eventsByDay.size} days`);
+      
+      // Process each day
+      eventsByDay.forEach((dayEvents, dayKey) => {
+        if (dayEvents.length > maxEvents) {
+          console.log(`   Day: ${dayEvents.length} events → hiding ${dayEvents.length - maxEvents}`);
+          
+          // Hide events beyond max
+          for (let i = maxEvents; i < dayEvents.length; i++) {
+            dayEvents[i].style.display = 'none !important';
+            dayEvents[i].style.visibility = 'hidden !important';
+          }
+          
+          // Add more link
+          const hiddenCount = dayEvents.length - maxEvents;
+          const moreDiv = document.createElement('div');
+          moreDiv.className = 'fc-daygrid-day-more';
+          moreDiv.style.cssText = 'padding: 2px 4px; font-size: 11px; color: #3498db; font-weight: 600;';
+          moreDiv.textContent = `+${hiddenCount} više`;
+          
+          const lastVisible = dayEvents[maxEvents - 1];
+          if (lastVisible && lastVisible.parentElement) {
+            lastVisible.parentElement.appendChild(moreDiv);
+          }
+        }
+      });
+      
+    } catch (error) {
+      console.error('❌ Error in limitEventsPerDay:', error);
+    }
+  },
+
   initializeCalendar(containerElement, scheduleData, options = {}) {
     // Check if FullCalendar is available
     if (typeof FullCalendar === 'undefined') {
@@ -171,17 +247,9 @@ const CalendarEngine = {
       console.log('Parent width:', parentWidth);
       
       // Calculate responsive height based on screen size - stored on window for global access
-      let calendarHeight = '700px';
-      let minCalendarHeight = '500px';
-      if (window.innerWidth < 768) {
-        // Mobile: use viewport height minus nav and padding
-        calendarHeight = (window.innerHeight - 200) + 'px';
-        minCalendarHeight = '400px';
-      } else if (window.innerWidth < 1024) {
-        // Tablet
-        calendarHeight = '600px';
-        minCalendarHeight = '500px';
-      }
+      let calendarHeight = '100%';
+      let minCalendarHeight = '100%';
+      // Always use 100% to fill viewport - no fixed heights
       
       // Store on window object so it can be accessed in other functions
       window._calendarHeight = calendarHeight;
@@ -214,17 +282,23 @@ const CalendarEngine = {
         containerElement.parentElement.style.width = '100%';
         containerElement.parentElement.style.minWidth = '100%';
         containerElement.parentElement.style.maxWidth = '100%';
+        containerElement.parentElement.style.height = '100%';
+        containerElement.parentElement.style.display = 'flex';
+        containerElement.parentElement.style.flexDirection = 'column';
       }
 
-      // Set container max height BEFORE initialization
-      containerElement.style.maxHeight = '550px';
+      // Allow container to fill available space
+      containerElement.style.flex = '1';
+      containerElement.style.width = '100%';
+      containerElement.style.height = 'auto';
+      containerElement.style.minHeight = '100%';
       containerElement.style.overflow = 'auto';
 
       const calendar = new FullCalendar.Calendar(containerElement, {
         // Core settings
         initialView: options.initialView || 'dayGridMonth',
-        height: 'auto',
-        contentHeight: 670,
+        height: '100%',
+        contentHeight: 'parent',
         headerToolbar: {
           left: 'prev,next today',
           center: 'title',
@@ -234,6 +308,10 @@ const CalendarEngine = {
         // Locale
         locale: 'sl',
         firstDay: 1, // Monday
+
+        // Max events per day (month view)
+        dayMaxEvents: 3,
+        moreLinkClick: 'popover',
 
         // Business hours overlay
         businessHours: {
@@ -247,18 +325,64 @@ const CalendarEngine = {
           try {
             console.log('📅 Loading events...');
             const events = await CalendarEngine.generateCalendarEvents(scheduleData);
-            console.log('📅 Loaded', events.length, 'events');
-            console.log('📊 Events being passed to FullCalendar:', events);
+            console.log('📅 Loaded', events.length, 'schedule events');
+            
+            // Also load appointments from localStorage
+            const appointmentsJSON = localStorage.getItem('appointments');
+            if (appointmentsJSON) {
+              try {
+                const appointments = JSON.parse(appointmentsJSON);
+                console.log('📅 Loaded', appointments.length, 'appointments from localStorage');
+                
+                // Convert appointments to events
+                const appointmentEvents = appointments.map(apt => {
+                  const startDateTime = apt.date + 'T' + apt.time;
+                  const startDate = new Date(`${apt.date}T${apt.time}`);
+                  const endDate = new Date(startDate.getTime() + (apt.totalDuration || 60) * 60000);
+                  const endDateTime = endDate.toISOString().slice(0, 16);
+                  
+                  return {
+                    id: 'apt_' + apt.id,
+                    title: apt.fullName || 'Rezervacija',
+                    start: startDateTime,
+                    end: endDateTime,
+                    allDay: false,
+                    display: 'auto',
+                    editable: false,
+                    backgroundColor: 'rgba(46, 204, 113, 0.2)',
+                    borderColor: '#2ecc71',
+                    textColor: '#27ae60',
+                    classNames: ['schedule-event', 'event-type-booking', 'event-normal'],
+                    extendedProps: {
+                      isBooking: true,
+                      customer: apt.fullName,
+                      email: apt.email,
+                      phone: apt.phone,
+                      services: apt.services,
+                      duration: apt.totalDuration,
+                      price: apt.totalPrice
+                    }
+                  };
+                });
+                
+                console.log('📅 Converted', appointmentEvents.length, 'appointments to events');
+                events.push(...appointmentEvents);
+              } catch (e) {
+                console.warn('Failed to parse appointments:', e);
+              }
+            }
+            
+            console.log('📊 Total events being passed to FullCalendar:', events.length);
             events.forEach((e, i) => {
               console.log(`Event ${i}:`, {
                 id: e.id,
                 title: e.title,
                 start: e.start,
                 end: e.end,
-                backgroundColor: e.backgroundColor,
-                borderColor: e.borderColor
+                isBooking: e.extendedProps?.isBooking
               });
             });
+            console.log('✅ Calling successCallback with', events.length, 'events');
             successCallback(events);
           } catch (error) {
             console.error('❌ Failed to load events:', error);
@@ -272,104 +396,56 @@ const CalendarEngine = {
         editable: true,
         eventDurationEditable: true,
 
-        // Event handling
+        // Event handling - NOTE: These are overridden by poslovni-panel.html
+        // Only used in admin-panel.html - check if modal exists before calling
         select: (selectInfo) => {
           console.log('📅 Date selected:', selectInfo.startStr);
-          CalendarEngine.openEventModal(null, selectInfo, calendar, scheduleData);
+          console.log('📋 Checking for eventModal...');
+          const hasAdminModal = document.getElementById('eventModal');
+          console.log('📋 Admin modal exists?', !!hasAdminModal);
+          // Only call if the admin modal exists (admin-panel.html context)
+          if (hasAdminModal) {
+            console.log('📋 Calling CalendarEngine.openEventModal from calendar-engine.js (select)');
+            CalendarEngine.openEventModal(null, selectInfo, calendar, scheduleData);
+          } else {
+            console.log('📋 Skipping - not in admin context (no eventModal found)');
+          }
         },
         
         eventClick: (clickInfo) => {
           console.log('📅 Event clicked:', clickInfo.event.title);
-          CalendarEngine.openEventModal(clickInfo.event, null, calendar, scheduleData);
+          console.log('📋 Checking for eventModal...');
+          const hasAdminModal = document.getElementById('eventModal');
+          console.log('📋 Admin modal exists?', !!hasAdminModal);
+          // Only call if the admin modal exists (admin-panel.html context)
+          if (hasAdminModal) {
+            console.log('📋 Calling CalendarEngine.openEventModal from calendar-engine.js');
+            CalendarEngine.openEventModal(clickInfo.event, null, calendar, scheduleData);
+          } else {
+            console.log('📋 Skipping - not in admin context (no eventModal found)');
+          }
         },
         
         eventDidMount: (info) => {
-          console.log('🎨 Event mounted:', {
-            title: info.event.title,
-            id: info.event.id,
-            start: info.event.startStr,
-            end: info.event.endStr,
-            allDay: info.event.allDay,
-            view: info.view.type,
-            element: info.el
-          });
-          
-          // IMPORTANT: For booking events, manually set visible colors
-          // FullCalendar's inline styles override CSS, so we must force them here
+          // Style booking events
           if (info.event.extendedProps?.isBooking || info.event.id?.startsWith('apt_')) {
-            console.log('🎨 Styling booking event:', info.event.id, 'Title:', info.event.title);
             if (info.el) {
-              // Use normal event styling, not special blue
               info.el.style.backgroundColor = 'rgba(52, 152, 219, 0.2)';
               info.el.style.borderColor = '#3498db';
               info.el.style.borderWidth = '1px';
               info.el.style.color = '#2c3e50';
-              info.el.style.overflow = 'visible';
-              info.el.style.whiteSpace = 'normal';
-              info.el.style.minHeight = 'auto';
-              info.el.style.height = 'auto';
-              info.el.style.padding = '4px';
-              info.el.style.opacity = '1';
-              
-              // Find and style text content - normal styling
-              const allElements = info.el.querySelectorAll('*');
-              allElements.forEach(el => {
-                if (el.textContent && el.textContent.trim().length > 0) {
-                  el.style.color = '#2c3e50';
-                  el.style.fontWeight = '500';
-                  el.style.fontSize = '13px';
-                  el.style.opacity = '1';
-                  el.style.textShadow = 'none';
-                  el.style.display = 'block';
-                  el.style.overflow = 'visible';
-                  el.style.whiteSpace = 'normal';
-                }
-              });
-              
-              console.log('✅ Booking event styled normally, HTML:', info.el.innerHTML.substring(0, 200));
             }
-          }
-          
-          // Check the HTML structure
-          if (info.el) {
-            console.log('📍 Event HTML:', info.el.outerHTML.substring(0, 300));
-            const style = window.getComputedStyle(info.el);
-            console.log('📍 Event computed style:', {
-              display: style.display,
-              position: style.position,
-              width: style.width,
-              height: style.height,
-              top: style.top,
-              left: style.left,
-              visibility: style.visibility,
-              opacity: style.opacity,
-              backgroundColor: style.backgroundColor,
-              overflow: style.overflow,
-              lineHeight: style.lineHeight,
-              minHeight: style.minHeight
-            });
-            
-            // Check parent styles
-            const parent = info.el.parentElement;
-            const parentStyle = window.getComputedStyle(parent);
-            console.log('📍 Parent element:', {
-              class: parent.className,
-              display: parentStyle.display,
-              height: parentStyle.height,
-              overflow: parentStyle.overflow,
-              visibility: parentStyle.visibility
-            });
           }
         },
         
         eventContent: (arg) => {
-          // Custom rendering for booking events - show with time
+          // Custom rendering for booking events - show customer name and time
           if (arg.event.extendedProps?.isBooking || arg.event.id?.startsWith('apt_')) {
             console.log('📝 Rendering booking content:', arg.event.title);
+            const customerName = arg.event.extendedProps?.customer || arg.event.title || 'Rezervacija';
             const startTime = arg.event.start ? new Date(arg.event.start).toLocaleTimeString('sl-SI', {hour: '2-digit', minute: '2-digit'}) : '';
-            const endTime = arg.event.end ? new Date(arg.event.end).toLocaleTimeString('sl-SI', {hour: '2-digit', minute: '2-digit'}) : '';
             return {
-              html: `<div style="padding: 2px; font-size: 12px;">${startTime}${endTime ? ' - ' + endTime : ''}</div>`
+              html: `<div style="padding: 2px; font-size: 12px; font-weight: bold;">${customerName}</div><div style="padding: 2px; font-size: 10px;">${startTime}</div>`
             };
           }
           
@@ -379,6 +455,16 @@ const CalendarEngine = {
               html: `<div style="width: 100%; padding: 4px 6px; white-space: normal; overflow: visible;">${arg.event.title}</div>`
             };
           }
+          
+          // Default rendering for schedule events - show title with time
+          if (arg.event.title) {
+            const startTime = arg.event.start ? new Date(arg.event.start).toLocaleTimeString('sl-SI', {hour: '2-digit', minute: '2-digit'}) : '';
+            const title = arg.event.title.length > 15 ? arg.event.title.substring(0, 15) + '...' : arg.event.title;
+            return {
+              html: `<div style="padding: 1px 2px; font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${title}</div>`
+            };
+          }
+          
           return false; // Use default rendering
         },
 
@@ -403,41 +489,125 @@ const CalendarEngine = {
         },
 
         datesSet: (arg) => {
-          console.log('📅 Dates set - forcing updateSize to maintain height constraint');
-          // Force calendar to respect container height limits
+          console.log('📅 Dates set');
+          
+          // After view renders, limit timed events to 3 per day
           setTimeout(() => {
+            if (arg.view.type === 'dayGridMonth') {
+              console.log('🔍 Limiting events to 3 per day...');
+              
+              // Get all day cell containers
+              const dayCells = document.querySelectorAll('.fc-daygrid-day-cell');
+              console.log('Found', dayCells.length, 'day cells');
+              
+              dayCells.forEach((dayCell, index) => {
+                const eventsContainer = dayCell.querySelector('.fc-daygrid-day-events');
+                if (eventsContainer) {
+                  const allEventEls = Array.from(eventsContainer.querySelectorAll('.fc-daygrid-event'));
+                  
+                  if (allEventEls.length > 0) {
+                    const dateEl = dayCell.querySelector('.fc-daygrid-day-number');
+                    const dayNum = dateEl ? dateEl.textContent : 'unknown';
+                    console.log(`%c📅 FEB ${dayNum}: Found ${allEventEls.length} events`, 'color: blue; font-weight: bold');
+                    
+                    let timedCount = 0;
+                    allEventEls.forEach((el, i) => {
+                      const text = el.textContent;
+                      const hasTime = /\d{2}:\d{2}/.test(text);
+                      
+                      if (hasTime) {
+                        timedCount++;
+                        if (timedCount > 3) {
+                          el.style.display = 'none';
+                          console.log(`%c  ❌ HIDDEN: "${text.substring(0, 40)}" (timed event #${timedCount})`, 'color: red');
+                        } else {
+                          console.log(`%c  ✅ KEPT: "${text.substring(0, 40)}" (timed event #${timedCount})`, 'color: green');
+                        }
+                      } else {
+                        console.log(`%c  ✅ KEPT: "${text.substring(0, 40)}" (all-day event)`, 'color: green');
+                      }
+                    });
+                  }
+                }
+              });
+              
+        // NOW FORCE ROWS TO STRETCH - USE PIXEL HEIGHTS BASED ON CONTAINER SIZE
+              const daygridBody = document.querySelector('.fc-daygrid-body');
+              if (daygridBody) {
+                const rows = daygridBody.querySelectorAll('.fc-daygrid-row');
+                if (rows.length > 0) {
+                  const bodyHeight = daygridBody.offsetHeight;
+                  const rowHeight = bodyHeight / rows.length;
+                  
+                  console.log(`datesSet: daygrid-body height=${bodyHeight}px, setting each row to ${rowHeight}px`);
+                  
+                  // Set each row to equal pixel height
+                  rows.forEach((row, i) => {
+                    row.style.height = rowHeight + 'px';
+                    row.style.minHeight = rowHeight + 'px';
+                    row.style.maxHeight = rowHeight + 'px';
+                    row.style.overflow = 'visible';
+                    
+                    // Also ensure day cells stretch within their row
+                    const cells = row.querySelectorAll('.fc-daygrid-day-cell');
+                    cells.forEach(cell => {
+                      cell.style.height = '100%';
+                      cell.style.minHeight = '100%';
+                    });
+                  });
+                  
+                  console.log(`✅ All ${rows.length} rows set to ${rowHeight}px`);
+                }
+              }
+            }
+            
             if (calendar.updateSize) {
               calendar.updateSize();
             }
-            // Ensure container stays constrained
-            containerElement.style.maxHeight = '700px';
-            containerElement.style.height = '700px';
-            containerElement.style.overflow = 'auto';
-            containerElement.style.overflowY = 'auto';
-            containerElement.style.overflowX = 'clip';
-          }, 50);
+          }, 150);
         },
 
         viewDidMount: (arg) => {
-          console.log('📅 View mounted - applying initial size constraints');
-          // On first render, immediately constrain the height
+          console.log('📅 View mounted');
           setTimeout(() => {
-            containerElement.style.height = '700px';
-            containerElement.style.maxHeight = '700px';
-            containerElement.style.overflow = 'auto';
-            containerElement.style.overflowY = 'auto';
-            containerElement.style.overflowX = 'clip';
             if (calendar.updateSize) {
               calendar.updateSize();
             }
-          }, 10);
+            
+            // STRETCH ROWS EQUALLY - runs after view fully mounted
+            const daygridBody = document.querySelector('.fc-daygrid-body');
+            if (daygridBody) {
+              const rows = daygridBody.querySelectorAll('.fc-daygrid-row');
+              if (rows.length > 0) {
+                const bodyHeight = daygridBody.offsetHeight;
+                const rowHeight = bodyHeight / rows.length;
+                
+                console.log(`%cVIEW MOUNTED: daygrid-body height=${bodyHeight}px, setting each row to ${rowHeight}px`, 'color: purple; font-weight: bold');
+                
+                rows.forEach((row, i) => {
+                  row.style.height = rowHeight + 'px';
+                  row.style.minHeight = rowHeight + 'px';
+                  row.style.maxHeight = rowHeight + 'px';
+                  row.style.overflow = 'visible';
+                  
+                  const cells = row.querySelectorAll('.fc-daygrid-day-cell');
+                  cells.forEach(cell => {
+                    cell.style.height = '100%';
+                    cell.style.minHeight = '100%';
+                  });
+                });
+                
+                console.log(`✅ All ${rows.length} rows set to ${rowHeight}px height`);
+              }
+            }
+          }, 350);
         },
 
         // Styling
         nowIndicator: true,
         eventDisplay: 'block',
         height: calendarHeight,
-        contentHeight: 'auto'
+        contentHeight: 'parent'
       });
 
       console.log('✅ Calendar object created:', calendar);
@@ -455,6 +625,38 @@ const CalendarEngine = {
         const renderResult = calendar.render();
         console.log('✅ FullCalendar rendered successfully, result:', renderResult);
         console.log('Container HTML after render:', containerElement.innerHTML.substring(0, 200));
+        
+        // IMMEDIATELY after render, limit events to 3 per day
+        console.log('%c🔥 LIMITING EVENTS TO 3 PER DAY 🔥', 'color: red; font-size: 16px; font-weight: bold');
+        const dayCells = containerElement.querySelectorAll('.fc-daygrid-day-cell');
+        console.log(`Found ${dayCells.length} day cells`);
+        
+        dayCells.forEach((dayCell) => {
+          const eventsContainer = dayCell.querySelector('.fc-daygrid-day-events');
+          if (eventsContainer) {
+            const allEventEls = Array.from(eventsContainer.querySelectorAll('.fc-daygrid-event'));
+            if (allEventEls.length > 3) {
+              const dateEl = dayCell.querySelector('.fc-daygrid-day-number');
+              const dayNum = dateEl ? dateEl.textContent : '?';
+              console.log(`%c📅 FEB ${dayNum}: ${allEventEls.length} events found`, 'color: blue; font-weight: bold; font-size: 13px');
+              
+              let timedCount = 0;
+              allEventEls.forEach((el) => {
+                const text = el.textContent;
+                const hasTime = /\d{2}:\d{2}/.test(text);
+                
+                if (hasTime) {
+                  timedCount++;
+                  if (timedCount > 3) {
+                    el.style.display = 'none';
+                    console.log(`%c  ❌ HIDING #${timedCount}: ${text.substring(0, 35)}`, 'color: red; font-weight: bold');
+                  }
+                }
+              });
+            }
+          }
+        });
+
       } catch (renderError) {
         console.error('❌ Error calling calendar.render():', renderError);
         console.error('Error stack:', renderError.stack);
@@ -462,17 +664,16 @@ const CalendarEngine = {
       }
       
       // Force container to have proper height and width after rendering
-      // Use the responsive heights calculated at initialization
+      // Use flexbox to fill viewport
       containerElement.style.width = '100%';
       containerElement.style.maxWidth = '100%';
       containerElement.style.minWidth = '100%';
       containerElement.style.padding = '0';
-      containerElement.style.minHeight = window._minCalendarHeight || '500px';
-      containerElement.style.height = window._calendarHeight || '700px';
+      containerElement.style.height = '100%';
       containerElement.style.boxSizing = 'border-box';
       containerElement.style.visibility = 'visible';
-      containerElement.style.overflow = 'visible';
-      containerElement.style.display = 'block';
+      containerElement.style.display = 'flex';
+      containerElement.style.flexDirection = 'column';
       
       // CRITICAL: Trigger resize event so FullCalendar recalculates widths
       console.log('📅 Immediately calling updateSize...');
@@ -665,33 +866,26 @@ const CalendarEngine = {
         resizeTimeout = setTimeout(() => {
           console.log('📱 Window resized, recalculating calendar height');
           
-          // Recalculate responsive height
-          let newCalendarHeight = '700px';
-          let newMinCalendarHeight = '500px';
-          if (window.innerWidth < 768) {
-            newCalendarHeight = (window.innerHeight - 200) + 'px';
-            newMinCalendarHeight = '400px';
-          } else if (window.innerWidth < 1024) {
-            newCalendarHeight = '600px';
-            newMinCalendarHeight = '500px';
-          }
+          // Always use 100% - no fixed heights
+          const newCalendarHeight = '100%';
+          const newMinCalendarHeight = '100%';
           
           // Store new heights
           window._calendarHeight = newCalendarHeight;
           window._minCalendarHeight = newMinCalendarHeight;
           
           // Apply to container
-          containerElement.style.minHeight = newMinCalendarHeight;
-          containerElement.style.height = newCalendarHeight;
+          containerElement.style.minHeight = '100%';
+          containerElement.style.height = '100%';
           
           // Apply to FC elements
           const fcView = containerElement.querySelector('.fc');
           if (fcView) {
-            fcView.style.height = newCalendarHeight;
+            fcView.style.height = '100%';
             const fcRoot = containerElement.querySelector('.fc-root');
-            if (fcRoot) fcRoot.style.height = newCalendarHeight;
+            if (fcRoot) fcRoot.style.height = '100%';
             const fcViewHarness = containerElement.querySelector('.fc-view-harness');
-            if (fcViewHarness) fcViewHarness.style.height = newCalendarHeight;
+            if (fcViewHarness) fcViewHarness.style.height = '100%';
           }
           
           // Update calendar size
@@ -699,7 +893,7 @@ const CalendarEngine = {
             calendar.updateSize();
           }
           
-          console.log('✅ Calendar resized to:', newCalendarHeight);
+          console.log('✅ Calendar resized to: 100%');
         }, 250); // Debounce resize events
       });
 
@@ -1218,3 +1412,8 @@ async function createWorkingHoursEvents(startTime, endTime) {
     console.error('❌ Greška u createWorkingHoursEvents:', error);
   }
 }
+
+// Export CalendarEngine to window so it can be accessed globally
+window.CalendarEngine = CalendarEngine;
+console.log('✅ CalendarEngine exported to window:', typeof window.CalendarEngine);
+console.log('✅ CalendarEngine.initializeCalendar exists:', typeof window.CalendarEngine?.initializeCalendar);

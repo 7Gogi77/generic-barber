@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="sl">
 <head>
+        <!-- Bootstrap Icons -->
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Administracija | Blade & Bourbon</title>
@@ -543,10 +545,10 @@
 
             <!-- TAB NAVIGATION -->
             <div class="admin-tabs">
-                <button class="tab-btn active" onclick="switchTab(event, 'videz')">🎨 Videz Spletne Strani</button>
-                <button class="tab-btn" onclick="switchTab(event, 'vsebina')">📝 Vsebina in Tekst</button>
-                <button class="tab-btn" onclick="switchTab(event, 'storitve')">💼 Storitve in Brivci</button>
-                <button class="tab-btn" onclick="switchTab(event, 'panel')">📊 Poslovni Panel</button>
+                <button class="tab-btn active" onclick="switchTab(event, 'videz')"><i class="bi bi-palette"></i> Videz Spletne Strani</button>
+                <button class="tab-btn" onclick="switchTab(event, 'vsebina')"><i class="bi bi-pencil-square"></i> Vsebina in Tekst</button>
+                <button class="tab-btn" onclick="switchTab(event, 'storitve')"><i class="bi bi-briefcase"></i> Storitve in Brivci</button>
+                <button class="tab-btn" onclick="window.location.href='poslovni-panel.html'"><i class="bi bi-bar-chart"></i> Poslovni Panel</button>
             </div>
 
             <!-- ===== TAB 1: VIDEZ (APPEARANCE) ===== -->
@@ -818,7 +820,7 @@
 
                 <!-- SECTION TITLES -->
                 <div class="admin-section">
-                    <div class="section-title">📌 Naslovi Razdelkov</div>
+                    <div class="section-title"><i class="bi bi-pin-angle"></i> Naslovi Razdelkov</div>
                     <div class="form-row">
                         <div class="form-group-admin">
                             <label class="form-label-admin">Naslov Brivcev ("The Craftsmen")</label>
@@ -834,7 +836,7 @@
 
                 <!-- NAVIGATION BUTTON -->
                 <div class="admin-section">
-                    <div class="section-title">🔗 Navigacijski Gumb</div>
+                    <div class="section-title"><i class="bi bi-link-45deg"></i> Navigacijski Gumb</div>
                     <div class="form-row full">
                         <div class="form-group-admin">
                             <label class="form-label-admin">Besedilo Gumba "Rezerviraj"</label>
@@ -845,9 +847,9 @@
 
                 <!-- GALLERY -->
                 <div class="admin-section">
-                    <div class="section-title">📸 Galerija Slik</div>
+                    <div class="section-title"><i class="bi bi-images"></i> Galerija Slik</div>
                     <div class="upload-area" id="uploadArea" onclick="document.getElementById('imageInput').click()" style="margin-bottom: 15px;">
-                        <div class="upload-icon">📷</div>
+                        <div class="upload-icon"><i class="bi bi-camera"></i></div>
                         <div class="upload-text">Klikni za prenos slike</div>
                         <div class="upload-hint">ali vleci slike sem</div>
                         <input id="imageInput" type="file" class="upload-input" accept="image/*" multiple>
@@ -961,7 +963,7 @@
 
                 <!-- DEBUG SEKCIJA -->
                 <div id="debugSection" class="admin-section" style="background: #fff3cd; border: 1px solid #ffc107;">
-                    <div class="section-title">🔧 Debug Info</div>
+                    <div class="section-title"><i class="bi bi-tools"></i> Debug Info</div>
                     <div id="debugOutput" style="font-size: 12px; color: #333; line-height: 1.6; font-family: monospace; white-space: pre-wrap; word-break: break-all; max-height: 300px; overflow-y: auto; background: white; padding: 10px; border-radius: 4px;">
                         Učitavanje...
                     </div>
@@ -987,7 +989,7 @@
                         
                         <!-- Save Button -->
                         <div style="display: flex; align-items: flex-end;">
-                            <button onclick="saveWorkingHours()" style="width: 100%; padding: 10px; background: #27ae60; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.3s;">💾 Spremi Sate</button>
+                            <button onclick="saveWorkingHours()" style="width: 100%; padding: 10px; background: #27ae60; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.3s;"><i class="bi bi-save"></i> Spremi Sate</button>
                         </div>
                     </div>
                     

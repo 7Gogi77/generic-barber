@@ -264,3 +264,6 @@ if (typeof document !== 'undefined') {
     });
   });
 }
+
+// Export StorageManager to window
+window.StorageManager = StorageManager;

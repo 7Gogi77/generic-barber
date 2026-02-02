@@ -1,0 +1,1330 @@
+<!DOCTYPE html>
+<html lang="sl">
+<head>
+        <!-- Bootstrap Icons -->
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Poslovni Panel - Urnik</title>
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet" />
+    <link href="https://unpkg.com/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet" onerror="this.remove()" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+            display: flex;
+            overflow: hidden;
+        }
+
+        /* ===== SIDEBAR NAVIGATION ===== */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 80px;
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.15);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px 0;
+            transition: width 0.3s ease;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .sidebar.expanded {
+            width: 250px;
+            background: #2c3e50;
+        }
+
+        .sidebar-toggle {
+            width: 50px;
+            height: 50px;
+            border: none;
+            background: transparent;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            transition: background 0.2s;
+            margin-bottom: 20px;
+        }
+
+        .sidebar-toggle:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-icon {
+            width: 50px;
+            height: 50px;
+            border: none;
+            background: transparent;
+            color: #bdc3c7;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            transition: all 0.2s;
+            margin-bottom: 10px;
+            position: relative;
+            text-decoration: none;
+            flex-shrink: 0;
+        }
+
+        .nav-icon:hover,
+        .nav-icon.active {
+            background: rgba(52, 152, 219, 0.3);
+            color: #3498db;
+        }
+
+        /* Labels hidden by default (collapsed state) */
+        .nav-label {
+            display: none;
+            color: #bdc3c7;
+            padding-left: 12px;
+            font-size: 14px;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+
+        /* When sidebar is expanded show labels to the right of icons */
+        .sidebar.expanded .nav-item {
+            justify-content: flex-start;
+            padding: 6px 12px;
+        }
+
+        .sidebar.expanded .nav-label {
+            display: inline-block;
+            pointer-events: auto;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            padding: 0 6px;
+            margin-bottom: 10px;
+        }
+
+        /* highlight icon on hover of entire row */
+        .nav-item:hover .nav-icon {
+            background: rgba(52, 152, 219, 0.18);
+            color: #3498db;
+        }
+
+        /* ===== MAIN CONTENT ===== */
+        .main-content {
+            flex: 1;
+            margin-left: 80px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transition: margin-left 0.3s ease;
+            width: calc(100% - 80px);
+            height: 100%;
+        }
+
+        .sidebar.expanded ~ .main-content {
+            margin-left: 250px;
+            width: calc(100% - 250px);
+        }
+
+        .content-header {
+            display: none;
+        }
+
+        .content-area {
+            flex: 1;
+            overflow: hidden;
+            padding: 0;
+            background: white;
+            width: 100%;
+            height: 100%;
+            min-height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ===== CALENDAR ===== */
+        #scheduleCalendar {
+            background: white;
+            height: 100%;
+            width: 100%;
+            min-height: 100%;
+            overflow: hidden !important;
+            padding: 0;
+            border-radius: 0;
+            box-shadow: none;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            border: 2px solid #3498db;
+        }
+
+        #scheduleCalendar .fc-root {
+            flex: 1;
+            height: 100%;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #scheduleCalendar .fc {
+            height: 100% !important;
+        }
+
+        /* FullCalendar Styles */
+        .fc {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            height: 100% !important;
+        }
+
+        .fc-root {
+            height: 100% !important;
+        }
+
+        .fc-scroller-harness {
+            height: 100% !important;
+        }
+
+        .fc-scrollgrid {
+            height: 100% !important;
+        }
+
+        .fc-scrollgrid-section.fc-scrollgrid-section-body {
+            height: 100% !important;
+        }
+
+        .fc-scroller {
+            overflow: visible !important;
+            height: 100% !important;
+        }
+
+        .fc-scroller-harness {
+            height: 100% !important;
+        }
+
+        .fc-scroller-harness-liquid {
+            height: 100% !important;
+        }
+        .fc .fc-button-primary {
+            background-color: #3498db;
+            border-color: #3498db;
+        }
+
+        .fc .fc-button-primary:hover {
+            background-color: #2980b9;
+            border-color: #2980b9;
+        }
+
+        .fc .fc-button-primary.fc-button-active {
+            background-color: #2980b9;
+            border-color: #2980b9;
+        }
+
+        .fc .fc-col-header-cell {
+            background: #ecf0f1;
+            color: #2c3e50;
+            font-weight: 600;
+        }
+
+        .fc .fc-daygrid-day {
+            background: white;
+            height: 16.666% !important;
+            min-height: 16.666% !important;
+        }
+
+        .fc .fc-daygrid-day.fc-day-other {
+            background: #f9f9f9;
+        }
+
+        .fc .fc-event {
+            background-color: rgba(52, 152, 219, 0.2);
+            border-color: #3498db;
+            color: #2c3e50;
+        }
+
+        .fc .fc-daygrid-day-number {
+            padding: 6px 6px 0 6px;
+            color: #2c3e50;
+        }
+
+        .fc .fc-daygrid-day-frame {
+            height: 100% !important;
+            min-height: 0 !important;
+        }
+
+        .fc .fc-daygrid-day {
+            height: 100%;
+        }
+
+        .fc * {
+            max-height: none !important;
+        }
+
+        .fc-toolbar {
+            flex-shrink: 0;
+            height: auto;
+        }
+
+        .fc-view-harness {
+            height: 100% !important;
+            flex: 1 !important;
+        }
+
+        .fc-view-harness-active {
+            height: 100% !important;
+            flex: 1 !important;
+        }
+
+        .fc-daygrid {
+            height: 100% !important;
+            display: flex !important;
+            flex-direction: column !important;
+        }
+
+        .fc-daygrid-body {
+            height: 100% !important;
+            width: 100%;
+            overflow: visible !important;
+        }
+
+        .fc-daygrid-body .fc-daygrid-row {
+            overflow: visible !important;
+        }
+
+        .fc-daygrid-body .fc-daygrid-row > div {
+            flex: 1 !important;
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+        .fc-daygrid-day-cell {
+            flex: 1 !important;
+            height: 100% !important;
+            width: 100% !important;
+            max-height: none !important;
+            min-height: 0 !important;
+            vertical-align: top;
+        }
+
+        .fc-daygrid-day-events {
+            overflow: visible !important;
+            height: auto;
+        }
+
+        .fc-daygrid-day-frame {
+            height: 100% !important;
+            max-height: none !important;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .fc-daygrid-day-number {
+            padding: 2px 4px !important;
+            font-size: 11px;
+        }
+
+        .fc-event {
+            font-size: 11px;
+            padding: 2px !important;
+        }
+
+        /* ===== MODALS ===== */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            overflow: auto;
+        }
+
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-header {
+            font-size: 20px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #2c3e50;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #bdc3c7;
+            border-radius: 4px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 5px rgba(52, 152, 219, 0.3);
+        }
+
+        .form-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background-color: #3498db;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #2980b9;
+        }
+
+        .btn-secondary {
+            background-color: #95a5a6;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background-color: #7f8c8d;
+        }
+
+        .btn-danger {
+            background-color: #e74c3c;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #c0392b;
+        }
+
+        /* ===== EVENT CONTEXT MENU ===== */
+        .context-menu {
+            display: none;
+            position: fixed;
+            background: white;
+            border: 1px solid #bdc3c7;
+            border-radius: 4px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+            z-index: 3000;
+            min-width: 150px;
+        }
+
+        .context-menu.show {
+            display: block;
+        }
+
+        .context-menu-item {
+            padding: 10px 15px;
+            cursor: pointer;
+            color: #2c3e50;
+            font-size: 14px;
+            border-bottom: 1px solid #ecf0f1;
+        }
+
+        .context-menu-item:last-child {
+            border-bottom: none;
+        }
+
+        .context-menu-item:hover {
+            background-color: #ecf0f1;
+        }
+
+        .context-menu-item.danger {
+            color: #e74c3c;
+        }
+
+        .context-menu-item.danger:hover {
+            background-color: #fadbd8;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 70px;
+            }
+
+            .sidebar.expanded {
+                width: 100%;
+            }
+
+            .main-content {
+                margin-left: 70px;
+                width: calc(100% - 70px);
+            }
+
+            .sidebar.expanded ~ .main-content {
+                margin-left: 0;
+                width: 100%;
+            }
+
+            .fc .fc-daygrid-day-frame {
+                min-height: auto;
+            }
+
+            .fc-col-header-cell {
+                padding: 3px 0 !important;
+                font-size: 11px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .sidebar {
+                width: 60px;
+            }
+
+            .nav-icon {
+                width: 45px;
+                height: 45px;
+                font-size: 18px;
+            }
+
+            .main-content {
+                margin-left: 60px;
+                width: calc(100% - 60px);
+            }
+
+            .fc-col-header-cell {
+                padding: 2px 0 !important;
+                font-size: 10px;
+            }
+
+            .fc-daygrid-day-number {
+                padding: 1px 2px !important;
+                font-size: 10px;
+            }
+
+            .fc-event {
+                font-size: 9px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- SIDEBAR NAVIGATION -->
+    <div class="sidebar" id="sidebar">
+        <button class="sidebar-toggle" id="sidebarToggle" title="Toggle menu">
+            <i class="bi bi-list"></i>
+        </button>
+
+        <div class="nav-item">
+            <button class="nav-icon active" title="Urnik" data-page="calendar" aria-label="Urnik">
+                <i class="bi bi-calendar3"></i>
+            </button>
+            <span class="nav-label">Urnik</span>
+        </div>
+
+        <div class="nav-item">
+            <button class="nav-icon" title="Nastavitve" data-page="settings" aria-label="Nastavitve">
+                <i class="bi bi-gear"></i>
+            </button>
+            <span class="nav-label">Vizualne Nastavitve</span>
+        </div>
+
+        <div class="nav-item">
+            <button class="nav-icon" title="Stranke" data-page="customers" aria-label="Stranke">
+                <i class="bi bi-people"></i>
+            </button>
+            <span class="nav-label">Stranke</span>
+        </div>
+
+        <div style="flex: 1;"></div>
+
+        <div class="nav-item">
+            <button class="nav-icon" title="Nazaj" data-page="home" aria-label="Nazaj">
+                <i class="bi bi-house"></i>
+            </button>
+            <span class="nav-label">Nazaj</span>
+        </div>
+    </div>
+
+    <script>
+            // (Removed duplicate sidebar immediate initializer to avoid conflicts)
+    </script>
+
+    <!-- MAIN CONTENT -->
+
+    <div class="main-content">
+        <div class="content-area">
+            <div id="scheduleCalendar">
+                ⏳ Nalagam koledar...
+            </div>
+            <div id="debugPanel" style="position: fixed; bottom: 0; right: 0; background: rgba(0,0,0,0.8); color: #0f0; font-family: monospace; font-size: 10px; max-height: 200px; overflow-y: auto; padding: 10px; width: 400px; display: none; z-index: 999;">
+                <strong>DEBUG LOG:</strong>
+                <div id="debugOutput"></div>
+            </div>
+        </div>
+
+        <!-- CUSTOMER LIST PANEL -->
+        <div id="customerListPanel" style="display:none; position:fixed; left:80px; top:0; height:100%; width:350px; background:#fff; color:#222; z-index:2000; box-shadow:2px 0 16px rgba(0,0,0,0.15); overflow-y:auto; transition:all 0.3s;">
+            <div style="padding:24px 20px 12px 20px; border-bottom:1px solid #eee; display:flex; align-items:center; justify-content:space-between;">
+                <h3 style="margin:0; font-size:20px; font-weight:700; color:#2c3e50;">Seznam strank</h3>
+                <button onclick="document.getElementById('customerListPanel').style.display='none'" style="background:none; border:none; font-size:22px; color:#888; cursor:pointer;">&times;</button>
+            </div>
+            <div id="customerListContent" style="padding:16px 20px;"></div>
+        </div>
+    </div>
+
+    <!-- ADD EVENT MODAL -->
+    <div class="modal" id="addEventModal">
+        <div class="modal-content">
+            <div class="modal-header">Dodaj dogodek</div>
+            <form id="addEventForm">
+                <div style="display:flex; gap:10px; margin-bottom:18px;">
+                  <button type="button" id="tabWorker" class="btn btn-secondary" style="flex:1;" onclick="setEventTab('worker')">Delavec</button>
+                  <button type="button" id="tabCustomer" class="btn btn-secondary" style="flex:1;" onclick="setEventTab('customer')">Stranka</button>
+                </div>
+                <div class="form-group">
+                    <label>Naziv</label>
+                    <input type="text" id="eventTitle" required placeholder="Npr. Bolniška, Praznik, Striženje...">
+                </div>
+                <div class="form-group">
+                    <label id="eventTypeLabel">Tip</label>
+                    <select id="eventType" required></select>
+                </div>
+                <div class="form-group">
+                    <label>Datuma - Od</label>
+                    <input type="date" id="eventStartDate" required>
+                </div>
+                <div class="form-group">
+                    <label>Čas - Od</label>
+                    <input type="time" id="eventStartTime">
+                </div>
+                <div class="form-group">
+                    <label>Datuma - Do</label>
+                    <input type="date" id="eventEndDate" required>
+                </div>
+                <div class="form-group">
+                    <label>Čas - Do</label>
+                    <input type="time" id="eventEndTime">
+                </div>
+                <div class="form-group">
+                    <label>Opis</label>
+                    <textarea id="eventDescription" placeholder="Dodaj opis..."></textarea>
+                </div>
+                <div class="form-buttons">
+                    <button type="submit" class="btn btn-primary">Shrani</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeAddEventModal()">Prekliči</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- EDIT EVENT MODAL -->
+    <div class="modal" id="editEventModal">
+        <div class="modal-content">
+            <div class="modal-header">Uredi dogodek</div>
+            <form id="editEventForm">
+                <div class="form-group">
+                    <label>Naziv</label>
+                    <input type="text" id="editEventTitle" required>
+                </div>
+                <div class="form-group">
+                    <label>Tip</label>
+                    <select id="editEventType" required>
+                        <option value="">-- Izberi tip --</option>
+                        <option value="working_hours">Delovni čas</option>
+                        <option value="break">Premor</option>
+                        <option value="lunch">Kosilo</option>
+                        <option value="vacation">Počitnice</option>
+                        <option value="sick_leave">Bolniška</option>
+                        <option value="day_off">Prosti dan</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Datuma - Od</label>
+                    <input type="date" id="editEventStartDate" required>
+                </div>
+                <div class="form-group">
+                    <label>Čas - Od</label>
+                    <input type="time" id="editEventStartTime">
+                </div>
+                <div class="form-group">
+                    <label>Datuma - Do</label>
+                    <input type="date" id="editEventEndDate" required>
+                </div>
+                <div class="form-group">
+                    <label>Čas - Do</label>
+                    <input type="time" id="editEventEndTime">
+                </div>
+                <div class="form-group">
+                    <label>Opis</label>
+                    <textarea id="editEventDescription"></textarea>
+                </div>
+                <div class="form-buttons">
+                    <button type="submit" class="btn btn-primary">Shrani</button>
+                    <button type="button" class="btn btn-danger" onclick="deleteCurrentEvent()">Izbriši</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeEditEventModal()">Prekliči</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- BOOKING DETAILS MODAL (READ-ONLY) -->
+    <div class="modal" id="bookingDetailsModal">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">Podrobnosti rezervacije</div>
+            <div style="padding: 20px;">
+                <div style="margin-bottom: 15px;">
+                    <strong>Ime:</strong>
+                    <p id="bookingName" style="margin: 5px 0;">-</p>
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <strong>Email:</strong>
+                    <p id="bookingEmail" style="margin: 5px 0;">-</p>
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <strong>Telefon:</strong>
+                    <p id="bookingPhone" style="margin: 5px 0;">-</p>
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <strong>Datum in čas:</strong>
+                    <p id="bookingDateTime" style="margin: 5px 0;">-</p>
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <strong>Trajanje:</strong>
+                    <p id="bookingDuration" style="margin: 5px 0;">-</p>
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <strong>Storitve:</strong>
+                    <p id="bookingServices" style="margin: 5px 0;">-</p>
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <strong>Cena:</strong>
+                    <p id="bookingPrice" style="margin: 5px 0;">-</p>
+                </div>
+                <div style="margin-top: 20px;">
+                    <button type="button" class="btn btn-secondary" onclick="closeBookingDetailsModal()" style="width: 100%;">Zapri</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPTS -->
+    <script type="module" src="/js/firebase-config.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
+        <script>
+            // --- TAB LOGIC FOR ADD EVENT MODAL ---
+            let currentEventTab = 'worker';
+            const workerTypes = [
+                { value: '', label: '-- Izberi tip --' },
+                { value: 'working_hours', label: 'Delovni čas' },
+                { value: 'break', label: 'Premor' },
+                { value: 'lunch', label: 'Kosilo' },
+                { value: 'vacation', label: 'Počitnice' },
+                { value: 'sick_leave', label: 'Bolniška' },
+                { value: 'day_off', label: 'Prosti dan' }
+            ];
+            // Pridobi storitve iz SITE_CONFIG, če obstaja, sicer fallback
+            function getCustomerTypes() {
+                let items = [];
+                if (window.SITE_CONFIG && window.SITE_CONFIG.servicesSection && Array.isArray(window.SITE_CONFIG.servicesSection.items)) {
+                    items = window.SITE_CONFIG.servicesSection.items.map(s => ({ value: s.name, label: s.name }));
+                }
+                // Če ni storitev, prikaži samo prazno izbiro
+                return [ { value: '', label: '-- Izberi storitev --' }, ...items ];
+            }
+                        function renderEventTypeOptions(tab) {
+                                const select = document.getElementById('eventType');
+                                select.innerHTML = '';
+                                let options = tab === 'worker' ? workerTypes : getCustomerTypes();
+                                // Če ni storitev, onemogoči select in prikaži opozorilo
+                                if (tab === 'customer') {
+                                    if (options.length <= 1) {
+                                        select.disabled = true;
+                                        select.innerHTML = '<option value="">-- Ni storitev v sistemu --</option>';
+                                        if (!document.getElementById('noServicesWarning')) {
+                                            const warn = document.createElement('div');
+                                            warn.id = 'noServicesWarning';
+                                            warn.style.color = '#e74c3c';
+                                            warn.style.fontSize = '13px';
+                                            warn.style.marginTop = '6px';
+                                            warn.textContent = 'Storitve niso nastavljene v admin panelu ali še niso naložene iz oblaka.';
+                                            select.parentNode.appendChild(warn);
+                                        }
+                                    } else {
+                                        select.disabled = false;
+                                        if (document.getElementById('noServicesWarning')) document.getElementById('noServicesWarning').remove();
+                                    }
+                                } else {
+                                    select.disabled = false;
+                                    if (document.getElementById('noServicesWarning')) document.getElementById('noServicesWarning').remove();
+                                }
+                                options.forEach(opt => {
+                                        const o = document.createElement('option');
+                                        o.value = opt.value;
+                                        o.textContent = opt.label;
+                                        select.appendChild(o);
+                                });
+                                document.getElementById('eventTypeLabel').textContent = tab === 'worker' ? 'Tip' : 'Storitev';
+                                document.getElementById('eventTitle').setAttribute('placeholder', tab === 'worker' ? 'Npr. Bolniška, Praznik, Striženje...' : 'Ime in priimek stranke...');
+                        }
+            function setEventTab(tab) {
+                currentEventTab = tab;
+                renderEventTypeOptions(tab);
+                document.getElementById('tabWorker').classList.toggle('btn-primary', tab==='worker');
+                document.getElementById('tabWorker').classList.toggle('btn-secondary', tab!=='worker');
+                document.getElementById('tabCustomer').classList.toggle('btn-primary', tab==='customer');
+                document.getElementById('tabCustomer').classList.toggle('btn-secondary', tab!=='customer');
+            }
+            // Always reload services when opening modal
+            function openAddEventModalWithTab(startDate = null, retry = 0) {
+                // Če storitve še niso naložene iz Firebase, počakaj in poskusi znova
+                const ready = window.SITE_CONFIG && window.SITE_CONFIG.servicesSection && Array.isArray(window.SITE_CONFIG.servicesSection.items) && window.SITE_CONFIG.servicesSection.items.length > 0;
+                if (!ready && retry < 10) {
+                    setTimeout(() => openAddEventModalWithTab(startDate, retry + 1), 200);
+                    return;
+                }
+                setEventTab('worker');
+                // Reset form fields if needed
+                const form = document.getElementById('addEventForm');
+                if (form) form.reset();
+                // Set default tab and reload options
+                setEventTab('worker');
+                // Show modal
+                const modal = document.getElementById('addEventModal');
+                if (modal) modal.classList.add('show');
+                if (startDate) {
+                    document.getElementById('eventStartDate').value = startDate;
+                    document.getElementById('eventEndDate').value = startDate;
+                }
+            }
+            // Override default openAddEventModal
+            window.openAddEventModal = openAddEventModalWithTab;
+        // Fallback: Create FullCalendar stub if CDN failed
+        if (typeof FullCalendar === 'undefined') {
+          console.warn('⚠️ FullCalendar failed to load from CDN');
+          const script = document.createElement('script');
+          script.src = 'https://unpkg.com/fullcalendar@6.1.10/index.global.min.js';
+          script.onload = () => console.log('✅ FullCalendar loaded from unpkg fallback');
+          script.onerror = () => {
+            console.error('❌ All FullCalendar JS sources failed');
+          };
+          document.head.appendChild(script);
+        } else {
+          console.log('✅ FullCalendar loaded successfully from primary CDN');
+        }
+      </script>
+    <script src="/js/config.js?v=2"></script>
+    <script src="/js/schedule-model.js?v=2"></script>
+    <script src="/js/storage-manager.js?v=2"></script>
+    <script src="/js/calendar-engine.js?v=2"></script>
+
+    <script>
+
+
+        // ===== CALENDAR INITIALIZATION =====
+        let calendarInitialized = false;
+        let currentEditingEvent = null;
+        let scheduleData = {
+            events: []
+        };
+
+        // Debug logging function
+            (function(){
+                const sidebar = document.getElementById('sidebar');
+                const sidebarToggle = document.getElementById('sidebarToggle');
+                if (!sidebar || !sidebarToggle) return;
+
+                const applyState = () => {
+                    if (localStorage.getItem('sidebarExpanded') === 'true') {
+                        sidebar.classList.add('expanded');
+                    } else {
+                        sidebar.classList.remove('expanded');
+                    }
+                };
+
+                sidebarToggle.addEventListener('click', () => {
+                    sidebar.classList.toggle('expanded');
+                    localStorage.setItem('sidebarExpanded', sidebar.classList.contains('expanded'));
+                });
+
+                // keyboard support
+                sidebarToggle.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        sidebarToggle.click();
+                    }
+                });
+
+                // navigation icons
+                const navIcons = sidebar.querySelectorAll('.nav-icon');
+                navIcons.forEach(icon => {
+                    icon.addEventListener('click', () => {
+                        const page = icon.dataset.page;
+                        navIcons.forEach(i => i.classList.remove('active'));
+                        icon.classList.add('active');
+                        if (page === 'home') { window.location.href = 'admin-panel.html'; }
+                        else if (page === 'settings') { window.location.href = 'admin-panel.html'; }
+                        else if (page === 'calendar') { /* noop */ }
+                        else if (page === 'customers') {
+                            showCustomerListPanel();
+                        }
+                        else { alert(`${page} page not yet implemented`); }
+                    });
+                });
+
+                applyState();
+            })();
+
+            // ========== CUSTOMER LIST PANEL ========== //
+            function showCustomerListPanel() {
+                const panel = document.getElementById('customerListPanel');
+                const content = document.getElementById('customerListContent');
+                // Load appointments from localStorage
+                let appointments = [];
+                try {
+                    const apptRaw = localStorage.getItem('appointments');
+                    if (apptRaw) appointments = JSON.parse(apptRaw);
+                } catch (e) {}
+                // Aggregate by fullName
+                const customerMap = {};
+                appointments.forEach(appt => {
+                    const key = (appt.fullName || '').trim().toLowerCase();
+                    if (!key) return;
+                    if (!customerMap[key]) {
+                        customerMap[key] = {
+                            firstName: appt.firstName,
+                            surname: appt.surname,
+                            fullName: appt.fullName,
+                            count: 0
+                        };
+                    }
+                    customerMap[key].count++;
+                });
+                // Render list
+                let html = '';
+                const customers = Object.values(customerMap).sort((a, b) => a.surname.localeCompare(b.surname));
+                if (customers.length === 0) {
+                    html = '<div style="color:#888;">Ni strank.</div>';
+                } else {
+                    html = '<table style="width:100%; border-collapse:collapse;">';
+                    html += '<thead><tr style="border-bottom:1px solid #eee;"><th style="text-align:left; padding:6px 4px;">Ime</th><th style="text-align:left; padding:6px 4px;">Priimek</th><th style="text-align:right; padding:6px 4px;">Št. terminov</th></tr></thead><tbody>';
+                    customers.forEach(c => {
+                        html += `<tr><td style="padding:6px 4px;">${c.firstName}</td><td style="padding:6px 4px;">${c.surname}</td><td style="padding:6px 4px; text-align:right;">${c.count}</td></tr>`;
+                    });
+                    html += '</tbody></table>';
+                }
+                content.innerHTML = html;
+                panel.style.display = 'block';
+            }
+
+        // Update existing event
+        function updateScheduleEvent(eventId, event) {
+            const idx = scheduleData.events.findIndex(e => e.id === eventId);
+            if (idx !== -1) {
+                scheduleData.events[idx] = {
+                    id: eventId,
+                    title: event.title,
+                    type: event.type,
+                    start: event.start,
+                    end: event.end,
+                    description: event.description || ''
+                };
+                saveScheduleData();
+            }
+        }
+
+        // Delete event from schedule
+        function deleteScheduleEvent(eventId) {
+            scheduleData.events = scheduleData.events.filter(e => e.id !== eventId);
+            saveScheduleData();
+        }
+
+        // Modal functions
+        function openAddEventModal(startDate = null) {
+            const modal = document.getElementById('addEventModal');
+            if (startDate) {
+                document.getElementById('eventStartDate').value = startDate;
+                document.getElementById('eventEndDate').value = startDate;
+            }
+            modal.classList.add('show');
+        }
+
+        function closeAddEventModal() {
+            const modal = document.getElementById('addEventModal');
+            modal.classList.remove('show');
+            document.getElementById('addEventForm').reset();
+        }
+
+        function openEditEventModal(event) {
+            currentEditingEvent = event;
+            const modal = document.getElementById('editEventModal');
+            
+            // Extract title without emoji
+            let title = event.title || '';
+            title = title.replace(/^[^\s]*\s/, '').trim(); // Remove emoji and first space
+            
+            const startDate = event.start ? new Date(event.start).toISOString().split('T')[0] : '';
+            const endDate = event.end ? new Date(event.end).toISOString().split('T')[0] : '';
+            const startTime = event.start ? new Date(event.start).toTimeString().slice(0, 5) : '';
+            const endTime = event.end ? new Date(event.end).toTimeString().slice(0, 5) : '';
+
+            document.getElementById('editEventTitle').value = title;
+            document.getElementById('editEventType').value = event.extendedProps?.type || '';
+            document.getElementById('editEventStartDate').value = startDate;
+            document.getElementById('editEventStartTime').value = startTime;
+            document.getElementById('editEventEndDate').value = endDate;
+            document.getElementById('editEventEndTime').value = endTime;
+            document.getElementById('editEventDescription').value = event.extendedProps?.description || '';
+            
+            console.log('Opening event modal with:', { title, type: event.extendedProps?.type, startDate, startTime });
+            
+            modal.classList.add('show');
+        }
+
+        function closeEditEventModal() {
+            const modal = document.getElementById('editEventModal');
+            modal.classList.remove('show');
+            currentEditingEvent = null;
+        }
+
+        function openBookingDetailsModal(event) {
+            const booking = event.extendedProps;
+            
+            document.getElementById('bookingName').textContent = booking.customer || 'N/A';
+            document.getElementById('bookingEmail').textContent = booking.email || 'N/A';
+            document.getElementById('bookingPhone').textContent = booking.phone || 'N/A';
+            
+            // Format date and time
+            const startDate = event.start ? new Date(event.start).toLocaleDateString('sl-SI') : '';
+            const startTime = event.start ? new Date(event.start).toLocaleTimeString('sl-SI', {hour: '2-digit', minute: '2-digit'}) : '';
+            const endTime = event.end ? new Date(event.end).toLocaleTimeString('sl-SI', {hour: '2-digit', minute: '2-digit'}) : '';
+            document.getElementById('bookingDateTime').textContent = `${startDate} ${startTime} - ${endTime}`;
+            
+            document.getElementById('bookingDuration').textContent = `${booking.duration || 0} minut`;
+            document.getElementById('bookingServices').textContent = booking.services ? booking.services.join(', ') : 'N/A';
+            document.getElementById('bookingPrice').textContent = `${booking.price || 0}€`;
+            
+            const modal = document.getElementById('bookingDetailsModal');
+            modal.classList.add('show');
+        }
+
+        function closeBookingDetailsModal() {
+            const modal = document.getElementById('bookingDetailsModal');
+            modal.classList.remove('show');
+        }
+
+        function deleteCurrentEvent() {
+            if (currentEditingEvent) {
+                if (confirm('Sigurno želiš izbrisati ta dogodek?')) {
+                    window.calendar.getEventById(currentEditingEvent.id).remove();
+                    deleteScheduleEvent(currentEditingEvent.id);
+                    closeEditEventModal();
+                }
+            }
+        }
+
+        // Handle add event form
+        document.getElementById('addEventForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const title = document.getElementById('eventTitle').value;
+            const type = document.getElementById('eventType').value;
+            const startDate = document.getElementById('eventStartDate').value;
+            const startTime = document.getElementById('eventStartTime').value;
+            const endDate = document.getElementById('eventEndDate').value;
+            const endTime = document.getElementById('eventEndTime').value;
+            const description = document.getElementById('eventDescription').value;
+
+            const start = startTime ? `${startDate}T${startTime}` : `${startDate}T00:00`;
+            const end = endTime ? `${endDate}T${endTime}` : `${endDate}T23:59`;
+
+            // Shrani tab v extendedProps
+            const eventId = addScheduleEvent({
+                title,
+                type,
+                start,
+                end,
+                description,
+                tab: currentEventTab
+            });
+
+            window.calendar.addEvent({
+                id: eventId,
+                title: title,
+                start: new Date(start).toISOString(),
+                end: new Date(end).toISOString(),
+                backgroundColor: 'rgba(52, 152, 219, 0.2)',
+                borderColor: '#3498db',
+                extendedProps: {
+                    type: type,
+                    description: description,
+                    tab: currentEventTab
+                }
+            });
+
+            closeAddEventModal();
+        });
+
+        // Handle edit event form
+        document.getElementById('editEventForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            if (!currentEditingEvent) return;
+
+            const title = document.getElementById('editEventTitle').value;
+            const type = document.getElementById('editEventType').value;
+            const startDate = document.getElementById('editEventStartDate').value;
+            const startTime = document.getElementById('editEventStartTime').value;
+            const endDate = document.getElementById('editEventEndDate').value;
+            const endTime = document.getElementById('editEventEndTime').value;
+            const description = document.getElementById('editEventDescription').value;
+
+            const start = startTime ? `${startDate}T${startTime}` : `${startDate}T00:00`;
+            const end = endTime ? `${endDate}T${endTime}` : `${endDate}T23:59`;
+
+            updateScheduleEvent(currentEditingEvent.id, {
+                title,
+                type,
+                start,
+                end,
+                description
+            });
+
+            const event = window.calendar.getEventById(currentEditingEvent.id);
+            if (event) {
+                event.setProp('title', title);
+                event.setStart(new Date(start).toISOString());
+                event.setEnd(new Date(end).toISOString());
+                event.setExtendedProp('type', type);
+                event.setExtendedProp('description', description);
+            }
+
+            closeEditEventModal();
+        });
+
+        // Close modals when clicking outside
+        document.getElementById('addEventModal').addEventListener('click', (e) => {
+            if (e.target.id === 'addEventModal') closeAddEventModal();
+        });
+
+        document.getElementById('editEventModal').addEventListener('click', (e) => {
+            if (e.target.id === 'editEventModal') closeEditEventModal();
+        });
+
+        document.getElementById('bookingDetailsModal').addEventListener('click', (e) => {
+            if (e.target.id === 'bookingDetailsModal') closeBookingDetailsModal();
+        });
+
+        async function initializeBusinessCalendar() {
+            debugLog('🚀 Initialization started');
+            const container = document.getElementById('scheduleCalendar');
+            container.innerHTML = '🔄 Inicializiram orodje...';
+
+            if (!container) {
+                debugLog('❌ Calendar container not found');
+                console.error('Calendar container not found');
+                return;
+            }
+
+            try {
+                debugLog('✅ Container found');
+                container.innerHTML = '🔄 Nalagam FullCalendar...';
+
+                // Wait for required modules to load
+                await new Promise(resolve => {
+                    let attempts = 0;
+                    const checkModules = () => {
+                        const fc = typeof FullCalendar !== 'undefined';
+                        const sm = typeof StorageManager !== 'undefined';
+                        const ce = typeof CalendarEngine !== 'undefined';
+
+                        if (fc && sm && ce) {
+                            debugLog(`✅ All modules loaded (attempt ${attempts})`);
+                            resolve();
+                        } else if (attempts < 300) {
+                            attempts++;
+                            setTimeout(checkModules, 50);
+                        } else {
+                            debugLog('⚠️ Timeout waiting for modules after 15 seconds');
+                            resolve();
+                        }
+                    };
+                    checkModules();
+                });
+
+                if (typeof FullCalendar === 'undefined') {
+                    debugLog('❌ FullCalendar not defined');
+                    container.innerHTML = '❌ FullCalendar se ni naložil';
+                    return;
+                }
+
+                debugLog('🔧 Loading schedule data...');
+                container.innerHTML = '🔄 Nalagam podatke...';
+                
+                // Load schedule data using StorageManager (which handles defaults)
+                scheduleData = await StorageManager.load('schedule');
+                debugLog(`✅ Schedule data loaded (${scheduleData.events ? scheduleData.events.length : 0} events)`);
+                
+                // Also check appointments in localStorage
+                const aptsRaw = localStorage.getItem('appointments');
+                debugLog(`📋 Appointments in localStorage: ${aptsRaw ? 'YES' : 'NO'}`);
+
+                // Check if CalendarEngine is available
+                if (typeof CalendarEngine === 'undefined') {
+                    debugLog('❌ CalendarEngine not available, trying to create stub');
+                    window.CalendarEngine = {};
+                }
+                
+                if (!CalendarEngine.initializeCalendar) {
+                    debugLog('❌ CalendarEngine.initializeCalendar method missing');
+                    throw new Error('initializeCalendar method not found');
+                }
+                
+                container.innerHTML = '🔄 Inicializiram koledar...';
+                
+                const calendar = CalendarEngine.initializeCalendar(container, scheduleData);
+                debugLog(`📦 Calendar returned: ${calendar ? 'YES' : 'NO'}`);
+
+                if (!calendar) {
+                    debugLog('❌ Calendar initialization failed');
+                    container.innerHTML = '❌ Napaka pri inicializaciji koledarja';
+                    return;
+                }
+
+                // Store reference globally
+                window.calendar = calendar;
+                calendarInitialized = true;
+                debugLog('✓ Business calendar initialized');
+
+                // Calendar interactions
+                debugLog('🎯 Attaching event handlers...');
+                calendar.on('dateClick', (info) => {
+                    debugLog('📅 dateClick handler fired');
+                    openAddEventModal(info.dateStr);
+                });
+
+                calendar.on('eventClick', (info) => {
+                    debugLog('Event clicked: ' + info.event.title);
+                    
+                    if (info.event.extendedProps?.isBooking) {
+                        debugLog('📋 Opening booking details modal');
+                        openBookingDetailsModal(info.event);
+                        return;
+                    }
+                    
+                    debugLog('Opening edit modal...');
+                    openEditEventModal(info.event);
+                });
+                debugLog('✅ Event handlers attached');
+                console.log('✅ Calendar handlers attached');
+
+            } catch (error) {
+                debugLog('❌ Error: ' + error.message);
+                console.error('Calendar initialization error:', error);
+                console.error('Error stack:', error.stack);
+                container.innerHTML = '❌ Napaka: ' + error.message;
+            }
+        }
+
+        // Initialize calendar immediately
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                // Wait 1500ms for all scripts to load
+                setTimeout(() => {
+                    try {
+                        initializeBusinessCalendar();
+                    } catch (e) {
+                        debugLog('❌ Initialization error: ' + e.message);
+                        console.error('Error during calendar init:', e);
+                        document.getElementById('scheduleCalendar').innerHTML = '❌ Gravna napaka: ' + e.message;
+                    }
+                }, 1500);
+            });
+        } else {
+            // Wait 1500ms for all scripts to load
+            setTimeout(() => {
+                try {
+                    initializeBusinessCalendar();
+                } catch (e) {
+                    debugLog('❌ Initialization error: ' + e.message);
+                    console.error('Error during calendar init:', e);
+                    document.getElementById('scheduleCalendar').innerHTML = '❌ Gravna napaka: ' + e.message;
+                }
+            }, 1500);
+        }
+
+        // Runtime self-check to help debugging module load issues
+        setTimeout(() => {
+            debugLog(`🔎 Runtime modules: FullCalendar=${typeof FullCalendar !== 'undefined'}, StorageManager=${typeof StorageManager !== 'undefined'}, CalendarEngine=${typeof CalendarEngine !== 'undefined'}`);
+            console.log('Runtime module check:', { FullCalendar: typeof FullCalendar, StorageManager: typeof StorageManager, CalendarEngine: typeof CalendarEngine });
+        }, 2000);
+
+        // Close sidebar when navigating on mobile
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 768 && sidebar.classList.contains('expanded')) {
+                // Sidebar stays open on desktop
+            }
+        });
+    </script>
+</body>
+</html>
