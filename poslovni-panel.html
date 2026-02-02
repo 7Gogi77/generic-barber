@@ -650,6 +650,7 @@
                 <div class="form-group">
                     <label id="eventTypeLabel">Tip</label>
                     <select id="eventType" required></select>
+                    <div id="eventTypeCheckboxes" style="display:none; margin-top:8px;"></div>
                 </div>
                 <div class="form-group">
                     <label>Datuma - Od</label>
@@ -826,13 +827,38 @@
                                     select.appendChild(o);
                                 });
                                 // If selecting services (customer tab), allow multiple selection
-                                if (tab === 'customer') {
-                                    select.multiple = true;
-                                    select.size = Math.min(options.length, 6);
-                                } else {
-                                    select.multiple = false;
-                                    select.size = 1;
-                                }
+                                    const checkboxContainer = document.getElementById('eventTypeCheckboxes');
+                                    if (tab === 'customer') {
+                                        // hide select and show checkboxes for easier multi-select on desktop
+                                        select.style.display = 'none';
+                                        if (checkboxContainer) {
+                                            checkboxContainer.innerHTML = '';
+                                            // skip placeholder option at index 0
+                                            options.slice(1).forEach(opt => {
+                                                const id = `evtype_chk_${opt.value.replace(/[^a-z0-9]/gi,'_')}_${Math.random().toString(36).slice(2,6)}`;
+                                                const wrapper = document.createElement('div');
+                                                wrapper.style.marginBottom = '6px';
+                                                const chk = document.createElement('input');
+                                                chk.type = 'checkbox';
+                                                chk.id = id;
+                                                chk.value = opt.value;
+                                                chk.style.marginRight = '8px';
+                                                const lbl = document.createElement('label');
+                                                lbl.htmlFor = id;
+                                                lbl.textContent = opt.label;
+                                                wrapper.appendChild(chk);
+                                                wrapper.appendChild(lbl);
+                                                checkboxContainer.appendChild(wrapper);
+                                            });
+                                            checkboxContainer.style.display = options.length > 1 ? 'block' : 'none';
+                                        }
+                                    } else {
+                                        // show select for worker types
+                                        select.style.display = '';
+                                        if (checkboxContainer) checkboxContainer.style.display = 'none';
+                                        select.multiple = false;
+                                        select.size = 1;
+                                    }
                                 document.getElementById('eventTypeLabel').textContent = tab === 'worker' ? 'Tip' : 'Storitev';
                                 document.getElementById('eventTitle').setAttribute('placeholder', tab === 'worker' ? 'Npr. Bolniška, Praznik, Striženje...' : 'Ime in priimek stranke...');
                         }
@@ -1164,10 +1190,14 @@
 
             const title = document.getElementById('eventTitle').value;
             const typeSelect = document.getElementById('eventType');
-            // Support multiple services selection for customer bookings
+            const checkboxContainer = document.getElementById('eventTypeCheckboxes');
+            // Support multiple services via checkboxes when available
             let type = '';
             let services = [];
-            if (currentEventTab === 'customer' && typeSelect && typeSelect.multiple) {
+            if (currentEventTab === 'customer' && checkboxContainer) {
+                services = Array.from(checkboxContainer.querySelectorAll('input[type=checkbox]:checked')).map(i => i.value).filter(v => v && v.length > 0);
+                type = services.length > 0 ? services[0] : 'booking';
+            } else if (currentEventTab === 'customer' && typeSelect && typeSelect.multiple) {
                 services = Array.from(typeSelect.selectedOptions).map(o => o.value).filter(v => v && v.length > 0);
                 type = services.length > 0 ? services[0] : 'booking';
             } else {
