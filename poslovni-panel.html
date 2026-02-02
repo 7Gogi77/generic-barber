@@ -1803,6 +1803,74 @@
             }
         };
 
+        // Debug helper: purge mirrored adminSchedule entries for events currently in scheduleData
+        // Usage: run `window.purgeMirroredAdminEntries()` in browser console.
+        window.purgeMirroredAdminEntries = async function() {
+            const base = 'https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app/';
+            try {
+                if (!scheduleData || !Array.isArray(scheduleData.events)) return console.warn('No scheduleData available');
+                console.log('purgeMirroredAdminEntries: scanning', scheduleData.events.length, 'events');
+
+                // Fetch site_config adminSchedule entries map
+                const cfgRes = await fetch(base + 'site_config/adminSchedule/entries.json');
+                const cfgMap = cfgRes.ok ? await cfgRes.json().catch(() => null) : null;
+                const pushedRes = await fetch(base + 'adminSchedule/entries.json');
+                const pushedMap = pushedRes.ok ? await pushedRes.json().catch(() => null) : null;
+
+                for (const ev of scheduleData.events) {
+                    try {
+                        const adminKey = ev?.extendedProps?.adminKey;
+                        if (adminKey) {
+                            console.log('purge: deleting keys for adminKey', adminKey);
+                            try { await fetch(base + `site_config/adminSchedule/entries/${adminKey}.json`, { method: 'DELETE' }); console.log('purge: deleted site_config entry', adminKey); } catch(e){console.warn('purge: site_config delete failed', e)}
+                            try { await fetch(base + `adminSchedule/entries/${adminKey}.json`, { method: 'DELETE' }); console.log('purge: deleted entries node', adminKey); } catch(e){console.warn('purge: entries delete failed', e)}
+                            continue;
+                        }
+
+                        // Fallback: find matching nodes by date/customer
+                        const evStart = ev.start ? ev.start.split('T')[0] : null;
+                        const evEnd = ev.end ? ev.end.split('T')[0] : null;
+                        const evCustomer = ev.extendedProps?.customer || '';
+
+                        if (cfgMap && typeof cfgMap === 'object') {
+                            for (const [k, it] of Object.entries(cfgMap)) {
+                                try {
+                                    const itStart = it.startDate || it.start || null;
+                                    const itEnd = it.endDate || it.end || null;
+                                    const itCustomer = (it.customer || it.notes || '').trim();
+                                    if (itStart === evStart && itEnd === evEnd && itCustomer && evCustomer && itCustomer === evCustomer) {
+                                        console.log('purge: deleting matched site_config key', k);
+                                        try { await fetch(base + `site_config/adminSchedule/entries/${k}.json`, { method: 'DELETE' }); } catch(e){console.warn('purge: delete failed', e)}
+                                    }
+                                } catch (_) {}
+                            }
+                        }
+
+                        if (pushedMap && typeof pushedMap === 'object') {
+                            for (const [k, it] of Object.entries(pushedMap)) {
+                                try {
+                                    const itStart = it.startDate || it.start || null;
+                                    const itEnd = it.endDate || it.end || null;
+                                    const itCustomer = (it.customer || it.notes || '').trim();
+                                    if (itStart === evStart && itEnd === evEnd && itCustomer && evCustomer && itCustomer === evCustomer) {
+                                        console.log('purge: deleting matched pushed key', k);
+                                        try { await fetch(base + `adminSchedule/entries/${k}.json`, { method: 'DELETE' }); } catch(e){console.warn('purge: delete pushed failed', e)}
+                                    }
+                                } catch (_) {}
+                            }
+                        }
+
+                    } catch (e) { console.warn('purge: event delete loop error', e); }
+                }
+
+                console.log('purgeMirroredAdminEntries: done');
+                return true;
+            } catch (err) {
+                console.error('purgeMirroredAdminEntries failed', err);
+                return false;
+            }
+        };
+
         async function initializeBusinessCalendar() {
             debugLog('🚀 Initialization started');
             const container = document.getElementById('scheduleCalendar');
