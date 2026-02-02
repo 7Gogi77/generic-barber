@@ -1506,7 +1506,30 @@
                 console.log('sendAdminScheduleEntry POST status:', postRes.status);
                 const postTxt = await postRes.text().catch(() => '<no body>');
                 console.log('sendAdminScheduleEntry POST response body:', postTxt);
-                if (postRes.ok) return true;
+                if (postRes.ok) {
+                    // Mirror the pushed child into site_config so admin UI (which reads site_config.json)
+                    // can see the new entry. The POST returns { name: generatedKey } in postTxt/json.
+                    try {
+                        let parsed = {};
+                        try { parsed = JSON.parse(postTxt); } catch(e) { parsed = {}; }
+                        const generatedKey = parsed && parsed.name ? parsed.name : null;
+                        if (generatedKey) {
+                            const mirrorUrl = baseUrl + `site_config/adminSchedule/entries/${generatedKey}.json`;
+                            console.log('sendAdminScheduleEntry: mirroring entry into', mirrorUrl);
+                            const mirrorRes = await fetch(mirrorUrl, {
+                                method: 'PUT',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify(entry)
+                            });
+                            console.log('sendAdminScheduleEntry mirror status:', mirrorRes.status);
+                            const mirrorTxt = await mirrorRes.text().catch(() => '<no body>');
+                            console.log('sendAdminScheduleEntry mirror response body:', mirrorTxt);
+                        }
+                    } catch (mirrorErr) {
+                        console.warn('sendAdminScheduleEntry mirror failed:', mirrorErr);
+                    }
+                    return true;
+                }
                 console.warn('sendAdminScheduleEntry POST failed, falling back to GET/PUT', postRes.status);
             } catch (err) {
                 console.warn('sendAdminScheduleEntry POST attempt failed:', err);
