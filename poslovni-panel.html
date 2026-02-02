@@ -1140,7 +1140,8 @@
 
                 // Use StorageManager to persist (will fallback to localStorage in dev)
                 if (typeof StorageManager !== 'undefined' && StorageManager.save) {
-                    StorageManager.save('schedule', scheduleData).then(result => {
+                    const p = StorageManager.save('schedule', scheduleData);
+                    p.then(result => {
                         console.log('✓ schedule saved', result);
                         try {
                             if (StorageManager.broadcastUpdate) StorageManager.broadcastUpdate(scheduleData);
@@ -1151,17 +1152,21 @@
                     }).catch(err => {
                         console.error('✗ Error saving scheduleData', err);
                     });
+                    return p;
                 } else {
                     try {
                         localStorage.setItem('schedule', JSON.stringify(scheduleData));
                         console.log('✓ schedule saved to localStorage (StorageManager missing)');
                         if (window.onScheduleUpdated) window.onScheduleUpdated(scheduleData);
+                        return Promise.resolve({ ok: true, method: 'localStorage' });
                     } catch (e) {
                         console.error('✗ Fallback localStorage save failed', e);
+                        return Promise.reject(e);
                     }
                 }
             } catch (err) {
                 console.error('✗ saveScheduleData failed', err);
+                return Promise.reject(err);
             }
         };
 
@@ -1186,7 +1191,18 @@
                         } catch (e) {
                             console.warn('⚠ immediate localStorage persistence failed', e);
                         }
-                        if (window.saveScheduleData) window.saveScheduleData();
+                        if (window.saveScheduleData) {
+                            // Fire-and-log save; do not block UI but record result for debugging
+                            try {
+                                window.saveScheduleData().then(res => {
+                                    console.log('saveScheduleData result:', res);
+                                }).catch(err => {
+                                    console.error('saveScheduleData error:', err);
+                                });
+                            } catch (e) {
+                                console.warn('saveScheduleData invocation failed', e);
+                            }
+                        }
                 return normalized.id;
             } catch (err) {
                 console.error('✗ addScheduleEvent failed', err);
