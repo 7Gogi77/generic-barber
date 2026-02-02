@@ -2509,22 +2509,34 @@
         // Simple Firebase REST API sync (no module dependencies)
         function syncToFirebase(config) {
             const dbUrl = 'https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app/site_config.json';
-            
-            fetch(dbUrl, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(config)
-            })
-            .then(response => {
-                if (response.ok) {
-                    console.log('✅ Synced to Firebase');
-                } else {
-                    console.warn('⚠️ Firebase sync failed');
-                }
-            })
-            .catch(error => {
-                console.warn('⚠️ Firebase sync error:', error);
-            });
+
+            try {
+                console.log('📤 syncToFirebase sending payload. adminSchedule.entries:', config.adminSchedule ? config.adminSchedule.entries.length : 0);
+                const body = JSON.stringify(config);
+                console.log('📦 Payload size (bytes):', new Blob([body]).size);
+
+                fetch(dbUrl, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: body
+                })
+                .then(async response => {
+                    console.log('🔁 Firebase response status:', response.status, response.statusText);
+                    let txt = null;
+                    try { txt = await response.text(); } catch(e) { txt = '<no body>'; }
+                    console.log('🔁 Firebase response body:', txt);
+                    if (response.ok) {
+                        console.log('✅ Synced to Firebase');
+                    } else {
+                        console.warn('⚠️ Firebase sync failed');
+                    }
+                })
+                .catch(error => {
+                    console.warn('⚠️ Firebase sync error:', error);
+                });
+            } catch (err) {
+                console.warn('⚠️ syncToFirebase error preparing payload:', err);
+            }
         }
 
         // Sync color picker and text inputs
@@ -2876,6 +2888,8 @@
             };
 
             SITE_CONFIG.adminSchedule.entries.push(entry);
+            console.log('➕ addScheduleEntry pushed entry:', entry);
+            console.log('📊 adminSchedule now has', SITE_CONFIG.adminSchedule.entries.length, 'entries');
             saveConfig();
             
             // Clear form
