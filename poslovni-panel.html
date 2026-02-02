@@ -862,7 +862,10 @@
                                     const checkboxContainer = document.getElementById('eventTypeCheckboxes');
                                     if (tab === 'customer') {
                                         // hide select and show checkboxes for easier multi-select on desktop
+                                        // also disable/remove required so browser won't block form submission
                                         select.style.display = 'none';
+                                        select.disabled = true;
+                                        select.required = false;
                                         if (checkboxContainer) {
                                             checkboxContainer.innerHTML = '';
                                             // skip placeholder option at index 0
@@ -891,6 +894,9 @@
                                         if (checkboxContainer) checkboxContainer.style.display = 'none';
                                         select.multiple = false;
                                         select.size = 1;
+                                        // ensure select participates in validation when visible
+                                        select.disabled = false;
+                                        select.required = true;
                                     }
                                 document.getElementById('eventTypeLabel').textContent = tab === 'worker' ? 'Tip' : 'Storitev';
                                 document.getElementById('eventTitle').setAttribute('placeholder', tab === 'worker' ? 'Npr. Bolniška, Praznik, Striženje...' : 'Ime in priimek stranke...');
