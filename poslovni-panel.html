@@ -410,6 +410,39 @@
             font-family: inherit;
         }
 
+        /* Ensure most form controls remain full-width, but avoid affecting
+           nested checkbox lists inside #eventTypeCheckboxes (storitve). */
+        .form-group > input,
+        .form-group > select,
+        .form-group > textarea {
+            width: 100%;
+        }
+
+        /* Styling for the services checkbox container so checkboxes and labels
+           sit inline and don't stretch. This isolates storitve from the
+           general form control width rule above. */
+        #eventTypeCheckboxes {
+            display: block;
+        }
+
+        #eventTypeCheckboxes > div {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 6px;
+        }
+
+        #eventTypeCheckboxes input[type="checkbox"] {
+            width: auto;
+            margin-right: 8px;
+            display: inline-block;
+        }
+
+        #eventTypeCheckboxes label {
+            margin: 0;
+            display: inline-block;
+        }
+
         .form-group textarea {
             resize: vertical;
             min-height: 80px;
