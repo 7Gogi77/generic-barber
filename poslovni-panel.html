@@ -1414,6 +1414,19 @@
                     const eDate = endDate;
                     const sHour = startTime ? parseInt(startTime.split(':')[0]) || 9 : 9;
                     const eHour = endTime ? parseInt(endTime.split(':')[0]) || 17 : 17;
+                    // Build admin entry with full booking details so admin DB has price, duration, services, email, phone
+                    let durationMinutes = eventPayload.extendedProps && eventPayload.extendedProps.duration ? eventPayload.extendedProps.duration : null;
+                    try {
+                        if (!durationMinutes) {
+                            const s = startTime ? new Date(`${sDate}T${startTime}`) : new Date(`${sDate}T09:00`);
+                            const e = endTime ? new Date(`${eDate}T${endTime}`) : new Date(`${eDate}T17:00`);
+                            const diff = (e - s) / 60000;
+                            durationMinutes = Number.isFinite(diff) && diff > 0 ? Math.round(diff) : null;
+                        }
+                    } catch (dErr) {
+                        durationMinutes = null;
+                    }
+
                     const adminEntry = {
                         id: Date.now(),
                         type: 'rezervacija',
@@ -1421,6 +1434,12 @@
                         startTime: sHour,
                         endDate: eDate,
                         endTime: eHour,
+                        customer: eventPayload.extendedProps?.customer || title || null,
+                        email: eventPayload.extendedProps?.email || null,
+                        phone: eventPayload.extendedProps?.phone || null,
+                        services: Array.isArray(eventPayload.extendedProps?.services) ? eventPayload.extendedProps.services : (services || []),
+                        price: (eventPayload.extendedProps && (eventPayload.extendedProps.price || eventPayload.extendedProps.price === 0)) ? eventPayload.extendedProps.price : (price || 0),
+                        duration: durationMinutes,
                         notes: `${eventPayload.extendedProps.customer || ''} ${eventPayload.extendedProps.services ? '| ' + (eventPayload.extendedProps.services.join(', ')) : ''}`.trim(),
                         createdAt: new Date().toISOString()
                     };
