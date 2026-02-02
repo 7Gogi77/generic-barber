@@ -44,7 +44,9 @@ function validateScheduleData(data) {
       'lunch',
       'vacation',
       'sick_leave',
-      'day_off'
+      'day_off',
+      // bookings created from the public/customer UI
+      'booking'
     ];
     if (!validTypes.includes(event.type)) {
       return { valid: false, error: `Invalid event type: ${event.type}` };
