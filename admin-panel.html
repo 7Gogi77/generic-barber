@@ -2499,11 +2499,27 @@
             // Save locally
             localStorage.setItem('site_config_backup', JSON.stringify(SITE_CONFIG));
 
-            // Sync to Firebase REST API (simpler, no module issues)
-            syncToFirebase(SITE_CONFIG);
-            showNotification('✅ Spremembe so bile shranjene in sinhronizirane', 'success');
+            // Attach current StorageManager schedule into SITE_CONFIG so it is
+            // also persisted to Firebase under site_config.schedule for visibility
+            (async () => {
+                try {
+                    if (typeof StorageManager !== 'undefined' && StorageManager.load) {
+                        const schedule = await StorageManager.load('schedule');
+                        SITE_CONFIG.schedule = schedule || { events: [] };
+                        console.log('📥 Attached StorageManager schedule to SITE_CONFIG (events):', SITE_CONFIG.schedule.events ? SITE_CONFIG.schedule.events.length : 0);
+                    } else {
+                        console.log('⚠ StorageManager not available when saving config; skipping schedule attach');
+                    }
+                } catch (err) {
+                    console.warn('⚠ Failed to load schedule for attaching to SITE_CONFIG:', err);
+                } finally {
+                    // Sync to Firebase REST API (simpler, no module issues)
+                    syncToFirebase(SITE_CONFIG);
+                    showNotification('✅ Spremembe so bile shranjene in sinhronizirane', 'success');
 
-            if (typeof syncAppointmentsToSchedule === 'function') syncAppointmentsToSchedule();
+                    if (typeof syncAppointmentsToSchedule === 'function') syncAppointmentsToSchedule();
+                }
+            })();
         }
         
         // Simple Firebase REST API sync (no module dependencies)
