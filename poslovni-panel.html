@@ -1177,7 +1177,15 @@
 
                 scheduleData.events = scheduleData.events || [];
                 scheduleData.events.push(normalized);
-                if (window.saveScheduleData) window.saveScheduleData();
+                        // Persist immediately to localStorage as a reliable fallback so
+                        // the event survives a page reload even if remote save fails.
+                        try {
+                            localStorage.setItem('schedule', JSON.stringify(scheduleData));
+                            console.log('✓ schedule persisted to localStorage (immediate fallback)');
+                        } catch (e) {
+                            console.warn('⚠ immediate localStorage persistence failed', e);
+                        }
+                        if (window.saveScheduleData) window.saveScheduleData();
                 return normalized.id;
             } catch (err) {
                 console.error('✗ addScheduleEvent failed', err);
