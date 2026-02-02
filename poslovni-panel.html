@@ -938,7 +938,7 @@
                 document.getElementById('tabCustomer').classList.toggle('btn-secondary', tab!=='customer');
             }
             // Always reload services when opening modal
-            function openAddEventModalWithTab(startDate = null, retry = 0) {
+            function openAddEventModalWithTab(startDate = null, endDate = null, retry = 0) {
                 // Če storitve še niso naložene iz Firebase, počakaj in poskusi znova
                 const ready = window.SITE_CONFIG && window.SITE_CONFIG.servicesSection && Array.isArray(window.SITE_CONFIG.servicesSection.items) && window.SITE_CONFIG.servicesSection.items.length > 0;
                 if (!ready && retry < 10) {
@@ -956,7 +956,8 @@
                 if (modal) modal.classList.add('show');
                 if (startDate) {
                     document.getElementById('eventStartDate').value = startDate;
-                    document.getElementById('eventEndDate').value = startDate;
+                    // If endDate provided, use it; otherwise default to startDate
+                    document.getElementById('eventEndDate').value = endDate || startDate;
                 }
             }
             // Override default openAddEventModal

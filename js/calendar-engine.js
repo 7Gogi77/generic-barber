@@ -357,16 +357,44 @@ const CalendarEngine = {
         // Event handling - NOTE: These are overridden by poslovni-panel.html
         // Only used in admin-panel.html - check if modal exists before calling
         select: (selectInfo) => {
-          console.log('📅 Date selected:', selectInfo.startStr);
+          console.log('📅 Date selected:', selectInfo.startStr, '→', selectInfo.endStr);
           console.log('📋 Checking for eventModal...');
           const hasAdminModal = document.getElementById('eventModal');
           console.log('📋 Admin modal exists?', !!hasAdminModal);
-          // Only call if the admin modal exists (admin-panel.html context)
+          // If admin modal exists (admin-panel.html), use the admin modal flow
           if (hasAdminModal) {
             console.log('📋 Calling CalendarEngine.openEventModal from calendar-engine.js (select)');
             CalendarEngine.openEventModal(null, selectInfo, calendar, scheduleData);
+            return;
+          }
+
+          // Otherwise, if we're in the business panel, open the Add Event modal
+          // and prefill with the selected date range. FullCalendar's select end
+          // is exclusive for all-day selections, so subtract one day for display.
+          const addModal = document.getElementById('addEventModal');
+          if (addModal && typeof window.openAddEventModal === 'function') {
+            try {
+              const startStr = selectInfo.startStr ? selectInfo.startStr.split('T')[0] : null;
+              let endStr = selectInfo.endStr ? selectInfo.endStr.split('T')[0] : startStr;
+
+              // If endStr is present and selection was all-day, FullCalendar gives exclusive end — subtract one day
+              if (selectInfo.endStr) {
+                const ed = new Date(selectInfo.endStr);
+                // subtract 1 day
+                ed.setDate(ed.getDate() - 1);
+                endStr = ed.toISOString().split('T')[0];
+              }
+
+              console.log('📤 Opening Add Event modal with range:', startStr, '→', endStr);
+              // openAddEventModalWithTab accepts (startDate, endDate)
+              window.openAddEventModal(startStr, endStr);
+            } catch (err) {
+              console.warn('⚠ Failed to open Add Event modal from select handler:', err);
+              // Fallback: open with start only
+              window.openAddEventModal(selectInfo.startStr ? selectInfo.startStr.split('T')[0] : null);
+            }
           } else {
-            console.log('📋 Skipping - not in admin context (no eventModal found)');
+            console.log('📋 Skipping - no Add Event modal present');
           }
         },
         
