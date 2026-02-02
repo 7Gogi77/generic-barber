@@ -1000,6 +1000,51 @@
             saveScheduleData();
         }
 
+        // Save scheduleData using StorageManager and notify other tabs
+        function saveScheduleData() {
+            try {
+                // Ensure scheduleData has metadata
+                scheduleData.metadata = scheduleData.metadata || {};
+                scheduleData.metadata.lastModified = Date.now();
+
+                // Use StorageManager to persist (will fallback to localStorage in dev)
+                StorageManager.save('schedule', scheduleData).then(result => {
+                    console.log('✓ schedule saved', result);
+                    try {
+                        StorageManager.broadcastUpdate(scheduleData);
+                    } catch (e) {
+                        console.warn('⚠ broadcast failed', e);
+                    }
+                    if (window.onScheduleUpdated) window.onScheduleUpdated(scheduleData);
+                }).catch(err => {
+                    console.error('✗ Error saving scheduleData', err);
+                });
+            } catch (err) {
+                console.error('✗ saveScheduleData failed', err);
+            }
+        }
+
+        // Add a new event to scheduleData and persist; returns the new event id
+        function addScheduleEvent(event) {
+            try {
+                // Normalize event if ScheduleValidation available
+                let normalized = event;
+                if (typeof ScheduleValidation !== 'undefined' && ScheduleValidation.normalizeEvent) {
+                    normalized = ScheduleValidation.normalizeEvent(event);
+                } else {
+                    normalized.id = normalized.id || `event_${Date.now()}`;
+                }
+
+                scheduleData.events = scheduleData.events || [];
+                scheduleData.events.push(normalized);
+                saveScheduleData();
+                return normalized.id;
+            } catch (err) {
+                console.error('✗ addScheduleEvent failed', err);
+                return null;
+            }
+        }
+
         // Modal functions
         function openAddEventModal(startDate = null) {
             const modal = document.getElementById('addEventModal');
