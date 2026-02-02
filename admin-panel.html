@@ -1295,18 +1295,7 @@
         const ADMIN_NAME = "admin";
         const ADMIN_PASSWORD = "admin123";
 
-        // Load configuration from localStorage
-        async function loadConfig() {
-            const saved = localStorage.getItem('site_config_backup');
-            if (saved) {
-                try {
-                    const config = JSON.parse(saved);
-                    Object.assign(SITE_CONFIG, config);
-                } catch (e) {
-                    console.log('Could not load saved config');
-                }
-            }
-        }
+        // Load configuration from localStorage (defined later with schedule loading)
 
         // Handle login
         function handleLogin(e) {
