@@ -1926,6 +1926,36 @@
             }
         };
 
+        // Strong wipe: delete adminSchedule/entries and mirrored site_config/adminSchedule/entries
+        // Then write an empty object at site_config/adminSchedule/entries to avoid accidental re-merge.
+        window.wipeAdminScheduleNodes = async function() {
+            if (!confirm('Wipe adminSchedule nodes from Firebase? This will attempt to remove all adminSchedule entries and mirrored site_config entries.')) return;
+            const base = 'https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app/';
+            try {
+                // Delete the whole adminSchedule/entries parent
+                try {
+                    const d1 = await fetch(base + 'adminSchedule/entries.json', { method: 'DELETE' });
+                    console.log('DELETE adminSchedule/entries', d1.status);
+                } catch (e) { console.warn('delete adminSchedule parent failed', e); }
+
+                // Delete the mirrored site_config parent
+                try {
+                    const d2 = await fetch(base + 'site_config/adminSchedule/entries.json', { method: 'DELETE' });
+                    console.log('DELETE site_config/adminSchedule/entries', d2.status);
+                } catch (e) { console.warn('delete site_config parent failed', e); }
+
+                // Write an explicit empty map to mirrored location so admin UI sees no entries
+                try {
+                    const put = await fetch(base + 'site_config/adminSchedule/entries.json', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({}) });
+                    console.log('PUT empty mirrored map', put.status);
+                } catch (e) { console.warn('put empty mirrored map failed', e); }
+
+                console.log('wipeAdminScheduleNodes: done. Run listAdminEntries() to verify.');
+            } catch (err) {
+                console.error('wipeAdminScheduleNodes failed', err);
+            }
+        };
+
         async function initializeBusinessCalendar() {
             debugLog('🚀 Initialization started');
             const container = document.getElementById('scheduleCalendar');
