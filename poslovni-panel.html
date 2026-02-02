@@ -1159,6 +1159,20 @@
                 } else {
                     try { localStorage.setItem('schedule', JSON.stringify(scheduleData)); } catch(e) { }
                 }
+                    // If no events remain, nuke schedule from all sources
+                    if (scheduleData.events.length === 0) {
+                        try {
+                            localStorage.removeItem('schedule');
+                            if (window.StorageManager && StorageManager.delete) {
+                                await StorageManager.delete('schedule');
+                            }
+                            // Nuke Firebase schedule paths
+                            const base = 'https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app/';
+                            await fetch(base + 'site_config/adminSchedule/entries.json', { method: 'PUT', body: '{}' });
+                            await fetch(base + 'adminSchedule/entries.json', { method: 'PUT', body: '{}' });
+                            console.log('All schedule sources cleared after last event deleted');
+                        } catch(e) { console.warn('Failed to nuke schedule sources', e); }
+                    }
 
                 // Remove from calendar UI if present
                 try { const ev = window.calendar && window.calendar.getEventById(eventId); if (ev) ev.remove(); } catch(e) { /* ignore */ }
