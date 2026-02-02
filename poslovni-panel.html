@@ -1407,6 +1407,35 @@
                 }, eventPayload.extendedProps || {})
             });
 
+            // If this was a customer booking, also push an adminSchedule entry into Firebase
+            if (currentEventTab === 'customer') {
+                try {
+                    const sDate = startDate;
+                    const eDate = endDate;
+                    const sHour = startTime ? parseInt(startTime.split(':')[0]) || 9 : 9;
+                    const eHour = endTime ? parseInt(endTime.split(':')[0]) || 17 : 17;
+                    const adminEntry = {
+                        id: Date.now(),
+                        type: 'rezervacija',
+                        startDate: sDate,
+                        startTime: sHour,
+                        endDate: eDate,
+                        endTime: eHour,
+                        notes: `${eventPayload.extendedProps.customer || ''} ${eventPayload.extendedProps.services ? '| ' + (eventPayload.extendedProps.services.join(', ')) : ''}`.trim(),
+                        createdAt: new Date().toISOString()
+                    };
+
+                    // fire-and-forget; function defined below
+                    if (typeof sendAdminScheduleEntry === 'function') {
+                        sendAdminScheduleEntry(adminEntry).then(ok => {
+                            console.log('sendAdminScheduleEntry result:', ok);
+                        }).catch(err => console.warn('sendAdminScheduleEntry failed', err));
+                    }
+                } catch (err) {
+                    console.warn('⚠ Failed to prepare adminSchedule entry', err);
+                }
+            }
+
             closeAddEventModal();
         });
 
@@ -1459,6 +1488,40 @@
         document.getElementById('bookingDetailsModal').addEventListener('click', (e) => {
             if (e.target.id === 'bookingDetailsModal') closeBookingDetailsModal();
         });
+
+        // Persist a single admin schedule entry into Firebase site_config.adminSchedule.entries
+        async function sendAdminScheduleEntry(entry) {
+            const dbUrl = 'https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app/site_config.json';
+            try {
+                // Fetch existing site_config
+                const getRes = await fetch(dbUrl);
+                let config = {};
+                if (getRes.ok) {
+                    try { config = await getRes.json(); } catch (e) { config = {}; }
+                }
+
+                config.adminSchedule = config.adminSchedule || { entries: [] };
+                config.adminSchedule.entries = config.adminSchedule.entries || [];
+
+                // push entry
+                config.adminSchedule.entries.push(entry);
+
+                // Put back full site_config
+                const putRes = await fetch(dbUrl, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(config)
+                });
+
+                console.log('sendAdminScheduleEntry PUT status:', putRes.status);
+                const txt = await putRes.text().catch(() => '<no body>');
+                console.log('sendAdminScheduleEntry response body:', txt);
+                return putRes.ok;
+            } catch (err) {
+                console.error('sendAdminScheduleEntry error:', err);
+                return false;
+            }
+        }
 
         async function initializeBusinessCalendar() {
             debugLog('🚀 Initialization started');
