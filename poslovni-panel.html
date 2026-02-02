@@ -1195,11 +1195,12 @@
         };
 
         // Modal functions
-        function openAddEventModal(startDate = null) {
+        function openAddEventModal(startDate = null, endDate = null) {
             const modal = document.getElementById('addEventModal');
             if (startDate) {
                 document.getElementById('eventStartDate').value = startDate;
-                document.getElementById('eventEndDate').value = startDate;
+                // If endDate provided (from drag selection), use it; otherwise default to startDate
+                document.getElementById('eventEndDate').value = endDate || startDate;
             }
             modal.classList.add('show');
         }
