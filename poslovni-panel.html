@@ -1846,12 +1846,7 @@
                                                     // Skip if identical adminKey already present
                                                     if (key && scheduleData.events.some(e => e.extendedProps && e.extendedProps.adminKey === key)) return;
                                                     // Skip if same start+end+customer already present
-                                                    const sDate = item.startDate || item.start || null;
-                                                    const eDate = item.endDate || item.end || sDate;
-                                                    const sTime = (typeof item.startTime !== 'undefined' && item.startTime !== null) ? (String(item.startTime).padStart(2,'0') + ':00') : null;
-                                                    const eTime = (typeof item.endTime !== 'undefined' && item.endTime !== null) ? (String(item.endTime).padStart(2,'0') + ':00') : null;
-                                                    const start = sDate ? (sTime ? `${sDate}T${sTime}` : `${sDate}T09:00`) : null;
-                                                    const end = eDate ? (eTime ? `${eDate}T${eTime}` : `${eDate}T17:00`) : null;
+                                                    // start/end already computed above for duplicate check
                                                     const customerName = item.customer || item.notes || '';
                                                     if (scheduleData.events.some(e => e.start === start && e.end === end && ((e.extendedProps && e.extendedProps.customer) === customerName))) return;
                                                     const sDate = item.startDate || item.start || null;
