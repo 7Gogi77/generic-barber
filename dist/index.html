@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blade & Bourbon | Luxury Barber Experience</title>
+    <link id="favicon" rel="icon" type="image/png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,600&family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
+    <script src="js/config.js"></script>
+    <script src="js/admin.js"></script>
+    <!-- No external email library needed - using Formspree -->
+    <script>
+        // Formspree endpoint - user will set this up
+        const FORMSPREE_ENDPOINT = "https://formspree.io/f/meegkorn";
+    </script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { 
+                        gold: SITE_CONFIG.theme.primary, 
+                        dark: SITE_CONFIG.theme.dark, 
+                        card: SITE_CONFIG.theme.card 
+                    },
+                    fontFamily: { 
+                        serif: [SITE_CONFIG.theme.fontSerif, 'serif'], 
+                        sans: [SITE_CONFIG.theme.fontSans, 'sans-serif'] 
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        #cursor { width: 20px; height: 20px; border: 1px solid var(--color-primary); border-radius: 50%; position: fixed; pointer-events: none; z-index: 9999; transition: transform 0.1s ease; }
+        .reveal { opacity: 0; transform: translateY(30px); transition: all 0.8s ease-out; }
+        .reveal.active { opacity: 1; transform: translateY(0); }
+        .gold-gradient { background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 50%, var(--gradient-start) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .appointment-step { display: none; }
+        .appointment-step.active { display: block; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .service-card { cursor: pointer; transition: all 0.3s ease; }
+        .service-card:hover { transform: translateY(-2px); }
+        .calendar-widget { font-size: 13px; }
+        .calendar-widget button { cursor: pointer; }
+        
+        /* Dynamic color bindings */
+        #appointmentWidget { background-color: var(--color-dark); }
+        footer { background-color: var(--footer-bg-color); color: var(--footer-text-color); border-color: rgba(255, 255, 255, 0.05); }
+        #nav-links-container a { color: var(--nav-text-color); }
+        #nav-links-container a:hover { color: var(--nav-hover-color); }
+        #nav-links-container a::after { background-color: var(--nav-hover-color); }
+        .bg-card { background-color: var(--color-card) !important; border-color: rgba(255, 255, 255, 0.1) !important; }
+        .text-gold { color: var(--color-primary) !important; }
+        .border-gold { border-color: var(--color-primary) !important; }
+        .border-gold\/30 { border-color: color-mix(in srgb, var(--color-primary) 30%, transparent) !important; }
+        .text-gray-400 { color: var(--text-secondary) !important; }
+        .text-gray-500 { color: var(--text-secondary) !important; }
+        .text-gray-300 { color: color-mix(in srgb, var(--text-secondary) 70%, var(--text-primary) 30%) !important; }
+        .text-gray-600 { color: color-mix(in srgb, var(--text-secondary) 50%, var(--footer-text-color) 50%) !important; }
+        .border-white\/10 { border-color: rgba(255, 255, 255, 0.1) !important; }
+        .bg-gray-700 { background-color: color-mix(in srgb, var(--color-dark) 50%, var(--color-card) 50%) !important; }
+        .hover\:bg-gray-600:hover { background-color: color-mix(in srgb, var(--color-dark) 40%, var(--color-card) 60%) !important; }
+        .bg-gold { background-color: var(--button-color) !important; }
+        .text-dark { color: var(--button-text-color) !important; }
+        .bg-gold:hover { background-color: var(--text-primary) !important; }
+        
+        /* Mobile responsive improvements */
+        @media (max-width: 768px) {
+            #appointmentWidget { padding: 16px !important; }
+            #servicesGrid { grid-template-columns: 1fr !important; }
+            .grid.md\:grid-cols-2 { grid-template-columns: 1fr !important; }
+            #booking { padding: 24px 16px !important; }
+            h2 { font-size: 1.5rem !important; }
+            h3 { font-size: 1.25rem !important; }
+            .text-4xl { font-size: 1.5rem !important; }
+            .text-2xl { font-size: 1.25rem !important; }
+            .text-sm { font-size: 0.875rem !important; }
+            .p-4 { padding: 12px !important; }
+            .p-6 { padding: 16px !important; }
+            .py-3 { padding-top: 12px !important; padding-bottom: 12px !important; }
+            .px-4 { padding-left: 12px !important; padding-right: 12px !important; }
+            input, textarea, button { font-size: 16px !important; } /* Prevents zoom on iOS */
+            .flex.gap-4 { flex-direction: column; gap: 12px; }
+            .flex-1 { width: 100%; }
+            .max-h-96 { max-height: 300px; }
+            .columns-1 { columns: 1 !important; }
+        }
+        
+        @media (max-width: 480px) {
+            #appointmentWidget { padding: 12px !important; border-radius: 8px; }
+            #booking { padding: 16px 12px !important; }
+            h1 { font-size: 1.5rem !important; }
+            h2 { font-size: 1.25rem !important; }
+            h3 { font-size: 1.1rem !important; }
+            .text-xl { font-size: 1rem !important; }
+            .mb-8 { margin-bottom: 16px !important; }
+            .mb-4 { margin-bottom: 12px !important; }
+            .py-32 { padding-top: 24px !important; padding-bottom: 24px !important; }
+            .py-16 { padding-top: 16px !important; padding-bottom: 16px !important; }
+            #main-nav { padding: 12px 16px !important; }
+            #nav-links-container { display: none !important; }
+            #nav-book-btn { padding: 8px 12px !important; font-size: 9px !important; }
+            .logo { font-size: 1.25rem !important; }
+            .calendar-widget { font-size: 11px; }
+            .grid.grid-cols-7 { gap: 1px !important; }
+            .grid.grid-cols-7 button { padding: 1px !important; font-size: 11px !important; }
+            .appointment-step { padding: 0 !important; }
+        }
+    </style>
+  <script type="module" crossorigin src="/assets/main-uQipiXp4.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/main-D60lb7-0.css">
+</head>
+<body class="bg-dark text-white font-sans overflow-x-hidden cursor-none">
+    <div id="cursor" class="hidden md:block"></div>
+
+
+
+    <nav id="main-nav" class="fixed w-full z-50 px-8 py-6 flex justify-between items-center transition-all duration-500">
+        <div class="text-2xl font-serif font-bold tracking-widest gold-gradient" id="logo-text"></div>
+        <div id="nav-links-container" class="hidden md:flex space-x-8 text-[10px] uppercase tracking-[0.3em] font-medium">
+    </div>
+        <a href="#booking" id="nav-book-btn" class="bg-gold text-dark px-6 py-2 text-[10px] font-bold uppercase tracking-widest hover:bg-white transition-all"></a>
+    </nav>
+
+    <section id="home" class="relative h-screen flex items-center justify-center overflow-hidden">
+        <div class="absolute inset-0 z-0">
+            <div class="absolute inset-0 bg-gradient-to-b from-black/30 to-black/60 z-10"></div>
+            <img id="hero-img-src" src="" class="w-full h-full object-cover scale-110 transition-transform">
+        </div>
+        <div class="relative z-20 text-center px-4">
+            <span class="block text-gold tracking-[0.5em] text-xs mb-4 reveal" id="hero-sub"></span>
+            <h1 class="text-6xl md:text-8xl font-serif mb-8 reveal italic" id="hero-main"></h1>
+            <a href="#services" id="hero-btn" class="inline-block border border-white/20 px-10 py-4 uppercase tracking-widest text-[10px] hover:border-gold reveal"></a>
+        </div>
+    </section>
+
+    <section id="about" class="bg-dark py-32 px-8 reveal">
+        <div class="max-w-6xl mx-auto grid md:grid-cols-2 gap-20 items-center">
+            <div class="relative">
+                <div class="absolute -top-4 -left-4 w-24 h-24 border-t border-l border-gold"></div>
+                <img id="story-img" src="" class="grayscale w-full shadow-2xl">
+            </div>
+            <div>
+                <h3 id="story-section-label" class="text-gold uppercase tracking-[0.3em] text-[10px] mb-4"></h3>
+                <h2 id="story-title" class="text-5xl font-serif mb-8 italic"></h2>
+                <p id="story-text" class="text-gray-400 leading-loose mb-8 text-lg"></p>
+                <div class="w-16 h-1 bg-gold"></div>
+            </div>
+        </div>
+    </section>
+
+    <section class="bg-card py-24 px-8 border-y border-white/5 text-center reveal">
+        <div class="max-w-4xl mx-auto">
+            <span class="text-gold text-6xl font-serif italic">"</span>
+            <p id="test-quote" class="text-2xl font-serif italic mb-8 text-gray-200"></p>
+            <span id="test-author" class="uppercase tracking-widest text-[10px] text-gold"></span>
+        </div>
+    </section>
+
+    <section id="services" class="bg-dark py-32 px-8 reveal">
+        <div class="max-w-4xl mx-auto">
+            <h2 id="services-title" class="text-center text-4xl font-serif mb-20 italic text-gold uppercase tracking-widest"></h2>
+            <div id="services-list" class="grid md:grid-cols-2 gap-x-16 gap-y-12"></div>
+        </div>
+    </section>
+
+    <section id="barbers" class="bg-card py-32 px-8 reveal">
+        <div class="max-w-6xl mx-auto">
+            <h2 id="barbers-title" class="text-center text-4xl font-serif mb-20 italic"></h2>
+            <div id="barbers-list" class="grid md:grid-cols-3 gap-8"></div>
+        </div>
+    </section>
+
+    <section id="gallery" class="bg-dark py-20 px-8 reveal">
+        <div id="gallery-list" class="max-w-6xl mx-auto columns-1 md:columns-3 gap-4 space-y-4"></div>
+    </section>
+
+    <section id="booking" class="bg-card py-32 px-8 reveal text-center">
+        <div class="max-w-4xl mx-auto">
+            <h2 id="booking-title" class="text-4xl font-serif mb-16 italic text-gold uppercase tracking-widest"></h2>
+            
+            <div id="appointmentWidget" class="bg-dark rounded-lg p-8 shadow-2xl">
+                <!-- Step 1: Service Selection -->
+                <div id="step1" class="appointment-step active">
+                    <div class="text-center mb-8">
+                        <h3 class="text-2xl font-serif text-white mb-2">Izberi Storitve</h3>
+                        <p class="text-gray-400 text-sm">Izberi eno ali več storitev</p>
+                    </div>
+                    <div id="servicesGrid" class="grid md:grid-cols-2 gap-4 mb-8"></div>
+                    <div class="bg-card p-4 rounded border border-white/10 mb-8">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-gray-400">Skupni čas:</span>
+                            <span class="text-gold font-serif text-lg" id="totalDuration">0 min</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-400">Skupna cena:</span>
+                            <span class="text-gold font-serif text-lg" id="totalPrice">0€</span>
+                        </div>
+                    </div>
+                    <button id="nextBtn1" onclick="nextStep()" class="w-full bg-gold text-dark py-3 font-bold uppercase tracking-widest text-sm hover:bg-white transition-all rounded disabled:opacity-50 disabled:cursor-not-allowed" disabled>Naprej</button>
+                </div>
+
+                <!-- Step 2: Calendar & Time Selection -->
+                <div id="step2" class="appointment-step">
+                    <div class="text-center mb-8">
+                        <h3 class="text-2xl font-serif text-white mb-2">Izberi Termin</h3>
+                        <p class="text-gray-400 text-sm">Izberi dan in čas</p>
+                    </div>
+                    
+                    <div class="grid md:grid-cols-2 gap-8 mb-8">
+                        <!-- Calendar -->
+                        <div class="bg-card p-6 rounded border border-white/10">
+                            <div id="calendar" class="calendar-widget"></div>
+                        </div>
+                        
+                        <!-- Time Slots -->
+                        <div class="bg-card p-6 rounded border border-white/10">
+                            <h4 class="text-white font-serif mb-4">Dostopni Termini</h4>
+                            <div id="timeSlots" class="space-y-2 max-h-96 overflow-y-auto"></div>
+                            <p id="noSlotsMsg" class="text-gray-500 text-sm text-center py-8">Izberi dan</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-4">
+                        <button onclick="prevStep()" class="flex-1 bg-gray-700 text-white py-3 font-bold uppercase tracking-widest text-sm hover:bg-gray-600 transition-all rounded">Nazaj</button>
+                        <button id="nextBtn2" onclick="nextStep()" class="flex-1 bg-gold text-dark py-3 font-bold uppercase tracking-widest text-sm hover:bg-white transition-all rounded disabled:opacity-50 disabled:cursor-not-allowed" disabled>Naprej</button>
+                    </div>
+                </div>
+
+                <!-- Step 3: Contact Details & Confirmation -->
+                <div id="step3" class="appointment-step">
+                    <div class="text-center mb-8">
+                        <h3 class="text-2xl font-serif text-white mb-2">Potrditev</h3>
+                        <p class="text-gray-400 text-sm">Vpiši svoje podatke</p>
+                    </div>
+                    
+                    <form id="appointmentForm" class="space-y-4 mb-8">
+                        <div class="grid md:grid-cols-2 gap-4">
+                            <input type="text" id="appointmentFirstName" placeholder="Ime" class="w-full bg-transparent border-b border-gold/30 py-3 outline-none focus:border-gold text-white text-sm tracking-widest" required>
+                            <input type="text" id="appointmentSurname" placeholder="Priimek" class="w-full bg-transparent border-b border-gold/30 py-3 outline-none focus:border-gold text-white text-sm tracking-widest" required>
+                        </div>
+                        <input type="email" id="appointmentEmail" placeholder="E-pošta" class="w-full bg-transparent border-b border-gold/30 py-3 outline-none focus:border-gold text-white text-sm tracking-widest" required>
+                        <input type="tel" id="appointmentPhone" placeholder="Telefonska Številka" class="w-full bg-transparent border-b border-gold/30 py-3 outline-none focus:border-gold text-white text-sm tracking-widest" required>
+                    </form>
+                    
+                    <div class="bg-card p-4 rounded border border-white/10 mb-8 text-left">
+                        <h4 class="text-white font-serif mb-4">Povzetek Naročila</h4>
+                        <div id="summaryServices" class="text-gray-300 text-sm mb-3"></div>
+                        <div class="border-t border-white/10 pt-3 flex justify-between">
+                            <span class="text-gray-400">Termin:</span>
+                            <span id="summaryDateTime" class="text-gold">—</span>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-4">
+                        <button onclick="prevStep()" class="flex-1 bg-gray-700 text-white py-3 font-bold uppercase tracking-widest text-sm hover:bg-gray-600 transition-all rounded">Nazaj</button>
+                        <button id="confirmBtn" onclick="confirmAppointment()" class="flex-1 bg-gold text-dark py-3 font-bold uppercase tracking-widest text-sm hover:bg-white transition-all rounded">Potrdi Termin</button>
+                    </div>
+                </div>
+
+                <!-- Step 4: Success Confirmation -->
+                <div id="step4" class="appointment-step text-center">
+                    <div class="mb-8">
+                        <div class="text-6xl mb-4">✓</div>
+                        <h3 class="text-2xl font-serif text-gold mb-4">Termin Potrjen!</h3>
+                        <p class="text-gray-400 mb-6">Preverite svojo e-pošto za potrdilo naročila</p>
+                        <div id="successDetails" class="bg-card p-6 rounded border border-gold/30 mb-8 text-left text-sm">
+                            <p><span class="text-gray-500">Ime:</span> <span class="text-white" id="successFirstName"></span></p>
+                            <p><span class="text-gray-500">Priimek:</span> <span class="text-white" id="successSurname"></span></p>
+                            <p><span class="text-gray-500">E-pošta:</span> <span class="text-white" id="successEmail"></span></p>
+                            <p><span class="text-gray-500">Telefonska Številka:</span> <span class="text-white" id="successPhone"></span></p>
+                            <p><span class="text-gray-500">Termin:</span> <span class="text-white" id="successDateTime"></span></p>
+                            <p><span class="text-gray-500">Storitve:</span> <span class="text-white" id="successServices"></span></p>
+                        </div>
+                    </div>
+                    <button onclick="resetAppointment()" class="w-full bg-gold text-dark py-3 font-bold uppercase tracking-widest text-sm hover:bg-white transition-all rounded">Nazaj na Domačo Stran</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="py-12 border-t border-white/5 text-center text-[9px] tracking-[0.4em] uppercase">
+        <div id="footer-copy"></div>
+    </footer>
+
+    <!-- Hidden Formspree form for appointments -->
+    <form id="formspreeForm" action="https://formspree.io/f/meegkorn" method="POST" style="display:none;">
+        <input type="email" name="email" id="formspreeEmail">
+        <input type="text" name="Ime" id="formspreeIme">
+        <input type="text" name="Priimek" id="formspreePriimek">
+        <input type="text" name="Telefon" id="formspreeTelefon">
+        <input type="text" name="Datum" id="formspreeDatum">
+        <input type="text" name="Cas" id="formspreeCas">
+        <input type="text" name="Storitve" id="formspreeStoritve">
+        <input type="text" name="Cena" id="formspreeCena">
+        <input type="text" name="Trajanje" id="formspreeTrajanje">
+        <input type="hidden" name="_redirect" value="https://generic-barber.vercel.app/">
+    </form>
+
+    <script>
+        // ============ APPOINTMENT SYSTEM ============
+        let currentStep = 1;
+        let selectedServices = [];
+        let selectedDate = null;
+        let selectedTime = null;
+        const bookedSlots = new Set(); // Track booked times
+        
+        // Load saved config from localStorage (admin changes)
+        function loadSavedConfig() {
+            const saved = localStorage.getItem('site_config_backup');
+            const savedAppts = localStorage.getItem('appointments');
+            
+            if (saved) {
+                try {
+                    const config = JSON.parse(saved);
+                    // Keep existing appointments before merging
+                    const currentAppts = SITE_CONFIG.appointments;
+                    Object.assign(SITE_CONFIG, config);
+                    // Restore appointments if they existed
+                    if (currentAppts && currentAppts.length > 0) {
+                        SITE_CONFIG.appointments = currentAppts;
+                    }
+                    applyThemeColors(); // Apply theme colors after loading config
+                } catch (e) {
+                    console.log('Could not load saved config, using defaults');
+                }
+            }
+            
+            // Separately load appointments from appointments storage
+            if (savedAppts) {
+                try {
+                    const appts = JSON.parse(savedAppts);
+                    SITE_CONFIG.appointments = appts;
+                    console.log('Loaded ' + appts.length + ' appointments');
+                } catch (e) {
+                    console.log('Could not load appointments');
+                }
+            }
+        }
+        
+        // Apply saved theme colors to the page
+        function applyThemeColors() {
+            const t = SITE_CONFIG.theme;
+            const root = document.documentElement;
+            
+            // Apply primary theme colors
+            root.style.setProperty('--color-primary', t.primary || '#DC143C');
+            root.style.setProperty('--color-dark', t.dark || '#0A0A0A');
+            root.style.setProperty('--color-card', t.card || '#141414');
+            root.style.setProperty('--gradient-start', t.gradientStart || '#DC143C');
+            root.style.setProperty('--gradient-end', t.gradientEnd || '#FF6B6B');
+            
+            // Apply text colors
+            root.style.setProperty('--text-primary', t.textPrimary || '#FFFFFF');
+            root.style.setProperty('--text-secondary', t.textSecondary || '#A0A0A0');
+            root.style.setProperty('--text-gold', t.textGold || '#DC143C');
+            
+            // Apply button colors
+            root.style.setProperty('--button-color', t.buttonColor || '#DC143C');
+            root.style.setProperty('--button-text-color', t.buttonTextColor || '#0A0A0A');
+            
+            // Apply nav colors
+            root.style.setProperty('--nav-text-color', t.navTextColor || '#A0A0A0');
+            root.style.setProperty('--nav-hover-color', t.navHoverColor || '#DC143C');
+            
+            // Apply footer colors
+            root.style.setProperty('--footer-bg-color', t.footerBgColor || '#0A0A0A');
+            root.style.setProperty('--footer-text-color', t.footerTextColor || '#606060');
+        }
+        
+        // Initialize appointments from localStorage
+        function loadAppointments() {
+            const saved = localStorage.getItem('appointments');
+            if (saved) {
+                try {
+                    SITE_CONFIG.appointments = JSON.parse(saved);
+                } catch (e) {
+                    console.log('Could not load appointments');
+                }
+            }
+        }
+        
+        // Render service selection grid
+        function renderServices() {
+            const grid = document.getElementById('servicesGrid');
+            grid.innerHTML = '';
+            SITE_CONFIG.servicesSection.items.forEach((service, idx) => {
+                const isSelected = selectedServices.includes(idx);
+                const duration = service.duration || 0;
+                grid.innerHTML += `
+                    <div class="service-card p-4 rounded border-2 cursor-pointer transition-all ${isSelected ? 'border-gold bg-gold/10' : 'border-white/10 bg-card hover:border-gold/50'}" 
+                         onclick="toggleService(${idx})">
+                        <h4 class="text-white font-serif mb-2">${service.name}</h4>
+                        <p class="text-gray-400 text-xs mb-3">${duration} min</p>
+                        <p class="text-gold font-serif text-sm">${service.price}€</p>
+                        <p class="text-gray-500 text-xs mt-2">${service.desc}</p>
+                    </div>
+                `;
+            });
+            updateTotals();
+        }
+        
+        function toggleService(idx) {
+            if (selectedServices.includes(idx)) {
+                selectedServices = selectedServices.filter(i => i !== idx);
+            } else {
+                selectedServices.push(idx);
+            }
+            renderServices();
+        }
+        
+        function updateTotals() {
+            let totalMin = 0;
+            let totalPrice = 0;
+            selectedServices.forEach(idx => {
+                const service = SITE_CONFIG.servicesSection.items[idx];
+                const duration = service.duration || parseInt(service.desc.split(' ')[0]) || 0; // Fallback: extract from description
+                totalMin += duration;
+                // Remove € or $ and parse as number
+                const cleanPrice = service.price.replace(/[€$]/g, '').trim();
+                const price = parseInt(cleanPrice) || 0;
+                console.log(`Service: ${service.name}, Price: "${service.price}", Clean: "${cleanPrice}", Parsed: ${price}`);
+                totalPrice += price;
+            });
+            console.log(`Total Price: ${totalPrice}`);
+            document.getElementById('totalDuration').innerText = totalMin + ' min';
+            document.getElementById('totalPrice').innerText = totalPrice + '€';
+            document.getElementById('nextBtn1').disabled = selectedServices.length === 0;
+        }
+        
+        // Calendar generation
+        function renderCalendar() {
+            const cal = document.getElementById('calendar');
+            const now = new Date();
+            now.setHours(0, 0, 0, 0);
+            
+            // Get current month to track when it changes
+            let currentMonth = now.getMonth();
+            let currentYear = now.getFullYear();
+            let monthDisplay = new Date(currentYear, currentMonth, 1);
+            
+            let html = '<div class="text-center mb-4">';
+            html += `<h4 class="text-white font-serif mb-4">${monthDisplay.toLocaleDateString('sl-SI', { month: 'long', year: 'numeric' })}</h4>`;
+            html += '<div class="grid grid-cols-7 gap-2">';
+            
+            // Days of week headers
+            ['Pon', 'Tor', 'Sre', 'Čet', 'Pet', 'Sob', 'Ned'].forEach(day => {
+                html += `<div class="text-gray-500 text-xs font-bold">${day}</div>`;
+            });
+            
+            // Get first day of current month and add empty cells
+            const firstDay = new Date(currentYear, currentMonth, 1);
+            let startDay = firstDay.getDay();
+            if (startDay === 0) startDay = 7; // Sunday = 7 in our system
+            
+            // Add empty cells for days before month starts
+            for (let i = 1; i < startDay; i++) {
+                html += `<div></div>`;
+            }
+            
+            // Generate days - up to 60 days to cover multiple months
+            for (let i = 0; i < 60; i++) {
+                const date = new Date(now);
+                date.setDate(date.getDate() + i);
+                // Use local date, not ISO (which converts to UTC and can shift the day)
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                const dateStr = `${year}-${month}-${day}`;
+                const dayOfWeek = date.getDay();
+                const daysClosed = SITE_CONFIG.booking.daysClosed || [0]; // Default: Sunday closed
+                const isClosed = daysClosed.includes(dayOfWeek);
+                const isSelected = selectedDate === dateStr;
+                
+                // Add new month header if month changed
+                if (date.getMonth() !== currentMonth) {
+                    // Close previous month's grid and start new one
+                    html += '</div></div>';
+                    currentMonth = date.getMonth();
+                    currentYear = date.getFullYear();
+                    monthDisplay = new Date(currentYear, currentMonth, 1);
+                    html += '<div class="text-center mb-4 mt-6">';
+                    html += `<h4 class="text-white font-serif mb-4">${monthDisplay.toLocaleDateString('sl-SI', { month: 'long', year: 'numeric' })}</h4>`;
+                    html += '<div class="grid grid-cols-7 gap-2">';
+                    
+                    // Days of week headers
+                    ['Pon', 'Tor', 'Sre', 'Čet', 'Pet', 'Sob', 'Ned'].forEach(day => {
+                        html += `<div class="text-gray-500 text-xs font-bold">${day}</div>`;
+                    });
+                    
+                    // Add empty cells for days before new month starts
+                    const firstDayOfMonth = new Date(currentYear, currentMonth, 1);
+                    let startDayOfMonth = firstDayOfMonth.getDay();
+                    if (startDayOfMonth === 0) startDayOfMonth = 7;
+                    
+                    for (let j = 1; j < startDayOfMonth; j++) {
+                        html += `<div></div>`;
+                    }
+                }
+                
+                if (isClosed) {
+                    html += `<div class="text-gray-600 text-xs opacity-50">—</div>`;
+                } else {
+                    html += `
+                        <button type="button" class="text-xs py-2 px-1 rounded border transition-all ${isSelected ? 'border-gold bg-gold/20 text-gold font-bold' : 'border-white/20 text-gray-300 hover:border-gold/50'}"
+                                onclick="selectDate('${dateStr}')">${date.getDate()}</button>
+                    `;
+                }
+            }
+            html += '</div></div>';
+            cal.innerHTML = html;
+        }
+        
+        function selectDate(dateStr) {
+            selectedDate = dateStr;
+            selectedTime = null; // Reset time when changing date
+            renderCalendar();
+            renderTimeSlots();
+        }
+        
+        function renderTimeSlots() {
+            const slots = document.getElementById('timeSlots');
+            const noMsg = document.getElementById('noSlotsMsg');
+            
+            if (!selectedDate) {
+                slots.innerHTML = '';
+                noMsg.style.display = 'block';
+                return;
+            }
+            
+            noMsg.style.display = 'none';
+            slots.innerHTML = '';
+            
+            const totalDuration = getTotalDuration();
+            
+            // Get day of week (0 = Sunday, 1 = Monday, etc.)
+            const [year, month, day] = selectedDate.split('-');
+            const dateObj = new Date(year, month - 1, day);
+            const dayOfWeek = dateObj.getDay();
+            
+            // Get hours for this specific day, or use default business hours
+            let startHour = (SITE_CONFIG.booking.businessHours?.start) || 9;
+            let endHour = (SITE_CONFIG.booking.businessHours?.end) || 19;
+            
+            if (SITE_CONFIG.booking.hours && SITE_CONFIG.booking.hours[dayOfWeek]) {
+                startHour = SITE_CONFIG.booking.hours[dayOfWeek].start || startHour;
+                endHour = SITE_CONFIG.booking.hours[dayOfWeek].end || endHour;
+            }
+            
+            const slotDur = SITE_CONFIG.booking.slotDuration || 15;
+            const appointments = SITE_CONFIG.appointments || [];
+            
+            // Helper function to check if a time slot overlaps with any appointment
+            function isSlotAvailable(startTime, durationMinutes) {
+                // Convert time string "HH:MM" to minutes since midnight
+                const [h, m] = startTime.split(':').map(Number);
+                const slotStartMin = h * 60 + m;
+                const slotEndMin = slotStartMin + durationMinutes;
+                
+                // Check against all existing appointments on this date
+                return !appointments.some(appt => {
+                    if (appt.date !== selectedDate) return false;
+                    
+                    const [apptH, apptM] = appt.time.split(':').map(Number);
+                    const apptStartMin = apptH * 60 + apptM;
+                    const apptEndMin = apptStartMin + (appt.totalDuration || 0);
+                    
+                    // Check for overlap: new appointment overlaps if it starts before existing ends
+                    // AND existing appointment starts before new one ends
+                    return slotStartMin < apptEndMin && apptStartMin < slotEndMin;
+                });
+            }
+            
+            for (let hour = startHour; hour < endHour; hour++) {
+                for (let min = 0; min < 60; min += slotDur) {
+                    const timeStr = String(hour).padStart(2, '0') + ':' + String(min).padStart(2, '0');
+                    const isAvailable = isSlotAvailable(timeStr, totalDuration);
+                    const isSelected = selectedTime === timeStr;
+                    
+                    if (isAvailable) {
+                        slots.innerHTML += `
+                            <button type="button" class="w-full text-left px-4 py-2 rounded border transition-all ${isSelected ? 'border-gold bg-gold/20 text-gold font-bold' : 'border-white/10 text-gray-300 hover:border-gold/50 hover:bg-gold/5'}"
+                                    onclick="selectTime('${timeStr}')">${timeStr}</button>
+                        `;
+                    }
+                }
+            }
+            document.getElementById('nextBtn2').disabled = !selectedTime;
+        }
+        
+        function selectTime(timeStr) {
+            selectedTime = timeStr;
+            renderTimeSlots();
+            document.getElementById('nextBtn2').disabled = !selectedTime;
+        }
+        
+        function getTotalDuration() {
+            return selectedServices.reduce((sum, idx) => {
+                const service = SITE_CONFIG.servicesSection.items[idx];
+                const duration = service.duration || parseInt(service.desc.split(' ')[0]) || 0; // Fallback: extract from description
+                return sum + duration;
+            }, 0);
+        }
+        
+        // Step navigation
+        function nextStep() {
+            if (currentStep === 1 && selectedServices.length === 0) return;
+            if (currentStep === 2 && !selectedDate) return;
+            if (currentStep === 2 && !selectedTime) return;
+            if (currentStep === 3) return confirmAppointment();
+            
+            currentStep++;
+            showStep(currentStep);
+            
+            if (currentStep === 2) {
+                renderCalendar();
+                renderTimeSlots();
+            } else if (currentStep === 3) {
+                updateSummary();
+            }
+        }
+        
+        function prevStep() {
+            if (currentStep > 1) {
+                currentStep--;
+                showStep(currentStep);
+            }
+        }
+        
+        function showStep(step) {
+            for (let i = 1; i <= 4; i++) {
+                const el = document.getElementById('step' + i);
+                if (el) {
+                    if (i === step) el.classList.add('active');
+                    else el.classList.remove('active');
+                }
+            }
+        }
+        
+        function updateSummary() {
+            const summaryServices = document.getElementById('summaryServices');
+            const servicesText = selectedServices.map(idx => SITE_CONFIG.servicesSection.items[idx].name).join(', ');
+            summaryServices.innerHTML = `<strong>Storitve:</strong> ${servicesText}<br><strong>Čas:</strong> ${getTotalDuration()} min`;
+            
+            // Parse date correctly without timezone issues
+            const [year, month, day] = selectedDate.split('-');
+            const dateStr = `${day}. ${month}. ${year}`;
+            document.getElementById('summaryDateTime').innerText = dateStr + ' ob ' + selectedTime;
+        }
+        
+        function isValidName(name) {
+            // Allow letters, spaces, hyphens, apostrophes (for names like O'Brien, Marie-Claire)
+            const nameRegex = /^[a-zA-ZÀ-ÿ\s\-']{2,}$/;
+            return nameRegex.test(name);
+        }
+        
+        function isValidEmail(email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailRegex.test(email);
+        }
+        
+        function isValidPhone(phone) {
+            // Allow digits, spaces, hyphens, + (for international numbers)
+            const phoneRegex = /^[\d\s\-+()]{7,}$/;
+            return phoneRegex.test(phone);
+        }
+        
+        function confirmAppointment() {
+            const firstName = document.getElementById('appointmentFirstName').value.trim();
+            const surname = document.getElementById('appointmentSurname').value.trim();
+            const email = document.getElementById('appointmentEmail').value.trim();
+            const phone = document.getElementById('appointmentPhone').value.trim();
+            
+            // Check if all fields are filled
+            if (!firstName || !surname || !email || !phone) {
+                alert('Vpiši vse podatke');
+                return;
+            }
+            
+            // Validate name format
+            if (!isValidName(firstName)) {
+                alert('Ime mora vsebovati samo črke (najmanj 2 znaka)');
+                document.getElementById('appointmentFirstName').focus();
+                return;
+            }
+            
+            // Validate surname format
+            if (!isValidName(surname)) {
+                alert('Priimek mora vsebovati samo črke (najmanj 2 znaka)');
+                document.getElementById('appointmentSurname').focus();
+                return;
+            }
+            
+            // Validate email format
+            if (!isValidEmail(email)) {
+                alert('Vpiši veljavno e-pošto (npr. ime@example.com)');
+                document.getElementById('appointmentEmail').focus();
+                return;
+            }
+            
+            // Validate phone format
+            if (!isValidPhone(phone)) {
+                alert('Vpiši veljavno telefonsko številko (najmanj 7 znakov)');
+                document.getElementById('appointmentPhone').focus();
+                return;
+            }
+            
+            const fullName = firstName + ' ' + surname;
+            
+            const appointment = {
+                date: selectedDate,
+                time: selectedTime,
+                firstName: firstName,
+                surname: surname,
+                fullName: fullName,
+                email: email,
+                phone: phone,
+                services: selectedServices.map(idx => SITE_CONFIG.servicesSection.items[idx].name),
+                totalDuration: getTotalDuration(),
+                totalPrice: selectedServices.reduce((sum, idx) => sum + parseInt(SITE_CONFIG.servicesSection.items[idx].price.replace(/[€$]/g, '')) || 0, 0),
+                id: Date.now()
+            };
+            
+            // Save appointment
+            SITE_CONFIG.appointments.push(appointment);
+            localStorage.setItem('appointments', JSON.stringify(SITE_CONFIG.appointments));
+            localStorage.setItem('site_config_backup', JSON.stringify(SITE_CONFIG));
+            
+            // Show success
+            document.getElementById('successFirstName').innerText = firstName;
+            document.getElementById('successSurname').innerText = surname;
+            document.getElementById('successEmail').innerText = email;
+            document.getElementById('successPhone').innerText = phone;
+            
+            // Parse date correctly without timezone issues
+            const [year, month, day] = selectedDate.split('-');
+            const dateStr = `${day}. ${month}. ${year}`;
+            document.getElementById('successDateTime').innerText = dateStr + ' ob ' + selectedTime;
+            document.getElementById('successServices').innerText = appointment.services.join(', ');
+            
+            // Send notification
+            sendNotification(appointment);
+            
+            currentStep = 4;
+            showStep(4);
+        }
+        
+        function sendNotification(appointment) {
+            // Save notification to localStorage
+            const notifications = JSON.parse(localStorage.getItem('ownerNotifications') || '[]');
+            notifications.push({
+                ...appointment,
+                sentAt: new Date().toISOString()
+            });
+            localStorage.setItem('ownerNotifications', JSON.stringify(notifications));
+            
+            // Build URL-encoded form data
+            const params = new URLSearchParams();
+            params.append('email', appointment.email);
+            params.append('Ime', appointment.firstName);
+            params.append('Priimek', appointment.surname);
+            params.append('Telefon', appointment.phone);
+            params.append('Datum', appointment.date);
+            params.append('Cas', appointment.time);
+            params.append('Storitve', appointment.services.join(', '));
+            params.append('Cena', appointment.totalPrice + "€");
+            params.append('Trajanje', appointment.totalDuration + " min");
+            params.append('_next', window.location.href);
+            
+            // Submit via fetch without following redirects
+            fetch('https://formspree.io/f/meegkorn', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: params.toString(),
+                redirect: 'manual'
+            })
+            .then(response => {
+                console.log('✅ Appointment submitted');
+            })
+            .catch(error => {
+                console.log('⚠️ Submission failed, but saved locally:', error);
+            });
+        }
+        
+        function resetAppointment() {
+            currentStep = 1;
+            selectedServices = [];
+            selectedDate = null;
+            selectedTime = null;
+            document.getElementById('appointmentForm').reset();
+            showStep(1);
+            renderServices();
+        }
+
+        function initSite() {
+            // Load saved config from localStorage first
+            loadSavedConfig();
+            loadAppointments();
+            
+            // Try to load from Firebase for cloud sync
+            loadFromFirebase().then(() => {
+                renderSiteContent();
+            }).catch(() => {
+                renderSiteContent();
+            });
+        }
+        
+        // Load config from Firebase REST API
+        async function loadFromFirebase() {
+            try {
+                const dbUrl = 'https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app/site_config.json';
+                const response = await fetch(dbUrl);
+                
+                if (response.ok) {
+                    const cloudConfig = await response.json();
+                    if (cloudConfig) {
+                        Object.assign(SITE_CONFIG, cloudConfig);
+                        localStorage.setItem('site_config_backup', JSON.stringify(SITE_CONFIG));
+                        console.log('✅ Loaded config from Firebase');
+                        return true;
+                    }
+                }
+            } catch (error) {
+                console.log('⚠️ Firebase load failed, using local');
+            }
+            return false;
+        }
+        
+        function renderSiteContent() {
+            // Load any saved changes from admin panel
+            loadSavedConfig();
+            loadAppointments();
+            
+            // Update page title and favicon
+            document.title = SITE_CONFIG.shopName + ' | Luxury Barber Experience';
+            const favicon = document.getElementById('favicon');
+            if (SITE_CONFIG.logo && SITE_CONFIG.logo.mini) {
+                favicon.href = SITE_CONFIG.logo.mini;
+            }
+            
+            // Apply theme colors
+            const t = SITE_CONFIG.theme;
+            const root = document.documentElement;
+            root.style.setProperty('--color-primary', t.primary);
+            root.style.setProperty('--color-dark', t.dark);
+            root.style.setProperty('--color-card', t.card);
+            root.style.setProperty('--gradient-start', t.gradientStart);
+            root.style.setProperty('--gradient-end', t.gradientEnd);
+            
+            // Navbar & Hero
+            const logoEl = document.getElementById('logo-text');
+            const showLogo = SITE_CONFIG.logo && SITE_CONFIG.logo.showLogo !== false;
+            
+            if (showLogo && SITE_CONFIG.logo && SITE_CONFIG.logo.large) {
+                logoEl.innerHTML = `<img src="${SITE_CONFIG.logo.large}" alt="${SITE_CONFIG.shopName}" style="max-height:48px;">`;
+            } else {
+                logoEl.innerText = SITE_CONFIG.shopName;
+            }
+            document.getElementById('hero-sub').innerText = SITE_CONFIG.hero.subtitle;
+            document.getElementById('hero-main').innerText = SITE_CONFIG.hero.title;
+            document.getElementById('hero-btn').innerText = SITE_CONFIG.hero.buttonText;
+            document.getElementById('hero-img-src').src = SITE_CONFIG.hero.backgroundImage;
+
+            // Story
+            document.getElementById('story-section-label').innerText = SITE_CONFIG.ourStory.sectionTitle;
+            document.getElementById('story-title').innerText = SITE_CONFIG.ourStory.title;
+            document.getElementById('story-text').innerText = SITE_CONFIG.ourStory.text;
+            document.getElementById('story-img').src = SITE_CONFIG.ourStory.image;
+
+            // Testimonial
+            document.getElementById('test-quote').innerText = SITE_CONFIG.testimonial.quote;
+            document.getElementById('test-author').innerText = `— ${SITE_CONFIG.testimonial.author}`;
+
+			// Generate Navigation Links
+			const navContainer = document.getElementById('nav-links-container');
+			navContainer.innerHTML = ''; // Clear existing
+			SITE_CONFIG.navLinks.forEach(item => {
+				navContainer.innerHTML += `<a href="${item.link}" class="hover:text-gold transition-colors">${item.name}</a>`;
+			});
+
+			// Set Navigation Button Text
+			document.getElementById('nav-book-btn').innerText = SITE_CONFIG.navButtonText;
+
+            // Services
+            document.getElementById('services-title').innerText = SITE_CONFIG.servicesSection.title;
+            const sList = document.getElementById('services-list');
+            SITE_CONFIG.servicesSection.items.forEach(s => {
+                sList.innerHTML += `<div class="flex justify-between items-end border-b border-white/10 pb-4">
+                    <div><h4 class="font-serif text-xl">${s.name}</h4><p class="text-[9px] text-gray-500 uppercase mt-1 tracking-widest">${s.desc}</p></div>
+                    <span class="text-xl text-gold font-serif">${s.price}€</span></div>`;
+            });
+
+            // Barbers
+            document.getElementById('barbers-title').innerText = SITE_CONFIG.barbersSection.title;
+            const bList = document.getElementById('barbers-list');
+            const barberCount = SITE_CONFIG.barbersSection.list.length;
+            
+            // Set grid columns based on barber count
+            if (barberCount === 1) {
+                bList.className = 'flex justify-center';
+            } else if (barberCount === 2) {
+                bList.className = 'grid md:grid-cols-2 gap-8 md:max-w-2xl mx-auto';
+            } else {
+                bList.className = 'grid md:grid-cols-3 gap-8';
+            }
+            
+            SITE_CONFIG.barbersSection.list.forEach(b => {
+                bList.innerHTML += `<div class="group overflow-hidden">
+                    <img src="${b.img}" class="grayscale group-hover:grayscale-0 transition-all duration-700 aspect-[3/4] object-cover">
+                    <div class="mt-4 text-center"><h4 class="font-serif text-lg text-gold">${b.name}</h4><p class="text-[9px] text-gray-500 uppercase tracking-widest">${b.role}</p></div></div>`;
+            });
+
+            // Gallery
+            const gList = document.getElementById('gallery-list');
+            SITE_CONFIG.gallery.forEach(img => {
+                gList.innerHTML += `<img src="${img}" class="w-full grayscale hover:grayscale-0 transition-all duration-500 rounded-sm">`;
+            });
+
+            // Booking - Appointment System
+            document.getElementById('booking-title').innerText = SITE_CONFIG.booking.heading || SITE_CONFIG.booking.title;
+            renderServices();
+            
+            document.getElementById('footer-copy').innerHTML = `&copy; ${new Date().getFullYear()} ${SITE_CONFIG.shopName}`;
+        }
+
+        // Logic for cursor & reveal
+        const cursor = document.querySelector('#cursor');
+        document.addEventListener('mousemove', e => { 
+            cursor.style.left = e.clientX + 'px'; 
+            cursor.style.top = e.clientY + 'px'; 
+        });
+
+        function reveal() {
+            document.querySelectorAll(".reveal").forEach(r => {
+                if (r.getBoundingClientRect().top < window.innerHeight - 100) r.classList.add("active");
+            });
+        }
+
+        window.addEventListener("scroll", () => {
+            reveal();
+            const nav = document.getElementById('main-nav');
+            if (window.scrollY > 50) {
+                nav.classList.add('scrolled');
+            } else {
+                nav.classList.remove('scrolled');
+            }
+            document.getElementById('hero-img-src').style.transform = `scale(1.1) translateY(${window.scrollY * 0.2}px)`;
+        });
+
+        initSite();
+        reveal();
+    </script>
+</body>
+</html>
