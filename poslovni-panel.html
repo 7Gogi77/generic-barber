@@ -1268,6 +1268,20 @@
             }
         }
 
+        // Mark an adminSchedule key as deleted to prevent re-merge
+        async function markAdminEntryDeleted(key) {
+            if (!key) return false;
+            const base = 'https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app/';
+            try {
+                // write tombstone under site_config/adminSchedule/deleted/{key}
+                await fetch(base + `site_config/adminSchedule/deleted/${key}.json`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(true) });
+                // also record under adminSchedule/deleted for completeness
+                try { await fetch(base + `adminSchedule/deleted/${key}.json`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(true) }); } catch(_){}
+                console.log('markAdminEntryDeleted:', key);
+                return true;
+            } catch (e) { console.warn('markAdminEntryDeleted failed', e); return false; }
+        }
+
         // Save scheduleData using StorageManager and notify other tabs
         window.saveScheduleData = function saveScheduleData() {
             try {
@@ -2137,7 +2151,11 @@
                                         if (pairList.length > 0) {
                                             debugLog(`📥 Merging ${pairList.length} adminSchedule entries into scheduleData`);
                                             scheduleData.events = scheduleData.events || [];
+                                            // build deleted map if present
+                                            const deletedMapRoot = (config && config.adminSchedule && config.adminSchedule.deleted) ? config.adminSchedule.deleted : {};
                                             pairList.forEach(({ key, item }) => {
+                                                // skip if marked deleted
+                                                if (key && deletedMapRoot && deletedMapRoot[key]) return;
                                                 try {
                                                     const evId = item.id || (key ? `admin_${key}` : `admin_${Date.now()}_${Math.random().toString(36).slice(2,6)}`);
                                                     // Skip if identical adminKey already present
@@ -2196,6 +2214,7 @@
                     if (cfgRes2.ok) {
                         const cfg2 = await cfgRes2.json().catch(() => ({}));
                         const entries2 = cfg2?.adminSchedule?.entries || cfg2?.adminSchedule || null;
+                        const deletedMap = (cfg2 && cfg2.adminSchedule && cfg2.adminSchedule.deleted) ? cfg2.adminSchedule.deleted : {};
                         if (entries2) {
                             const pairList2 = [];
                             if (Array.isArray(entries2)) entries2.forEach(it => pairList2.push({ key: null, item: it }));
@@ -2205,6 +2224,8 @@
                                 scheduleData.events = scheduleData.events || [];
                                 pairList2.forEach(({ key, item }) => {
                                     try {
+                                        // skip if the key is marked deleted
+                                        if (key && deletedMap && deletedMap[key]) return;
                                         const evId = item.id || (key ? `admin_${key}` : `admin_${Date.now()}_${Math.random().toString(36).slice(2,6)}`);
                                         // Skip if identical adminKey present
                                         if (key && scheduleData.events.some(e => e.extendedProps && e.extendedProps.adminKey === key)) return;
