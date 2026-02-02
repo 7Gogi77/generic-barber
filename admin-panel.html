@@ -2306,7 +2306,7 @@
         });
         
         // Load appointments on init
-        function loadConfig() {
+        async function loadConfig() {
             const saved = localStorage.getItem('site_config_backup');
             if (saved) {
                 try {
