@@ -1511,36 +1511,9 @@
         }
 
         // Delete event from schedule
-        // --- Permanent Deletion Helpers ---
-        let deletedEventIds = new Set();
-        function loadDeletedEventIds() {
-            try {
-                const ids = JSON.parse(localStorage.getItem('schedule_deleted_ids') || '[]');
-                deletedEventIds = new Set(ids);
-            } catch { deletedEventIds = new Set(); }
-        }
-        function saveDeletedEventIds() {
-            localStorage.setItem('schedule_deleted_ids', JSON.stringify(Array.from(deletedEventIds)));
-        }
-        function filterDeletedEvents(events) {
-            return events.filter(e => !deletedEventIds.has(e.id));
-        }
-        function markEventDeleted(eventId) {
-            deletedEventIds.add(eventId);
-            saveDeletedEventIds();
-        }
-        function isEventDeleted(eventId) {
-            return deletedEventIds.has(eventId);
-        }
-        window.deletionDebug = {
-            show() {
-                console.log('Deleted IDs:', Array.from(deletedEventIds));
-                console.log('Active events:', filterDeletedEvents(scheduleData.events));
-            },
-            getDeleted() { return Array.from(deletedEventIds); },
-            getActive() { return filterDeletedEvents(scheduleData.events); },
-            clear() { deletedEventIds = new Set(); saveDeletedEventIds(); }
-        };
+        // --- Permanent Deletion Helpers (defined earlier) ---
+        // (deduplicated helper functions live above)
+        
         async function deleteScheduleEvent(eventId) {
             try {
                 console.log(`🗑️  Deleting event: ${eventId}`);
