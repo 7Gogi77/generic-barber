@@ -1020,6 +1020,11 @@
     <script src="/js/calendar-engine.js?v=2"></script>
 
     <script>
+    // Ensure deleted event IDs are loaded before any schedule logic
+    loadDeletedEventIds();
+    </script>
+
+    <script>
 
 
         // ===== CALENDAR INITIALIZATION =====
@@ -1086,6 +1091,10 @@
                     if (!scheduleData || !Array.isArray(scheduleData.events)) {
                         scheduleData = await StorageManager.load('schedule');
                     }
+                    // Filter out deleted events after loading
+                    if (scheduleData && Array.isArray(scheduleData.events)) {
+                        scheduleData.events = filterDeletedEvents(scheduleData.events);
+                    }
                 } catch (e) {
                     console.warn('⚠ Failed to load schedule for customers view', e);
                 }
@@ -1146,140 +1155,63 @@
         }
 
         // Delete event from schedule
-        async function deleteScheduleEvent(eventId) {
+        // --- Permanent Deletion Helpers ---
+        let deletedEventIds = new Set();
+        function loadDeletedEventIds() {
             try {
-                const existing = scheduleData.events.find(e => e.id === eventId);
-
-                // Remove from in-memory schedule and persist without broadcasting
-                scheduleData.events = scheduleData.events.filter(e => e.id !== eventId);
-                if (window.saveScheduleDataNoBroadcast) {
-                    try { await window.saveScheduleDataNoBroadcast(); console.log('✓ schedule saved (no broadcast) after delete'); } catch(e) { console.warn('✗ save after delete failed', e); }
-                } else if (window.saveScheduleData) {
-                    try { await window.saveScheduleData(); console.log('✓ schedule saved after delete'); } catch(e) { console.warn('✗ save after delete failed', e); }
-                } else {
-                    try { localStorage.setItem('schedule', JSON.stringify(scheduleData)); } catch(e) { }
-                }
-                    // If no events remain, nuke schedule from all sources
-                    if (scheduleData.events.length === 0) {
-                        try {
-                            localStorage.removeItem('schedule');
-                            if (window.StorageManager && StorageManager.delete) {
-                                await StorageManager.delete('schedule');
-                            }
-                            // Nuke Firebase schedule paths
-                            const base = 'https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app/';
-                            await fetch(base + 'site_config/adminSchedule/entries.json', { method: 'PUT', body: '{}' });
-                            await fetch(base + 'adminSchedule/entries.json', { method: 'PUT', body: '{}' });
-                            console.log('All schedule sources cleared after last event deleted');
-                        } catch(e) { console.warn('Failed to nuke schedule sources', e); }
-                    }
-
-                // Remove from calendar UI if present
-                try { const ev = window.calendar && window.calendar.getEventById(eventId); if (ev) ev.remove(); } catch(e) { /* ignore */ }
-
-                // If this event was mirrored from site_config, remove mirrored entry too
-                try {
-                    const adminKey = existing?.extendedProps?.adminKey;
-                    const base = 'https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app/';
-                    if (adminKey) {
-                        const delUrl = `${base}site_config/adminSchedule/entries/${adminKey}.json`;
-                        const delRes = await fetch(delUrl, { method: 'DELETE' });
-                        console.log('deleteScheduleEvent mirror delete status:', delRes.status);
-                        // Also remove the pushed node under adminSchedule/entries if present
-                        try {
-                            const delUrl2 = `${base}adminSchedule/entries/${adminKey}.json`;
-                            const delRes2 = await fetch(delUrl2, { method: 'DELETE' });
-                            console.log('deleteScheduleEvent mirror delete (entries) status:', delRes2.status);
-                        } catch(e) { console.warn('deleteScheduleEvent mirror delete (entries) failed', e); }
-
-                        // Additionally remove any adminSchedule children that reference this event id
-                        try {
-                            const pushedRes = await fetch(base + 'adminSchedule/entries.json');
-                            if (pushedRes.ok) {
-                                const pushed = await pushedRes.json().catch(() => null);
-                                if (pushed && typeof pushed === 'object') {
-                                    for (const [k, it] of Object.entries(pushed)) {
-                                        try {
-                                            if (it && (String(it.id) === String(existing?.id) || it.customer === existing?.extendedProps?.customer)) {
-                                                await fetch(base + `adminSchedule/entries/${k}.json`, { method: 'DELETE' });
-                                                console.log('deleteScheduleEvent removed pushed child', k);
-                                            }
-                                        } catch(_){}
-                                    }
-                                }
-                            }
-                        } catch(_){}
-
-                        return true;
-                    }
-
-                    // Fallback: if no adminKey, try to find matching entry in site_config/adminSchedule/entries
-                    try {
-                        const listUrl = base + 'site_config/adminSchedule/entries.json';
-                        const listRes = await fetch(listUrl);
-                        if (listRes.ok) {
-                            const list = await listRes.json().catch(() => null);
-                            if (list && typeof list === 'object') {
-                                const matches = [];
-                                Object.entries(list).forEach(([k, it]) => {
-                                    try {
-                                        const itStart = it.startDate || it.start || null;
-                                        const itEnd = it.endDate || it.end || null;
-                                        const itCustomer = (it.customer || it.notes || '').trim();
-                                        const evStart = existing?.start ? existing.start.split('T')[0] : null;
-                                        const evEnd = existing?.end ? existing.end.split('T')[0] : null;
-                                        if (itStart === evStart && itEnd === evEnd && itCustomer && existing?.extendedProps?.customer && itCustomer === existing.extendedProps.customer) {
-                                            matches.push(k);
-                                        }
-                                    } catch(_) {}
-                                });
-                                for (const k of matches) {
-                                    try {
-                                        const delUrl = `${base}site_config/adminSchedule/entries/${k}.json`;
-                                        const r = await fetch(delUrl, { method: 'DELETE' });
-                                        console.log('deleteScheduleEvent fallback delete', k, r.status);
-                                        // also remove under adminSchedule/entries
-                                        try { await fetch(`${base}adminSchedule/entries/${k}.json`, { method: 'DELETE' }); console.log('deleteScheduleEvent fallback delete pushed', k); } catch(e) { console.warn('deleteScheduleEvent fallback delete pushed failed', e); }
-                                    } catch(e) { console.warn('deleteScheduleEvent fallback delete failed', e); }
-                                }
-                                // Finally, ensure site_config.json root has these entries removed to avoid future re-PUTs
-                                try {
-                                    const cfgUrl = base + 'site_config.json';
-                                    const cfgRes = await fetch(cfgUrl);
-                                    if (cfgRes.ok) {
-                                        const cfg = await cfgRes.json().catch(() => null);
-                                        if (cfg && cfg.adminSchedule && cfg.adminSchedule.entries) {
-                                            // entries may be array or object
-                                            if (Array.isArray(cfg.adminSchedule.entries)) {
-                                                cfg.adminSchedule.entries = cfg.adminSchedule.entries.filter(it => {
-                                                    const itId = it && it.id ? String(it.id) : null;
-                                                    return !matches.includes(itId);
-                                                });
-                                            } else if (typeof cfg.adminSchedule.entries === 'object') {
-                                                for (const mk of Object.keys(cfg.adminSchedule.entries)) {
-                                                    if (matches.includes(mk)) delete cfg.adminSchedule.entries[mk];
-                                                }
-                                            }
-                                            // PUT updated config back
-                                            try {
-                                                await fetch(cfgUrl, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(cfg) });
-                                                console.log('deleteScheduleEvent: updated site_config.json to remove adminSchedule entries');
-                                            } catch(e) { console.warn('deleteScheduleEvent: failed to PUT updated site_config.json', e); }
-                                        }
-                                    }
-                                } catch(e) { console.warn('deleteScheduleEvent: failed to clean site_config.json', e); }
-                                if (matches.length > 0) return true;
-                            }
-                        }
-                    } catch (listErr) { console.warn('⚠ deleteScheduleEvent fallback search failed', listErr); }
-
-                } catch (mirrorErr) { console.warn('⚠ mirror delete failed', mirrorErr); }
-
-                return true;
-            } catch (err) {
-                console.error('✗ deleteScheduleEvent failed', err);
-                return false;
+                const ids = JSON.parse(localStorage.getItem('schedule_deleted_ids') || '[]');
+                deletedEventIds = new Set(ids);
+            } catch { deletedEventIds = new Set(); }
+        }
+        function saveDeletedEventIds() {
+            localStorage.setItem('schedule_deleted_ids', JSON.stringify(Array.from(deletedEventIds)));
+        }
+        function filterDeletedEvents(events) {
+            return events.filter(e => !deletedEventIds.has(e.id));
+        }
+        function markEventDeleted(eventId) {
+            deletedEventIds.add(eventId);
+            saveDeletedEventIds();
+        }
+        function isEventDeleted(eventId) {
+            return deletedEventIds.has(eventId);
+        }
+        window.deletionDebug = {
+            show() {
+                console.log('Deleted IDs:', Array.from(deletedEventIds));
+                console.log('Active events:', filterDeletedEvents(scheduleData.events));
+            },
+            getDeleted() { return Array.from(deletedEventIds); },
+            getActive() { return filterDeletedEvents(scheduleData.events); },
+            clear() { deletedEventIds = new Set(); saveDeletedEventIds(); }
+        };
+        async function deleteScheduleEvent(eventId) {
+        // --- Permanent Deletion: Mark event as deleted and update all sources ---
+        try {
+            // Mark as deleted locally
+            markEventDeleted(eventId);
+            // Remove from in-memory schedule and persist
+            scheduleData.events = scheduleData.events.filter(e => e.id !== eventId);
+            if (window.saveScheduleDataNoBroadcast) {
+                try { await window.saveScheduleDataNoBroadcast(); } catch(e) { }
+            } else if (window.saveScheduleData) {
+                try { await window.saveScheduleData(); } catch(e) { }
+            } else {
+                try { localStorage.setItem('schedule', JSON.stringify(scheduleData)); } catch(e) { }
             }
+            // Remove from calendar UI if present
+            try { const ev = window.calendar && window.calendar.getEventById(eventId); if (ev) ev.remove(); } catch(e) { }
+            // Remove from Firebase (all known schedule paths)
+            const base = 'https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app/';
+            // Try to delete from both adminSchedule/entries and site_config/adminSchedule/entries
+            try { await fetch(base + `adminSchedule/entries/${eventId}.json`, { method: 'DELETE' }); } catch(e) {}
+            try { await fetch(base + `site_config/adminSchedule/entries/${eventId}.json`, { method: 'DELETE' }); } catch(e) {}
+            // Optionally, mark tombstone in Firebase (for multi-client sync)
+            try { await fetch(base + `site_config/adminSchedule/deleted/${eventId}.json`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(true) }); } catch(e) {}
+            return true;
+        } catch (err) {
+            console.error('✗ deleteScheduleEvent failed', err);
+            return false;
         }
 
         // Mark an adminSchedule key as deleted to prevent re-merge
