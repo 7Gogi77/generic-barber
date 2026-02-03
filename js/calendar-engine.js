@@ -388,98 +388,56 @@ const CalendarEngine = {
       containerElement.style.width = '100%';
       containerElement.style.overflow = 'auto';
 
+      // Compute slot duration from SITE_CONFIG if present
+      const slotMinutes = (window.SITE_CONFIG && window.SITE_CONFIG.booking && window.SITE_CONFIG.booking.slotDuration) ? window.SITE_CONFIG.booking.slotDuration : 15;
+      const slotDurationStr = `00:${('0' + slotMinutes).slice(-2)}:00`;
+
       const calendar = new FullCalendar.Calendar(containerElement, {
-        // Core settings
         initialView: options.initialView || 'dayGridMonth',
-        // Use a computed pixel height so FullCalendar timeGrid can render correctly
-        height: window._calendarHeight || 'auto',
-        contentHeight: 'auto',
         headerToolbar: {
           left: 'prev,next today',
           center: 'title',
           right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
         },
-        // Force visible scrollbars in time grid
-        nowIndicator: true,
-
-        // Locale
         locale: 'sl',
-        firstDay: 1, // Monday
-
-        // Max events per day (month view)
+        firstDay: 1,
+        nowIndicator: true,
         dayMaxEvents: 3,
         moreLinkClick: 'popover',
-
-        // Business hours overlay (visual guide)
+        // Business hours (visual only)
         businessHours: {
-          daysOfWeek: [1, 2, 3, 4, 5],
+          daysOfWeek: [1,2,3,4,5],
           startTime: (window.SITE_CONFIG && window.SITE_CONFIG.booking && window.SITE_CONFIG.booking.businessHours) ? (('0' + window.SITE_CONFIG.booking.businessHours.start).slice(-2) + ':00') : '09:00',
           endTime: (window.SITE_CONFIG && window.SITE_CONFIG.booking && window.SITE_CONFIG.booking.businessHours) ? (('0' + window.SITE_CONFIG.booking.businessHours.end).slice(-2) + ':00') : '17:00'
         },
-
-        // TimeGrid-specific settings (Day & Week)
+        // TimeGrid options
         slotMinTime: (window.SITE_CONFIG && window.SITE_CONFIG.booking && window.SITE_CONFIG.booking.businessHours) ? (('0' + window.SITE_CONFIG.booking.businessHours.start).slice(-2) + ':00:00') : '06:00:00',
         slotMaxTime: (window.SITE_CONFIG && window.SITE_CONFIG.booking && window.SITE_CONFIG.booking.businessHours) ? (('0' + window.SITE_CONFIG.booking.businessHours.end).slice(-2) + ':00:00') : '22:00:00',
-        slotDuration: '00:15:00',
+        slotDuration: slotDurationStr,
         slotLabelInterval: { hours: 1 },
         slotLabelFormat: { hour: '2-digit', minute: '2-digit', hour12: false },
         allDaySlot: true,
         views: {
-          timeGridWeek: {
-            type: 'timeGrid',
-            buttonText: 'Week',
-            dayHeaderFormat: { weekday: 'short', month: 'short', day: 'numeric' },
-            snapDuration: '00:05:00'
-          },
-          timeGridDay: {
-            type: 'timeGrid',
-            buttonText: 'Day',
-            dayHeaderFormat: { weekday: 'long', month: 'short', day: 'numeric' },
-            snapDuration: '00:05:00'
-          }
+          dayGridMonth: { type: 'dayGridMonth' },
+          timeGridWeek: { type: 'timeGrid' },
+          timeGridDay: { type: 'timeGrid' }
         },
+        height: calcHeight,
+        contentHeight: 'auto',
 
-        // Events
-        events: async (info, successCallback, failureCallback) => { 
-          // Ensure view size is updated when dates change
-        },
-
-        // Called after view changes/dates change - force update of sizes so timeGrid renders correctly
-        datesSet: (dateInfo) => {
-          try {
-            const cal = dateInfo.view && dateInfo.view.calendar ? dateInfo.view.calendar : null;
-            const h = window._calendarHeight || 600;
-            if (containerElement) containerElement.style.height = h + 'px';
-            if (cal && typeof cal.updateSize === 'function') cal.updateSize();
-          } catch (e) { console.warn('⚠ datesSet handler failed', e); }
-        },
-
+        // Load events
         events: async (info, successCallback, failureCallback) => {
           try {
-            console.log('📅 Loading events...');
             const events = await CalendarEngine.generateCalendarEvents(scheduleData);
-            console.log('📅 Loaded', events.length, 'schedule events');
-            // Bookings are now stored in scheduleData.events and will be
-            // converted by generateCalendarEvents. No legacy localStorage
-            // appointment parsing is required here.
-            
-            console.log('📊 Total events being passed to FullCalendar:', events.length);
-            events.forEach((e, i) => {
-              console.log(`Event ${i}:`, {
-                id: e.id,
-                title: e.title,
-                start: e.start,
-                end: e.end,
-                isBooking: e.extendedProps?.isBooking
-              });
-            });
-            console.log('✅ Calling successCallback with', events.length, 'events');
             successCallback(events);
-          } catch (error) {
-            console.error('❌ Failed to load events:', error);
-            failureCallback(error);
-          }
+          } catch (err) { failureCallback(err); }
         },
+
+        // Basic sizing hooks so FullCalendar can recompute after view changes
+        datesSet: (dateInfo) => {
+          try { if (calendar && typeof calendar.updateSize === 'function') calendar.updateSize(); } catch (e) { console.warn('⚠ datesSet failed', e); }
+        },
+        viewDidMount: (arg) => { try { if (calendar && typeof calendar.updateSize === 'function') calendar.updateSize(); } catch (e) { console.warn('⚠ viewDidMount failed', e); } },
 
         // Interactions
         selectable: true,
