@@ -2291,13 +2291,24 @@
                     }
                 })(eventPayload);
 
+            // Resolve type colors & flags from ScheduleRules (when available), and mark all-day/blocking
+            const typeCfg = (typeof ScheduleRules !== 'undefined' && ScheduleRules.TYPE_CONFIG && ScheduleRules.TYPE_CONFIG[type]) ? ScheduleRules.TYPE_CONFIG[type] : null;
+            const bgColor = typeCfg?.backgroundColor || 'rgba(52, 152, 219, 0.2)';
+            const brColor = typeCfg?.borderColor || '#3498db';
+            const cls = ['event-type-' + (type || 'booking')];
+            if (typeCfg?.isBlocking) cls.push('event-blocking');
+            const isAllDay = !startTime && !endTime;
+
             window.calendar.addEvent({
                 id: eventId,
                 title: title,
-                start: new Date(start).toISOString(),
-                end: new Date(end).toISOString(),
-                backgroundColor: 'rgba(52, 152, 219, 0.2)',
-                borderColor: '#3498db',
+                start: isAllDay ? (startDate) : new Date(start).toISOString(),
+                end: isAllDay ? (endDate) : new Date(end).toISOString(),
+                allDay: isAllDay,
+                display: (typeCfg?.isBlocking ? 'background' : 'auto'),
+                classNames: cls,
+                backgroundColor: bgColor,
+                borderColor: brColor,
                 extendedProps: Object.assign({
                     type: type,
                     description: description,

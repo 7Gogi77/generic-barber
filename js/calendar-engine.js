@@ -1236,6 +1236,16 @@ const CalendarEngine = {
           event.setExtendedProp('type', type);
           event.setStart(start);
           event.setEnd(end);
+
+          // Persist update to storage/DB
+          try {
+            if (typeof window.saveScheduleData === 'function') {
+              await window.saveScheduleData();
+              console.log('✓ Event update persisted');
+            } else {
+              try { localStorage.setItem('schedule', JSON.stringify(scheduleData)); console.log('✓ Event update saved to localStorage'); } catch(e){}
+            }
+          } catch (saveErr) { console.warn('⚠ Failed to persist event update', saveErr); }
         }
       } else {
         // Create new event
@@ -1258,6 +1268,16 @@ const CalendarEngine = {
           console.log('📌 Formatted event for calendar:', formattedEvent);
           calendar.addEvent(formattedEvent);
           console.log('📌 Event added to calendar, total events:', scheduleData.events.length);
+
+          // Persist creation to storage/DB
+          try {
+            if (typeof window.saveScheduleData === 'function') {
+              await window.saveScheduleData();
+              console.log('✓ New event persisted');
+            } else {
+              try { localStorage.setItem('schedule', JSON.stringify(scheduleData)); console.log('✓ New event saved to localStorage'); } catch(e){}
+            }
+          } catch (saveErr) { console.warn('⚠ Failed to persist new event', saveErr); }
         } catch (err) {
           console.error('❌ Error adding event to calendar:', err);
           console.error('Error stack:', err.stack);
