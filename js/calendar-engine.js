@@ -703,6 +703,7 @@ const CalendarEngine = {
         // Styling
         nowIndicator: true,
         eventDisplay: 'block',
+        allDaySlot: true,
         height: window._calendarHeight || 600,
         contentHeight: 'parent'
       });
@@ -739,8 +740,8 @@ const CalendarEngine = {
 
               if (fcRoot) { fcRoot.style.height = avail + 'px'; fcRoot.style.minHeight = avail + 'px'; fcRoot.style.overflow = 'visible'; }
               if (viewHarness) { viewHarness.style.height = avail + 'px'; viewHarness.style.minHeight = avail + 'px'; }
-              if (timegrid) { timegrid.style.height = avail + 'px'; timegrid.style.minHeight = avail + 'px'; timegrid.style.overflow = 'auto'; }
-              if (scrollBodies && scrollBodies.length) { scrollBodies.forEach(b => { b.style.height = avail + 'px'; b.style.minHeight = avail + 'px'; b.style.overflow = 'auto'; }); }
+              if (timegrid) { timegrid.style.height = avail + 'px'; timegrid.style.minHeight = avail + 'px'; timegrid.style.overflowX = 'hidden'; timegrid.style.overflowY = 'auto'; }
+              if (scrollBodies && scrollBodies.length) { scrollBodies.forEach(b => { b.style.height = avail + 'px'; b.style.minHeight = avail + 'px'; b.style.overflowX = 'hidden'; b.style.overflowY = 'auto'; }); }
 
               // Also set calendar options so FullCalendar knows the explicit height
               try { if (calendar && typeof calendar.setOption === 'function') { calendar.setOption('height', avail); calendar.setOption('contentHeight', 'parent'); } } catch (err) { /* ignore */ }
@@ -972,7 +973,7 @@ const CalendarEngine = {
         if (scroller.closest('.fc-daygrid-all-day-section')) {
           scroller.style.overflow = 'visible'; // Allow all-day events to display
         } else {
-          scroller.style.overflow = 'auto'; // Time grid can use auto/scroll
+          scroller.style.overflowX = 'hidden'; scroller.style.overflowY = 'auto'; // Time grid scrolls vertically only
         }
         scroller.style.display = 'block';
       });

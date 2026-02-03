@@ -311,6 +311,16 @@
             overflow: visible !important;
         }
 
+        /* Ensure all-day area stays above the timed grid and the timed grid scrolls vertically only */
+        .fc .fc-daygrid { order: 0; flex: 0 0 auto; }
+        .fc .fc-timegrid { order: 1; display: flex; flex-direction: column; overflow: hidden; }
+        .fc .fc-scrollgrid-section-body { overflow-x: hidden !important; overflow-y: auto !important; -webkit-overflow-scrolling: touch; }
+        .fc .fc-timegrid .fc-scrollgrid-section-body { overflow-x: hidden !important; overflow-y: auto !important; }
+        .fc .fc-scroller { overflow-x: hidden !important; overflow-y: auto !important; }
+        .fc .fc-col-header, .fc .fc-daygrid { flex: 0 0 auto; }
+        /* Prevent horizontal scroll inside time slots */
+        .fc .fc-timegrid .fc-timegrid-slots { overflow-x: hidden !important; }
+
         .fc-daygrid-body .fc-daygrid-row {
             overflow: visible !important;
         }
@@ -2990,8 +3000,8 @@
                     console.log('fixLayout: setting available height', avail, {toolbarH, headerH, containerH: containerElement.clientHeight});
                     if (fcRoot) { fcRoot.style.height = avail + 'px'; fcRoot.style.minHeight = avail + 'px'; fcRoot.style.overflow = 'visible'; }
                     if (viewHarness) { viewHarness.style.height = avail + 'px'; viewHarness.style.minHeight = avail + 'px'; }
-                    if (timegrid) { timegrid.style.height = avail + 'px'; timegrid.style.minHeight = avail + 'px'; timegrid.style.overflow = 'auto'; }
-                    if (scrollBodies && scrollBodies.length) { scrollBodies.forEach(b => { b.style.height = avail + 'px'; b.style.minHeight = avail + 'px'; b.style.overflow = 'auto'; }); }
+                    if (timegrid) { timegrid.style.height = avail + 'px'; timegrid.style.minHeight = avail + 'px'; timegrid.style.overflowX = 'hidden'; timegrid.style.overflowY = 'auto'; }
+                    if (scrollBodies && scrollBodies.length) { scrollBodies.forEach(b => { b.style.height = avail + 'px'; b.style.minHeight = avail + 'px'; b.style.overflowX = 'hidden'; b.style.overflowY = 'auto'; }); }
                     if (window.calendar && typeof window.calendar.updateSize === 'function') window.calendar.updateSize();
                     console.log('fixLayout: scrollBodies heights:', Array.from(containerElement.querySelectorAll('.fc-scrollgrid-section-body')).map(b => Math.round(b.getBoundingClientRect().height)));
                 } catch (err) { console.warn('fixLayout failed', err); }
