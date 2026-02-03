@@ -8,35 +8,6 @@
     <title>Poslovni Panel - Urnik</title>
     <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet" />
     <link href="https://unpkg.com/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet" onerror="this.remove()" />
-        // ===== DEBUGGING TOOLS =====
-        window.deletionDebug = {
-            show: () => {
-                console.table({
-                    "Deleted IDs": Array.from(deletedEventIds).join(", ") || "None",
-                    "Total Deleted": deletedEventIds.size,
-                    "Total in Memory": scheduleData.events ? scheduleData.events.length : 0,
-                    "Active Events": filterDeletedEvents(scheduleData.events || []).length
-                });
-            },
-            getDeleted: () => Array.from(deletedEventIds),
-            getActive: () => filterDeletedEvents(scheduleData.events || []),
-            clear: () => {
-                deletedEventIds.clear();
-                saveDeletedEventIds();
-                console.log("✓ Cleared all deleted IDs");
-            },
-            markDeleted: (id) => {
-                markEventDeleted(id);
-                scheduleData.events = scheduleData.events.filter(e => e.id !== id);
-                console.log(`✓ Marked ${id} as deleted`);
-            },
-            stats: () => ({
-                totalInScheduleData: scheduleData.events ? scheduleData.events.length : 0,
-                deletedCount: deletedEventIds.size,
-                activeCount: filterDeletedEvents(scheduleData.events || []).length
-            })
-        };
-        console.log("💡 Use window.deletionDebug.show() to see deletion status");
     <script type="module" src="/main.js"></script>
     <style>
         * {
