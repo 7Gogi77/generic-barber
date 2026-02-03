@@ -1165,6 +1165,67 @@ const CalendarEngine = {
   },
 
   /**
+   * Remake Day/Week timeGrid views by fully reinitializing the calendar and cycling views
+   * Useful when FullCalendar's timeGrid DOM fails to render the hourly slots
+   */
+  async remakeTimeGridViews(preferredView = 'timeGridWeek', scheduleDataParam) {
+    try {
+      console.log('🔁 Remaking Day/Week views (preferredView=', preferredView, ')');
+      const schedule = scheduleDataParam || (typeof window !== 'undefined' ? window.scheduleData : null);
+
+      // Destroy existing calendar if present
+      try {
+        if (this.calendar && typeof this.calendar.destroy === 'function') {
+          console.log('🔁 Destroying existing calendar instance');
+          this.calendar.destroy();
+        }
+      } catch (err) { console.warn('⚠ Error destroying calendar', err); }
+
+      // Clear container DOM to ensure a fresh render
+      if (this.containerElement) {
+        try {
+          this.containerElement.innerHTML = '';
+        } catch (err) { console.warn('⚠ Failed to clear containerElement innerHTML', err); }
+      }
+
+      // Re-initialize calendar with timeGridWeek as initial view (or preferredView passed)
+      const container = this.containerElement || document.getElementById('scheduleCalendar');
+      if (!container) throw new Error('Calendar container not found');
+
+      const newCal = this.initializeCalendar(container, schedule || (window.scheduleData || {}), { initialView: preferredView });
+      if (!newCal) throw new Error('Failed to initialize new calendar');
+
+      // Store and expose
+      this.calendar = newCal;
+      try { window.calendar = newCal; } catch (e) { /* ignore */ }
+
+      // Cycle Week/Day views briefly to force FullCalendar to build both DOMs
+      const views = ['timeGridWeek', 'timeGridDay'];
+      let delay = 120;
+      for (const v of views) {
+        try {
+          console.log(`🔁 Switching to view ${v} to warm DOM`);
+          newCal.changeView(v);
+          await new Promise(r => setTimeout(r, delay));
+          delay = Math.min(400, delay * 2);
+        } catch (err) { console.warn('⚠ changeView failed for', v, err); }
+      }
+
+      // Return to preferred view
+      try { newCal.changeView(preferredView); } catch (err) { /* ignore */ }
+
+      // Final size update
+      if (newCal && typeof newCal.updateSize === 'function') newCal.updateSize();
+
+      console.log('✅ remakeTimeGridViews completed');
+      return newCal;
+    } catch (err) {
+      console.error('❌ remakeTimeGridViews failed', err);
+      throw err;
+    }
+  },
+
+  /**
    * Open event creation/editing modal
    */
   openEventModal(event, selectInfo, calendar, scheduleData) {

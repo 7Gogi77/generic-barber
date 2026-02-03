@@ -3018,6 +3018,13 @@
                     try { const evs = await CalendarEngine.generateCalendarEvents(scheduleData); console.log('CalendarEngine.generateCalendarEvents', evs.length); } catch (err) { console.warn('generateCalendarEvents failed', err); }
                 } catch (err) { console.warn('dumpDiagnostics failed', err); }
             },
+            remakeViews: async (view = 'timeGridWeek') => {
+                try {
+                    console.log('remakeViews: calling CalendarEngine.remakeTimeGridViews', view);
+                    await CalendarEngine.remakeTimeGridViews(view, scheduleData);
+                    console.log('remakeViews: done');
+                } catch (err) { console.warn('remakeViews failed', err); }
+            },
             // Force timegrid visibility (temporary debug)
             forceTimegrid: () => {
                 try {
@@ -3045,6 +3052,7 @@
         <button id="fixLayoutBtn" onclick="window.deletionDebug.fixLayout()">🔧 Fix calendar layout</button>
         <button id="dumpDiagBtn" onclick="window.deletionDebug.dumpDiagnostics()">📋 Dump calendar diagnostics</button>
         <button id="forceTimegridBtn" onclick="window.deletionDebug.forceTimegrid()">⏰ Force timegrid visibility</button>
+        <button id="remakeViewsBtn" onclick="window.deletionDebug.remakeViews()">🔁 Remake Day & Week</button>
     </div>
 
 </body>
