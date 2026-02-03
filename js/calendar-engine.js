@@ -148,16 +148,60 @@ const CalendarEngine = {
     const customerName = event.extendedProps?.customer || null;
     const titleText = isBooking ? (customerName || event.title || 'Rezervacija') : ((typeConfig?.icon || '📅') + ' ' + (event.title || event.type));
 
-    // Use ISO strings consistently: for all-day events pass date-only strings
-    const startIso = isAllDay ? startDate.toISOString().split('T')[0] : startDate.toISOString();
-    const endIso = isAllDay ? endDate.toISOString().split('T')[0] : endDate.toISOString();
+    // For timed events, return Date objects to preserve local time in FullCalendar
+    if (!isAllDay) {
+      return {
+        id: event.id,
+        title: titleText,
+        start: startDate,
+        end: endDate,
+        allDay: false,
+        color: typeConfig?.color || '#95a5a6',
+        backgroundColor: typeConfig?.backgroundColor || 'rgba(149, 165, 166, 0.15)',
+        borderColor: typeConfig?.borderColor || '#7f8c8d',
+        textColor: '#2c3e50',
+        extendedProps: {
+          type: event.type,
+          eventId: event.id,
+          isBlocking: event.rules?.isBlocking || false,
+          isSubtractive: event.rules?.isSubtractive || false,
+          priority: event.rules?.conflictPriority || 0,
+          isMultiDay: isMultiDay,
+          // Merge booking-specific extended props (customer, email, phone, services, price, duration, notes)
+          isBooking: isBooking,
+          customer: customerName || event.extendedProps?.customerName || null,
+          email: event.extendedProps?.email || null,
+          phone: event.extendedProps?.phone || null,
+          services: event.extendedProps?.services || null,
+          price: typeof event.extendedProps?.price !== 'undefined' ? event.extendedProps.price : null,
+          duration: event.extendedProps?.duration || null,
+          notes: event.extendedProps?.notes || ''
+        },
+        // Blocking events (vacation, sick leave, day off) show as background
+        display: event.rules?.isBlocking ? 'background' : 'auto',
+        // Allow drag & drop
+        editable: true,
+        durationEditable: true,
+        // Custom styling
+        classNames: [
+          'schedule-event',
+          `event-type-${event.type}`,
+          event.rules?.isBlocking ? 'event-blocking' : 'event-normal',
+          isMultiDay ? 'event-multiday' : 'event-single'
+        ]
+      };
+    }
+
+    // Use ISO date-only strings for all-day events
+    const startIso = startDate.toISOString().split('T')[0];
+    const endIso = endDate.toISOString().split('T')[0];
 
     return {
       id: event.id,
       title: titleText,
       start: startIso,
       end: endIso,
-      allDay: !!isAllDay,
+      allDay: true,
       color: typeConfig?.color || '#95a5a6',
       backgroundColor: typeConfig?.backgroundColor || 'rgba(149, 165, 166, 0.15)',
       borderColor: typeConfig?.borderColor || '#7f8c8d',
