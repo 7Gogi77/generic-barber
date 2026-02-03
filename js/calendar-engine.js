@@ -1279,10 +1279,8 @@ const CalendarEngine = {
           // Format event for FullCalendar before adding
           const formattedEvent = CalendarEngine.formatCalendarEvent(newEvent);
           console.log('📌 Formatted event for calendar:', formattedEvent);
-          calendar.addEvent(formattedEvent);
-          console.log('📌 Event added to calendar, total events:', scheduleData.events.length);
 
-          // Persist creation to storage/DB
+          // Persist creation to storage/DB first so we treat scheduleData as canonical
           try {
             if (typeof window.saveScheduleData === 'function') {
               await window.saveScheduleData();
@@ -1291,6 +1289,14 @@ const CalendarEngine = {
               try { localStorage.setItem('schedule', JSON.stringify(scheduleData)); console.log('✓ New event saved to localStorage'); } catch(e){}
             }
           } catch (saveErr) { console.warn('⚠ Failed to persist new event', saveErr); }
+
+          // Refresh calendar from canonical schedule to avoid duplicates
+          if (typeof loadAppointmentsToCalendarNow === 'function') {
+            try { await loadAppointmentsToCalendarNow(); } catch (e) { console.warn('⚠ loadAppointmentsToCalendarNow failed', e); }
+          } else if (calendar) {
+            // Fallback: add the single formatted event
+            try { calendar.addEvent(formattedEvent); console.log('📌 Event added to calendar (fallback add)'); } catch(e) { console.warn('⚠ calendar.addEvent fallback failed', e); }
+          }
         } catch (err) {
           console.error('❌ Error adding event to calendar:', err);
           console.error('Error stack:', err.stack);
@@ -1506,16 +1512,16 @@ async function createWorkingHoursEvents(startTime, endTime) {
     // Save to storage
     await StorageManager.save('schedule', schedule);
     
-    // Update calendar if it exists
-    if (window.calendar) {
-      // Clear existing "Delo" events from calendar
+    // Refresh calendar from canonical schedule so rendering is consistent
+    if (typeof loadAppointmentsToCalendarNow === 'function') {
+      try { await loadAppointmentsToCalendarNow(); } catch (e) { console.warn('⚠ loadAppointmentsToCalendarNow failed', e); }
+    } else if (window.calendar) {
+      // Fallback: clear and add working hours manually
       window.calendar.getEvents().forEach(event => {
         if (event.extendedProps?.isWorkingHours) {
           event.remove();
         }
       });
-      
-      // Add new events to calendar
       schedule.events.filter(e => e.extendedProps?.isWorkingHours).forEach(event => {
         const formatted = CalendarEngine.formatCalendarEvent(event);
         window.calendar.addEvent(formatted);
