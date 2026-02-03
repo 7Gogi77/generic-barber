@@ -1379,9 +1379,9 @@
                         return ((c.fullName||'') + ' ' + (c.email||'') + ' ' + (c.phone||'')).toLowerCase().includes(term);
                     });
 
-                    let table = '<div style="overflow:auto; overflow-x:hidden; max-height: calc(100% - 160px);"><table class="customer-table"><thead><tr><th>Ime</th><th>Priimek</th><th>Email</th><th>Telefon</th><th style="text-align:right">Št. terminov</th></tr></thead><tbody>';
+                    let table = '<div style="overflow:auto; overflow-x:hidden; max-height: calc(100% - 160px);"><table class="customer-table"><thead><tr><th>Ime</th><th>Priimek</th><th>Email</th><th>Telefon</th><th style="text-align:right">Št. terminov</th><th style="text-align:right">Akcije</th></tr></thead><tbody>';
                     rows.forEach((c, idx) => {
-                        table += `<tr class="customer-row" data-idx="${idx}"><td>${c.firstName||'-'}</td><td>${c.surname||'-'}</td><td>${c.email||'-'}</td><td>${c.phone||'-'}</td><td style="text-align:right">${c.count||0}</td></tr>`;
+                        table += `<tr class="customer-row" data-idx="${idx}"><td>${c.firstName||'-'}</td><td>${c.surname||'-'}</td><td>${c.email||'-'}</td><td>${c.phone||'-'}</td><td style="text-align:right">${c.count||0}</td><td style="text-align:right"><button class="btn btn-danger btn-sm customerDeleteBtnRow" data-idx="${idx}">Izbriši</button></td></tr>`;
                     });
                     table += '</tbody></table></div>';
                     table += '<div id="customerDetail" style="padding:12px; border-top:1px solid #eee; display:none;"></div>';
@@ -1468,6 +1468,81 @@
                         if (t.id === 'customerCloseBtn' || (t.classList && t.classList.contains('btn') && t.classList.contains('btn-secondary'))) {
                             const d = document.getElementById('customerDetail'); if (d) d.style.display = 'none';
                         }
+
+                        // Row delete button (customer list)
+                        if (t.classList && t.classList.contains('customerDeleteBtnRow')) {
+                            try {
+                                const idx = Number(t.getAttribute('data-idx'));
+                                const rows = Array.from(document.querySelectorAll('#customerListContent table.customer-table tbody tr'));
+                                const rec = rows && rows[idx] ? rows[idx] : null;
+                                // Reconstruct the customer record from row text
+                                if (!rec) return;
+                                const cols = rec.querySelectorAll('td');
+                                const name = cols[0].textContent.trim() + ' ' + cols[1].textContent.trim();
+                                const email = cols[2].textContent.trim();
+                                const phone = cols[3].textContent.trim();
+                                if (!confirm(`Izbrišem stranko "${name}" iz baze strank?`)) return;
+                                // Find key in customerBase
+                                loadCustomerBase().then(() => {
+                                    let matchKey = null;
+                                    Object.entries(customerBase || {}).forEach(([k, r]) => {
+                                        if (matchKey) return;
+                                        if ((r.fullName && r.fullName === name) || (r.email && r.email === email) || (r.phone && r.phone === phone)) matchKey = k;
+                                    });
+                                    if (!matchKey) {
+                                        console.warn('No matching customer record found to delete');
+                                        alert('Stranka ni bila najdena v bazi');
+                                        return;
+                                    }
+                                    delete customerBase[matchKey];
+                                    saveCustomerBase();
+                                    // Attempt remote delete
+                                    try {
+                                        const base = 'https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app/';
+                                        fetch(base + `site_config/customers/${encodeURIComponent(matchKey)}.json`, { method: 'DELETE' }).then(() => console.log('✓ Remote customer deleted', matchKey)).catch(e => console.warn('⚠ Remote delete failed', e));
+                                    } catch (e) { console.warn('⚠ Remote delete failed', e); }
+
+                                    // Check bookings that reference this customer and optionally remove references
+                                    (async function handleBookingsCleanup(){
+                                        try {
+                                            const sched = await StorageManager.load('schedule');
+                                            const evs = sched && Array.isArray(sched.events) ? sched.events : [];
+                                            const refs = evs.filter(ev => {
+                                                const evName = (ev.extendedProps && ev.extendedProps.customer) ? ev.extendedProps.customer : (ev.title || '');
+                                                const evEmail = ev.extendedProps && ev.extendedProps.email ? ev.extendedProps.email : '';
+                                                const evPhone = ev.extendedProps && ev.extendedProps.phone ? ev.extendedProps.phone : '';
+                                                return (evName && evName.trim() === (name || '').trim()) || (email && evEmail && evEmail.trim() === (email || '').trim()) || (phone && evPhone && evPhone.trim() === (phone || '').trim());
+                                            });
+                                            if (refs.length > 0) {
+                                                if (confirm(`V ${refs.length} terminih je ta stranka. Ali želite odstraniti podatke stranke iz teh terminov? (OK = odstranite, Prekliči = pusti)`)) {
+                                                    let changed = false;
+                                                    evs.forEach(ev => {
+                                                        const name = (ev.extendedProps && ev.extendedProps.customer) ? ev.extendedProps.customer : (ev.title || '');
+                                                        const emailE = ev.extendedProps && ev.extendedProps.email ? ev.extendedProps.email : '';
+                                                        const phoneE = ev.extendedProps && ev.extendedProps.phone ? ev.extendedProps.phone : '';
+                                                        if ((name && name.trim() === name) || (email && emailE && emailE.trim() === email) || (phone && phoneE && phoneE.trim() === phone)) {
+                                                            if (ev.extendedProps) {
+                                                                delete ev.extendedProps.customer; delete ev.extendedProps.email; delete ev.extendedProps.phone; changed = true;
+                                                            }
+                                                            // also, if title equals name and extendedProps indicates booking, don't change title - leave as-is
+                                                        }
+                                                    });
+                                                    if (changed) {
+                                                        await StorageManager.save('schedule', sched);
+                                                        // Reload calendar events
+                                                        if (typeof loadAppointmentsToCalendarNow === 'function') loadAppointmentsToCalendarNow();
+                                                    }
+                                                }
+                                            }
+                                        } catch (e) { console.warn('⚠ error cleaning bookings', e); }
+                                    })();
+
+                                    // Refresh the panel
+                                    showCustomerListPanel();
+                                });
+                            } catch (err) { console.warn('customer delete failed', err); }
+                        }
+
                     });
                 })();
             }
