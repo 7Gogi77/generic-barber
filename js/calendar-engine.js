@@ -428,6 +428,19 @@ const CalendarEngine = {
             const cal = dateInfo.view && dateInfo.view.calendar ? dateInfo.view.calendar : null;
             const h = window._calendarHeight || 600;
             if (containerElement) containerElement.style.height = h + 'px';
+
+            // Toggle a class on the calendar container so our CSS only affects timeGrid views
+            try {
+              const viewType = (dateInfo.view && dateInfo.view.type) ? dateInfo.view.type : '';
+              if (containerElement) {
+                if (viewType === 'timeGridWeek' || viewType === 'timeGridDay' || viewType.startsWith('timeGrid')) {
+                  containerElement.classList.add('timegrid-active');
+                } else {
+                  containerElement.classList.remove('timegrid-active');
+                }
+              }
+            } catch (err) { console.warn('⚠ timegrid-active toggle failed', err); }
+
             if (cal && typeof cal.updateSize === 'function') cal.updateSize();
           } catch (e) { console.warn('⚠ datesSet handler failed', e); }
         },
