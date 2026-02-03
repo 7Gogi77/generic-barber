@@ -381,6 +381,33 @@
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
         }
 
+        /* ===== CUSTOMER PANEL ===== */
+        #customerListPanel {
+            width: 400px;
+            max-width: 90%;
+            display: none; /* toggled via JS */
+        }
+        #customerListPanel .panel-header {
+            display:flex;
+            align-items:center;
+            gap:8px;
+        }
+        #customerListPanel .customer-table {
+            width:100%;
+            border-collapse:collapse;
+            font-size:14px;
+        }
+        #customerListPanel th, #customerListPanel td {
+            padding:10px 8px;
+            border-bottom:1px solid #f2f2f2;
+            color: #2c3e50;
+        }
+        #customerListPanel tr.customer-row { cursor:pointer; transition: background 0.12s ease; }
+        #customerListPanel tr.customer-row:hover { background: #f6fbff; }
+        #customerListPanel .no-customers { color:#888; padding:12px; }
+        #customerSearch { padding:8px 10px; border:1px solid #ddd; border-radius:6px; width:220px; }
+        #customerDetail { padding:12px; border-top:1px solid #eee; display:none; }
+
         .modal-header {
             font-size: 20px;
             font-weight: 600;
@@ -655,12 +682,18 @@
         </div>
 
         <!-- CUSTOMER LIST PANEL -->
-        <div id="customerListPanel" style="display:none; position:fixed; left:80px; top:0; height:100%; width:350px; background:#fff; color:#222; z-index:2000; box-shadow:2px 0 16px rgba(0,0,0,0.15); overflow-y:auto; transition:all 0.3s;">
-            <div style="padding:24px 20px 12px 20px; border-bottom:1px solid #eee; display:flex; align-items:center; justify-content:space-between;">
-                <h3 style="margin:0; font-size:20px; font-weight:700; color:#2c3e50;">Seznam strank</h3>
-                <button onclick="document.getElementById('customerListPanel').style.display='none'" style="background:none; border:none; font-size:22px; color:#888; cursor:pointer;">&times;</button>
+        <div id="customerListPanel" style="display:none; position:fixed; left:80px; top:0; height:100%; width:400px; max-width:90%; background:#fff; color:#222; z-index:2000; box-shadow:2px 0 16px rgba(0,0,0,0.15); overflow-y:auto; transition:all 0.3s;">
+            <div style="padding:12px 16px; border-bottom:1px solid #eee; display:flex; align-items:center; justify-content:space-between;">
+                <div class="panel-header">
+                    <h3 style="margin:0; font-size:18px; font-weight:700; color:#2c3e50;">Seznam strank</h3>
+                </div>
+                <div style="display:flex; gap:8px; align-items:center;">
+                    <input id="customerSearch" placeholder="Išči ime, email ali telefon..." style="padding:8px 10px; border:1px solid #ddd; border-radius:6px; width:220px;" />
+                    <button id="customerExportBtn" class="btn btn-secondary" style="padding:6px 10px; font-size:12px;">Izvozi</button>
+                    <button onclick="document.getElementById('customerListPanel').style.display='none'" style="background:none; border:none; font-size:22px; color:#888; cursor:pointer;">&times;</button>
+                </div>
             </div>
-            <div id="customerListContent" style="padding:16px 20px;"></div>
+            <div id="customerListContent" style="padding:12px 16px; overflow-y:auto;"></div>
         </div>
     </div>
 
@@ -1208,20 +1241,63 @@
                     customerMap[key].count++;
                 });
 
-                let html = '';
                 const customers = Object.values(customerMap).sort((a, b) => (a.surname || '').localeCompare(b.surname || ''));
-                if (customers.length === 0) {
-                    html = '<div style="color:#888;">Ni strank.</div>';
-                } else {
-                    html = '<table style="width:100%; border-collapse:collapse;">';
-                    html += '<thead><tr style="border-bottom:1px solid #eee;"><th style="text-align:left; padding:6px 4px;">Ime</th><th style="text-align:left; padding:6px 4px;">Priimek</th><th style="text-align:left; padding:6px 4px;">Email</th><th style="text-align:left; padding:6px 4px;">Telefon</th><th style="text-align:right; padding:6px 4px;">Št. terminov</th></tr></thead><tbody>';
-                    customers.forEach(c => {
-                        html += `<tr><td style="padding:6px 4px;">${c.firstName}</td><td style="padding:6px 4px;">${c.surname}</td><td style="padding:6px 4px;">${c.email || '-'}</td><td style="padding:6px 4px;">${c.phone || '-'}</td><td style="padding:6px 4px; text-align:right;">${c.count}</td></tr>`;
+
+                const renderTable = (filter) => {
+                    const term = (filter || '').trim().toLowerCase();
+                    if (!customers || customers.length === 0) {
+                        content.innerHTML = '<div class="no-customers">Ni strank.</div>';
+                        return;
+                    }
+                    const rows = customers.filter(c => {
+                        if (!term) return true;
+                        return ((c.fullName||'') + ' ' + (c.email||'') + ' ' + (c.phone||'')).toLowerCase().includes(term);
                     });
-                    html += '</tbody></table>';
+
+                    let table = '<div style="overflow:auto; max-height: calc(100% - 160px);"><table class="customer-table"><thead><tr><th>Ime</th><th>Priimek</th><th>Email</th><th>Telefon</th><th style="text-align:right">Št. terminov</th></tr></thead><tbody>';
+                    rows.forEach((c, idx) => {
+                        table += `<tr class="customer-row" data-idx="${idx}"><td>${c.firstName||'-'}</td><td>${c.surname||'-'}</td><td>${c.email||'-'}</td><td>${c.phone||'-'}</td><td style="text-align:right">${c.count||0}</td></tr>`;
+                    });
+                    table += '</tbody></table></div>';
+                    table += '<div id="customerDetail" style="padding:12px; border-top:1px solid #eee; display:none;"></div>';
+                    content.innerHTML = table;
+
+                    // Wire row clicks to show details
+                    Array.from(content.querySelectorAll('tr.customer-row')).forEach(r => {
+                        r.addEventListener('click', () => {
+                            const idx = Number(r.getAttribute('data-idx'));
+                            const rec = rows[idx];
+                            const detail = document.getElementById('customerDetail');
+                            if (!rec) return;
+                            detail.style.display = 'block';
+                            detail.innerHTML = `<div style="font-weight:600; margin-bottom:8px;">${rec.fullName || (rec.firstName + ' ' + rec.surname)}</div><div style="color:#444;">Email: ${rec.email || '-'}</div><div style="color:#444;">Telefon: ${rec.phone || '-'}</div><div style="margin-top:8px;"><button class="btn btn-primary" onclick="(function(){document.getElementById('customerDetail').style.display='none';})();">Zapri</button></div>`;
+                        });
+                    });
+                };
+
+                // Initial render and show panel
+                renderTable('');
+                // Wire search
+                const searchEl = document.getElementById('customerSearch');
+                if (searchEl) {
+                    searchEl.oninput = (e) => renderTable(e.target.value);
+                    setTimeout(() => searchEl.focus(), 50);
+                }
+                // Wire export
+                const exportBtn = document.getElementById('customerExportBtn');
+                if (exportBtn) {
+                    exportBtn.onclick = () => {
+                        const rows = Array.from(document.querySelectorAll('#customerListContent table.customer-table tbody tr'));
+                        const csv = ['"Ime","Priimek","Email","Telefon","Št. terminov"'].concat(rows.map(r => {
+                            const cols = Array.from(r.querySelectorAll('td')).map(td => '"' + (td.textContent || '').replace(/"/g,'""') + '"');
+                            return cols.join(',');
+                        })).join('\n');
+                        const blob = new Blob([csv], { type: 'text/csv' });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a'); a.href = url; a.download = 'customers.csv'; a.click(); URL.revokeObjectURL(url);
+                    };
                 }
 
-                content.innerHTML = html;
                 panel.style.display = 'block';
             }
 
