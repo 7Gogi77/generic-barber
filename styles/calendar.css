@@ -188,8 +188,8 @@
    ============================================ */
 
 .event-type-working_hours {
-  background-color: rgba(39, 174, 96, 0.2) !important;
-  border-color: #229954 !important;
+  background-color: rgba(39, 174, 96, 0.35) !important;
+  border: 2px solid #229954 !important;
   color: #229954 !important;
 }
 

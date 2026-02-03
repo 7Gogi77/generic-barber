@@ -2230,6 +2230,11 @@
             } else {
                 type = typeSelect ? typeSelect.value : '';
             }
+
+            // Ensure worker events have a sensible default type so they render with proper color/icon
+            if (currentEventTab === 'worker' && (!type || String(type).trim() === '')) {
+                type = 'working_hours';
+            }
             const startDate = document.getElementById('eventStartDate').value;
             const startTime = document.getElementById('eventStartTime').value;
             const endDate = document.getElementById('eventEndDate').value;
