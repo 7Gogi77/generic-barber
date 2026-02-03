@@ -148,13 +148,13 @@
   background-color: #f8fafb;
 }
 
-.fc .fc-daygrid-day.fc-day-today {
+#scheduleCalendar.view-daygrid .fc .fc-daygrid-day.fc-day-today {
   background-color: #e8f5e9;
 }
 
-.fc .fc-daygrid-day.fc-day-today .fc-daygrid-day-number {
+#scheduleCalendar.view-daygrid .fc .fc-daygrid-day.fc-day-today .fc-daygrid-day-number {
   color: #27ae60;
-}
+} 
 
 /* Event styling */
 .fc .fc-event {
@@ -174,11 +174,12 @@
 }
 
 /* Background events (vacation, sick leave, day off) */
-.fc .fc-event.event-blocking {
+#scheduleCalendar.view-daygrid .fc .fc-event.event-blocking,
+#scheduleCalendar.view-timegrid .fc .fc-event.event-blocking {
   opacity: 0.7;
 }
 
-.fc .fc-daygrid-block-event .fc-event-title {
+#scheduleCalendar.view-daygrid .fc .fc-daygrid-block-event .fc-event-title {
   font-weight: 500;
 }
 
@@ -239,7 +240,7 @@
    BUSINESS HOURS OVERLAY
    ============================================ */
 
-.fc .fc-col-time-frame {
+#scheduleCalendar.view-timegrid .fc .fc-col-time-frame {
   background-color: #f9f9f9;
 }
 

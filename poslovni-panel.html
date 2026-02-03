@@ -244,11 +244,14 @@
             border-color: #2980b9;
         }
 
-        .fc .fc-col-header-cell {
+        /* Column header styling scoped to Month view */
+        #scheduleCalendar.view-daygrid .fc .fc-col-header-cell {
             background: #ecf0f1;
             color: #2c3e50;
             font-weight: 600;
         }
+
+        /* TimeGrid header variant exists separately under view-timegrid */
 
         #scheduleCalendar.view-daygrid .fc .fc-daygrid-day {
             background: white;
@@ -261,11 +264,14 @@
         }
 
         /* Generic event base kept global, but day-specific tweaks scoped */
-        .fc .fc-event {
+        /* Base event look for Month view */
+        #scheduleCalendar.view-daygrid .fc .fc-event {
             background-color: rgba(52, 152, 219, 0.2);
             border-color: #3498db;
             color: #2c3e50;
         }
+
+        /* TimeGrid events have their own styling under #scheduleCalendar.view-timegrid */
 
         #scheduleCalendar.view-daygrid .fc .fc-daygrid-day-number {
             padding: 6px 6px 0 6px;
@@ -281,7 +287,11 @@
             height: 100%;
         }
 
-        .fc * {
+        /* Avoid global star selector; only apply the max-height override when a specific view needs it */
+        #scheduleCalendar.view-daygrid .fc * {
+            max-height: none !important;
+        }
+        #scheduleCalendar.view-timegrid .fc * {
             max-height: none !important;
         }
 
