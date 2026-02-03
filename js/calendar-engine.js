@@ -722,12 +722,53 @@ const CalendarEngine = {
         const renderResult = calendar.render();
         console.log('✅ FullCalendar rendered successfully, result:', renderResult);
         console.log('Container HTML after render:', containerElement.innerHTML.substring(0, 200));
-        
-        // IMMEDIATELY after render, limit events to 3 per day
-        console.log('%c🔥 LIMITING EVENTS TO 3 PER DAY 🔥', 'color: red; font-size: 16px; font-weight: bold');
-        const dayCells = containerElement.querySelectorAll('.fc-daygrid-day-cell');
-        console.log(`Found ${dayCells.length} day cells`);
-        
+
+        // Ensure timeGrid area has an explicit height so hourly grid and events can render
+        setTimeout(() => {
+          try {
+            const toolbar = containerElement.querySelector('.fc-toolbar');
+            const headerRow = containerElement.querySelector('.fc-col-header');
+            const fcRoot = containerElement.querySelector('.fc');
+            const viewHarness = containerElement.querySelector('.fc-view-harness');
+            const timegrid = containerElement.querySelector('.fc-timegrid');
+            const scrollBodies = containerElement.querySelectorAll('.fc-scrollgrid-section-body');
+
+            const toolbarH = toolbar ? Math.ceil(toolbar.getBoundingClientRect().height) : 0;
+            const headerH = headerRow ? Math.ceil(headerRow.getBoundingClientRect().height) : 0;
+
+            // Compute available height within container
+            const avail = Math.max(520, containerElement.clientHeight - toolbarH - headerH - 8);
+            console.log('Computed timeGrid height:', avail, { toolbarH, headerH, containerH: containerElement.clientHeight });
+
+            if (fcRoot) {
+              fcRoot.style.height = avail + 'px';
+              fcRoot.style.minHeight = avail + 'px';
+              fcRoot.style.overflow = 'visible';
+            }
+
+            if (viewHarness) {
+              viewHarness.style.height = avail + 'px';
+              viewHarness.style.minHeight = avail + 'px';
+            }
+
+            if (timegrid) {
+              timegrid.style.height = avail + 'px';
+              timegrid.style.minHeight = avail + 'px';
+              timegrid.style.overflow = 'auto';
+            }
+
+            if (scrollBodies && scrollBodies.length) {
+              scrollBodies.forEach(b => {
+                b.style.height = avail + 'px';
+                b.style.minHeight = avail + 'px';
+                b.style.overflow = 'auto';
+              });
+            }
+
+            if (calendar && typeof calendar.updateSize === 'function') calendar.updateSize();
+          } catch (err) { console.warn('⚠ timeGrid sizing after render failed', err); }
+        }, 50);
+
         dayCells.forEach((dayCell) => {
           const eventsContainer = dayCell.querySelector('.fc-daygrid-day-events');
           if (eventsContainer) {
