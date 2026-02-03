@@ -377,8 +377,12 @@
             padding: 30px;
             border-radius: 8px;
             width: 90%;
-            max-width: 400px;
+            max-width: 760px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+            max-height: 90vh;
+            overflow: auto;
         }
 
         /* ===== CUSTOMER PANEL (FULLSCREEN) ===== */
@@ -496,6 +500,21 @@
         .form-group textarea {
             resize: vertical;
             min-height: 80px;
+        }
+
+        /* Horizontal add-event layout */
+        .form-horizontal {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        .form-horizontal .form-column {
+            flex: 1 1 320px;
+            min-width: 280px;
+        }
+        @media (max-width: 700px) {
+            .form-horizontal { flex-direction: column; }
+            .form-horizontal .form-column { min-width: 100%; }
         }
 
         .form-group input:focus,
@@ -730,42 +749,62 @@
                   <button type="button" id="tabWorker" class="btn btn-secondary" style="flex:1;" onclick="setEventTab('worker')">Delavec</button>
                   <button type="button" id="tabCustomer" class="btn btn-secondary" style="flex:1;" onclick="setEventTab('customer')">Stranka</button>
                 </div>
-                <div class="form-group">
-                    <label>Naziv</label>
-                    <input type="text" id="eventTitle" required placeholder="Npr. Bolniška, Praznik, Striženje...">
-                </div>
-                <div class="form-group" id="customerContactFields" style="display:none;">
-                    <label>Email</label>
-                    <input type="email" id="eventEmail" placeholder="stranka@example.com">
-                </div>
-                <div class="form-group" id="customerPhoneField" style="display:none;">
-                    <label>Telefon</label>
-                    <input type="tel" id="eventPhone" placeholder="+386 40 123 456">
-                </div>
-                <div class="form-group">
-                    <label id="eventTypeLabel">Tip</label>
-                    <select id="eventType" required></select>
-                    <div id="eventTypeCheckboxes" style="display:none; margin-top:8px;"></div>
-                    <div id="eventPriceWrapper" style="display:none; margin-top:8px;">
-                        <label>Skupna cena</label>
-                        <input type="text" id="eventPrice" readonly style="background:#f5f5f5;" value="0€">
+                <div class="form-horizontal">
+                    <div class="form-column" style="flex:1;">
+                        <!-- Customer-specific fields (first + last name) -->
+                        <div class="form-group" id="customerNameFields" style="display:none;">
+                            <label>Ime</label>
+                            <input type="text" id="eventFirstName" placeholder="Ime...">
+                        </div>
+                        <div class="form-group" id="customerSurnameField" style="display:none;">
+                            <label>Priimek</label>
+                            <input type="text" id="eventLastName" placeholder="Priimek...">
+                        </div>
+                        <div class="form-group" id="customerContactFields" style="display:none;">
+                            <label>Email</label>
+                            <input type="email" id="eventEmail" placeholder="stranka@example.com">
+                        </div>
+                        <div class="form-group" id="customerPhoneField" style="display:none;">
+                            <label>Telefon</label>
+                            <input type="tel" id="eventPhone" placeholder="+386 40 123 456">
+                        </div>
+                        <!-- For non-customer (worker) keep single title field -->
+                        <div class="form-group" id="workerTitleField">
+                            <label>Naziv</label>
+                            <input type="text" id="eventTitle" placeholder="Npr. Bolniška, Praznik, Striženje...">
+                        </div>
                     </div>
-                </div>
-                <div class="form-group">
-                    <label>Datuma - Od</label>
-                    <input type="date" id="eventStartDate" required>
-                </div>
-                <div class="form-group">
-                    <label>Čas - Od</label>
-                    <input type="time" id="eventStartTime">
-                </div>
-                <div class="form-group">
-                    <label>Datuma - Do</label>
-                    <input type="date" id="eventEndDate" required>
-                </div>
-                <div class="form-group">
-                    <label>Čas - Do</label>
-                    <input type="time" id="eventEndTime">
+                    <div class="form-column" style="flex:1;">
+                        <div class="form-group">
+                            <label id="eventTypeLabel">Tip</label>
+                            <select id="eventType" required></select>
+                            <div id="eventTypeCheckboxes" style="display:none; margin-top:8px;"></div>
+                            <div id="eventPriceWrapper" style="display:none; margin-top:8px;">
+                                <label>Skupna cena</label>
+                                <input type="text" id="eventPrice" readonly style="background:#f5f5f5;" value="0€">
+                            </div>
+                        </div>
+                        <div style="display:flex; gap:8px;">
+                            <div class="form-group" style="flex:1;">
+                                <label>Datuma - Od</label>
+                                <input type="date" id="eventStartDate" required>
+                            </div>
+                            <div class="form-group" style="flex:1;">
+                                <label>Čas - Od</label>
+                                <input type="time" id="eventStartTime">
+                            </div>
+                        </div>
+                        <div style="display:flex; gap:8px;">
+                            <div class="form-group" style="flex:1;">
+                                <label>Datuma - Do</label>
+                                <input type="date" id="eventEndDate" required>
+                            </div>
+                            <div class="form-group" style="flex:1;">
+                                <label>Čas - Do</label>
+                                <input type="time" id="eventEndTime">
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div class="form-group">
                     <label>Opis</label>
@@ -821,6 +860,14 @@
                     <textarea id="editEventDescription"></textarea>
                 </div>
                 <div class="form-group" id="editCustomerFields" style="display:none;">
+                    <label>Ime</label>
+                    <input type="text" id="editEventFirstName" placeholder="Ime...">
+                </div>
+                <div class="form-group" id="editCustomerSurnameField" style="display:none;">
+                    <label>Priimek</label>
+                    <input type="text" id="editEventLastName" placeholder="Priimek...">
+                </div>
+                <div class="form-group" id="editCustomerEmailField" style="display:none;">
                     <label>Email</label>
                     <input type="email" id="editEventEmail" placeholder="stranka@example.com">
                 </div>
@@ -994,16 +1041,24 @@
                                 const contactWrapper = document.getElementById('customerContactFields');
                                 const phoneWrapper = document.getElementById('customerPhoneField');
                                 const priceWrapper = document.getElementById('eventPriceWrapper');
+                                const nameWrapper = document.getElementById('customerNameFields');
+                                const surnameWrapper = document.getElementById('customerSurnameField');
+                                const workerTitleWrapper = document.getElementById('workerTitleField');
                                 if (tab === 'customer') {
                                     if (contactWrapper) contactWrapper.style.display = '';
                                     if (phoneWrapper) phoneWrapper.style.display = '';
                                     if (priceWrapper) priceWrapper.style.display = '';
+                                    if (nameWrapper) { nameWrapper.style.display = ''; const el = nameWrapper.querySelector('input'); if (el) el.required = true; }
+                                    if (surnameWrapper) { surnameWrapper.style.display = ''; const el2 = surnameWrapper.querySelector('input'); if (el2) el2.required = true; }
+                                    if (workerTitleWrapper) { workerTitleWrapper.style.display = 'none'; const el3 = workerTitleWrapper.querySelector('input'); if (el3) el3.required = false; }
                                 } else {
                                     if (contactWrapper) contactWrapper.style.display = 'none';
                                     if (phoneWrapper) phoneWrapper.style.display = 'none';
                                     if (priceWrapper) priceWrapper.style.display = 'none';
+                                    if (nameWrapper) { nameWrapper.style.display = 'none'; const el = nameWrapper.querySelector('input'); if (el) el.required = false; }
+                                    if (surnameWrapper) { surnameWrapper.style.display = 'none'; const el2 = surnameWrapper.querySelector('input'); if (el2) el2.required = false; }
+                                    if (workerTitleWrapper) { workerTitleWrapper.style.display = ''; const el3 = workerTitleWrapper.querySelector('input'); if (el3) el3.required = true; }
                                 }
-                                document.getElementById('eventTitle').setAttribute('placeholder', tab === 'worker' ? 'Npr. Bolniška, Praznik, Striženje...' : 'Ime in priimek stranke...');
                         }
             function setEventTab(tab) {
                 currentEventTab = tab;
@@ -1012,6 +1067,14 @@
                 document.getElementById('tabWorker').classList.toggle('btn-secondary', tab!=='worker');
                 document.getElementById('tabCustomer').classList.toggle('btn-primary', tab==='customer');
                 document.getElementById('tabCustomer').classList.toggle('btn-secondary', tab!=='customer');
+                // focus convenient field
+                setTimeout(() => {
+                    if (tab === 'customer') {
+                        const e = document.getElementById('eventFirstName'); if (e) e.focus();
+                    } else {
+                        const e = document.getElementById('eventTitle'); if (e) e.focus();
+                    }
+                }, 60);
             }
             // Always reload services when opening modal
             function openAddEventModalWithTab(startDate = null, endDate = null, retry = 0) {
@@ -1294,7 +1357,7 @@
                             const detail = document.getElementById('customerDetail');
                             if (!rec) return;
                             detail.style.display = 'block';
-                            detail.innerHTML = `<div style="font-weight:600; margin-bottom:8px;">${rec.fullName || (rec.firstName + ' ' + rec.surname)}</div><div style="color:#444;">Email: ${rec.email || '-'}</div><div style="color:#444;">Telefon: ${rec.phone || '-'}</div><div style="margin-top:8px;"><button class="btn btn-primary" onclick="(function(){document.getElementById('customerDetail').style.display='none';})();">Zapri</button></div>`;
+                            detail.innerHTML = `<div style="font-weight:600; margin-bottom:8px;">${rec.fullName || (rec.firstName + ' ' + rec.surname)}</div><div style="color:#444;">Email: ${rec.email || '-'}</div><div style="color:#444;">Telefon: ${rec.phone || '-'}</div><div style="margin-top:8px; display:flex; gap:8px;"><button class="btn btn-primary" onclick="(function(){ openAddEventModal(); setEventTab('customer'); setTimeout(()=>{document.getElementById('eventFirstName').value='${(rec.firstName||'').replace(/'/g, '\\'"\\'') }'; document.getElementById('eventLastName').value='${(rec.surname||'').replace(/'/g, '\\'"\\'') }'; document.getElementById('eventEmail').value='${(rec.email||'').replace(/'/g, '\\'"\\'') }'; document.getElementById('eventPhone').value='${(rec.phone||'').replace(/'/g, '\\'"\\'') }'; },50); document.getElementById('customerListPanel').style.display='none'; })()">Uredi</button><button class="btn btn-secondary" onclick="(function(){document.getElementById('customerDetail').style.display='none';})();">Zapri</button></div>`;
                         });
                     });
                 };
@@ -1323,6 +1386,44 @@
                 }
 
                 panel.style.display = 'block';
+
+                // Attach a delegated handler to the content to support Edit/Close actions inside the customer detail
+                (function(){
+                    const contentEl = document.getElementById('customerListContent');
+                    if (!contentEl) return;
+                    contentEl.addEventListener('click', (e) => {
+                        const t = e.target;
+                        if (!t) return;
+                        if (t.id === 'customerEditBtn' || (t.classList && t.classList.contains('btn') && t.classList.contains('btn-primary'))) {
+                            try {
+                                const detail = document.getElementById('customerDetail');
+                                if (!detail) return;
+                                const nameText = (detail.children[0] && detail.children[0].textContent) ? detail.children[0].textContent.trim() : '';
+                                const emailText = detail.querySelector('div:nth-child(2)') ? detail.querySelector('div:nth-child(2)').textContent.replace('Email:','').trim() : '';
+                                const phoneText = detail.querySelector('div:nth-child(3)') ? detail.querySelector('div:nth-child(3)').textContent.replace('Telefon:','').trim() : '';
+                                let match = null;
+                                Object.entries(customerBase || {}).forEach(([k, r]) => {
+                                    if (match) return;
+                                    if ((r.fullName && r.fullName === nameText) || (r.email && r.email === emailText) || (r.phone && r.phone === phoneText)) match = r;
+                                });
+                                if (match) {
+                                    openAddEventModal();
+                                    setEventTab('customer');
+                                    setTimeout(() => {
+                                        const fn = document.getElementById('eventFirstName'); if (fn) fn.value = match.firstName || '';
+                                        const ln = document.getElementById('eventLastName'); if (ln) ln.value = match.surname || '';
+                                        const em = document.getElementById('eventEmail'); if (em) em.value = match.email || '';
+                                        const ph = document.getElementById('eventPhone'); if (ph) ph.value = match.phone || '';
+                                    }, 60);
+                                    document.getElementById('customerListPanel').style.display = 'none';
+                                }
+                            } catch (er) { console.error('customerList edit handler failed', er); }
+                        }
+                        if (t.id === 'customerCloseBtn' || (t.classList && t.classList.contains('btn') && t.classList.contains('btn-secondary'))) {
+                            const d = document.getElementById('customerDetail'); if (d) d.style.display = 'none';
+                        }
+                    });
+                })();
             }
 
         // ===== CUSTOMER BASE HELPERS =====
@@ -1332,6 +1433,20 @@
             try {
                 const raw = localStorage.getItem('customers_base');
                 customerBase = raw ? JSON.parse(raw) : {};
+                // Normalize existing records (split fullName into first/surname if missing)
+                let changed = false;
+                Object.entries(customerBase).forEach(([k, rec]) => {
+                    if (rec) {
+                        const fn = rec.firstName || '';
+                        const sn = rec.surname || '';
+                        if ((!fn || !sn) && rec.fullName) {
+                            const parts = String(rec.fullName).trim().split(/\s+/);
+                            if (!fn && parts[0]) { rec.firstName = parts[0]; changed = true; }
+                            if (!sn && parts.length > 1) { rec.surname = parts.slice(1).join(' '); changed = true; }
+                        }
+                    }
+                });
+                if (changed) saveCustomerBase();
             } catch (e) { customerBase = {}; }
         }
         function saveCustomerBase() {
@@ -1342,17 +1457,18 @@
             if (phone && typeof phone === 'string' && phone.trim().length) return ('phone_' + phone.replace(/\D/g,'')).toLowerCase();
             return 'cust_' + Date.now();
         }
-        async function persistCustomerToBase({ fullName, email, phone }) {
-            if (!fullName && !email && !phone) return null;
+        async function persistCustomerToBase({ firstName, surname, email, phone, fullName }) {
+            // Accept either firstName/surname or fullName
+            const fn = (firstName || '').trim();
+            const sn = (surname || '').trim();
+            const ffull = fullName ? fullName.trim() : ((fn || sn) ? (fn + (sn ? ' ' + sn : '')) : '');
+            if (!ffull && !email && !phone) return null;
             loadCustomerBase();
-            const parts = (fullName || '').trim().split(/\s+/);
-            const firstName = parts[0] || (fullName || '');
-            const surname = parts.slice(1).join(' ') || '';
-            const key = makeCustomerKey(fullName, email, phone);
+            const key = makeCustomerKey(ffull, email, phone);
             const rec = Object.assign({
-                fullName: fullName || '',
-                firstName: firstName,
-                surname: surname,
+                fullName: ffull || '',
+                firstName: fn || (ffull.split(/\s+/)[0] || ''),
+                surname: sn || ffull.split(/\s+/).slice(1).join(' ') || '',
                 email: email || null,
                 phone: phone || null,
                 updatedAt: new Date().toISOString()
@@ -1712,6 +1828,12 @@
                 if (servicesWrapper) servicesWrapper.style.display = '';
                 if (priceWrapper) priceWrapper.style.display = '';
                 if (durWrapper) durWrapper.style.display = '';
+                // Populate edited customer fields (first/surname)
+                const first = event.extendedProps?.customerFirstName || (event.extendedProps?.customer ? String(event.extendedProps.customer).split(/\s+/)[0] : '');
+                const sur = event.extendedProps?.customerSurname || (event.extendedProps?.customer ? String(event.extendedProps.customer).split(/\s+/).slice(1).join(' ') : '');
+                const full = event.extendedProps?.customer || '';
+                const fnameEl = document.getElementById('editEventFirstName'); if (fnameEl) fnameEl.value = first;
+                const lnameEl = document.getElementById('editEventLastName'); if (lnameEl) lnameEl.value = sur;
                 document.getElementById('editEventEmail').value = event.extendedProps?.email || '';
                 document.getElementById('editEventPhone').value = event.extendedProps?.phone || '';
                 document.getElementById('editEventServices').value = (event.extendedProps && Array.isArray(event.extendedProps.services)) ? event.extendedProps.services.join(', ') : (event.extendedProps?.services || '');
@@ -1739,7 +1861,8 @@
         function openBookingDetailsModal(event) {
             const booking = event.extendedProps;
             
-            document.getElementById('bookingName').textContent = booking.customer || 'N/A';
+            const bookingName = (booking && (booking.customerFirstName || booking.customerSurname)) ? ((booking.customerFirstName || '') + (booking.customerSurname ? ' ' + booking.customerSurname : '')) : (booking.customer || 'N/A');
+            document.getElementById('bookingName').textContent = bookingName || 'N/A';
             document.getElementById('bookingEmail').textContent = booking.email || 'N/A';
             document.getElementById('bookingPhone').textContent = booking.phone || 'N/A';
             
@@ -1811,7 +1934,16 @@
         document.getElementById('addEventForm').addEventListener('submit', async (e) => {
             e.preventDefault();
 
-            const title = document.getElementById('eventTitle').value;
+            let title = '';
+            let firstName = '';
+            let lastName = '';
+            if (currentEventTab === 'customer') {
+                firstName = (document.getElementById('eventFirstName') && document.getElementById('eventFirstName').value) ? document.getElementById('eventFirstName').value.trim() : '';
+                lastName = (document.getElementById('eventLastName') && document.getElementById('eventLastName').value) ? document.getElementById('eventLastName').value.trim() : '';
+                title = (firstName + (lastName ? ' ' + lastName : '')).trim();
+            } else {
+                title = (document.getElementById('eventTitle') && document.getElementById('eventTitle').value) ? document.getElementById('eventTitle').value.trim() : '';
+            }
             const typeSelect = document.getElementById('eventType');
             const checkboxContainer = document.getElementById('eventTypeCheckboxes');
             // Support multiple services via checkboxes when available
@@ -1859,6 +1991,8 @@
                 // For bookings keep customer info in extendedProps
                 extendedProps: {
                     customer: currentEventTab === 'customer' ? title : undefined,
+                    customerFirstName: currentEventTab === 'customer' ? firstName : undefined,
+                    customerSurname: currentEventTab === 'customer' ? lastName : undefined,
                     email: document.getElementById('eventEmail') ? document.getElementById('eventEmail').value : undefined,
                     phone: document.getElementById('eventPhone') ? document.getElementById('eventPhone').value : undefined,
                     services: currentEventTab === 'customer' ? services : [],
@@ -1869,7 +2003,7 @@
             // Persist customer info into customer base when creating a booking
             if (currentEventTab === 'customer') {
                 try {
-                    await persistCustomerToBase({ fullName: title, email: eventPayload.extendedProps?.email, phone: eventPayload.extendedProps?.phone });
+                    await persistCustomerToBase({ firstName: firstName, surname: lastName, email: eventPayload.extendedProps?.email, phone: eventPayload.extendedProps?.phone });
                 } catch (e) { console.warn('⚠ persistCustomerToBase failed during add', e); }
             }
 
@@ -2037,10 +2171,20 @@
                         if (services.length) scheduleData.events[idx].extendedProps.services = services;
                         if (price !== null) scheduleData.events[idx].extendedProps.price = price;
                         if (!isNaN(duration)) scheduleData.events[idx].extendedProps.duration = duration;
-                        // Keep customer name in extendedProps in sync with title for bookings
+                        // Keep customer names in extendedProps in sync with title for bookings
                         try {
-                            scheduleData.events[idx].title = title;
-                            scheduleData.events[idx].extendedProps.customer = title;
+                            // If booking, use separate name fields
+                            if (scheduleData.events[idx].extendedProps.isBooking || scheduleData.events[idx].extendedProps.tab === 'customer') {
+                                const editFirst = document.getElementById('editEventFirstName') ? (document.getElementById('editEventFirstName').value || '').trim() : '';
+                                const editLast = document.getElementById('editEventLastName') ? (document.getElementById('editEventLastName').value || '').trim() : '';
+                                const fullName = (editFirst + (editLast ? ' ' + editLast : '')).trim() || title;
+                                scheduleData.events[idx].title = fullName;
+                                scheduleData.events[idx].extendedProps.customer = fullName;
+                                scheduleData.events[idx].extendedProps.customerFirstName = editFirst;
+                                scheduleData.events[idx].extendedProps.customerSurname = editLast;
+                            } else {
+                                scheduleData.events[idx].title = title;
+                            }
                         } catch (_) {}
                         // persist
                         if (window.saveScheduleData) await window.saveScheduleData();
@@ -2076,7 +2220,9 @@
                         try {
                             const updated = scheduleData.events[idx];
                             if ((updated && updated.extendedProps && (updated.extendedProps.isBooking || updated.extendedProps.tab === 'customer'))) {
-                                await persistCustomerToBase({ fullName: updated.extendedProps.customer || updated.title, email: updated.extendedProps.email, phone: updated.extendedProps.phone });
+                                const uFirst = updated.extendedProps.customerFirstName || (updated.extendedProps.customer ? String(updated.extendedProps.customer).split(/\s+/)[0] : '');
+                                const uLast = updated.extendedProps.customerSurname || (updated.extendedProps.customer ? String(updated.extendedProps.customer).split(/\s+/).slice(1).join(' ') : '');
+                                await persistCustomerToBase({ firstName: uFirst, surname: uLast, email: updated.extendedProps.email, phone: updated.extendedProps.phone });
                             }
                         } catch (e) { console.warn('⚠ persistCustomerToBase failed during edit', e); }
                     }
