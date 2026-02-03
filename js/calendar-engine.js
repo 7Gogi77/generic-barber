@@ -1205,6 +1205,96 @@ const CalendarEngine = {
     }
   },
 
+  // Initialize a clean Month + Day/Week calendar (minimal, from scratch)
+  initializeCleanCalendar(containerElement, scheduleData = {}, options = {}) {
+    if (typeof FullCalendar === 'undefined') {
+      console.error('❌ FullCalendar not available');
+      if (containerElement) containerElement.innerHTML = '<p style="color:#e74c3c;padding:20px">Calendar library not loaded</p>';
+      return null;
+    }
+
+    try {
+      // Clear and set basic container styles
+      if (!containerElement) containerElement = document.getElementById('scheduleCalendar');
+      if (!containerElement) throw new Error('Calendar container not found');
+      containerElement.innerHTML = '';
+      const topOffset = 120;
+      const viewportH = window.innerHeight || document.documentElement.clientHeight || 800;
+      const calcHeight = Math.max(520, viewportH - topOffset);
+      containerElement.style.boxSizing = 'border-box';
+      containerElement.style.padding = '0';
+      containerElement.style.margin = '0';
+      containerElement.style.width = '100%';
+      containerElement.style.height = calcHeight + 'px';
+      containerElement.style.overflow = 'hidden';
+
+      const slotMinutes = (window.SITE_CONFIG?.booking?.slotDuration) || 15;
+      const slotDurationStr = `00:${('0' + slotMinutes).slice(-2)}:00`;
+
+      const calendar = new FullCalendar.Calendar(containerElement, {
+        initialView: options.initialView || 'dayGridMonth',
+        headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek,timeGridDay' },
+        locale: 'sl', firstDay: 1, nowIndicator: true,
+        // Time grid settings
+        slotMinTime: (window.SITE_CONFIG?.booking?.businessHours?.start !== undefined) ? (('0' + window.SITE_CONFIG.booking.businessHours.start).slice(-2) + ':00:00') : '06:00:00',
+        slotMaxTime: (window.SITE_CONFIG?.booking?.businessHours?.end !== undefined) ? (('0' + window.SITE_CONFIG.booking.businessHours.end).slice(-2) + ':00:00') : '22:00:00',
+        slotDuration: slotDurationStr,
+        slotLabelInterval: { hours: 1 },
+        slotLabelFormat: { hour: '2-digit', minute: '2-digit', hour12: false },
+        allDaySlot: true,
+        views: { dayGridMonth: { type: 'dayGridMonth' }, timeGridWeek: { type: 'timeGrid' }, timeGridDay: { type: 'timeGrid' } },
+        height: calcHeight, contentHeight: 'auto',
+
+        events: async (info, successCallback, failureCallback) => {
+          try {
+            const events = await CalendarEngine.generateCalendarEvents(scheduleData || {});
+            successCallback(events);
+          } catch (err) { failureCallback(err); }
+        },
+
+        datesSet: () => { try { if (calendar && typeof calendar.updateSize === 'function') calendar.updateSize(); } catch (e) {} },
+        viewDidMount: () => { try { if (calendar && typeof calendar.updateSize === 'function') calendar.updateSize(); } catch (e) {} },
+
+        // interactions
+        selectable: true, selectOverlap: true, editable: true, eventDurationEditable: true,
+        select: (selectInfo) => {
+          const addModal = document.getElementById('addEventModal');
+          if (addModal && typeof window.openAddEventModal === 'function') {
+            try { const startStr = selectInfo.startStr ? selectInfo.startStr.split('T')[0] : null; let endStr = selectInfo.endStr ? selectInfo.endStr.split('T')[0] : startStr; if (selectInfo.endStr) { const ed = new Date(selectInfo.endStr); ed.setDate(ed.getDate() - 1); endStr = ed.toISOString().split('T')[0]; } window.openAddEventModal(startStr, endStr); } catch (e) { try { window.openAddEventModal(selectInfo.startStr ? selectInfo.startStr.split('T')[0] : null); } catch(e){} }
+          }
+        },
+
+        eventClick: (clickInfo) => { const hasAdminModal = document.getElementById('eventModal'); if (hasAdminModal) CalendarEngine.openEventModal(clickInfo.event, null, calendar, scheduleData); },
+
+        eventDidMount: (info) => {
+          if (info.event.extendedProps?.isBooking || info.event.id?.startsWith('apt_')) {
+            if (info.el) { info.el.style.backgroundColor = 'rgba(52,152,219,0.18)'; info.el.style.borderColor = '#3498db'; info.el.style.color = '#2c3e50'; }
+          }
+        },
+
+        eventContent: (arg) => {
+          if (arg.event.extendedProps?.isBooking || arg.event.id?.startsWith('apt_')) {
+            const cust = arg.event.extendedProps?.customer || arg.event.title || 'Stranka';
+            const startTime = arg.event.start ? new Date(arg.event.start).toLocaleTimeString('sl-SI', {hour: '2-digit', minute: '2-digit'}) : '';
+            const dur = (arg.event.end && arg.event.start) ? Math.round((new Date(arg.event.end) - new Date(arg.event.start)) / 60000) : null;
+            const durText = dur ? ` • ${dur} min` : '';
+            return { html: `<div style="padding:6px;font-weight:600">${cust}${durText}</div><div style="font-size:11px;opacity:0.85">${startTime}</div>` };
+          }
+          return false;
+        }
+      });
+
+      // render and expose
+      this.calendar = calendar; this.containerElement = containerElement; try { window.calendar = calendar; } catch(e){}
+      calendar.render(); if (typeof calendar.updateSize === 'function') calendar.updateSize();
+      return calendar;
+    } catch (err) {
+      console.error('❌ initializeCleanCalendar failed', err);
+      if (containerElement) containerElement.innerHTML = '<p style="color:#e74c3c;padding:12px">Error initializing calendar</p>';
+      return null;
+    }
+  },
+
   /**
    * Open event creation/editing modal
    */

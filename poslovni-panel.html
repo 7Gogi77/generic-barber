@@ -2929,7 +2929,7 @@
                 
                 container.innerHTML = '🔄 Inicializiram koledar...';
                 
-                const calendar = CalendarEngine.initializeCalendar(container, scheduleData);
+                const calendar = CalendarEngine.initializeCleanCalendar(container, scheduleData);
                 debugLog(`📦 Calendar returned: ${calendar ? 'YES' : 'NO'}`);
 
                 if (!calendar) {
