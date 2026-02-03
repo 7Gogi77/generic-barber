@@ -17,7 +17,9 @@ const CalendarEngine = {
     const endDate = new Date(today);
     endDate.setMonth(endDate.getMonth() + 6);
 
-    scheduleData.events.forEach((event) => {
+    const eventsSource = (Array.isArray(scheduleData.events) ? scheduleData.events : []).filter(e => !(typeof window !== 'undefined' && typeof window.isEventDeleted === 'function' && window.isEventDeleted(e.id)));
+
+    eventsSource.forEach((event) => {
       // Single events
       if (event.recurring === 'once' || !event.recurring) {
         const formattedEvent = this.formatCalendarEvent(event);
@@ -32,13 +34,14 @@ const CalendarEngine = {
         while (current <= endDate) {
           if (event.daysOfWeek.includes(current.getDay())) {
             const recurrenceEvent = { ...event };
-            const timeStr = event.start.split('T')[1];
-            const endTimeStr = event.end.split('T')[1];
+            const timeStr = (typeof event.start === 'string' && event.start.includes('T')) ? event.start.split('T')[1] : null;
+            const endTimeStr = (typeof event.end === 'string' && event.end.includes('T')) ? event.end.split('T')[1] : null;
 
-            recurrenceEvent.start =
-              current.toISOString().split('T')[0] + 'T' + timeStr;
-            recurrenceEvent.end =
-              current.toISOString().split('T')[0] + 'T' + endTimeStr;
+            const startTimeUse = timeStr || '09:00';
+            const endTimeUse = endTimeStr || '17:00';
+
+            recurrenceEvent.start = current.toISOString().split('T')[0] + 'T' + startTimeUse;
+            recurrenceEvent.end = current.toISOString().split('T')[0] + 'T' + endTimeUse;
 
             const formattedEvent = this.formatCalendarEvent(recurrenceEvent);
             console.log('🔁 Adding recurring event:', formattedEvent);
@@ -51,7 +54,33 @@ const CalendarEngine = {
     });
 
     console.log('✅ Total formatted events:', events.length);
-    return events;
+
+    // Deduplicate events by stable key (prefer id, otherwise normalized start|end|customer)
+    const seen = new Set();
+    const unique = [];
+    events.forEach(e => {
+      const cust = (e.extendedProps && e.extendedProps.customer) ? String(e.extendedProps.customer).trim() : (e.title ? String(e.title).replace(/^\S+\s/, '').trim() : '');
+      // Normalize start/end to minute granularity so ISO string differences (seconds) don't prevent dedupe
+      let sNorm = e.start;
+      let eNorm = e.end;
+      try {
+        sNorm = new Date(e.start).toISOString().slice(0,16);
+      } catch (_) { sNorm = String(e.start || ''); }
+      try {
+        eNorm = new Date(e.end).toISOString().slice(0,16);
+      } catch (_) { eNorm = String(e.end || ''); }
+
+      const key = e.id || `${sNorm}|${eNorm}|${cust}`;
+      if (seen.has(key)) {
+        console.log('⏭️ Skipping duplicate event:', key);
+        return;
+      }
+      seen.add(key);
+      unique.push(e);
+    });
+
+    console.log('✅ Events after dedupe:', unique.length);
+    return unique;
   },
 
   /**
@@ -59,60 +88,63 @@ const CalendarEngine = {
    */
   formatCalendarEvent(event) {
     const typeConfig = ScheduleRules.TYPE_CONFIG[event.type];
-    
-    // Parse dates
-    const startDate = new Date(event.start);
-    const endDate = new Date(event.end);
+
+    // Determine whether the event strings include explicit times
+    const hasStartTime = typeof event.start === 'string' && event.start.includes('T');
+    const hasEndTime = typeof event.end === 'string' && event.end.includes('T');
+
+    // Normalize start/end to Date objects with sensible fallbacks
+    let startDate, endDate;
+    let displayEnd = event.end;
+    let allDay = false;
+
+    try {
+      if (hasStartTime) {
+        startDate = new Date(event.start);
+      } else {
+        // Date-only event: treat as all-day starting at 00:00
+        startDate = new Date((event.start || '').split('T')[0] + 'T00:00:00');
+      }
+
+      if (hasEndTime) {
+        endDate = new Date(event.end);
+      } else {
+        // If end missing or date-only, take the date and add one day for exclusive end
+        const endDateStr = ((event.end || event.start) + '').split('T')[0];
+        endDate = new Date(endDateStr + 'T00:00:00');
+        endDate.setDate(endDate.getDate() + 1);
+        displayEnd = endDate.toISOString().split('T')[0] + 'T00:00:00';
+        allDay = true;
+      }
+    } catch (err) {
+      console.warn('⚠ formatCalendarEvent parsing fallback', err);
+      startDate = new Date(event.start || Date.now());
+      endDate = new Date(event.end || event.start || Date.now());
+    }
+
     const durationMs = endDate - startDate;
-    const isMultiDay = durationMs > (24 * 60 * 60 * 1000); // More than 1 day
-    
+    const isMultiDay = !hasStartTime ? true : (Number.isFinite(durationMs) && durationMs > (24 * 60 * 60 * 1000));
+
     console.log(`🔍 Formatting event "${event.title}":`, {
       originalStart: event.start,
       originalEnd: event.end,
       isMultiDay: isMultiDay,
-      durationDays: Math.floor(durationMs / (24 * 60 * 60 * 1000)),
+      durationDays: Number.isFinite(durationMs) ? Math.floor(durationMs / (24 * 60 * 60 * 1000)) : 0,
       startDate: startDate.toISOString(),
       endDate: endDate.toISOString()
     });
-    
-    // For multi-day events, make sure end date is exclusive (next day at 00:00)
-    let displayEnd = event.end;
-    let allDay = false;
-    
-    if (isMultiDay) {
-      allDay = true;
-      
-      // For allDay events in FullCalendar, the end date needs to be exclusive
-      // (one day after the last day you want to show)
-      // The user inputs the last day they want, so we add 1 day and set to 00:00
-      
-      // Parse the end date string
-      const endParts = event.end.split('T');
-      const endDateStr = endParts[0]; // "2026-02-14"
-      
-      // If end already ends with T00:00, it's already exclusive
-      if (event.end.includes('T00:00')) {
-        displayEnd = event.end;
-      } else {
-        // User set it with a time (e.g., 17:00), don't add another day
-        // Just use the date as-is at 00:00
-        displayEnd = endDateStr + 'T00:00:00';
-      }
-      
-      console.log(`📅 Multi-day event:`, {
-        from: event.start,
-        to: displayEnd,
-        originalEnd: event.end
-      });
-    }
+
+    // Booking events should render the customer name (no icon prefix) to avoid duplicate/emoji-titled items
+    const isBooking = event.extendedProps?.isBooking || false;
+    const customerName = event.extendedProps?.customer || null;
+    const titleText = isBooking ? (customerName || event.title || 'Rezervacija') : ((typeConfig?.icon || '📅') + ' ' + (event.title || event.type));
 
     return {
       id: event.id,
-      title:
-        (typeConfig?.icon || '📅') + ' ' + (event.title || event.type),
-      start: event.start,
+      title: titleText,
+      start: hasStartTime ? event.start : startDate.toISOString().split('T')[0] + 'T00:00:00',
       end: displayEnd,
-      allDay: allDay,
+      allDay: !!allDay,
       color: typeConfig?.color || '#95a5a6',
       backgroundColor: typeConfig?.backgroundColor || 'rgba(149, 165, 166, 0.15)',
       borderColor: typeConfig?.borderColor || '#7f8c8d',
@@ -125,8 +157,8 @@ const CalendarEngine = {
         priority: event.rules?.conflictPriority || 0,
         isMultiDay: isMultiDay,
         // Merge booking-specific extended props (customer, email, phone, services, price, duration, notes)
-        isBooking: event.extendedProps?.isBooking || false,
-        customer: event.extendedProps?.customer || event.extendedProps?.customerName || null,
+        isBooking: isBooking,
+        customer: customerName || event.extendedProps?.customerName || null,
         email: event.extendedProps?.email || null,
         phone: event.extendedProps?.phone || null,
         services: event.extendedProps?.services || null,

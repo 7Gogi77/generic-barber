@@ -425,6 +425,7 @@
             width:100%;
             border-collapse:collapse;
             font-size:14px;
+            table-layout: fixed; /* prevent row-driven horizontal growth */
         }
         #customerListPanel th, #customerListPanel td {
             padding:10px 8px;
@@ -432,6 +433,9 @@
             color: #2c3e50;
             vertical-align: middle;
             text-align: left;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
         #customerListPanel th.count-col, #customerListPanel td.count-col { text-align: right; width:84px; }
         /* Row animations */
@@ -1305,7 +1309,7 @@
                 }
 
                 // Merge saved customer base and derive customers from bookings
-                loadCustomerBase();
+                await loadCustomerBase();
                 const bookings = (scheduleData && Array.isArray(scheduleData.events))
                     ? scheduleData.events.filter(e => (e.extendedProps && e.extendedProps.isBooking) || e.isBooking || e.extendedProps?.tab === 'customer')
                     : [];
@@ -1360,7 +1364,7 @@
                         return ((c.fullName||'') + ' ' + (c.email||'') + ' ' + (c.phone||'')).toLowerCase().includes(term);
                     });
 
-                    let table = '<div style="overflow:auto; max-height: calc(100% - 160px);"><table class="customer-table"><thead><tr><th>Ime</th><th>Priimek</th><th>Email</th><th>Telefon</th><th style="text-align:right">Št. terminov</th></tr></thead><tbody>';
+                    let table = '<div style="overflow:auto; overflow-x:hidden; max-height: calc(100% - 160px);"><table class="customer-table"><thead><tr><th>Ime</th><th>Priimek</th><th>Email</th><th>Telefon</th><th style="text-align:right">Št. terminov</th></tr></thead><tbody>';
                     rows.forEach((c, idx) => {
                         table += `<tr class="customer-row" data-idx="${idx}"><td>${c.firstName||'-'}</td><td>${c.surname||'-'}</td><td>${c.email||'-'}</td><td>${c.phone||'-'}</td><td style="text-align:right">${c.count||0}</td></tr>`;
                     });
@@ -1467,7 +1471,7 @@
         // ===== CUSTOMER BASE HELPERS =====
         // Persist customer contact details locally and to site_config/customers in Firebase
         let customerBase = {};
-        function loadCustomerBase() {
+        async function loadCustomerBase() {
             try {
                 const raw = localStorage.getItem('customers_base');
                 customerBase = raw ? JSON.parse(raw) : {};
@@ -1485,6 +1489,34 @@
                     }
                 });
                 if (changed) saveCustomerBase();
+
+                // Try to merge remote customer records from site_config/customers
+                try {
+                    const base = 'https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app/';
+                    const res = await fetch(base + 'site_config/customers.json');
+                    if (res.ok) {
+                        const remote = await res.json().catch(() => null);
+                        if (remote && typeof remote === 'object') {
+                            let merged = false;
+                            Object.entries(remote).forEach(([k, r]) => {
+                                if (!r) return;
+                                try {
+                                    const local = customerBase[k] || {};
+                                    const remoteUpdated = r.updatedAt ? new Date(r.updatedAt).getTime() : 0;
+                                    const localUpdated = local.updatedAt ? new Date(local.updatedAt).getTime() : 0;
+                                    if (!local || !localUpdated || remoteUpdated > localUpdated) {
+                                        customerBase[k] = Object.assign({}, local, r);
+                                        merged = true;
+                                    }
+                                } catch (_) {}
+                            });
+                            if (merged) saveCustomerBase();
+                        }
+                    }
+                } catch (err) {
+                    console.warn('⚠ Could not fetch remote customers', err);
+                }
+
             } catch (e) { customerBase = {}; }
         }
         function saveCustomerBase() {
@@ -1493,6 +1525,13 @@
         function makeCustomerKey(fullName, email, phone) {
             if (email && typeof email === 'string' && email.trim().length) return email.replace(/[\.\$\[\]#\/]/g, '_').toLowerCase();
             if (phone && typeof phone === 'string' && phone.trim().length) return ('phone_' + phone.replace(/\D/g,'')).toLowerCase();
+            const name = (fullName || '').trim();
+            if (name) {
+                // Normalize to ASCII and produce a stable, safe key
+                const ascii = name.normalize('NFKD').replace(/[\u0300-\u036f]/g, '');
+                const safe = ascii.replace(/[^a-z0-9]+/gi, '_').replace(/^_+|_+$/g, '').toLowerCase();
+                if (safe.length) return 'name_' + safe;
+            }
             return 'cust_' + Date.now();
         }
         async function persistCustomerToBase({ firstName, surname, email, phone, fullName }) {
@@ -1501,7 +1540,7 @@
             const sn = (surname || '').trim();
             const ffull = fullName ? fullName.trim() : ((fn || sn) ? (fn + (sn ? ' ' + sn : '')) : '');
             if (!ffull && !email && !phone) return null;
-            loadCustomerBase();
+            await loadCustomerBase();
             const key = makeCustomerKey(ffull, email, phone);
             const rec = Object.assign({
                 fullName: ffull || '',
@@ -2823,13 +2862,14 @@
 
                 calendar.on('eventClick', (info) => {
                     debugLog('Event clicked: ' + info.event.title);
-                    
-                    if (info.event.extendedProps?.isBooking) {
+
+                    const isBooking = info.event.extendedProps?.isBooking || (info.event.id && String(info.event.id).startsWith('apt_'));
+                    if (isBooking) {
                         debugLog('📋 Opening booking details modal');
                         openBookingDetailsModal(info.event);
                         return;
                     }
-                    
+
                     debugLog('Opening edit modal...');
                     openEditEventModal(info.event);
                 });
@@ -2909,7 +2949,30 @@
                 totalInScheduleData: scheduleData.events ? scheduleData.events.length : 0,
                 deletedCount: deletedEventIds.size,
                 activeCount: filterDeletedEvents(scheduleData.events || []).length
-            })
+            }),
+            // Debug utility: show events as used by CalendarEngine (post-format)
+            listCalendarEvents: async () => {
+                try {
+                    const evs = await CalendarEngine.generateCalendarEvents(scheduleData);
+                    evs.forEach((e, i) => {
+                        const cust = (e.extendedProps && e.extendedProps.customer) ? e.extendedProps.customer : e.title;
+                        const key = e.id || `${new Date(e.start).toISOString().slice(0,16)}|${new Date(e.end).toISOString().slice(0,16)}|${cust}`;
+                        console.log(i, key, e.id, e.title, e.start, e.end, e.extendedProps?.isBooking);
+                    });
+                } catch (err) { console.warn('⚠ listCalendarEvents failed', err); }
+            },
+            findDuplicates: () => {
+                const map = {};
+                (scheduleData.events || []).forEach(e => {
+                    const cust = (e.extendedProps && e.extendedProps.customer) ? e.extendedProps.customer : (e.title || '');
+                    const s = new Date(e.start).toISOString().slice(0,16);
+                    const en = new Date(e.end).toISOString().slice(0,16);
+                    const k = `${s}|${en}|${cust}`;
+                    map[k] = map[k] || [];
+                    map[k].push(e);
+                });
+                Object.entries(map).forEach(([k, arr]) => { if (arr.length > 1) console.warn('Duplicate key', k, arr); });
+            }
         };
         console.log("💡 Use window.deletionDebug.show() to see deletion status");
     </script>
