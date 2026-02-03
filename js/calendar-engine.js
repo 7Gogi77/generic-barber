@@ -684,6 +684,45 @@ const CalendarEngine = {
                   if (scrollBodies && scrollBodies.length) { scrollBodies.forEach(b => { b.style.height = avail + 'px'; b.style.minHeight = avail + 'px'; b.style.overflowX = 'hidden'; b.style.overflowY = 'auto'; }); }
 
                   if (calendar && typeof calendar.updateSize === 'function') calendar.updateSize();
+
+                  // Ensure FullCalendar created the time grid slots - retry a few times and fallback to forcing a view re-render
+                  (function ensureTimeGridSlots(attempt){
+                    try {
+                      const slotsEl = containerElement.querySelector('.fc-timegrid .fc-timegrid-slots');
+                      const hasSlots = slotsEl && slotsEl.querySelectorAll('*').length > 0;
+                      console.log('ensureTimeGridSlots: attempt', attempt, 'hasSlots?', !!hasSlots);
+
+                      if (hasSlots) {
+                        // Slots present - good
+                        return;
+                      }
+
+                      if (attempt >= 4) {
+                        console.warn('⚠ TimeGrid slots not created after retries - forcing view re-render');
+                        try {
+                          if (calendar && typeof calendar.changeView === 'function') {
+                            // Reapply same view to force FullCalendar to rebuild DOM
+                            calendar.changeView(arg.view.type);
+                          } else if (calendar && typeof calendar.render === 'function') {
+                            calendar.render();
+                          }
+                          // Give it a moment, then try to set sizes again
+                          setTimeout(() => {
+                            try { if (calendar && typeof calendar.updateSize === 'function') calendar.updateSize(); } catch(e){}
+                          }, 120);
+                        } catch (err) { console.warn('⚠ Forcing view re-render failed', err); }
+                        return;
+                      }
+
+                      // Not yet present - try again with exponential backoff
+                      const retryDelays = [120, 240, 480, 800];
+                      setTimeout(() => {
+                        try { if (calendar && typeof calendar.updateSize === 'function') calendar.updateSize(); } catch(e){}
+                        ensureTimeGridSlots(attempt + 1);
+                      }, retryDelays[attempt] || 400);
+                    } catch (err) { console.warn('⚠ ensureTimeGridSlots failed', err); }
+                  })(0);
+
                 } catch (err) { console.warn('⚠ timeGrid sizing in datesSet failed', err); }
               }, 100);
             }
