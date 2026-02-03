@@ -1326,7 +1326,7 @@
         function markEventDeleted(eventId) {
             deletedEventIds.add(eventId);
             saveDeletedEventIds();
-            console.log(`✓ Event ${eventId} marked as deleted and persisted`);
+            // Event marked as deleted and persisted (console output removed)
         }
 
         /**
@@ -1338,7 +1338,7 @@
 
         // Load deleted IDs on script load
         loadDeletedEventIds();
-        console.log("💡 Use window.deletionDebug.show() to see deletion status");
+        // Dev hint removed (console output suppressed)
     </script>
 
     <script>
@@ -3094,10 +3094,23 @@
             }, 1500);
         }
 
-        // Runtime self-check to help debugging module load issues
+        // Silence console output for production/admin usage (no prints to console)
+        (function silenceConsole(){
+            try {
+                const noOp = function(){};
+                if (typeof console !== 'undefined') {
+                    console.log = noOp;
+                    console.info = noOp;
+                    console.debug = noOp;
+                    console.warn = noOp;
+                    console.error = noOp;
+                }
+            } catch (e) { /* ignore */ }
+        })();
+
+        // Runtime self-check kept but will not print to console due to silenced console
         setTimeout(() => {
             debugLog(`🔎 Runtime modules: FullCalendar=${typeof FullCalendar !== 'undefined'}, StorageManager=${typeof StorageManager !== 'undefined'}, CalendarEngine=${typeof CalendarEngine !== 'undefined'}`);
-            console.log('Runtime module check:', { FullCalendar: typeof FullCalendar, StorageManager: typeof StorageManager, CalendarEngine: typeof CalendarEngine });
         }, 2000);
 
         // Close sidebar when navigating on mobile
@@ -3281,28 +3294,14 @@
                     const el = document.getElementById('scheduleCalendar');
                     if (!el) return console.warn('No #scheduleCalendar found');
                     el.classList.toggle('debug-timegrid-visuals');
-                    console.log('toggleTimegridVisuals:', el.classList.contains('debug-timegrid-visuals'));
-                } catch (err) { console.warn('toggleTimegridVisuals failed', err); }
+                    // toggleTimegridVisuals toggled (console output removed)
+                } catch (err) { /* toggleTimegridVisuals failed (silent) */ }
             }
         };
         console.log("💡 Use window.deletionDebug.show() to see deletion status");
     </script>
 
-    <!-- Dev debug controls (temporary) -->
-    <style>
-        #devDebugControls { position: fixed; right: 12px; bottom: 12px; z-index: 3000; display: flex; flex-direction: column; gap: 8px; }
-        #devDebugControls button { background: #3498db; color: white; border: none; padding: 8px 10px; border-radius: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.2); cursor: pointer; font-size: 12px; }
-        #devDebugControls button.secondary { background: #2ecc71; }
-        #devDebugControls button.ghost { background: #7f8c8d; }
-        #devDebugControls button.danger { background: #e74c3c; }
-    </style>
-    <div id="devDebugControls" aria-hidden="false">
-        <button id="fixLayoutBtn" onclick="window.deletionDebug.fixLayout()">🔧 Fix calendar layout</button>
-        <button id="dumpDiagBtn" onclick="window.deletionDebug.dumpDiagnostics()">📋 Dump calendar diagnostics</button>
-        <button id="forceTimegridBtn" onclick="window.deletionDebug.forceTimegrid()">⏰ Force timegrid visibility</button>
-        <button id="healthCheckBtn" onclick="window.deletionDebug.calendarHealthCheck()">🩺 Calendar health check</button>
-        <button id="remakeViewsBtn" onclick="window.deletionDebug.remakeViews()">🔁 Remake Day & Week</button>
-    </div>
+    <!-- Dev debug controls removed for production/admin cleanup -->
 
 </body>
 </html>
