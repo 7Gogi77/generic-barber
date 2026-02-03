@@ -639,38 +639,7 @@
         </div>
     </div>
 
-    <script>
-            // (Removed duplicate sidebar immediate initializer to avoid conflicts)
-        // ===== DEBUGGING TOOLS =====
-        window.deletionDebug = {
-            show: () => {
-                console.table({
-                    "Deleted IDs": Array.from(deletedEventIds).join(", ") || "None",
-                    "Total Deleted": deletedEventIds.size,
-                    "Total in Memory": scheduleData.events ? scheduleData.events.length : 0,
-                    "Active Events": filterDeletedEvents(scheduleData.events || []).length
-                });
-            },
-            getDeleted: () => Array.from(deletedEventIds),
-            getActive: () => filterDeletedEvents(scheduleData.events || []),
-            clear: () => {
-                deletedEventIds.clear();
-                saveDeletedEventIds();
-                console.log("✓ Cleared all deleted IDs");
-            },
-            markDeleted: (id) => {
-                markEventDeleted(id);
-                scheduleData.events = scheduleData.events.filter(e => e.id !== id);
-                console.log(`✓ Marked ${id} as deleted`);
-            },
-            stats: () => ({
-                totalInScheduleData: scheduleData.events ? scheduleData.events.length : 0,
-                deletedCount: deletedEventIds.size,
-                activeCount: filterDeletedEvents(scheduleData.events || []).length
-            })
-        };
-        console.log("💡 Use window.deletionDebug.show() to see deletion status");
-    </script>
+
 
     <!-- MAIN CONTENT -->
 
@@ -865,65 +834,7 @@
     </div>
 
     <!-- SCRIPTS -->
-        // ===== DEBUGGING TOOLS =====
-        window.deletionDebug = {
-            show: () => {
-                console.table({
-                    "Deleted IDs": Array.from(deletedEventIds).join(", ") || "None",
-                    "Total Deleted": deletedEventIds.size,
-                    "Total in Memory": scheduleData.events ? scheduleData.events.length : 0,
-                    "Active Events": filterDeletedEvents(scheduleData.events || []).length
-                });
-            },
-            getDeleted: () => Array.from(deletedEventIds),
-            getActive: () => filterDeletedEvents(scheduleData.events || []),
-            clear: () => {
-                deletedEventIds.clear();
-                saveDeletedEventIds();
-                console.log("✓ Cleared all deleted IDs");
-            },
-            markDeleted: (id) => {
-                markEventDeleted(id);
-                scheduleData.events = scheduleData.events.filter(e => e.id !== id);
-                console.log(`✓ Marked ${id} as deleted`);
-            },
-            stats: () => ({
-                totalInScheduleData: scheduleData.events ? scheduleData.events.length : 0,
-                deletedCount: deletedEventIds.size,
-                activeCount: filterDeletedEvents(scheduleData.events || []).length
-            })
-        };
-        console.log("💡 Use window.deletionDebug.show() to see deletion status");
     <script type="module" src="/js/firebase-config.js"></script>
-        // ===== DEBUGGING TOOLS =====
-        window.deletionDebug = {
-            show: () => {
-                console.table({
-                    "Deleted IDs": Array.from(deletedEventIds).join(", ") || "None",
-                    "Total Deleted": deletedEventIds.size,
-                    "Total in Memory": scheduleData.events ? scheduleData.events.length : 0,
-                    "Active Events": filterDeletedEvents(scheduleData.events || []).length
-                });
-            },
-            getDeleted: () => Array.from(deletedEventIds),
-            getActive: () => filterDeletedEvents(scheduleData.events || []),
-            clear: () => {
-                deletedEventIds.clear();
-                saveDeletedEventIds();
-                console.log("✓ Cleared all deleted IDs");
-            },
-            markDeleted: (id) => {
-                markEventDeleted(id);
-                scheduleData.events = scheduleData.events.filter(e => e.id !== id);
-                console.log(`✓ Marked ${id} as deleted`);
-            },
-            stats: () => ({
-                totalInScheduleData: scheduleData.events ? scheduleData.events.length : 0,
-                deletedCount: deletedEventIds.size,
-                activeCount: filterDeletedEvents(scheduleData.events || []).length
-            })
-        };
-        console.log("💡 Use window.deletionDebug.show() to see deletion status");
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
         <script>
             // --- TAB LOGIC FOR ADD EVENT MODAL ---
@@ -1100,155 +1011,10 @@
             priceInput.value = total + '€';
             return total;
         }
-        // ===== DEBUGGING TOOLS =====
-        window.deletionDebug = {
-            show: () => {
-                console.table({
-                    "Deleted IDs": Array.from(deletedEventIds).join(", ") || "None",
-                    "Total Deleted": deletedEventIds.size,
-                    "Total in Memory": scheduleData.events ? scheduleData.events.length : 0,
-                    "Active Events": filterDeletedEvents(scheduleData.events || []).length
-                });
-            },
-            getDeleted: () => Array.from(deletedEventIds),
-            getActive: () => filterDeletedEvents(scheduleData.events || []),
-            clear: () => {
-                deletedEventIds.clear();
-                saveDeletedEventIds();
-                console.log("✓ Cleared all deleted IDs");
-            },
-            markDeleted: (id) => {
-                markEventDeleted(id);
-                scheduleData.events = scheduleData.events.filter(e => e.id !== id);
-                console.log(`✓ Marked ${id} as deleted`);
-            },
-            stats: () => ({
-                totalInScheduleData: scheduleData.events ? scheduleData.events.length : 0,
-                deletedCount: deletedEventIds.size,
-                activeCount: filterDeletedEvents(scheduleData.events || []).length
-            })
-        };
-        console.log("💡 Use window.deletionDebug.show() to see deletion status");
       </script>
-        // ===== DEBUGGING TOOLS =====
-        window.deletionDebug = {
-            show: () => {
-                console.table({
-                    "Deleted IDs": Array.from(deletedEventIds).join(", ") || "None",
-                    "Total Deleted": deletedEventIds.size,
-                    "Total in Memory": scheduleData.events ? scheduleData.events.length : 0,
-                    "Active Events": filterDeletedEvents(scheduleData.events || []).length
-                });
-            },
-            getDeleted: () => Array.from(deletedEventIds),
-            getActive: () => filterDeletedEvents(scheduleData.events || []),
-            clear: () => {
-                deletedEventIds.clear();
-                saveDeletedEventIds();
-                console.log("✓ Cleared all deleted IDs");
-            },
-            markDeleted: (id) => {
-                markEventDeleted(id);
-                scheduleData.events = scheduleData.events.filter(e => e.id !== id);
-                console.log(`✓ Marked ${id} as deleted`);
-            },
-            stats: () => ({
-                totalInScheduleData: scheduleData.events ? scheduleData.events.length : 0,
-                deletedCount: deletedEventIds.size,
-                activeCount: filterDeletedEvents(scheduleData.events || []).length
-            })
-        };
-        console.log("💡 Use window.deletionDebug.show() to see deletion status");
     <script src="/js/config.js?v=2"></script>
-        // ===== DEBUGGING TOOLS =====
-        window.deletionDebug = {
-            show: () => {
-                console.table({
-                    "Deleted IDs": Array.from(deletedEventIds).join(", ") || "None",
-                    "Total Deleted": deletedEventIds.size,
-                    "Total in Memory": scheduleData.events ? scheduleData.events.length : 0,
-                    "Active Events": filterDeletedEvents(scheduleData.events || []).length
-                });
-            },
-            getDeleted: () => Array.from(deletedEventIds),
-            getActive: () => filterDeletedEvents(scheduleData.events || []),
-            clear: () => {
-                deletedEventIds.clear();
-                saveDeletedEventIds();
-                console.log("✓ Cleared all deleted IDs");
-            },
-            markDeleted: (id) => {
-                markEventDeleted(id);
-                scheduleData.events = scheduleData.events.filter(e => e.id !== id);
-                console.log(`✓ Marked ${id} as deleted`);
-            },
-            stats: () => ({
-                totalInScheduleData: scheduleData.events ? scheduleData.events.length : 0,
-                deletedCount: deletedEventIds.size,
-                activeCount: filterDeletedEvents(scheduleData.events || []).length
-            })
-        };
-        console.log("💡 Use window.deletionDebug.show() to see deletion status");
     <script src="/js/schedule-model.js?v=2"></script>
-        // ===== DEBUGGING TOOLS =====
-        window.deletionDebug = {
-            show: () => {
-                console.table({
-                    "Deleted IDs": Array.from(deletedEventIds).join(", ") || "None",
-                    "Total Deleted": deletedEventIds.size,
-                    "Total in Memory": scheduleData.events ? scheduleData.events.length : 0,
-                    "Active Events": filterDeletedEvents(scheduleData.events || []).length
-                });
-            },
-            getDeleted: () => Array.from(deletedEventIds),
-            getActive: () => filterDeletedEvents(scheduleData.events || []),
-            clear: () => {
-                deletedEventIds.clear();
-                saveDeletedEventIds();
-                console.log("✓ Cleared all deleted IDs");
-            },
-            markDeleted: (id) => {
-                markEventDeleted(id);
-                scheduleData.events = scheduleData.events.filter(e => e.id !== id);
-                console.log(`✓ Marked ${id} as deleted`);
-            },
-            stats: () => ({
-                totalInScheduleData: scheduleData.events ? scheduleData.events.length : 0,
-                deletedCount: deletedEventIds.size,
-                activeCount: filterDeletedEvents(scheduleData.events || []).length
-            })
-        };
-        console.log("💡 Use window.deletionDebug.show() to see deletion status");
     <script src="/js/storage-manager.js?v=2"></script>
-        // ===== DEBUGGING TOOLS =====
-        window.deletionDebug = {
-            show: () => {
-                console.table({
-                    "Deleted IDs": Array.from(deletedEventIds).join(", ") || "None",
-                    "Total Deleted": deletedEventIds.size,
-                    "Total in Memory": scheduleData.events ? scheduleData.events.length : 0,
-                    "Active Events": filterDeletedEvents(scheduleData.events || []).length
-                });
-            },
-            getDeleted: () => Array.from(deletedEventIds),
-            getActive: () => filterDeletedEvents(scheduleData.events || []),
-            clear: () => {
-                deletedEventIds.clear();
-                saveDeletedEventIds();
-                console.log("✓ Cleared all deleted IDs");
-            },
-            markDeleted: (id) => {
-                markEventDeleted(id);
-                scheduleData.events = scheduleData.events.filter(e => e.id !== id);
-                console.log(`✓ Marked ${id} as deleted`);
-            },
-            stats: () => ({
-                totalInScheduleData: scheduleData.events ? scheduleData.events.length : 0,
-                deletedCount: deletedEventIds.size,
-                activeCount: filterDeletedEvents(scheduleData.events || []).length
-            })
-        };
-        console.log("💡 Use window.deletionDebug.show() to see deletion status");
     <script src="/js/calendar-engine.js?v=2"></script>
 
     <script>
