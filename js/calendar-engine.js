@@ -582,21 +582,8 @@ const CalendarEngine = {
             const timegrid = document.querySelector('.fc-timegrid');
             const timegridEventEls = document.querySelectorAll('.fc-timegrid .fc-event');
             if (timed > 0 && timegrid && timegridEventEls.length === 0) {
-              const currentView = calendar && calendar.view && calendar.view.type ? calendar.view.type : null;
-              if (currentView !== 'timeGridWeek') {
-                console.warn('eventsSet: timed events present but skipping remediation because current view is not timeGridWeek:', currentView);
-              } else {
-                console.warn('eventsSet detected timed events but NO event nodes in timeGrid (week view) - scheduling a sanity recheck');
-                setTimeout(() => {
-                  try {
-                    const timegridEventEls2 = document.querySelectorAll('.fc-timegrid .fc-event');
-                    if (timegridEventEls2.length === 0 && typeof CalendarEngine.remakeTimeGridViews === 'function') {
-                      console.warn('eventsSet: still no event nodes, invoking remakeTimeGridViews (week-only)');
-                      CalendarEngine.remakeTimeGridViews('timeGridWeek', window.scheduleData).catch(e=>console.warn('remake failed from eventsSet', e));
-                    }
-                  } catch (e) { console.warn('eventsSet recheck failed', e); }
-                }, 220);
-              }
+              // Remediation disabled: do not attempt automatic remakes or repairs from eventsSet
+              // This avoids any automatic DOM manipulation or forced re-initialization.
             }
           } catch (err) { console.warn('eventsSet hook failed', err); }
         },
@@ -835,19 +822,13 @@ const CalendarEngine = {
 
                     // If there are timed events but nothing rendered in the timeGrid, it's likely FullCalendar DOM failed to create time slot or event nodes
                     if (timedEvents.length > 0 && timegridEventEls.length === 0) {
-                      console.warn('⚠ viewDidMount sanity failed: timed events present but no event elements in timeGrid — attempting full remake (week-only)');
-                      if (typeof CalendarEngine.remakeTimeGridViews === 'function') {
-                        try { await CalendarEngine.remakeTimeGridViews(v, scheduleData); } catch (remErr) { console.warn('remakeTimeGridViews failed', remErr); }
-                      } else {
-                        console.warn('remakeTimeGridViews not available');
-                      }
+                      // Timed events exist but no elements in timeGrid — remediation disabled (no automatic remake)
                       return;
                     }
 
-                    // If there are no slots at all (collapsed DOM), try forcing a view re-render to rebuild DOM
+                    // If there are no slots at all (collapsed DOM), do not force re-render; remediation disabled
                     if (slots.length === 0) {
-                      console.warn('⚠ viewDidMount sanity: no timeGrid slots found — forcing view re-render (week-only)');
-                      try { if (calendar && typeof calendar.changeView === 'function') calendar.changeView(v); } catch (err) { console.warn('Failed to changeView for sanity check', err); }
+                      // No-op: do not force view re-render.
                     }
                   } catch (err) { console.warn('viewDidMount sanity check failed', err); }
                 }, 220);
@@ -1010,197 +991,13 @@ const CalendarEngine = {
         throw renderError;
       }
       
-      // Force container to have proper height and width after rendering
-      // Use flexbox to fill viewport
-      containerElement.style.width = '100%';
-      containerElement.style.maxWidth = '100%';
-      containerElement.style.minWidth = '100%';
-      containerElement.style.padding = '0';
-      containerElement.style.height = '100%';
-      containerElement.style.boxSizing = 'border-box';
-      containerElement.style.visibility = 'visible';
-      containerElement.style.display = 'flex';
-      containerElement.style.flexDirection = 'column';
-      
-      // CRITICAL: Trigger resize event so FullCalendar recalculates widths
-      console.log('📅 Immediately calling updateSize...');
-      if (calendar.updateSize) {
-        calendar.updateSize();
-      }
-      
-      setTimeout(() => {
-        console.log('📅 Triggering window resize event');
-        window.dispatchEvent(new Event('resize'));
-        if (calendar.updateSize) {
-          calendar.updateSize();
-        }
-      }, 50);
-      
-      setTimeout(() => {
-        console.log('📅 Second updateSize call');
-        if (calendar.updateSize) {
-          calendar.updateSize();
-        }
-        
-        // DEBUG: Check what's actually in the container
-        console.log('🔍 Full container HTML structure:');
-        console.log(containerElement.innerHTML.substring(0, 1000));
-        
-        console.log('🔍 Looking for FC elements:');
-        console.log('  .fc:', containerElement.querySelector('.fc') ? '✅' : '❌');
-        console.log('  .fc-daygrid:', containerElement.querySelector('.fc-daygrid') ? '✅' : '❌');
-        console.log('  .fc-daygrid-view:', containerElement.querySelector('.fc-daygrid-view') ? '✅' : '❌');
-        console.log('  .fc-scrollgrid:', containerElement.querySelector('.fc-scrollgrid') ? '✅' : '❌');
-        
-        // Check all-day section
-        const allDaySection = containerElement.querySelector('.fc-daygrid-all-day-section');
-        if (allDaySection) {
-          const allDayStyle = window.getComputedStyle(allDaySection);
-          console.log('✅ All-day section FOUND');
-          console.log('All-day section styles:', {
-            display: allDayStyle.display,
-            height: allDayStyle.height,
-            minHeight: allDayStyle.minHeight,
-            overflow: allDayStyle.overflow,
-            visibility: allDayStyle.visibility,
-            opacity: allDayStyle.opacity,
-            position: allDayStyle.position
-          });
-          console.log('All-day section HTML:', allDaySection.innerHTML.substring(0, 500));
-        } else {
-          console.log('❌ All-day section NOT FOUND in DOM');
-          
-          // List all available elements
-          const allSections = containerElement.querySelectorAll('[class*="all-day"]');
-          console.log('Elements with "all-day" in class:', allSections.length);
-          allSections.forEach((el, i) => {
-            console.log(`  [${i}]`, el.className);
-          });
-          
-          // Check what scrollgrid sections exist
-          const sections = containerElement.querySelectorAll('.fc-scrollgrid-section');
-          console.log('Total scrollgrid sections:', sections.length);
-          sections.forEach((section, i) => {
-            console.log(`  Section ${i}:`, section.className, 'HTML:', section.innerHTML.substring(0, 100));
-          });
-        }
-        
-        // Re-apply responsive heights after updateSize
-        const fcView = containerElement.querySelector('.fc');
-        if (fcView) {
-          fcView.style.height = window._calendarHeight || '700px';
-          const fcRoot = containerElement.querySelector('.fc-root');
-          if (fcRoot) fcRoot.style.height = window._calendarHeight || '700px';
-          const fcViewHarness = containerElement.querySelector('.fc-view-harness');
-          if (fcViewHarness) fcViewHarness.style.height = window._calendarHeight || '700px';
-          console.log('Reapplied heights after updateSize');
-        }
-      }, 150);
-      
-      // Ensure the fc view has proper dimensions
-      // Get values from window object (avoid redeclaring)
-      let calendarHeightValue = window._calendarHeight || '700px';
-      let minCalendarHeightValue = window._minCalendarHeight || '500px';
-      const fcView = containerElement.querySelector('.fc');
-      if (fcView) {
-        fcView.style.width = '100%';
-        fcView.style.minHeight = minCalendarHeightValue;
-        fcView.style.height = calendarHeightValue;
-        fcView.style.visibility = 'visible';
-        fcView.style.overflow = 'visible';
-        fcView.style.display = 'flex';
-        fcView.style.flexDirection = 'column';
-        console.log('✅ FC view sized and visible');
-        
-        // Force all FC children
-        const fcRoot = containerElement.querySelector('.fc-root');
-        if (fcRoot) {
-          fcRoot.style.width = '100%';
-          fcRoot.style.height = calendarHeightValue;
-          fcRoot.style.display = 'flex';
-          fcRoot.style.flexDirection = 'column';
-        }
-        
-        const fcViewHarness = containerElement.querySelector('.fc-view-harness');
-        if (fcViewHarness) {
-          fcViewHarness.style.width = '100%';
-          fcViewHarness.style.height = calendarHeightValue;
-          fcViewHarness.style.flex = '1';
-        }
-        
-        const fcDayGrid = containerElement.querySelector('.fc-daygrid');
-        if (fcDayGrid) {
-          fcDayGrid.style.width = '100%';
-          fcDayGrid.style.height = '100%';
-        }
-      } else {
-        console.warn('⚠️ FC view not found in container');
-      }
-      
-      // Also size the fc-scroller and fc-daygrid elements
-      const fcScrollers = containerElement.querySelectorAll('.fc-scroller');
-      fcScrollers.forEach(scroller => {
-        scroller.style.width = '100%';
-        // For all-day section, use visible to show events; for time grid, use auto (let FullCalendar decide)
-        if (scroller.closest('.fc-daygrid-all-day-section')) {
-          scroller.style.overflow = 'visible'; // Allow all-day events to display
-        } else {
-          scroller.style.overflowX = 'hidden'; scroller.style.overflowY = 'auto'; // Time grid scrolls vertically only
-        }
-        scroller.style.display = 'block';
-      });
-      
-      // Force daygrid table to display properly
-      const fcTable = containerElement.querySelector('.fc-scrollgrid');
-      if (fcTable) {
-        fcTable.style.width = '100%';
-        fcTable.style.display = 'table';
-        fcTable.style.tableLayout = 'auto';
-        fcTable.style.borderCollapse = 'collapse';
-        console.log('✅ FC table forced to display:table');
-      }
-      
-      // Force header toolbar to display
-      const fcHeader = containerElement.querySelector('.fc-header-toolbar');
-      if (fcHeader) {
-        fcHeader.style.display = 'flex';
-        fcHeader.style.width = '100%';
-        console.log('✅ FC header toolbar visible');
-      }
-      
-      // Force view harness
-      const fcViewHarness = containerElement.querySelector('.fc-view-harness');
-      if (fcViewHarness) {
-        fcViewHarness.style.display = 'flex';
-        fcViewHarness.style.width = '100%';
-        fcViewHarness.style.flex = '1';
-        console.log('✅ FC view harness visible');
-      }
-      
-      // Force sync table widths - this is critical!
-      const fcSyncTables = containerElement.querySelectorAll('.fc-scrollgrid-sync-table');
-      fcSyncTables.forEach(table => {
-        table.style.width = '100%';
-        table.style.tableLayout = 'fixed';
-        console.log('✅ Sync table width fixed');
-      });
-      
-      // Fix col header table
-      const fcColHeader = containerElement.querySelector('.fc-col-header');
-      if (fcColHeader) {
-        fcColHeader.style.width = '100%';
-        console.log('✅ Col header width fixed');
-      };
-      
-      // Force a refresh of the view with proper timing
-      setTimeout(() => {
-        console.log('📅 Refreshing calendar view after render');
-        try {
-          calendar.refetchEvents();
-        } catch (err) {
-          console.error('Error refetching events:', err);
-        }
-      }, 150);
+      // Post-render adjustments disabled to avoid automatic DOM sizing/fallbacks
+      // This area formerly applied many forced layout changes (styles, updateSize, resize events, forced table display, refetchEvents).
+      // Per request, we will not modify DOM layout here. We will still call a single updateSize() if available to allow FullCalendar to do its standard layout pass.
+      try {
+        if (calendar && typeof calendar.updateSize === 'function') calendar.updateSize();
+      } catch (err) { /* ignore */ }
+
       
       // Store calendar reference
       this.calendar = calendar;
@@ -1258,69 +1055,9 @@ const CalendarEngine = {
    * Useful when FullCalendar's timeGrid DOM fails to render the hourly slots
    */
   async remakeTimeGridViews(preferredView = 'timeGridWeek', scheduleDataParam) {
-    try {
-      // Throttle repeated remakes to once every 4 seconds
-      const now = Date.now();
-      this._lastRemakeAt = this._lastRemakeAt || 0;
-      if (now - this._lastRemakeAt < 4000) {
-        console.warn('⚠ remakeTimeGridViews called too frequently — skipping this call');
-        return this.calendar || null;
-      }
-      this._lastRemakeAt = now;
-
-      console.log('🔁 Remaking Day/Week views (preferredView=', preferredView, ')');
-      const schedule = scheduleDataParam || (typeof window !== 'undefined' ? window.scheduleData : null);
-
-      // Destroy existing calendar if present
-      try {
-        if (this.calendar && typeof this.calendar.destroy === 'function') {
-          console.log('🔁 Destroying existing calendar instance');
-          this.calendar.destroy();
-        }
-      } catch (err) { console.warn('⚠ Error destroying calendar', err); }
-
-      // Clear container DOM to ensure a fresh render
-      if (this.containerElement) {
-        try {
-          this.containerElement.innerHTML = '';
-        } catch (err) { console.warn('⚠ Failed to clear containerElement innerHTML', err); }
-      }
-
-      // Re-initialize calendar with timeGridWeek as initial view (or preferredView passed)
-      const container = this.containerElement || document.getElementById('scheduleCalendar');
-      if (!container) throw new Error('Calendar container not found');
-
-      const newCal = this.initializeCalendar(container, schedule || (window.scheduleData || {}), { initialView: preferredView });
-      if (!newCal) throw new Error('Failed to initialize new calendar');
-
-      // Store and expose
-      this.calendar = newCal;
-      try { window.calendar = newCal; } catch (e) { /* ignore */ }
-
-      // Cycle Week/Day views briefly to force FullCalendar to build both DOMs
-      const views = ['timeGridWeek', 'timeGridDay'];
-      let delay = 120;
-      for (const v of views) {
-        try {
-          console.log(`🔁 Switching to view ${v} to warm DOM`);
-          newCal.changeView(v);
-          await new Promise(r => setTimeout(r, delay));
-          delay = Math.min(400, delay * 2);
-        } catch (err) { console.warn('⚠ changeView failed for', v, err); }
-      }
-
-      // Return to preferred view
-      try { newCal.changeView(preferredView); } catch (err) { /* ignore */ }
-
-      // Final size update
-      if (newCal && typeof newCal.updateSize === 'function') newCal.updateSize();
-
-      console.log('✅ remakeTimeGridViews completed');
-      return newCal;
-    } catch (err) {
-      console.error('❌ remakeTimeGridViews failed', err);
-      throw err;
-    }
+    // REMOVED: fallback remediation disabled by request
+    // This function is intentionally a no-op to prevent automatic re-initialization or forced view changes.
+    return this.calendar || null;
   },
 
   /**

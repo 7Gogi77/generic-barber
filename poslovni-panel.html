@@ -3171,28 +3171,8 @@
             },
             // Developer utilities: force layout recalculation and dump diagnostics
             fixLayout: () => {
-                try {
-                    const containerElement = document.getElementById('scheduleCalendar');
-                    if (!containerElement) return console.warn('No #scheduleCalendar container found');
-                    const viewType = window.calendar && window.calendar.view && window.calendar.view.type ? window.calendar.view.type : null;
-                    if (viewType === 'dayGridMonth' || viewType === 'timeGridDay') return console.log('fixLayout: skipping for Month/Day view', viewType);
-                    const toolbar = containerElement.querySelector('.fc-toolbar');
-                    const headerRow = containerElement.querySelector('.fc-col-header');
-                    const fcRoot = containerElement.querySelector('.fc');
-                    const viewHarness = containerElement.querySelector('.fc-view-harness');
-                    const timegrid = containerElement.querySelector('.fc-timegrid');
-                    const scrollBodies = containerElement.querySelectorAll('.fc-scrollgrid-section-body');
-                    const toolbarH = toolbar ? Math.ceil(toolbar.getBoundingClientRect().height) : 0;
-                    const headerH = headerRow ? Math.ceil(headerRow.getBoundingClientRect().height) : 0;
-                    const avail = Math.max(520, containerElement.clientHeight - toolbarH - headerH - 8);
-                    console.log('fixLayout: setting available height', avail, {toolbarH, headerH, containerH: containerElement.clientHeight});
-                    if (fcRoot) { fcRoot.style.height = avail + 'px'; fcRoot.style.minHeight = avail + 'px'; fcRoot.style.overflow = 'visible'; }
-                    if (viewHarness) { viewHarness.style.height = avail + 'px'; viewHarness.style.minHeight = avail + 'px'; }
-                    if (timegrid) { timegrid.style.height = avail + 'px'; timegrid.style.minHeight = avail + 'px'; timegrid.style.overflowX = 'hidden'; timegrid.style.overflowY = 'auto'; }
-                    if (scrollBodies && scrollBodies.length) { scrollBodies.forEach(b => { b.style.height = avail + 'px'; b.style.minHeight = avail + 'px'; b.style.overflowX = 'hidden'; b.style.overflowY = 'auto'; }); }
-                    if (window.calendar && typeof window.calendar.updateSize === 'function') window.calendar.updateSize();
-                    console.log('fixLayout: scrollBodies heights:', Array.from(containerElement.querySelectorAll('.fc-scrollgrid-section-body')).map(b => Math.round(b.getBoundingClientRect().height)));
-                } catch (err) { console.warn('fixLayout failed', err); }
+                // No-op: fixLayout (automatic DOM adjustments) disabled by request
+                return null;
             },
             dumpDiagnostics: async () => {
                 try {
@@ -3210,26 +3190,13 @@
                 } catch (err) { console.warn('dumpDiagnostics failed', err); }
             },
             remakeViews: async (view = 'timeGridWeek') => {
-                try {
-                    const disallowed = ['dayGridMonth', 'timeGridDay'];
-                    if (disallowed.includes(view)) return console.log('remakeViews: skipping remake for view', view);
-                    console.log('remakeViews: calling CalendarEngine.remakeTimeGridViews', view);
-                    await CalendarEngine.remakeTimeGridViews(view, scheduleData);
-                    console.log('remakeViews: done');
-                } catch (err) { console.warn('remakeViews failed', err); }
+                // No-op: user requested removal of automatic remakes/fallbacks
+                return null;
             },
-            // Force timegrid visibility (temporary debug)
+            // Force timegrid visibility disabled
             forceTimegrid: () => {
-                try {
-                    const viewType = window.calendar && window.calendar.view && window.calendar.view.type ? window.calendar.view.type : null;
-                    if (viewType === 'dayGridMonth' || viewType === 'timeGridDay') return console.log('forceTimegrid: skipping for Month/Day view', viewType);
-                    const timegrid = document.querySelector('.fc-timegrid');
-                    const scrollBodies = document.querySelectorAll('.fc-scrollgrid-section-body');
-                    if (timegrid) { timegrid.style.display = 'block'; timegrid.style.minHeight = '400px'; timegrid.style.height = '400px'; }
-                    scrollBodies.forEach(b => { b.style.display = 'block'; b.style.minHeight = '400px'; b.style.height = '400px'; });
-                    if (window.calendar && typeof window.calendar.updateSize === 'function') window.calendar.updateSize();
-                    console.log('forceTimegrid: applied min-height 400px and display block');
-                } catch (err) { console.warn('forceTimegrid failed', err); }
+                // No-op: developer-requested removal of forced visibility fallbacks
+                return null;
             },
             // Health check: tries soft fixes (fixLayout / forceTimegrid) and falls back to full remake
             calendarHealthCheck: async (opts = { autoRemake: true }) => {
@@ -3249,38 +3216,9 @@
                         console.log('calendarHealthCheck: OK - timegrid present and scroll bodies tall enough');
                         return true;
                     }
-                    console.warn('calendarHealthCheck: soft-fix attempt: fixLayout + forceTimegrid');
-                    if (typeof window.deletionDebug?.fixLayout === 'function') window.deletionDebug.fixLayout();
-                    await new Promise(r => setTimeout(r, 180));
-                    if (typeof window.deletionDebug?.forceTimegrid === 'function') window.deletionDebug.forceTimegrid();
-                    await new Promise(r => setTimeout(r, 220));
-                    const hasTimegrid2 = !!document.querySelector('.fc-timegrid');
-                    const scrollBodies2 = document.querySelectorAll('.fc-scrollgrid-section-body');
-                    const bodyHeights2 = Array.from(scrollBodies2 || []).map(b => Math.round(b.getBoundingClientRect().height));
-                    console.log('calendarHealthCheck: after soft-fix timegrid?', hasTimegrid2, 'heights', bodyHeights2);
-                    if (hasTimegrid2 && scrollBodies2.length > 0 && bodyHeights2.some(h => h > 120)) {
-                        console.log('calendarHealthCheck: soft-fix succeeded');
-                        return true;
-                    }
-                    if (opts && opts.autoRemake) {
-                        console.warn('calendarHealthCheck: soft-fix failed, attempting full remake via CalendarEngine.remakeTimeGridViews');
-                        if (typeof CalendarEngine?.remakeTimeGridViews === 'function') {
-                            try {
-                                await CalendarEngine.remakeTimeGridViews('timeGridWeek', scheduleData);
-                                await new Promise(r => setTimeout(r, 300));
-                                const hasTimegrid3 = !!document.querySelector('.fc-timegrid');
-                                const scrollBodies3 = document.querySelectorAll('.fc-scrollgrid-section-body');
-                                const bodyHeights3 = Array.from(scrollBodies3 || []).map(b => Math.round(b.getBoundingClientRect().height));
-                                console.log('calendarHealthCheck: after remake timegrid?', hasTimegrid3, 'heights', bodyHeights3);
-                                if (hasTimegrid3 && scrollBodies3.length > 0 && bodyHeights3.some(h => h > 120)) {
-                                    console.log('calendarHealthCheck: remake succeeded');
-                                    return true;
-                                }
-                            } catch (remErr) { console.warn('calendarHealthCheck: remake failed', remErr); }
-                        } else {
-                            console.warn('calendarHealthCheck: CalendarEngine.remakeTimeGridViews not available');
-                        }
-                    }
+                    // No automatic remediation: do not attempt fixLayout/forceTimegrid or call remakeTimeGridViews.
+                    // If soft-check failed, return false and allow manual intervention or higher-level logic to decide.
+                    return false;
                     console.error('calendarHealthCheck: all attempts failed');
                     return false;
                 } catch (err) {
@@ -3288,14 +3226,10 @@
                     return false;
                 }
             },
-            // Toggle temporary visual debug highlights for timeGrid
+            // Toggle temporary visual debug highlights disabled
             toggleTimegridVisuals: () => {
-                try {
-                    const el = document.getElementById('scheduleCalendar');
-                    if (!el) return console.warn('No #scheduleCalendar found');
-                    el.classList.toggle('debug-timegrid-visuals');
-                    // toggleTimegridVisuals toggled (console output removed)
-                } catch (err) { /* toggleTimegridVisuals failed (silent) */ }
+                // No-op: visual debug toggles removed by request
+                return null;
             }
         };
         console.log("💡 Use window.deletionDebug.show() to see deletion status");
