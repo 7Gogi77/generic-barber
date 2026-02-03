@@ -8,6 +8,35 @@
     <title>Poslovni Panel - Urnik</title>
     <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet" />
     <link href="https://unpkg.com/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet" onerror="this.remove()" />
+        // ===== DEBUGGING TOOLS =====
+        window.deletionDebug = {
+            show: () => {
+                console.table({
+                    "Deleted IDs": Array.from(deletedEventIds).join(", ") || "None",
+                    "Total Deleted": deletedEventIds.size,
+                    "Total in Memory": scheduleData.events ? scheduleData.events.length : 0,
+                    "Active Events": filterDeletedEvents(scheduleData.events || []).length
+                });
+            },
+            getDeleted: () => Array.from(deletedEventIds),
+            getActive: () => filterDeletedEvents(scheduleData.events || []),
+            clear: () => {
+                deletedEventIds.clear();
+                saveDeletedEventIds();
+                console.log("✓ Cleared all deleted IDs");
+            },
+            markDeleted: (id) => {
+                markEventDeleted(id);
+                scheduleData.events = scheduleData.events.filter(e => e.id !== id);
+                console.log(`✓ Marked ${id} as deleted`);
+            },
+            stats: () => ({
+                totalInScheduleData: scheduleData.events ? scheduleData.events.length : 0,
+                deletedCount: deletedEventIds.size,
+                activeCount: filterDeletedEvents(scheduleData.events || []).length
+            })
+        };
+        console.log("💡 Use window.deletionDebug.show() to see deletion status");
     <script type="module" src="/main.js"></script>
     <style>
         * {
@@ -641,6 +670,35 @@
 
     <script>
             // (Removed duplicate sidebar immediate initializer to avoid conflicts)
+        // ===== DEBUGGING TOOLS =====
+        window.deletionDebug = {
+            show: () => {
+                console.table({
+                    "Deleted IDs": Array.from(deletedEventIds).join(", ") || "None",
+                    "Total Deleted": deletedEventIds.size,
+                    "Total in Memory": scheduleData.events ? scheduleData.events.length : 0,
+                    "Active Events": filterDeletedEvents(scheduleData.events || []).length
+                });
+            },
+            getDeleted: () => Array.from(deletedEventIds),
+            getActive: () => filterDeletedEvents(scheduleData.events || []),
+            clear: () => {
+                deletedEventIds.clear();
+                saveDeletedEventIds();
+                console.log("✓ Cleared all deleted IDs");
+            },
+            markDeleted: (id) => {
+                markEventDeleted(id);
+                scheduleData.events = scheduleData.events.filter(e => e.id !== id);
+                console.log(`✓ Marked ${id} as deleted`);
+            },
+            stats: () => ({
+                totalInScheduleData: scheduleData.events ? scheduleData.events.length : 0,
+                deletedCount: deletedEventIds.size,
+                activeCount: filterDeletedEvents(scheduleData.events || []).length
+            })
+        };
+        console.log("💡 Use window.deletionDebug.show() to see deletion status");
     </script>
 
     <!-- MAIN CONTENT -->
@@ -836,7 +894,65 @@
     </div>
 
     <!-- SCRIPTS -->
+        // ===== DEBUGGING TOOLS =====
+        window.deletionDebug = {
+            show: () => {
+                console.table({
+                    "Deleted IDs": Array.from(deletedEventIds).join(", ") || "None",
+                    "Total Deleted": deletedEventIds.size,
+                    "Total in Memory": scheduleData.events ? scheduleData.events.length : 0,
+                    "Active Events": filterDeletedEvents(scheduleData.events || []).length
+                });
+            },
+            getDeleted: () => Array.from(deletedEventIds),
+            getActive: () => filterDeletedEvents(scheduleData.events || []),
+            clear: () => {
+                deletedEventIds.clear();
+                saveDeletedEventIds();
+                console.log("✓ Cleared all deleted IDs");
+            },
+            markDeleted: (id) => {
+                markEventDeleted(id);
+                scheduleData.events = scheduleData.events.filter(e => e.id !== id);
+                console.log(`✓ Marked ${id} as deleted`);
+            },
+            stats: () => ({
+                totalInScheduleData: scheduleData.events ? scheduleData.events.length : 0,
+                deletedCount: deletedEventIds.size,
+                activeCount: filterDeletedEvents(scheduleData.events || []).length
+            })
+        };
+        console.log("💡 Use window.deletionDebug.show() to see deletion status");
     <script type="module" src="/js/firebase-config.js"></script>
+        // ===== DEBUGGING TOOLS =====
+        window.deletionDebug = {
+            show: () => {
+                console.table({
+                    "Deleted IDs": Array.from(deletedEventIds).join(", ") || "None",
+                    "Total Deleted": deletedEventIds.size,
+                    "Total in Memory": scheduleData.events ? scheduleData.events.length : 0,
+                    "Active Events": filterDeletedEvents(scheduleData.events || []).length
+                });
+            },
+            getDeleted: () => Array.from(deletedEventIds),
+            getActive: () => filterDeletedEvents(scheduleData.events || []),
+            clear: () => {
+                deletedEventIds.clear();
+                saveDeletedEventIds();
+                console.log("✓ Cleared all deleted IDs");
+            },
+            markDeleted: (id) => {
+                markEventDeleted(id);
+                scheduleData.events = scheduleData.events.filter(e => e.id !== id);
+                console.log(`✓ Marked ${id} as deleted`);
+            },
+            stats: () => ({
+                totalInScheduleData: scheduleData.events ? scheduleData.events.length : 0,
+                deletedCount: deletedEventIds.size,
+                activeCount: filterDeletedEvents(scheduleData.events || []).length
+            })
+        };
+        console.log("💡 Use window.deletionDebug.show() to see deletion status");
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
         <script>
             // --- TAB LOGIC FOR ADD EVENT MODAL ---
@@ -1013,15 +1129,255 @@
             priceInput.value = total + '€';
             return total;
         }
+        // ===== DEBUGGING TOOLS =====
+        window.deletionDebug = {
+            show: () => {
+                console.table({
+                    "Deleted IDs": Array.from(deletedEventIds).join(", ") || "None",
+                    "Total Deleted": deletedEventIds.size,
+                    "Total in Memory": scheduleData.events ? scheduleData.events.length : 0,
+                    "Active Events": filterDeletedEvents(scheduleData.events || []).length
+                });
+            },
+            getDeleted: () => Array.from(deletedEventIds),
+            getActive: () => filterDeletedEvents(scheduleData.events || []),
+            clear: () => {
+                deletedEventIds.clear();
+                saveDeletedEventIds();
+                console.log("✓ Cleared all deleted IDs");
+            },
+            markDeleted: (id) => {
+                markEventDeleted(id);
+                scheduleData.events = scheduleData.events.filter(e => e.id !== id);
+                console.log(`✓ Marked ${id} as deleted`);
+            },
+            stats: () => ({
+                totalInScheduleData: scheduleData.events ? scheduleData.events.length : 0,
+                deletedCount: deletedEventIds.size,
+                activeCount: filterDeletedEvents(scheduleData.events || []).length
+            })
+        };
+        console.log("💡 Use window.deletionDebug.show() to see deletion status");
       </script>
+        // ===== DEBUGGING TOOLS =====
+        window.deletionDebug = {
+            show: () => {
+                console.table({
+                    "Deleted IDs": Array.from(deletedEventIds).join(", ") || "None",
+                    "Total Deleted": deletedEventIds.size,
+                    "Total in Memory": scheduleData.events ? scheduleData.events.length : 0,
+                    "Active Events": filterDeletedEvents(scheduleData.events || []).length
+                });
+            },
+            getDeleted: () => Array.from(deletedEventIds),
+            getActive: () => filterDeletedEvents(scheduleData.events || []),
+            clear: () => {
+                deletedEventIds.clear();
+                saveDeletedEventIds();
+                console.log("✓ Cleared all deleted IDs");
+            },
+            markDeleted: (id) => {
+                markEventDeleted(id);
+                scheduleData.events = scheduleData.events.filter(e => e.id !== id);
+                console.log(`✓ Marked ${id} as deleted`);
+            },
+            stats: () => ({
+                totalInScheduleData: scheduleData.events ? scheduleData.events.length : 0,
+                deletedCount: deletedEventIds.size,
+                activeCount: filterDeletedEvents(scheduleData.events || []).length
+            })
+        };
+        console.log("💡 Use window.deletionDebug.show() to see deletion status");
     <script src="/js/config.js?v=2"></script>
+        // ===== DEBUGGING TOOLS =====
+        window.deletionDebug = {
+            show: () => {
+                console.table({
+                    "Deleted IDs": Array.from(deletedEventIds).join(", ") || "None",
+                    "Total Deleted": deletedEventIds.size,
+                    "Total in Memory": scheduleData.events ? scheduleData.events.length : 0,
+                    "Active Events": filterDeletedEvents(scheduleData.events || []).length
+                });
+            },
+            getDeleted: () => Array.from(deletedEventIds),
+            getActive: () => filterDeletedEvents(scheduleData.events || []),
+            clear: () => {
+                deletedEventIds.clear();
+                saveDeletedEventIds();
+                console.log("✓ Cleared all deleted IDs");
+            },
+            markDeleted: (id) => {
+                markEventDeleted(id);
+                scheduleData.events = scheduleData.events.filter(e => e.id !== id);
+                console.log(`✓ Marked ${id} as deleted`);
+            },
+            stats: () => ({
+                totalInScheduleData: scheduleData.events ? scheduleData.events.length : 0,
+                deletedCount: deletedEventIds.size,
+                activeCount: filterDeletedEvents(scheduleData.events || []).length
+            })
+        };
+        console.log("💡 Use window.deletionDebug.show() to see deletion status");
     <script src="/js/schedule-model.js?v=2"></script>
+        // ===== DEBUGGING TOOLS =====
+        window.deletionDebug = {
+            show: () => {
+                console.table({
+                    "Deleted IDs": Array.from(deletedEventIds).join(", ") || "None",
+                    "Total Deleted": deletedEventIds.size,
+                    "Total in Memory": scheduleData.events ? scheduleData.events.length : 0,
+                    "Active Events": filterDeletedEvents(scheduleData.events || []).length
+                });
+            },
+            getDeleted: () => Array.from(deletedEventIds),
+            getActive: () => filterDeletedEvents(scheduleData.events || []),
+            clear: () => {
+                deletedEventIds.clear();
+                saveDeletedEventIds();
+                console.log("✓ Cleared all deleted IDs");
+            },
+            markDeleted: (id) => {
+                markEventDeleted(id);
+                scheduleData.events = scheduleData.events.filter(e => e.id !== id);
+                console.log(`✓ Marked ${id} as deleted`);
+            },
+            stats: () => ({
+                totalInScheduleData: scheduleData.events ? scheduleData.events.length : 0,
+                deletedCount: deletedEventIds.size,
+                activeCount: filterDeletedEvents(scheduleData.events || []).length
+            })
+        };
+        console.log("💡 Use window.deletionDebug.show() to see deletion status");
     <script src="/js/storage-manager.js?v=2"></script>
+        // ===== DEBUGGING TOOLS =====
+        window.deletionDebug = {
+            show: () => {
+                console.table({
+                    "Deleted IDs": Array.from(deletedEventIds).join(", ") || "None",
+                    "Total Deleted": deletedEventIds.size,
+                    "Total in Memory": scheduleData.events ? scheduleData.events.length : 0,
+                    "Active Events": filterDeletedEvents(scheduleData.events || []).length
+                });
+            },
+            getDeleted: () => Array.from(deletedEventIds),
+            getActive: () => filterDeletedEvents(scheduleData.events || []),
+            clear: () => {
+                deletedEventIds.clear();
+                saveDeletedEventIds();
+                console.log("✓ Cleared all deleted IDs");
+            },
+            markDeleted: (id) => {
+                markEventDeleted(id);
+                scheduleData.events = scheduleData.events.filter(e => e.id !== id);
+                console.log(`✓ Marked ${id} as deleted`);
+            },
+            stats: () => ({
+                totalInScheduleData: scheduleData.events ? scheduleData.events.length : 0,
+                deletedCount: deletedEventIds.size,
+                activeCount: filterDeletedEvents(scheduleData.events || []).length
+            })
+        };
+        console.log("💡 Use window.deletionDebug.show() to see deletion status");
     <script src="/js/calendar-engine.js?v=2"></script>
 
     <script>
-    // Ensure deleted event IDs are loaded before any schedule logic
-    loadDeletedEventIds();
+        // ===== GLOBAL DELETION TRACKING SYSTEM =====
+        // Track deleted event IDs persistently across page reloads
+        let deletedEventIds = new Set();
+
+        /**
+         * Load deleted event IDs from localStorage
+         * This survives page refresh and ensures deleted items stay deleted
+         */
+        function loadDeletedEventIds() {
+            try {
+                const stored = localStorage.getItem('schedule_deleted_ids');
+                if (stored) {
+                    deletedEventIds = new Set(JSON.parse(stored));
+                    console.log(`✓ Loaded ${deletedEventIds.size} deleted event IDs from localStorage`);
+                } else {
+                    deletedEventIds = new Set();
+                }
+            } catch (e) {
+                console.warn('⚠ Failed to load deleted event IDs', e);
+                deletedEventIds = new Set();
+            }
+        }
+
+        /**
+         * Save deleted event IDs to localStorage
+         * Must be called after every deletion to persist across sessions
+         */
+        function saveDeletedEventIds() {
+            try {
+                localStorage.setItem('schedule_deleted_ids', JSON.stringify(Array.from(deletedEventIds)));
+                console.log(`✓ Persisted ${deletedEventIds.size} deleted event IDs to localStorage`);
+            } catch (e) {
+                console.warn('⚠ Failed to save deleted event IDs', e);
+            }
+        }
+
+        /**
+         * Filter events: remove any that are in the deleted set
+         * Call this every time you load or access scheduleData.events
+         */
+        function filterDeletedEvents(events) {
+            if (!Array.isArray(events)) return [];
+            const before = events.length;
+            const filtered = events.filter(e => !deletedEventIds.has(e.id));
+            if (before !== filtered.length) {
+                console.log(`🔍 Filtered ${before - filtered.length} deleted events`);
+            }
+            return filtered;
+        }
+
+        /**
+         * Mark an event as deleted (adds to deleted set and persists)
+         */
+        function markEventDeleted(eventId) {
+            deletedEventIds.add(eventId);
+            saveDeletedEventIds();
+            console.log(`✓ Event ${eventId} marked as deleted and persisted`);
+        }
+
+        /**
+         * Check if event is marked as deleted
+         */
+        function isEventDeleted(eventId) {
+            return deletedEventIds.has(eventId);
+        }
+
+        // Load deleted IDs on script load
+        loadDeletedEventIds();
+        // ===== DEBUGGING TOOLS =====
+        window.deletionDebug = {
+            show: () => {
+                console.table({
+                    "Deleted IDs": Array.from(deletedEventIds).join(", ") || "None",
+                    "Total Deleted": deletedEventIds.size,
+                    "Total in Memory": scheduleData.events ? scheduleData.events.length : 0,
+                    "Active Events": filterDeletedEvents(scheduleData.events || []).length
+                });
+            },
+            getDeleted: () => Array.from(deletedEventIds),
+            getActive: () => filterDeletedEvents(scheduleData.events || []),
+            clear: () => {
+                deletedEventIds.clear();
+                saveDeletedEventIds();
+                console.log("✓ Cleared all deleted IDs");
+            },
+            markDeleted: (id) => {
+                markEventDeleted(id);
+                scheduleData.events = scheduleData.events.filter(e => e.id !== id);
+                console.log(`✓ Marked ${id} as deleted`);
+            },
+            stats: () => ({
+                totalInScheduleData: scheduleData.events ? scheduleData.events.length : 0,
+                deletedCount: deletedEventIds.size,
+                activeCount: filterDeletedEvents(scheduleData.events || []).length
+            })
+        };
+        console.log("💡 Use window.deletionDebug.show() to see deletion status");
     </script>
 
     <script>
@@ -1186,32 +1542,144 @@
             clear() { deletedEventIds = new Set(); saveDeletedEventIds(); }
         };
         async function deleteScheduleEvent(eventId) {
-        // --- Permanent Deletion: Mark event as deleted and update all sources ---
-        try {
-            // Mark as deleted locally
-            markEventDeleted(eventId);
-            // Remove from in-memory schedule and persist
-            scheduleData.events = scheduleData.events.filter(e => e.id !== eventId);
-            if (window.saveScheduleDataNoBroadcast) {
-                try { await window.saveScheduleDataNoBroadcast(); } catch(e) { }
-            } else if (window.saveScheduleData) {
-                try { await window.saveScheduleData(); } catch(e) { }
-            } else {
-                try { localStorage.setItem('schedule', JSON.stringify(scheduleData)); } catch(e) { }
+            try {
+                console.log(`🗑️  Deleting event: ${eventId}`);
+                
+                const existing = scheduleData.events.find(e => e.id === eventId);
+                if (!existing) {
+                    console.warn(`⚠ Event ${eventId} not found`);
+                    return false;
+                }
+
+                // STEP 1: Mark as deleted FIRST - this prevents all restores
+                markEventDeleted(eventId);
+                console.log(`✓ Marked ${eventId} as deleted in memory and localStorage`);
+
+                // STEP 2: Remove from scheduleData
+                scheduleData.events = scheduleData.events.filter(e => e.id !== eventId);
+                console.log(`✓ Removed from scheduleData`);
+
+                // STEP 3: Write deletion markers to Firebase (before removing entries)
+                const base = 'https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app/';
+                const adminKey = existing?.extendedProps?.adminKey;
+                
+                try {
+                    const timestamp = new Date().toISOString();
+                    
+                    // Mark as deleted in both paths
+                    if (adminKey) {
+                        await fetch(`${base}site_config/adminSchedule/deleted/${adminKey}.json`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ deletedAt: timestamp, eventId: eventId })
+                        });
+                        console.log(`✓ Marked ${adminKey} in site_config deleted path`);
+
+                        await fetch(`${base}adminSchedule/deleted/${adminKey}.json`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ deletedAt: timestamp, eventId: eventId })
+                        });
+                        console.log(`✓ Marked ${adminKey} in adminSchedule deleted path`);
+                    }
+
+                    await fetch(`${base}site_config/adminSchedule/deleted/event_${eventId}.json`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ deletedAt: timestamp })
+                    });
+                    console.log(`✓ Marked event_${eventId} by ID`);
+
+                } catch (markErr) {
+                    console.warn('⚠ Failed to write deletion markers', markErr);
+                }
+
+                // STEP 4: Remove entries from Firebase
+                try {
+                    if (adminKey) {
+                        await fetch(`${base}site_config/adminSchedule/entries/${adminKey}.json`, { method: 'DELETE' });
+                        await fetch(`${base}adminSchedule/entries/${adminKey}.json`, { method: 'DELETE' });
+                        console.log(`✓ Deleted entries for ${adminKey}`);
+                    }
+                    
+                    await fetch(`${base}site_config/adminSchedule/entries/event_${eventId}.json`, { method: 'DELETE' });
+                    console.log(`✓ Deleted entry for event_${eventId}`);
+
+                } catch (delErr) {
+                    console.warn('⚠ Failed to delete entries', delErr);
+                }
+
+                // STEP 5: Find and clean related entries
+                try {
+                    const entriesRes = await fetch(`${base}site_config/adminSchedule/entries.json`);
+                    if (entriesRes.ok) {
+                        const entries = await entriesRes.json().catch(() => null);
+                        if (entries && typeof entries === 'object') {
+                            for (const [k, item] of Object.entries(entries)) {
+                                try {
+                                    const matchCustomer = existing?.extendedProps?.customer && item?.customer === existing.extendedProps.customer;
+                                    const matchDate = existing?.start && item?.startDate === existing.start.split('T')[0];
+                                    
+                                    if ((matchCustomer && matchDate) || item?.id === existing?.id) {
+                                        await fetch(`${base}site_config/adminSchedule/entries/${k}.json`, { method: 'DELETE' });
+                                        await fetch(`${base}site_config/adminSchedule/deleted/${k}.json`, {
+                                            method: 'PUT',
+                                            headers: { 'Content-Type': 'application/json' },
+                                            body: JSON.stringify({ deletedAt: new Date().toISOString() })
+                                        });
+                                        console.log(`✓ Cleaned up related entry: ${k}`);
+                                    }
+                                } catch (e) { }
+                            }
+                        }
+                    }
+                } catch (searchErr) {
+                    console.warn('⚠ Failed to search related entries', searchErr);
+                }
+
+                // STEP 6: Save scheduleData
+                try {
+                    scheduleData.events = filterDeletedEvents(scheduleData.events);
+                    if (window.saveScheduleDataNoBroadcast) {
+                        await window.saveScheduleDataNoBroadcast();
+                        console.log('✓ Schedule saved (no broadcast)');
+                    } else if (window.saveScheduleData) {
+                        await window.saveScheduleData();
+                        console.log('✓ Schedule saved');
+                    } else {
+                        localStorage.setItem('schedule', JSON.stringify(scheduleData));
+                    }
+                } catch (saveErr) {
+                    console.warn('⚠ Failed to save schedule', saveErr);
+                }
+
+                // STEP 7: Remove from UI
+                try {
+                    const calEvent = window.calendar && window.calendar.getEventById(eventId);
+                    if (calEvent) {
+                        calEvent.remove();
+                        console.log(`✓ Removed from calendar UI`);
+                    }
+                } catch (uiErr) { }
+
+                // STEP 8: Clear empty storage
+                const activeEvents = filterDeletedEvents(scheduleData.events);
+                if (activeEvents.length === 0) {
+                    try {
+                        localStorage.removeItem('schedule');
+                        await fetch(`${base}site_config/adminSchedule/entries.json`, { method: 'PUT', body: '{}' });
+                        await fetch(`${base}adminSchedule/entries.json`, { method: 'PUT', body: '{}' });
+                        console.log('✓ Cleared all storage');
+                    } catch (e) { }
+                }
+
+                console.log(`✅ Event ${eventId} PERMANENTLY deleted`);
+                return true;
+
+            } catch (err) {
+                console.error('❌ Deletion failed', err);
+                return false;
             }
-            // Remove from calendar UI if present
-            try { const ev = window.calendar && window.calendar.getEventById(eventId); if (ev) ev.remove(); } catch(e) { }
-            // Remove from Firebase (all known schedule paths)
-            const base = 'https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app/';
-            // Try to delete from both adminSchedule/entries and site_config/adminSchedule/entries
-            try { await fetch(base + `adminSchedule/entries/${eventId}.json`, { method: 'DELETE' }); } catch(e) {}
-            try { await fetch(base + `site_config/adminSchedule/entries/${eventId}.json`, { method: 'DELETE' }); } catch(e) {}
-            // Optionally, mark tombstone in Firebase (for multi-client sync)
-            try { await fetch(base + `site_config/adminSchedule/deleted/${eventId}.json`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(true) }); } catch(e) {}
-            return true;
-        } catch (err) {
-            console.error('✗ deleteScheduleEvent failed', err);
-            return false;
         }
 
         // Mark an adminSchedule key as deleted to prevent re-merge
@@ -2075,6 +2543,15 @@
                 scheduleData = await StorageManager.load('schedule');
                 debugLog(`✅ Schedule data loaded (${scheduleData.events ? scheduleData.events.length : 0} events)`);
                 
+                // CRITICAL: Filter out any deleted events right after loading
+                if (scheduleData.events && Array.isArray(scheduleData.events)) {
+                    const before = scheduleData.events.length;
+                    scheduleData.events = filterDeletedEvents(scheduleData.events);
+                    if (before !== scheduleData.events.length) {
+                        debugLog(`🔍 Filtered ${before - scheduleData.events.length} deleted events on load`);
+                    }
+                }
+                
                 // Migrate legacy localStorage 'appointments' into schedule (DB-backed) if present
                 try {
                     const legacyRaw = localStorage.getItem('appointments');
@@ -2190,6 +2667,12 @@
                                     try {
                                         // skip if the key is marked deleted (tombstone)
                                         if (key && deletedMap && deletedMap[key]) return;
+                                        // CRITICAL: Also skip if we've marked this event as deleted locally
+                                        const eventId = `admin_${key}`;
+                                        if (isEventDeleted(eventId)) {
+                                            console.log(`⏭️  Skipping merge of ${key} (marked as deleted locally)`);
+                                            return;
+                                        }
                                         // skip if identical adminKey present
                                         if (key && scheduleData.events.some(e => e.extendedProps && e.extendedProps.adminKey === key)) return;
                                         // skip if event with same start/end/customer already present
@@ -2326,6 +2809,35 @@
                 // Sidebar stays open on desktop
             }
         });
+        // ===== DEBUGGING TOOLS =====
+        window.deletionDebug = {
+            show: () => {
+                console.table({
+                    "Deleted IDs": Array.from(deletedEventIds).join(", ") || "None",
+                    "Total Deleted": deletedEventIds.size,
+                    "Total in Memory": scheduleData.events ? scheduleData.events.length : 0,
+                    "Active Events": filterDeletedEvents(scheduleData.events || []).length
+                });
+            },
+            getDeleted: () => Array.from(deletedEventIds),
+            getActive: () => filterDeletedEvents(scheduleData.events || []),
+            clear: () => {
+                deletedEventIds.clear();
+                saveDeletedEventIds();
+                console.log("✓ Cleared all deleted IDs");
+            },
+            markDeleted: (id) => {
+                markEventDeleted(id);
+                scheduleData.events = scheduleData.events.filter(e => e.id !== id);
+                console.log(`✓ Marked ${id} as deleted`);
+            },
+            stats: () => ({
+                totalInScheduleData: scheduleData.events ? scheduleData.events.length : 0,
+                deletedCount: deletedEventIds.size,
+                activeCount: filterDeletedEvents(scheduleData.events || []).length
+            })
+        };
+        console.log("💡 Use window.deletionDebug.show() to see deletion status");
     </script>
 </body>
 </html>
