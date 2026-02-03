@@ -2972,9 +2972,57 @@
                     map[k].push(e);
                 });
                 Object.entries(map).forEach(([k, arr]) => { if (arr.length > 1) console.warn('Duplicate key', k, arr); });
+            },
+            // Developer utilities: force layout recalculation and dump diagnostics
+            fixLayout: () => {
+                try {
+                    const containerElement = document.getElementById('scheduleCalendar');
+                    if (!containerElement) return console.warn('No #scheduleCalendar container found');
+                    const toolbar = containerElement.querySelector('.fc-toolbar');
+                    const headerRow = containerElement.querySelector('.fc-col-header');
+                    const fcRoot = containerElement.querySelector('.fc');
+                    const viewHarness = containerElement.querySelector('.fc-view-harness');
+                    const timegrid = containerElement.querySelector('.fc-timegrid');
+                    const scrollBodies = containerElement.querySelectorAll('.fc-scrollgrid-section-body');
+                    const toolbarH = toolbar ? Math.ceil(toolbar.getBoundingClientRect().height) : 0;
+                    const headerH = headerRow ? Math.ceil(headerRow.getBoundingClientRect().height) : 0;
+                    const avail = Math.max(520, containerElement.clientHeight - toolbarH - headerH - 8);
+                    console.log('fixLayout: setting available height', avail, {toolbarH, headerH, containerH: containerElement.clientHeight});
+                    if (fcRoot) { fcRoot.style.height = avail + 'px'; fcRoot.style.minHeight = avail + 'px'; fcRoot.style.overflow = 'visible'; }
+                    if (viewHarness) { viewHarness.style.height = avail + 'px'; viewHarness.style.minHeight = avail + 'px'; }
+                    if (timegrid) { timegrid.style.height = avail + 'px'; timegrid.style.minHeight = avail + 'px'; timegrid.style.overflow = 'auto'; }
+                    if (scrollBodies && scrollBodies.length) { scrollBodies.forEach(b => { b.style.height = avail + 'px'; b.style.minHeight = avail + 'px'; b.style.overflow = 'auto'; }); }
+                    if (window.calendar && typeof window.calendar.updateSize === 'function') window.calendar.updateSize();
+                    console.log('fixLayout: scrollBodies heights:', Array.from(containerElement.querySelectorAll('.fc-scrollgrid-section-body')).map(b => Math.round(b.getBoundingClientRect().height)));
+                } catch (err) { console.warn('fixLayout failed', err); }
+            },
+            dumpDiagnostics: async () => {
+                try {
+                    console.log('dumpDiagnostics: calendar exists', !!window.calendar, 'events count', window.calendar ? window.calendar.getEvents().length : 0);
+                    const scrollBodies = document.querySelectorAll('.fc-scrollgrid-section-body');
+                    console.log('scrollBodies heights:', Array.from(scrollBodies).map(b => Math.round(b.getBoundingClientRect().height)));
+                    const dayCells = document.querySelectorAll('.fc-daygrid-day-cell');
+                    console.log('dayCells:', dayCells.length);
+                    const events = window.calendar ? window.calendar.getEvents().map(e => ({id:e.id, title:e.title, start:e.start, end:e.end, allDay:e.allDay})) : [];
+                    console.log('calendar events snapshot', events.slice(0,20));
+                    try { const evs = await CalendarEngine.generateCalendarEvents(scheduleData); console.log('CalendarEngine.generateCalendarEvents', evs.length); } catch (err) { console.warn('generateCalendarEvents failed', err); }
+                } catch (err) { console.warn('dumpDiagnostics failed', err); }
             }
         };
         console.log("💡 Use window.deletionDebug.show() to see deletion status");
     </script>
+
+    <!-- Dev debug controls (temporary) -->
+    <style>
+        #devDebugControls { position: fixed; right: 12px; bottom: 12px; z-index: 3000; display: flex; flex-direction: column; gap: 8px; }
+        #devDebugControls button { background: #3498db; color: white; border: none; padding: 8px 10px; border-radius: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.2); cursor: pointer; font-size: 12px; }
+        #devDebugControls button.secondary { background: #2ecc71; }
+        #devDebugControls button.ghost { background: #7f8c8d; }
+    </style>
+    <div id="devDebugControls" aria-hidden="false">
+        <button id="fixLayoutBtn" onclick="window.deletionDebug.fixLayout()">🔧 Fix calendar layout</button>
+        <button id="dumpDiagBtn" onclick="window.deletionDebug.dumpDiagnostics()">📋 Dump calendar diagnostics</button>
+    </div>
+
 </body>
 </html>

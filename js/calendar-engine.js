@@ -721,9 +721,9 @@ const CalendarEngine = {
         console.log('Calling render...');
         const renderResult = calendar.render();
         console.log('✅ FullCalendar rendered successfully, result:', renderResult);
-        console.log('Container HTML after render:', containerElement.innerHTML.substring(0, 200));
-
-        // Ensure timeGrid area has an explicit height so hourly grid and events can render
+        // Expose calendar globally for debug helpers
+        try { window.calendar = calendar; } catch (err) { /* ignore */ }
+        // Defer sizing to allow DOM to settle
         setTimeout(() => {
           try {
             const toolbar = containerElement.querySelector('.fc-toolbar');
@@ -766,34 +766,76 @@ const CalendarEngine = {
             }
 
             if (calendar && typeof calendar.updateSize === 'function') calendar.updateSize();
+
+            // If any scroll body is collapsed (very small height) retry once after a short delay
+            setTimeout(() => {
+              try {
+                const collapsed = Array.from(containerElement.querySelectorAll('.fc-scrollgrid-section-body')).filter(b => b.getBoundingClientRect().height < 6);
+                if (collapsed.length > 0) {
+                  console.log('⚠ Detected collapsed scrollgrid sections, forcing heights again', collapsed.length);
+                  const scrollBodies2 = containerElement.querySelectorAll('.fc-scrollgrid-section-body');
+                  scrollBodies2.forEach(b => {
+                    b.style.height = avail + 'px';
+                    b.style.minHeight = avail + 'px';
+                    b.style.overflow = 'auto';
+                  });
+                  if (calendar && typeof calendar.updateSize === 'function') calendar.updateSize();
+                }
+              } catch (err) { console.warn('⚠ Retry sizing failed', err); }
+            }, 250);
           } catch (err) { console.warn('⚠ timeGrid sizing after render failed', err); }
         }, 50);
 
-        dayCells.forEach((dayCell) => {
-          const eventsContainer = dayCell.querySelector('.fc-daygrid-day-events');
-          if (eventsContainer) {
-            const allEventEls = Array.from(eventsContainer.querySelectorAll('.fc-daygrid-event'));
-            if (allEventEls.length > 3) {
-              const dateEl = dayCell.querySelector('.fc-daygrid-day-number');
-              const dayNum = dateEl ? dateEl.textContent : '?';
-              console.log(`%c📅 FEB ${dayNum}: ${allEventEls.length} events found`, 'color: blue; font-weight: bold; font-size: 13px');
-              
-              let timedCount = 0;
-              allEventEls.forEach((el) => {
-                const text = el.textContent;
-                const hasTime = /\d{2}:\d{2}/.test(text);
-                
-                if (hasTime) {
-                  timedCount++;
-                  if (timedCount > 3) {
-                    el.style.display = 'none';
-                    console.log(`%c  ❌ HIDING #${timedCount}: ${text.substring(0, 35)}`, 'color: red; font-weight: bold');
+        // Safely process day cells (may not exist immediately after render).
+        (function handleDayCells() {
+          function processDayCell(dayCell) {
+            const eventsContainer = dayCell.querySelector('.fc-daygrid-day-events');
+            if (eventsContainer) {
+              const allEventEls = Array.from(eventsContainer.querySelectorAll('.fc-daygrid-event'));
+              if (allEventEls.length > 3) {
+                const dateEl = dayCell.querySelector('.fc-daygrid-day-number');
+                const dayNum = dateEl ? dateEl.textContent : '?';
+                console.log(`%c📅 FEB ${dayNum}: ${allEventEls.length} events found`, 'color: blue; font-weight: bold; font-size: 13px');
+
+                let timedCount = 0;
+                allEventEls.forEach((el) => {
+                  const text = el.textContent;
+                  const hasTime = /\d{2}:\d{2}/.test(text);
+
+                  if (hasTime) {
+                    timedCount++;
+                    if (timedCount > 3) {
+                      el.style.display = 'none';
+                      console.log(`%c  ❌ HIDING #${timedCount}: ${text.substring(0, 35)}`, 'color: red; font-weight: bold');
+                    }
                   }
-                }
-              });
+                });
+              }
             }
           }
-        });
+
+          try {
+            let dayCells = containerElement.querySelectorAll('.fc-daygrid-day-cell');
+            if (!dayCells || dayCells.length === 0) {
+              // Retry once shortly after render in case DOM hasn't settled
+              setTimeout(() => {
+                try {
+                  dayCells = containerElement.querySelectorAll('.fc-daygrid-day-cell');
+                  if (dayCells && dayCells.length > 0) {
+                    Array.from(dayCells).forEach(processDayCell);
+                  } else {
+                    console.log('⚠ No .fc-daygrid-day-cell elements found after retry.');
+                  }
+                } catch (err) { console.warn('⚠ Error processing dayCells on retry', err); }
+              }, 250);
+              return;
+            }
+
+            Array.from(dayCells).forEach(processDayCell);
+          } catch (err) {
+            console.warn('⚠ Error processing dayCells', err);
+          }
+        })();
 
       } catch (renderError) {
         console.error('❌ Error calling calendar.render():', renderError);
