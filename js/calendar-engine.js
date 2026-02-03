@@ -343,18 +343,18 @@ const CalendarEngine = {
       const parentWidth = containerElement.parentElement?.offsetWidth || window.innerWidth;
       console.log('Parent width:', parentWidth);
       
-      // Calculate responsive height based on screen size - stored on window for global access
-      let calendarHeight = '100%';
-      let minCalendarHeight = '100%';
-      // Always use 100% to fill viewport - no fixed heights
-      
+      // Calculate responsive height based on screen size - use a pixel height so timeGrid has space
+      const topOffset = 140; // header + toolbars + margins
+      const viewportH = window.innerHeight || document.documentElement.clientHeight || 800;
+      const calcHeight = Math.max(520, viewportH - topOffset);
+
       // Store on window object so it can be accessed in other functions
-      window._calendarHeight = calendarHeight;
-      window._minCalendarHeight = minCalendarHeight;
-      
-      console.log('Using calendar height:', calendarHeight);
-      
-      // Set container dimensions - CRITICAL for first load
+      window._calendarHeight = calcHeight;
+      window._minCalendarHeight = 520;
+
+      console.log('Using calendar pixel height:', calcHeight);
+
+      // Set container dimensions - give it a fixed height in px so FullCalendar can render timeGrid
       containerElement.style.padding = '0';
       containerElement.style.margin = '0';
       containerElement.style.boxSizing = 'border-box';
@@ -362,45 +362,45 @@ const CalendarEngine = {
       containerElement.style.width = '100%';
       containerElement.style.maxWidth = '100%';
       containerElement.style.minWidth = '100%';
-      containerElement.style.minHeight = minCalendarHeight;
-      containerElement.style.height = calendarHeight;
+      containerElement.style.minHeight = `${window._minCalendarHeight}px`;
+      containerElement.style.height = `${calcHeight}px`;
       containerElement.style.overflow = 'visible';
-      
+
       console.log('Container after style:', {
         width: containerElement.style.width,
         height: containerElement.style.height,
         offsetWidth: containerElement.offsetWidth,
         offsetHeight: containerElement.offsetHeight
       });
-      
+
       // Ensure parent can hold the height and width
       if (containerElement.parentElement) {
         containerElement.parentElement.style.overflow = 'visible';
         containerElement.parentElement.style.width = '100%';
         containerElement.parentElement.style.minWidth = '100%';
         containerElement.parentElement.style.maxWidth = '100%';
-        containerElement.parentElement.style.height = '100%';
-        containerElement.parentElement.style.display = 'flex';
-        containerElement.parentElement.style.flexDirection = 'column';
+        // Keep parent's height flexible but allow it to size to its contents
+        containerElement.parentElement.style.display = 'block';
       }
 
       // Allow container to fill available space
-      containerElement.style.flex = '1';
+      containerElement.style.flex = '0 0 auto';
       containerElement.style.width = '100%';
-      containerElement.style.height = 'auto';
-      containerElement.style.minHeight = '100%';
       containerElement.style.overflow = 'auto';
 
       const calendar = new FullCalendar.Calendar(containerElement, {
         // Core settings
         initialView: options.initialView || 'dayGridMonth',
-        height: '100%',
-        contentHeight: 'parent',
+        // Use a computed pixel height so FullCalendar timeGrid can render correctly
+        height: window._calendarHeight || 600,
+        contentHeight: 'auto',
         headerToolbar: {
           left: 'prev,next today',
           center: 'title',
           right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
         },
+        // Force visible scrollbars in time grid
+        nowIndicator: true,
 
         // Locale
         locale: 'sl',
