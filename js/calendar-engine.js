@@ -658,6 +658,36 @@ const CalendarEngine = {
               }
             }
             
+            // For timeGrid views, ensure timegrid and scroll bodies are sized
+            if (arg.view.type === 'timeGridWeek' || arg.view.type === 'timeGridDay') {
+              console.log('🔧 Sizing timeGrid view:', arg.view.type);
+              setTimeout(() => {
+                try {
+                  const containerElement = document.getElementById('scheduleCalendar');
+                  if (!containerElement) return;
+                  const toolbar = containerElement.querySelector('.fc-toolbar');
+                  const headerRow = containerElement.querySelector('.fc-col-header');
+                  const fcRoot = containerElement.querySelector('.fc');
+                  const viewHarness = containerElement.querySelector('.fc-view-harness');
+                  const timegrid = containerElement.querySelector('.fc-timegrid');
+                  const scrollBodies = containerElement.querySelectorAll('.fc-scrollgrid-section-body');
+
+                  const toolbarH = toolbar ? Math.ceil(toolbar.getBoundingClientRect().height) : 0;
+                  const headerH = headerRow ? Math.ceil(headerRow.getBoundingClientRect().height) : 0;
+                  const avail = Math.max(520, containerElement.clientHeight - toolbarH - headerH - 8);
+
+                  console.log(`timeGrid sizing: avail=${avail}px, timegrid found? ${!!timegrid}, scrollBodies=${scrollBodies.length}`);
+
+                  if (fcRoot) { fcRoot.style.height = avail + 'px'; fcRoot.style.minHeight = avail + 'px'; fcRoot.style.overflow = 'visible'; }
+                  if (viewHarness) { viewHarness.style.height = avail + 'px'; viewHarness.style.minHeight = avail + 'px'; }
+                  if (timegrid) { timegrid.style.height = avail + 'px'; timegrid.style.minHeight = avail + 'px'; timegrid.style.overflowX = 'hidden'; timegrid.style.overflowY = 'auto'; }
+                  if (scrollBodies && scrollBodies.length) { scrollBodies.forEach(b => { b.style.height = avail + 'px'; b.style.minHeight = avail + 'px'; b.style.overflowX = 'hidden'; b.style.overflowY = 'auto'; }); }
+
+                  if (calendar && typeof calendar.updateSize === 'function') calendar.updateSize();
+                } catch (err) { console.warn('⚠ timeGrid sizing in datesSet failed', err); }
+              }, 100);
+            }
+            
             if (calendar.updateSize) {
               calendar.updateSize();
             }
