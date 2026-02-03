@@ -764,19 +764,8 @@ const CalendarEngine = {
                       }
 
                       if (attempt >= 4) {
-                        console.warn('⚠ TimeGrid slots not created after retries - forcing view re-render');
-                        try {
-                          if (calendar && typeof calendar.changeView === 'function') {
-                            // Reapply same view to force FullCalendar to rebuild DOM
-                            calendar.changeView(arg.view.type);
-                          } else if (calendar && typeof calendar.render === 'function') {
-                            calendar.render();
-                          }
-                          // Give it a moment, then try to set sizes again
-                          setTimeout(() => {
-                            try { if (calendar && typeof calendar.updateSize === 'function') calendar.updateSize(); } catch(e){}
-                          }, 120);
-                        } catch (err) { console.warn('⚠ Forcing view re-render failed', err); }
+                        // TimeGrid slots not created after retries. Do not force a view re-render here to avoid aggressive fallback behavior.
+                        // Exiting silently; higher-level flow (if any) may decide to handle this.
                         return;
                       }
 
@@ -954,14 +943,8 @@ const CalendarEngine = {
                 console.log(`⚠ Detected ${collapsed.length} collapsed sections; retrying in ${delay}ms`);
                 setTimeout(() => attempt(n + 1), delay);
               } else {
-                console.warn('⚠ Sizing attempts exhausted; applying fallback');
-                // Fallback: force timegrid and scroll bodies to min height
-                const timegrid = containerElement.querySelector('.fc-timegrid');
-                const scrollBodies = containerElement.querySelectorAll('.fc-scrollgrid-section-body');
-                if (timegrid) { timegrid.style.minHeight = '400px'; timegrid.style.height = '400px'; }
-                scrollBodies.forEach(b => { b.style.minHeight = '400px'; b.style.height = '400px'; });
-                if (calendar && typeof calendar.updateSize === 'function') calendar.updateSize();
-                console.log('Fallback applied: forced min-height 400px on timegrid and scroll bodies');
+                // Sizing attempts exhausted. No automatic DOM fallbacks will be applied here to avoid unexpected layout changes.
+                // The caller/view may opt to handle layout issues explicitly. (No-op)
               }
             } catch (err) { console.warn('⚠ sizing attempt failed', err); }
           }
