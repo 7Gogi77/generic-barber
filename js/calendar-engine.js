@@ -92,39 +92,27 @@ const CalendarEngine = {
     // Determine whether the event strings include explicit times
     const hasStartTime = typeof event.start === 'string' && event.start.includes('T');
     const hasEndTime = typeof event.end === 'string' && event.end.includes('T');
-    const explicitAllDay = event.allDay === true;
 
     // Normalize start/end to Date objects with sensible fallbacks
     let startDate, endDate;
     let displayEnd = event.end;
-    let allDay = false;
 
     try {
       if (hasStartTime) {
         startDate = new Date(event.start);
       } else {
-        // Date-only event: treat as all-day starting at 00:00
+        // Date-only event: treat as day at 00:00
         startDate = new Date((event.start || '').split('T')[0] + 'T00:00:00');
-        allDay = true;
       }
 
       if (hasEndTime) {
         endDate = new Date(event.end);
       } else {
-        if (hasStartTime && !explicitAllDay) {
-          // Start has time but end doesn't — treat as same-day until 23:59
-          const endDateStr = ((event.end || event.start) + '').split('T')[0];
-          endDate = new Date(endDateStr + 'T23:59:00');
-          displayEnd = endDate.toISOString();
-          allDay = false;
-        } else {
-          // Date-only or explicit all-day: end is exclusive midnight of the next day
-          const endDateStr = ((event.end || event.start) + '').split('T')[0];
-          endDate = new Date(endDateStr + 'T00:00:00');
-          endDate.setDate(endDate.getDate() + 1);
-          displayEnd = endDate.toISOString().split('T')[0] + 'T00:00:00';
-          allDay = true;
-        }
+        // If end missing or date-only, take the date and add one day for exclusive end
+        const endDateStr = ((event.end || event.start) + '').split('T')[0];
+        endDate = new Date(endDateStr + 'T00:00:00');
+        endDate.setDate(endDate.getDate() + 1);
+        displayEnd = endDate.toISOString().split('T')[0] + 'T00:00:00';
       }
     } catch (err) {
       console.warn('⚠ formatCalendarEvent parsing fallback', err);
@@ -133,14 +121,26 @@ const CalendarEngine = {
     }
 
     const durationMs = endDate - startDate;
-    const isMultiDay = allDay || (Number.isFinite(durationMs) && durationMs > (24 * 60 * 60 * 1000));
+    const isMultiDay = Number.isFinite(durationMs) && durationMs > (24 * 60 * 60 * 1000);
+
+    // More robust all-day detection:
+    // - If both original strings lacked time parts -> all-day
+    // - Or if both start/end times are exactly 00:00 and duration >= 24h
+    let isAllDay = false;
+    if (!hasStartTime && !hasEndTime) {
+      isAllDay = true;
+    } else if (startDate.getHours() === 0 && startDate.getMinutes() === 0 && endDate.getHours() === 0 && endDate.getMinutes() === 0 && durationMs >= (24 * 60 * 60 * 1000)) {
+      isAllDay = true;
+    }
+
     console.log(`🔍 Formatting event "${event.title}":`, {
       originalStart: event.start,
       originalEnd: event.end,
       isMultiDay: isMultiDay,
       durationDays: Number.isFinite(durationMs) ? Math.floor(durationMs / (24 * 60 * 60 * 1000)) : 0,
       startDate: startDate.toISOString(),
-      endDate: endDate.toISOString()
+      endDate: endDate.toISOString(),
+      isAllDay: isAllDay
     });
 
     // Booking events should render the customer name (no icon prefix) to avoid duplicate/emoji-titled items
@@ -148,12 +148,16 @@ const CalendarEngine = {
     const customerName = event.extendedProps?.customer || null;
     const titleText = isBooking ? (customerName || event.title || 'Rezervacija') : ((typeConfig?.icon || '📅') + ' ' + (event.title || event.type));
 
+    // Use ISO strings consistently: for all-day events pass date-only strings
+    const startIso = isAllDay ? startDate.toISOString().split('T')[0] : startDate.toISOString();
+    const endIso = isAllDay ? endDate.toISOString().split('T')[0] : endDate.toISOString();
+
     return {
       id: event.id,
       title: titleText,
-      start: hasStartTime ? event.start : startDate.toISOString().split('T')[0] + 'T00:00:00',
-      end: displayEnd,
-      allDay: !!allDay,
+      start: startIso,
+      end: endIso,
+      allDay: !!isAllDay,
       color: typeConfig?.color || '#95a5a6',
       backgroundColor: typeConfig?.backgroundColor || 'rgba(149, 165, 166, 0.15)',
       borderColor: typeConfig?.borderColor || '#7f8c8d',
