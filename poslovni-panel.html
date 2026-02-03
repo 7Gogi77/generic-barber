@@ -2664,19 +2664,29 @@
                                                 // skip if marked deleted
                                                 if (key && deletedMapRoot && deletedMapRoot[key]) return;
                                                 try {
-                                                    const evId = item.id || (key ? `admin_${key}` : `admin_${Date.now()}_${Math.random().toString(36).slice(2,6)}`);
-                                                    // Skip if identical adminKey already present
-                                                    if (key && scheduleData.events.some(e => e.extendedProps && e.extendedProps.adminKey === key)) return;
-                                                    // Skip if same start+end+customer already present
-                                                    // start/end already computed above for duplicate check
-                                                    const customerName = item.customer || item.notes || '';
-                                                    if (scheduleData.events.some(e => e.start === start && e.end === end && ((e.extendedProps && e.extendedProps.customer) === customerName))) return;
+                                                    // Compute start/end up-front so we can check for duplicates correctly
                                                     const sDate = item.startDate || item.start || null;
                                                     const eDate = item.endDate || item.end || sDate;
                                                     const sTime = (typeof item.startTime !== 'undefined' && item.startTime !== null) ? (String(item.startTime).padStart(2,'0') + ':00') : null;
                                                     const eTime = (typeof item.endTime !== 'undefined' && item.endTime !== null) ? (String(item.endTime).padStart(2,'0') + ':00') : null;
                                                     const start = sDate ? (sTime ? `${sDate}T${sTime}` : `${sDate}T09:00`) : null;
                                                     const end = eDate ? (eTime ? `${eDate}T${eTime}` : `${eDate}T17:00`) : null;
+
+                                                    const evId = item.id || (key ? `admin_${key}` : `admin_${Date.now()}_${Math.random().toString(36).slice(2,6)}`);
+
+                                                    // If we've marked this event as deleted locally, skip it
+                                                    if (isEventDeleted(evId)) {
+                                                        console.log(`⏭️  Skipping merge of admin entry ${evId} (marked as deleted locally)`);
+                                                        return;
+                                                    }
+
+                                                    // Skip if identical adminKey already present
+                                                    if (key && scheduleData.events.some(e => e.extendedProps && e.extendedProps.adminKey === key)) return;
+
+                                                    // Skip if same start+end+customer already present
+                                                    const customerName = item.customer || item.notes || '';
+                                                    if (start && end && scheduleData.events.some(e => e.start === start && e.end === end && ((e.extendedProps && e.extendedProps.customer) === customerName))) return;
+
                                                     const newEvent = {
                                                         id: evId,
                                                         title: item.customer || item.notes || 'Stranka',
