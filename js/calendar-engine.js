@@ -392,7 +392,7 @@ const CalendarEngine = {
         // Core settings
         initialView: options.initialView || 'dayGridMonth',
         // Use a computed pixel height so FullCalendar timeGrid can render correctly
-        height: window._calendarHeight || 600,
+        height: window._calendarHeight || 'auto',
         contentHeight: 'auto',
         headerToolbar: {
           left: 'prev,next today',
@@ -410,11 +410,33 @@ const CalendarEngine = {
         dayMaxEvents: 3,
         moreLinkClick: 'popover',
 
-        // Business hours overlay
+        // Business hours overlay (visual guide)
         businessHours: {
           daysOfWeek: [1, 2, 3, 4, 5],
-          startTime: '09:00',
-          endTime: '17:00'
+          startTime: (window.SITE_CONFIG && window.SITE_CONFIG.booking && window.SITE_CONFIG.booking.businessHours) ? (('0' + window.SITE_CONFIG.booking.businessHours.start).slice(-2) + ':00') : '09:00',
+          endTime: (window.SITE_CONFIG && window.SITE_CONFIG.booking && window.SITE_CONFIG.booking.businessHours) ? (('0' + window.SITE_CONFIG.booking.businessHours.end).slice(-2) + ':00') : '17:00'
+        },
+
+        // TimeGrid-specific settings (Day & Week)
+        slotMinTime: (window.SITE_CONFIG && window.SITE_CONFIG.booking && window.SITE_CONFIG.booking.businessHours) ? (('0' + window.SITE_CONFIG.booking.businessHours.start).slice(-2) + ':00:00') : '06:00:00',
+        slotMaxTime: (window.SITE_CONFIG && window.SITE_CONFIG.booking && window.SITE_CONFIG.booking.businessHours) ? (('0' + window.SITE_CONFIG.booking.businessHours.end).slice(-2) + ':00:00') : '22:00:00',
+        slotDuration: '00:15:00',
+        slotLabelInterval: { hours: 1 },
+        slotLabelFormat: { hour: '2-digit', minute: '2-digit', hour12: false },
+        allDaySlot: true,
+        views: {
+          timeGridWeek: {
+            type: 'timeGrid',
+            buttonText: 'Week',
+            dayHeaderFormat: { weekday: 'short', month: 'short', day: 'numeric' },
+            snapDuration: '00:05:00'
+          },
+          timeGridDay: {
+            type: 'timeGrid',
+            buttonText: 'Day',
+            dayHeaderFormat: { weekday: 'long', month: 'short', day: 'numeric' },
+            snapDuration: '00:05:00'
+          }
         },
 
         // Events

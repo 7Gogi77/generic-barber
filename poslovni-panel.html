@@ -318,6 +318,14 @@
         /* Prevent horizontal scroll inside time slots, but avoid changing display or flex order */
         .fc .fc-timegrid .fc-timegrid-slots { overflow-x: hidden !important; }
 
+        /* TimeGrid slot visibility / sizing fixes */
+        .fc .fc-timegrid .fc-timegrid-slots { display: block !important; }
+        .fc .fc-timegrid .fc-timegrid-slot { display: block !important; min-height: 2.2em !important; height: auto !important; }
+        .fc .fc-timegrid .fc-timegrid-axis { display: block !important; }
+        .fc .fc-timegrid .fc-timegrid-cols { min-height: 200px !important; }
+        .fc .fc-timegrid .fc-timegrid-col { min-height: 200px !important; }
+        .fc .fc-timegrid .fc-timegrid-slots .fc-timegrid-slot { border-bottom: 1px solid rgba(0,0,0,0.04) !important; }
+
         .fc-daygrid-body .fc-daygrid-row {
             overflow: visible !important;
         }
