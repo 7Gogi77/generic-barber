@@ -311,14 +311,11 @@
             overflow: visible !important;
         }
 
-        /* Ensure all-day area stays above the timed grid and the timed grid scrolls vertically only */
-        .fc .fc-daygrid { order: 0; flex: 0 0 auto; }
-        .fc .fc-timegrid { order: 1; display: flex; flex-direction: column; overflow: hidden; }
-        .fc .fc-scrollgrid-section-body { overflow-x: hidden !important; overflow-y: auto !important; -webkit-overflow-scrolling: touch; }
-        .fc .fc-timegrid .fc-scrollgrid-section-body { overflow-x: hidden !important; overflow-y: auto !important; }
-        .fc .fc-scroller { overflow-x: hidden !important; overflow-y: auto !important; }
-        .fc .fc-col-header, .fc .fc-daygrid { flex: 0 0 auto; }
-        /* Prevent horizontal scroll inside time slots */
+        /* Keep all-day above timed grid, but do not change display/flex defaults (reverting prior interfering rules) */
+        /* Only force vertical-only scrolling on the time-grid scroll bodies and scrollers */
+        .fc .fc-timegrid .fc-scrollgrid-section-body { overflow-x: hidden !important; overflow-y: auto !important; -webkit-overflow-scrolling: touch; }
+        .fc .fc-timegrid .fc-scroller { overflow-x: hidden !important; overflow-y: auto !important; }
+        /* Prevent horizontal scroll inside time slots, but avoid changing display or flex order */
         .fc .fc-timegrid .fc-timegrid-slots { overflow-x: hidden !important; }
 
         .fc-daygrid-body .fc-daygrid-row {
