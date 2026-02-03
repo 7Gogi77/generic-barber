@@ -435,9 +435,30 @@ const CalendarEngine = {
 
         // Basic sizing hooks so FullCalendar can recompute after view changes
         datesSet: (dateInfo) => {
-          try { if (calendar && typeof calendar.updateSize === 'function') calendar.updateSize(); } catch (e) { console.warn('⚠ datesSet failed', e); }
+          try {
+            if (calendar && typeof calendar.updateSize === 'function') calendar.updateSize();
+            // Add view-specific classes to container to scope styles
+            try {
+              const v = dateInfo && dateInfo.view && dateInfo.view.type ? dateInfo.view.type : '';
+              if (containerElement) {
+                containerElement.classList.toggle('view-timegrid', v.startsWith('timeGrid'));
+                containerElement.classList.toggle('view-daygrid', v === 'dayGridMonth');
+              }
+            } catch (e) { /* ignore */ }
+          } catch (e) { console.warn('⚠ datesSet failed', e); }
         },
-        viewDidMount: (arg) => { try { if (calendar && typeof calendar.updateSize === 'function') calendar.updateSize(); } catch (e) { console.warn('⚠ viewDidMount failed', e); } },
+        viewDidMount: (arg) => {
+          try {
+            if (calendar && typeof calendar.updateSize === 'function') calendar.updateSize();
+            try {
+              const v = arg && arg.view && arg.view.type ? arg.view.type : '';
+              if (containerElement) {
+                containerElement.classList.toggle('view-timegrid', v.startsWith('timeGrid'));
+                containerElement.classList.toggle('view-daygrid', v === 'dayGridMonth');
+              }
+            } catch (e) { /* ignore */ }
+          } catch (e) { console.warn('⚠ viewDidMount failed', e); }
+        },
 
         // Interactions
         selectable: true,
@@ -773,6 +794,14 @@ const CalendarEngine = {
         console.log('✅ FullCalendar rendered successfully, result:', renderResult);
         // Expose calendar globally for debug helpers
         try { window.calendar = calendar; } catch (err) { /* ignore */ }
+        // Apply initial view class to container
+        try {
+          const initView = calendar && calendar.view && calendar.view.type ? calendar.view.type : null;
+          if (initView && containerElement) {
+            containerElement.classList.toggle('view-timegrid', initView.startsWith('timeGrid'));
+            containerElement.classList.toggle('view-daygrid', initView === 'dayGridMonth');
+          }
+        } catch (e) { /* ignore */ }
         // Defer sizing — run a few attempts with increasing delays to allow FullCalendar DOM to settle
         (function robustSizing() {
           const delays = [50, 150, 350, 700];

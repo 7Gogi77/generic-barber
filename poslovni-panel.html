@@ -374,6 +374,28 @@
         /* Subtle slot separators */
         .fc .fc-timegrid .fc-timegrid-slots .fc-timegrid-slot { border-bottom: 1px solid rgba(0,0,0,0.03) !important; }
 
+        /* Explicit overrides to prevent Month CSS bleed into TimeGrid */
+        /* Reset dayGrid-specific rules inside timeGrid context */
+        .fc .fc-timegrid .fc-daygrid-day, .fc .fc-timegrid .fc-daygrid-day-frame, .fc .fc-timegrid .fc-daygrid-day-number, .fc .fc-timegrid .fc-daygrid-day-events { all: unset; display: block; }
+        .fc .fc-timegrid .fc-daygrid-day-number { font-size: 12px; color: #7f8c8d !important; }
+        /* Override generic event styles to timeGrid specific */
+        .fc .fc-timegrid .fc-event { background: linear-gradient(180deg,#3498db,#2c7cc3) !important; color: #fff !important; border: none !important; }
+        /* Ensure month-specific row stretching doesn't affect timeGrid columns */
+        .fc .fc-timegrid .fc-daygrid-row, .fc .fc-timegrid .fc-daygrid-body { height: auto !important; min-height: 0 !important; }
+        /* Reinforce axis and slot visibility */
+        .fc .fc-timegrid .fc-timegrid-axis, .fc .fc-timegrid .fc-timegrid-slots { display: block !important; }
+        /* Specificity for conflicts */
+        .fc-timegrid .fc-event, .fc .fc-timegrid .fc-event { border-radius: 8px !important; }
+        .fc-timegrid .fc-timegrid-slot, .fc .fc-timegrid .fc-timegrid-slot { min-height: 42px !important; height: 42px !important; }
+
+        /* Strongly scoped overrides when container explicitly is in timegrid view */
+        #scheduleCalendar.view-timegrid .fc .fc-timegrid { background: #fff !important; }
+        #scheduleCalendar.view-timegrid .fc .fc-timegrid .fc-col-header-cell { background: #fbfdff !important; }
+        #scheduleCalendar.view-timegrid .fc .fc-timegrid .fc-event { background: linear-gradient(180deg,#3498db,#2c7cc3) !important; color: #fff !important; }
+        #scheduleCalendar.view-timegrid .fc .fc-timegrid .fc-timegrid-slot { min-height: 42px !important; height: 42px !important; }
+
+        #scheduleCalendar.view-timegrid .fc .fc-scrollgrid-section-body { overflow-x: hidden !important; overflow-y: auto !important; }
+
         .fc-daygrid-body .fc-daygrid-row {
             overflow: visible !important;
         }
