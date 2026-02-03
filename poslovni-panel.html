@@ -450,6 +450,10 @@
         #customerListPanel .no-customers { color:#888; padding:12px; }
         #customerSearch { padding:8px 10px; border:1px solid #ddd; border-radius:6px; width:280px; max-width: 60%; transition: box-shadow 160ms ease; }
         #customerSearch:focus { box-shadow: 0 0 6px rgba(52,152,219,0.14); outline: none; }
+        /* Panel action buttons */
+        #customerListPanel .panel-actions { display:inline-flex; gap:8px; }
+        #customerListPanel .panel-actions .btn.small { padding:6px 8px; font-size:12px; line-height:1; }
+        #customerListPanel .panel-actions .btn.small:disabled { opacity:0.6; cursor:not-allowed; }
         #customerDetail { padding:12px; border-top:1px solid #eee; display:none; opacity:0; transition: opacity 180ms ease; }
         #customerDetail.show { display:block; opacity:1; }
         @media (min-width: 900px) {
@@ -1395,6 +1399,22 @@
 
                 // Initial render and show panel
                 renderTable('');
+
+                // Wire header action buttons
+                const repairBtn = document.getElementById('repairCustomersBtn');
+                if (repairBtn) repairBtn.onclick = async () => {
+                    repairBtn.disabled = true; repairBtn.textContent = 'Obdelujem...';
+                    try { const added = await repairCustomersFromBookings(); repairBtn.textContent = `Popravi (${added})`; } catch(e){ console.warn(e); }
+                    setTimeout(()=>{ repairBtn.textContent = 'Popravi stranke'; repairBtn.disabled = false; }, 1300);
+                };
+
+                const dedupeBtn = document.getElementById('dedupeEventsBtn');
+                if (dedupeBtn) dedupeBtn.onclick = async () => {
+                    dedupeBtn.disabled = true; dedupeBtn.textContent = 'Obdelujem...';
+                    try { const removed = await dedupeScheduleEvents(); dedupeBtn.textContent = `Uklonjeno ${removed}`; } catch(e){ console.warn(e); }
+                    setTimeout(()=>{ dedupeBtn.textContent = 'Odstrani duplikate'; dedupeBtn.disabled = false; }, 1300);
+                };
+
                 // Wire search
                 const searchEl = document.getElementById('customerSearch');
                 if (searchEl) {
@@ -1563,6 +1583,92 @@
                 console.warn('⚠ failed to persist customer to cloud', e);
             }
             return key;
+        }
+
+        // ===== One-click maintenance helpers =====
+        // Remove duplicate events in scheduleData (keeps first occurrence, prefers ones with adminKey)
+        async function dedupeScheduleEvents() {
+            if (!scheduleData || !Array.isArray(scheduleData.events)) return 0;
+            const map = {};
+            scheduleData.events.forEach(e => {
+                const cust = (e.extendedProps && e.extendedProps.customer) ? String(e.extendedProps.customer).trim() : (e.title ? String(e.title).replace(/^\S+\s/, '').trim() : '');
+                const s = new Date(e.start).toISOString().slice(0,16);
+                const en = new Date(e.end).toISOString().slice(0,16);
+                const k = `${s}|${en}|${cust}`;
+                map[k] = map[k] || [];
+                map[k].push(e);
+            });
+
+            let removed = 0;
+            for (const [k, arr] of Object.entries(map)) {
+                if (arr.length <= 1) continue;
+                // prefer keeping item with adminKey
+                arr.sort((a,b) => {
+                    if (a.extendedProps?.adminKey && !b.extendedProps?.adminKey) return -1;
+                    if (b.extendedProps?.adminKey && !a.extendedProps?.adminKey) return 1;
+                    return 0;
+                });
+                const keep = arr[0];
+                const toRemove = arr.slice(1);
+                for (const r of toRemove) {
+                    try {
+                        await deleteScheduleEvent(r.id);
+                        removed++;
+                    } catch (e) { console.warn('⚠ failed to delete duplicate', r.id, e); }
+                }
+            }
+
+            // Refresh calendar display
+            try {
+                if (window.calendar) {
+                    await window.calendar.refetchEvents?.();
+                    // fallback if refetchEvents not available
+                    if (!window.calendar.getEvents) {
+                        window.calendar.removeAllEvents();
+                        const evs = await CalendarEngine.generateCalendarEvents(scheduleData);
+                        window.calendar.addEventSource(evs);
+                    }
+                }
+            } catch(_){}
+
+            console.log('✓ dedupeScheduleEvents removed', removed);
+            return removed;
+        }
+
+        // Scan schedule and persist any missing customers into the customer base
+        async function repairCustomersFromBookings() {
+            if (!scheduleData || !Array.isArray(scheduleData.events)) return 0;
+            let added = 0;
+            for (const ev of scheduleData.events) {
+                if (ev.extendedProps?.isBooking || ev.extendedProps?.tab === 'customer' || String(ev.id).startsWith('apt_')) {
+                    const first = ev.extendedProps?.customerFirstName || (ev.extendedProps?.customer ? String(ev.extendedProps.customer).split(/\s+/)[0] : '');
+                    const last = ev.extendedProps?.customerSurname || (ev.extendedProps?.customer ? String(ev.extendedProps.customer).split(/\s+/).slice(1).join(' ') : '');
+                    const email = ev.extendedProps?.email || null;
+                    const phone = ev.extendedProps?.phone || null;
+                    const key = await persistCustomerToBase({ firstName: first, surname: last, email, phone, fullName: (first + (last ? ' ' + last : '')).trim() });
+                    if (key) added++;
+                }
+            }
+            console.log('✓ repairCustomersFromBookings added/updated', added);
+            // Rerender panel if open
+            try { if (document.getElementById('customerListPanel')?.classList.contains('open')) showCustomerListPanel(); } catch(_){}
+            return added;
+        }
+
+        // Test permanent deletion flow for an event id (marks deleted, writes tombstone, reloads schedule)
+        async function testPermanentDeletionFlow(eventId) {
+            if (!eventId) return console.warn('testPermanentDeletionFlow requires an eventId');
+            console.log('🧪 Testing deletion for', eventId);
+            const res = await deleteScheduleEvent(eventId);
+            console.log('deleteScheduleEvent result:', res);
+            try {
+                const loaded = await StorageManager.load('schedule');
+                const exists = (loaded.events || []).some(e => e.id === eventId);
+                console.log('After load: exists in schedule:', exists);
+                const evs = await CalendarEngine.generateCalendarEvents(loaded);
+                const present = evs.some(e => e.id === eventId);
+                console.log('Present in generated calendar events:', present);
+            } catch (e) { console.warn('⚠ post-delete verification failed', e); }
         }
 
         // Load initial base immediately

@@ -92,6 +92,7 @@ const CalendarEngine = {
     // Determine whether the event strings include explicit times
     const hasStartTime = typeof event.start === 'string' && event.start.includes('T');
     const hasEndTime = typeof event.end === 'string' && event.end.includes('T');
+    const explicitAllDay = event.allDay === true;
 
     // Normalize start/end to Date objects with sensible fallbacks
     let startDate, endDate;
@@ -104,17 +105,26 @@ const CalendarEngine = {
       } else {
         // Date-only event: treat as all-day starting at 00:00
         startDate = new Date((event.start || '').split('T')[0] + 'T00:00:00');
+        allDay = true;
       }
 
       if (hasEndTime) {
         endDate = new Date(event.end);
       } else {
-        // If end missing or date-only, take the date and add one day for exclusive end
-        const endDateStr = ((event.end || event.start) + '').split('T')[0];
-        endDate = new Date(endDateStr + 'T00:00:00');
-        endDate.setDate(endDate.getDate() + 1);
-        displayEnd = endDate.toISOString().split('T')[0] + 'T00:00:00';
-        allDay = true;
+        if (hasStartTime && !explicitAllDay) {
+          // Start has time but end doesn't — treat as same-day until 23:59
+          const endDateStr = ((event.end || event.start) + '').split('T')[0];
+          endDate = new Date(endDateStr + 'T23:59:00');
+          displayEnd = endDate.toISOString();
+          allDay = false;
+        } else {
+          // Date-only or explicit all-day: end is exclusive midnight of the next day
+          const endDateStr = ((event.end || event.start) + '').split('T')[0];
+          endDate = new Date(endDateStr + 'T00:00:00');
+          endDate.setDate(endDate.getDate() + 1);
+          displayEnd = endDate.toISOString().split('T')[0] + 'T00:00:00';
+          allDay = true;
+        }
       }
     } catch (err) {
       console.warn('⚠ formatCalendarEvent parsing fallback', err);
@@ -123,8 +133,7 @@ const CalendarEngine = {
     }
 
     const durationMs = endDate - startDate;
-    const isMultiDay = !hasStartTime ? true : (Number.isFinite(durationMs) && durationMs > (24 * 60 * 60 * 1000));
-
+    const isMultiDay = allDay || (Number.isFinite(durationMs) && durationMs > (24 * 60 * 60 * 1000));
     console.log(`🔍 Formatting event "${event.title}":`, {
       originalStart: event.start,
       originalEnd: event.end,
