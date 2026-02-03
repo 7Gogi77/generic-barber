@@ -2300,23 +2300,27 @@
             const icon = typeCfg?.icon || '';
             const displayTitle = (currentEventTab === 'customer') ? title : (icon ? (icon + ' ' + title) : title);
 
-            window.calendar.addEvent({
-                id: eventId,
-                title: displayTitle,
-                start: isAllDay ? (startDate) : new Date(start).toISOString(),
-                end: isAllDay ? (endDate) : new Date(end).toISOString(),
-                allDay: isAllDay,
-                display: (typeCfg?.isBlocking ? 'background' : 'auto'),
-                classNames: cls,
-                backgroundColor: bgColor,
-                borderColor: brColor,
-                extendedProps: Object.assign({
-                    type: type,
-                    description: description,
-                    tab: currentEventTab,
-                    isBooking: currentEventTab === 'customer'
-                }, eventPayload.extendedProps || {})
-            });
+            // Persist schedule and refresh calendar from canonical scheduleData to avoid duplicates
+            try {
+                if (typeof window.saveScheduleData === 'function') {
+                    await window.saveScheduleData();
+                } else {
+                    try { localStorage.setItem('schedule', JSON.stringify(scheduleData)); } catch(e) { /* ignore */ }
+                }
+            } catch (sdErr) {
+                console.warn('⚠ saveScheduleData failed after add', sdErr);
+            }
+
+            // Refresh calendar from saved schedule (removes duplicates and ensures canonical rendering)
+            if (typeof loadAppointmentsToCalendarNow === 'function') {
+                await loadAppointmentsToCalendarNow();
+            } else if (window.calendar && typeof window.calendar.addEvent === 'function') {
+                const evt = scheduleData.events.find(e => e.id === eventId);
+                if (evt && typeof CalendarEngine !== 'undefined' && CalendarEngine.formatCalendarEvent) {
+                    const formatted = CalendarEngine.formatCalendarEvent(evt);
+                    if (formatted) window.calendar.addEvent(formatted);
+                }
+            }
 
             // Mirror into adminSchedule for both customer bookings and worker events
             if (currentEventTab === 'customer' || currentEventTab === 'worker') {
@@ -2358,7 +2362,7 @@
 
                     // fire-and-forget; function defined below
                     if (typeof sendAdminScheduleEntry === 'function') {
-                        sendAdminScheduleEntry(adminEntry).then(resKey => {
+                        sendAdminScheduleEntry(adminEntry).then(async resKey => {
                             console.log('sendAdminScheduleEntry result:', resKey);
                             try {
                                 if (resKey) {
@@ -2366,11 +2370,15 @@
                                     const idx = scheduleData.events.findIndex(e => e.id === eventId);
                                     if (idx !== -1) {
                                         scheduleData.events[idx].extendedProps = scheduleData.events[idx].extendedProps || {};
-                                        // if resKey is an object or true, try to extract name property; otherwise use string
-                                        const keyToSet = (typeof resKey === 'string') ? resKey : (resKey && resKey.name ? resKey.name : null);
+                                        // Normalize returned key: string key preferred, or extract .name; if fallback returned true, use a local marker
+                                        const keyToSet = (typeof resKey === 'string') ? resKey : (resKey && resKey.name ? resKey.name : (resKey === true ? ('local_' + eventId) : null));
                                         if (keyToSet) {
                                             scheduleData.events[idx].extendedProps.adminKey = keyToSet;
-                                            if (window.saveScheduleData) window.saveScheduleData();
+                                            try { await saveScheduleData(); } catch(e) { if (window.saveScheduleData) window.saveScheduleData(); }
+                                            // Refresh calendar from canonical schedule so any merge/dedupe rules apply
+                                            if (typeof loadAppointmentsToCalendarNow === 'function') {
+                                                try { await loadAppointmentsToCalendarNow(); } catch(e) { /* ignore */ }
+                                            }
                                         }
                                     }
                                 }
