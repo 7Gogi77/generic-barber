@@ -418,6 +418,20 @@ const CalendarEngine = {
         },
 
         // Events
+        events: async (info, successCallback, failureCallback) => { 
+          // Ensure view size is updated when dates change
+        },
+
+        // Called after view changes/dates change - force update of sizes so timeGrid renders correctly
+        datesSet: (dateInfo) => {
+          try {
+            const cal = dateInfo.view && dateInfo.view.calendar ? dateInfo.view.calendar : null;
+            const h = window._calendarHeight || 600;
+            if (containerElement) containerElement.style.height = h + 'px';
+            if (cal && typeof cal.updateSize === 'function') cal.updateSize();
+          } catch (e) { console.warn('⚠ datesSet handler failed', e); }
+        },
+
         events: async (info, successCallback, failureCallback) => {
           try {
             console.log('📅 Loading events...');
@@ -689,7 +703,7 @@ const CalendarEngine = {
         // Styling
         nowIndicator: true,
         eventDisplay: 'block',
-        height: calendarHeight,
+        height: window._calendarHeight || 600,
         contentHeight: 'parent'
       });
 
