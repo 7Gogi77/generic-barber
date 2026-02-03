@@ -767,6 +767,38 @@ const CalendarEngine = {
                 console.log(`✅ All ${rows.length} rows set to ${rowHeight}px height`);
               }
             }
+
+            // TIMEGRID SANITY CHECK - if view is timeGrid and timed events exist but no event DOM is rendered in the timeGrid, trigger a full remake
+            try {
+              const v = arg && arg.view && arg.view.type ? arg.view.type : '';
+              if (v && v.startsWith('timeGrid')) {
+                setTimeout(async () => {
+                  try {
+                    const timedEvents = (calendar && typeof calendar.getEvents === 'function') ? calendar.getEvents().filter(e => !e.allDay) : [];
+                    const timegridEventEls = containerElement.querySelectorAll('.fc-timegrid .fc-event');
+                    const slots = containerElement.querySelectorAll('.fc-timegrid .fc-timegrid-slot');
+                    console.log('viewDidMount sanity:', { view: v, timedEvents: timedEvents.length, timegridEventEls: timegridEventEls.length, slots: slots.length });
+
+                    // If there are timed events but nothing rendered in the timeGrid, it's likely FullCalendar DOM failed to create time slot or event nodes
+                    if (timedEvents.length > 0 && timegridEventEls.length === 0) {
+                      console.warn('⚠ viewDidMount sanity failed: timed events present but no event elements in timeGrid — attempting full remake');
+                      if (typeof CalendarEngine.remakeTimeGridViews === 'function') {
+                        try { await CalendarEngine.remakeTimeGridViews(v, scheduleData); } catch (remErr) { console.warn('remakeTimeGridViews failed', remErr); }
+                      } else {
+                        console.warn('remakeTimeGridViews not available');
+                      }
+                      return;
+                    }
+
+                    // If there are no slots at all (collapsed DOM), try forcing a view re-render to rebuild DOM
+                    if (slots.length === 0) {
+                      console.warn('⚠ viewDidMount sanity: no timeGrid slots found — forcing view re-render');
+                      try { if (calendar && typeof calendar.changeView === 'function') calendar.changeView(v); } catch (err) { console.warn('Failed to changeView for sanity check', err); }
+                    }
+                  } catch (err) { console.warn('viewDidMount sanity check failed', err); }
+                }, 220);
+              }
+            } catch (err) { /* ignore */ }
           }, 350);
         },
 
