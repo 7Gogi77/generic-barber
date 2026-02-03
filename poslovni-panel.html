@@ -2945,27 +2945,50 @@
                                                     if (key && scheduleData.events.some(e => e.extendedProps && e.extendedProps.adminKey === key)) return;
 
                                                     // Skip if same start+end+customer already present
-                                                    const customerName = item.customer || item.notes || '';
-                                                    if (start && end && scheduleData.events.some(e => e.start === start && e.end === end && ((e.extendedProps && e.extendedProps.customer) === customerName))) return;
+                                                    const matchName = item.customer || item.worker || item.notes || '';
+                                                    if (start && end && scheduleData.events.some(e => e.start === start && e.end === end && ((e.extendedProps && ((e.extendedProps.customer) || e.extendedProps.worker)) === matchName))) return;
 
-                                                    const newEvent = {
-                                                        id: evId,
-                                                        title: item.customer || item.notes || 'Stranka',
-                                                        type: 'booking',
-                                                        start: start,
-                                                        end: end,
-                                                        extendedProps: {
-                                                            isBooking: true,
-                                                            adminKey: key || null,
-                                                            customer: item.customer || null,
-                                                            email: item.email || null,
-                                                            phone: item.phone || null,
-                                                            services: Array.isArray(item.services) ? item.services : (item.services ? [item.services] : []),
-                                                            price: (typeof item.price !== 'undefined' && item.price !== null) ? item.price : (item.cena || 0),
-                                                            duration: item.duration || null,
-                                                            notes: item.notes || ''
-                                                        }
-                                                    };
+                                                    // If this admin entry describes a worker event, keep it as a worker-style event
+                                                    let newEvent = null;
+                                                    if (item.worker) {
+                                                        newEvent = {
+                                                            id: evId,
+                                                            title: item.worker || item.notes || 'Delavec',
+                                                            type: item.type || 'worker_event',
+                                                            start: start,
+                                                            end: end,
+                                                            extendedProps: {
+                                                                isBooking: false,
+                                                                adminKey: key || null,
+                                                                worker: item.worker || null,
+                                                                email: item.email || null,
+                                                                phone: item.phone || null,
+                                                                services: Array.isArray(item.services) ? item.services : (item.services ? [item.services] : []),
+                                                                price: (typeof item.price !== 'undefined' && item.price !== null) ? item.price : (item.cena || 0),
+                                                                duration: item.duration || null,
+                                                                notes: item.notes || ''
+                                                            }
+                                                        };
+                                                    } else {
+                                                        newEvent = {
+                                                            id: evId,
+                                                            title: item.customer || item.notes || 'Stranka',
+                                                            type: 'booking',
+                                                            start: start,
+                                                            end: end,
+                                                            extendedProps: {
+                                                                isBooking: true,
+                                                                adminKey: key || null,
+                                                                customer: item.customer || null,
+                                                                email: item.email || null,
+                                                                phone: item.phone || null,
+                                                                services: Array.isArray(item.services) ? item.services : (item.services ? [item.services] : []),
+                                                                price: (typeof item.price !== 'undefined' && item.price !== null) ? item.price : (item.cena || 0),
+                                                                duration: item.duration || null,
+                                                                notes: item.notes || ''
+                                                            }
+                                                        };
+                                                    }
                                                     scheduleData.events.push(newEvent);
                                                 } catch (inner) { console.warn('⚠ failed merging adminSchedule item', inner); }
                                             });
@@ -3017,26 +3040,49 @@
                                         const eTime = (typeof item.endTime !== 'undefined' && item.endTime !== null) ? (String(item.endTime).padStart(2,'0') + ':00') : null;
                                         const start = sDate ? (sTime ? `${sDate}T${sTime}` : `${sDate}T09:00`) : null;
                                         const end = eDate ? (eTime ? `${eDate}T${eTime}` : `${eDate}T17:00`) : null;
-                                        const customerName = item.customer || item.notes || '';
-                                        if (scheduleData.events.some(e => e.start === start && e.end === end && ((e.extendedProps && e.extendedProps.customer) === customerName))) return;
-                                        const newEvent = {
-                                            id: key ? `admin_${key}` : `admin_${Date.now()}_${Math.random().toString(36).slice(2,6)}`,
-                                            title: item.customer || item.notes || 'Stranka',
-                                            type: 'booking',
-                                            start: start,
-                                            end: end,
-                                            extendedProps: {
-                                                isBooking: true,
-                                                adminKey: key || null,
-                                                customer: item.customer || null,
-                                                email: item.email || null,
-                                                phone: item.phone || null,
-                                                services: Array.isArray(item.services) ? item.services : (item.services ? [item.services] : []),
-                                                price: (typeof item.price !== 'undefined' && item.price !== null) ? item.price : (item.cena || 0),
-                                                duration: item.duration || null,
-                                                notes: item.notes || ''
-                                            }
-                                        };
+                                        const matchName = item.customer || item.worker || item.notes || '';
+                                        if (scheduleData.events.some(e => e.start === start && e.end === end && ((e.extendedProps && ((e.extendedProps.customer) || e.extendedProps.worker)) === matchName))) return;
+                                        // Create worker-style event when admin entry contains worker
+                                        let newEvent = null;
+                                        if (item.worker) {
+                                            newEvent = {
+                                                id: key ? `admin_${key}` : `admin_${Date.now()}_${Math.random().toString(36).slice(2,6)}`,
+                                                title: item.worker || item.notes || 'Delavec',
+                                                type: item.type || 'worker_event',
+                                                start: start,
+                                                end: end,
+                                                extendedProps: {
+                                                    isBooking: false,
+                                                    adminKey: key || null,
+                                                    worker: item.worker || null,
+                                                    email: item.email || null,
+                                                    phone: item.phone || null,
+                                                    services: Array.isArray(item.services) ? item.services : (item.services ? [item.services] : []),
+                                                    price: (typeof item.price !== 'undefined' && item.price !== null) ? item.price : (item.cena || 0),
+                                                    duration: item.duration || null,
+                                                    notes: item.notes || ''
+                                                }
+                                            };
+                                        } else {
+                                            newEvent = {
+                                                id: key ? `admin_${key}` : `admin_${Date.now()}_${Math.random().toString(36).slice(2,6)}`,
+                                                title: item.customer || item.notes || 'Stranka',
+                                                type: 'booking',
+                                                start: start,
+                                                end: end,
+                                                extendedProps: {
+                                                    isBooking: true,
+                                                    adminKey: key || null,
+                                                    customer: item.customer || null,
+                                                    email: item.email || null,
+                                                    phone: item.phone || null,
+                                                    services: Array.isArray(item.services) ? item.services : (item.services ? [item.services] : []),
+                                                    price: (typeof item.price !== 'undefined' && item.price !== null) ? item.price : (item.cena || 0),
+                                                    duration: item.duration || null,
+                                                    notes: item.notes || ''
+                                                }
+                                            };
+                                        }
                                         scheduleData.events.push(newEvent);
                                     } catch (inner2) { console.warn('⚠ failed merging adminSchedule item (post-load)', inner2); }
                                 });

@@ -72,7 +72,7 @@ const CalendarEngine = {
     const seen = new Set();
     const unique = [];
     events.forEach(e => {
-      const cust = (e.extendedProps && e.extendedProps.customer) ? String(e.extendedProps.customer).trim() : (e.title ? String(e.title).replace(/^\S+\s/, '').trim() : '');
+      const cust = (e.extendedProps && e.extendedProps.customer) ? String(e.extendedProps.customer).trim() : ((e.extendedProps && e.extendedProps.worker) ? String(e.extendedProps.worker).trim() : (e.title ? String(e.title).replace(/^\S+\s/, '').trim() : ''));
       // Normalize start/end to minute granularity so ISO string differences (seconds) don't prevent dedupe
       let sNorm = e.start;
       let eNorm = e.end;
