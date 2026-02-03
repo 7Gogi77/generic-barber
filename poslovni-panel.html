@@ -311,15 +311,15 @@
             overflow: visible !important;
         }
 
-        /* Only apply these rules when a timeGrid view is active on #scheduleCalendar */
-        #scheduleCalendar.timegrid-active .fc .fc-daygrid { order: 0; flex: 0 0 auto; }
-        #scheduleCalendar.timegrid-active .fc .fc-timegrid { order: 1; display: flex; flex-direction: column; overflow: hidden; }
-        #scheduleCalendar.timegrid-active .fc .fc-scrollgrid-section-body { overflow-x: hidden !important; overflow-y: auto !important; -webkit-overflow-scrolling: touch; }
-        #scheduleCalendar.timegrid-active .fc .fc-timegrid .fc-scrollgrid-section-body { overflow-x: hidden !important; overflow-y: auto !important; }
-        #scheduleCalendar.timegrid-active .fc .fc-scroller { overflow-x: hidden !important; overflow-y: auto !important; }
-        #scheduleCalendar.timegrid-active .fc .fc-col-header, #scheduleCalendar.timegrid-active .fc .fc-daygrid { flex: 0 0 auto; }
-        /* Prevent horizontal scroll inside time slots when in timeGrid */
-        #scheduleCalendar.timegrid-active .fc .fc-timegrid .fc-timegrid-slots { overflow-x: hidden !important; }
+        /* Ensure all-day area stays above the timed grid and the timed grid scrolls vertically only */
+        .fc .fc-daygrid { order: 0; flex: 0 0 auto; }
+        .fc .fc-timegrid { order: 1; display: flex; flex-direction: column; overflow: hidden; }
+        .fc .fc-scrollgrid-section-body { overflow-x: hidden !important; overflow-y: auto !important; -webkit-overflow-scrolling: touch; }
+        .fc .fc-timegrid .fc-scrollgrid-section-body { overflow-x: hidden !important; overflow-y: auto !important; }
+        .fc .fc-scroller { overflow-x: hidden !important; overflow-y: auto !important; }
+        .fc .fc-col-header, .fc .fc-daygrid { flex: 0 0 auto; }
+        /* Prevent horizontal scroll inside time slots */
+        .fc .fc-timegrid .fc-timegrid-slots { overflow-x: hidden !important; }
 
         .fc-daygrid-body .fc-daygrid-row {
             overflow: visible !important;
@@ -3010,28 +3010,7 @@
                 try {
                     console.log('dumpDiagnostics: calendar exists', !!window.calendar, 'events count', window.calendar ? window.calendar.getEvents().length : 0);
                     const scrollBodies = document.querySelectorAll('.fc-scrollgrid-section-body');
-                    if (!scrollBodies || scrollBodies.length === 0) {
-                        console.log('dumpDiagnostics: no .fc-scrollgrid-section-body found');
-                    } else {
-                        Array.from(scrollBodies).forEach((b, i) => {
-                            const r = b.getBoundingClientRect();
-                            const cs = window.getComputedStyle(b);
-                            console.log(`scrollBody[${i}] height=${Math.round(r.height)} offsetHeight=${b.offsetHeight} display=${cs.display} classes=${b.className}`);
-                        });
-                    }
-
-                    const timegrid = document.querySelector('.fc-timegrid');
-                    if (timegrid) {
-                        const scrollers = timegrid.querySelectorAll('.fc-scroller');
-                        console.log('timegrid scroller count', scrollers.length);
-                        Array.from(scrollers).forEach((s, i) => { const r = s.getBoundingClientRect(); console.log(`scroller[${i}] h=${Math.round(r.height)} offset=${s.offsetHeight} classes=${s.className}`); });
-                        const slots = timegrid.querySelectorAll('.fc-timegrid-slots');
-                        console.log('timegrid-slots count', slots.length);
-                        Array.from(slots).forEach((s, i) => { const r = s.getBoundingClientRect(); console.log(`slots[${i}] h=${Math.round(r.height)} offset=${s.offsetHeight} classes=${s.className}`); });
-                    } else {
-                        console.log('dumpDiagnostics: no .fc-timegrid element found');
-                    }
-
+                    console.log('scrollBodies heights:', Array.from(scrollBodies).map(b => Math.round(b.getBoundingClientRect().height)));
                     const dayCells = document.querySelectorAll('.fc-daygrid-day-cell');
                     console.log('dayCells:', dayCells.length);
                     const events = window.calendar ? window.calendar.getEvents().map(e => ({id:e.id, title:e.title, start:e.start, end:e.end, allDay:e.allDay})) : [];
