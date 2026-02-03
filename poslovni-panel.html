@@ -323,11 +323,11 @@
         }
 
         /* Keep all-day above timed grid, but do not change display/flex defaults (reverting prior interfering rules) */
-        /* Only force vertical-only scrolling on the time-grid scroll bodies and scrollers */
-        .fc .fc-timegrid .fc-scrollgrid-section-body { overflow-x: hidden !important; overflow-y: auto !important; -webkit-overflow-scrolling: touch; }
-        .fc .fc-timegrid .fc-scroller { overflow-x: hidden !important; overflow-y: auto !important; }
+        /* Only force vertical-only scrolling on the time-grid scroll bodies and scrollers (timeGrid view scoped) */
+        #scheduleCalendar.view-timegrid .fc .fc-timegrid .fc-scrollgrid-section-body { overflow-x: hidden !important; overflow-y: auto !important; -webkit-overflow-scrolling: touch; }
+        #scheduleCalendar.view-timegrid .fc .fc-timegrid .fc-scroller { overflow-x: hidden !important; overflow-y: auto !important; }
         /* Prevent horizontal scroll inside time slots, but avoid changing display or flex order */
-        .fc .fc-timegrid .fc-timegrid-slots { overflow-x: hidden !important; }
+        #scheduleCalendar.view-timegrid .fc .fc-timegrid .fc-timegrid-slots { overflow-x: hidden !important; }
 
         /* TimeGrid slot visibility / sizing fixes (Week/Day specific styling) */
         /* Keep Month (dayGrid) styling unchanged; target only the timeGrid structures */
