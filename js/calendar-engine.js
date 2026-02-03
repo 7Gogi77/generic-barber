@@ -68,18 +68,18 @@ const CalendarEngine = {
       });
     } catch (e) { /* ignore */ }
 
-    // Deduplicate events with tolerance for small time shifts (prefer id equality, otherwise collapse near-equal start/end + same customer/worker)
+    // Deduplicate events with tolerance for small time shifts (prefer id equality, otherwise collapse near-equal start/end + same customer)
     const unique = [];
     const TIME_TOLERANCE_MS = 10 * 60 * 1000; // 10 minutes
     events.forEach(e => {
-      const cust = (e.extendedProps && e.extendedProps.customer) ? String(e.extendedProps.customer).trim() : ((e.extendedProps && e.extendedProps.worker) ? String(e.extendedProps.worker).trim() : (e.title ? String(e.title).replace(/^\S+\s/, '').trim() : ''));
+      const cust = (e.extendedProps && e.extendedProps.customer) ? String(e.extendedProps.customer).trim() : (e.title ? String(e.title).replace(/^\S+\s/, '').trim() : '');
       const getMs = (val) => { try { return new Date(val).getTime(); } catch(_) { return NaN; } };
       const sMs = getMs(e.start);
       const eMs_ = getMs(e.end);
 
       const isDup = unique.some(u => {
         if (u.id && e.id && u.id === e.id) return true;
-        const uCust = (u.extendedProps && u.extendedProps.customer) ? String(u.extendedProps.customer).trim() : ((u.extendedProps && u.extendedProps.worker) ? String(u.extendedProps.worker).trim() : (u.title ? String(u.title).replace(/^\S+\s/, '').trim() : ''));
+        const uCust = (u.extendedProps && u.extendedProps.customer) ? String(u.extendedProps.customer).trim() : (u.title ? String(u.title).replace(/^\S+\s/, '').trim() : '');
         const usMs = getMs(u.start);
         const ueMs = getMs(u.end);
 
@@ -606,18 +606,7 @@ const CalendarEngine = {
             } catch (err) { /* fallback to default booking rendering */ }
           }
 
-          // Custom rendering for worker events - show worker label and time range (mirror of booking style)
-          if (arg.event.extendedProps?.worker || arg.event.extendedProps?.tab === 'worker') {
-            try {
-              const workerName = arg.event.extendedProps?.worker || arg.event.title || 'Delavec';
-              const startTime = arg.event.start ? new Date(arg.event.start).toLocaleTimeString('sl-SI', {hour: '2-digit', minute: '2-digit'}) : '';
-              const endTime = arg.event.end ? new Date(arg.event.end).toLocaleTimeString('sl-SI', {hour: '2-digit', minute: '2-digit'}) : '';
-              const timeText = startTime ? (endTime ? `${startTime} - ${endTime}` : startTime) : '';
-              return {
-                html: `<div style="padding: 2px; font-size: 12px; font-weight: bold;">${workerName}</div><div style="padding: 2px; font-size: 10px;">${timeText}</div>`
-              };
-            } catch (err) { /* fallback to default worker rendering */ }
-          }
+
           
           // Custom rendering for multi-day events
           if (arg.event.extendedProps?.isMultiDay && arg.event.allDay) {
