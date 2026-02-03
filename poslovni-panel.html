@@ -2950,9 +2950,25 @@
                                                     // Skip if identical adminKey already present
                                                     if (key && scheduleData.events.some(e => e.extendedProps && e.extendedProps.adminKey === key)) return;
 
-                                                    // Skip if same start+end+customer already present
+                                                    // Skip if there's already an event with the same id (e.g. our own event_{id} admin echo)
+                                                    if (scheduleData.events.some(e => e.id === evId)) return;
+
+                                                    // Skip if same start+end+customer already present (use tolerant time compare to avoid minor minute rounding duplicates)
                                                     const matchName = item.customer || item.worker || item.notes || '';
-                                                    if (start && end && scheduleData.events.some(e => e.start === start && e.end === end && ((e.extendedProps && ((e.extendedProps.customer) || e.extendedProps.worker)) === matchName))) return;
+                                                    const TIME_TOLERANCE_MS = 30 * 60 * 1000; // 30 minutes
+                                                    const timesApproxEqual = (aStart, aEnd, bStart, bEnd) => {
+                                                        try {
+                                                            const as = new Date(aStart).getTime();
+                                                            const bs = new Date(bStart).getTime();
+                                                            const ae = new Date(aEnd).getTime();
+                                                            const be = new Date(bEnd).getTime();
+                                                            return Number.isFinite(as) && Number.isFinite(bs) && Number.isFinite(ae) && Number.isFinite(be) && Math.abs(as - bs) <= TIME_TOLERANCE_MS && Math.abs(ae - be) <= TIME_TOLERANCE_MS;
+                                                        } catch (_) { return false; }
+                                                    };
+                                                    if (start && end && scheduleData.events.some(e => {
+                                                        const eName = (e.extendedProps && ((e.extendedProps.customer) || e.extendedProps.worker)) || '';
+                                                        return eName === matchName && timesApproxEqual(e.start, e.end, start, end);
+                                                    })) return;
 
                                                     // If this admin entry describes a worker event, keep it as a worker-style event
                                                     let newEvent = null;
@@ -3039,15 +3055,29 @@
                                         }
                                         // skip if identical adminKey present
                                         if (key && scheduleData.events.some(e => e.extendedProps && e.extendedProps.adminKey === key)) return;
-                                        // skip if event with same start/end/customer already present
+                                        // skip if event with same start/end/customer already present (tolerant check)
                                         const sDate = item.startDate || item.start || null;
                                         const eDate = item.endDate || item.end || sDate;
-                                        const sTime = (typeof item.startTime !== 'undefined' && item.startTime !== null) ? (String(item.startTime).padStart(2,'0') + ':00') : null;
-                                        const eTime = (typeof item.endTime !== 'undefined' && item.endTime !== null) ? (String(item.endTime).padStart(2,'0') + ':00') : null;
+                                        const sTime = (typeof item.startTime !== 'undefined' && item.startTime !== null) ? String(item.startTime).slice(0,5) : null;
+                                        const eTime = (typeof item.endTime !== 'undefined' && item.endTime !== null) ? String(item.endTime).slice(0,5) : null;
                                         const start = sDate ? (sTime ? `${sDate}T${sTime}` : `${sDate}T09:00`) : null;
                                         const end = eDate ? (eTime ? `${eDate}T${eTime}` : `${eDate}T17:00`) : null;
                                         const matchName = item.customer || item.worker || item.notes || '';
-                                        if (scheduleData.events.some(e => e.start === start && e.end === end && ((e.extendedProps && ((e.extendedProps.customer) || e.extendedProps.worker)) === matchName))) return;
+
+                                        const TIME_TOLERANCE_MS = 30 * 60 * 1000; // 30 minutes
+                                        const timesApproxEqual = (aStart, aEnd, bStart, bEnd) => {
+                                            try {
+                                                const as = new Date(aStart).getTime();
+                                                const bs = new Date(bStart).getTime();
+                                                const ae = new Date(aEnd).getTime();
+                                                const be = new Date(bEnd).getTime();
+                                                return Number.isFinite(as) && Number.isFinite(bs) && Number.isFinite(ae) && Number.isFinite(be) && Math.abs(as - bs) <= TIME_TOLERANCE_MS && Math.abs(ae - be) <= TIME_TOLERANCE_MS;
+                                            } catch (_) { return false; }
+                                        };
+                                        if (start && end && scheduleData.events.some(e => {
+                                            const eName = (e.extendedProps && ((e.extendedProps.customer) || e.extendedProps.worker)) || '';
+                                            return eName === matchName && timesApproxEqual(e.start, e.end, start, end);
+                                        })) return;
                                         // Create worker-style event when admin entry contains worker
                                         let newEvent = null;
                                         if (item.worker) {
