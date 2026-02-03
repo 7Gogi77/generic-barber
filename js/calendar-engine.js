@@ -54,6 +54,19 @@ const CalendarEngine = {
     });
 
     console.log('✅ Total formatted events:', events.length);
+    try {
+      const timedCount = events.filter(ev => !ev.allDay).length;
+      const allDayCount = events.length - timedCount;
+      console.log(`🔎 Formatted events breakdown — timed=${timedCount}, allDay=${allDayCount}`);
+      // Log any suspicious events (timed but start/end strings look like dates only)
+      events.forEach(ev => {
+        try {
+          if (!ev.allDay && ev.start && typeof ev.start === 'string') {
+            console.warn('⚠ Suspicious formatted timed event with string start:', ev);
+          }
+        } catch (inner) { /* ignore */ }
+      });
+    } catch (e) { /* ignore */ }
 
     // Deduplicate events by stable key (prefer id, otherwise normalized start|end|customer)
     const seen = new Set();
@@ -90,8 +103,18 @@ const CalendarEngine = {
     const typeConfig = ScheduleRules.TYPE_CONFIG[event.type];
 
     // Determine whether the event strings include explicit times
-    const hasStartTime = typeof event.start === 'string' && event.start.includes('T');
-    const hasEndTime = typeof event.end === 'string' && event.end.includes('T');
+    // Accept ISO 'T' format, space-separated 'YYYY-MM-DD HH:MM', or Date objects
+    const timeRegex = /\d{1,2}:\d{2}/;
+    const hasStartTime = (event.start instanceof Date) || (typeof event.start === 'string' && (event.start.includes('T') || timeRegex.test(event.start)));
+    const hasEndTime = (event.end instanceof Date) || (typeof event.end === 'string' && (event.end.includes('T') || timeRegex.test(event.end)));
+
+    // Normalize common space-separated date-times to ISO style only when they contain a time part
+    if (typeof event.start === 'string' && timeRegex.test(event.start) && !event.start.includes('T')) {
+      event.start = event.start.replace(/\s+/, 'T');
+    }
+    if (typeof event.end === 'string' && timeRegex.test(event.end) && !event.end.includes('T')) {
+      event.end = event.end.replace(/\s+/, 'T');
+    }
 
     // Normalize start/end to Date objects with sensible fallbacks
     let startDate, endDate;
@@ -525,15 +548,52 @@ const CalendarEngine = {
         },
         
         eventDidMount: (info) => {
-          // Style booking events
-          if (info.event.extendedProps?.isBooking || info.event.id?.startsWith('apt_')) {
+          try {
+            // Always log mounting details for diagnostics
+            const inTimeGrid = info.el && !!info.el.closest('.fc-timegrid');
+            console.log('eventDidMount:', { id: info.event.id, title: info.event.title, allDay: info.event.allDay, inTimeGrid });
+
+            // Ensure event nodes are visible (in case of stray CSS)
             if (info.el) {
-              info.el.style.backgroundColor = 'rgba(52, 152, 219, 0.2)';
-              info.el.style.borderColor = '#3498db';
-              info.el.style.borderWidth = '1px';
-              info.el.style.color = '#2c3e50';
+              info.el.style.visibility = 'visible';
+              info.el.style.opacity = 1;
+              info.el.style.zIndex = 3;
             }
-          }
+
+            // Style booking events
+            if (info.event.extendedProps?.isBooking || info.event.id?.startsWith('apt_')) {
+              if (info.el) {
+                info.el.style.backgroundColor = 'rgba(52, 152, 219, 0.2)';
+                info.el.style.borderColor = '#3498db';
+                info.el.style.borderWidth = '1px';
+                info.el.style.color = '#2c3e50';
+              }
+            }
+          } catch (err) { console.warn('eventDidMount hook failed', err); }
+        },
+
+        // Hook fired after the events array is applied to the view
+        eventsSet: (events) => {
+          try {
+            const timed = events.filter(e => !e.allDay).length;
+            const allDay = events.length - timed;
+            console.log('eventsSet: total=', events.length, 'timed=', timed, 'allDay=', allDay);
+            // If there are timed events but no timeGrid DOM presence, escalate
+            const timegrid = document.querySelector('.fc-timegrid');
+            const timegridEventEls = document.querySelectorAll('.fc-timegrid .fc-event');
+            if (timed > 0 && timegrid && timegridEventEls.length === 0) {
+              console.warn('eventsSet detected timed events but NO event nodes in timeGrid - scheduling a sanity recheck');
+              setTimeout(() => {
+                try {
+                  const timegridEventEls2 = document.querySelectorAll('.fc-timegrid .fc-event');
+                  if (timegridEventEls2.length === 0 && typeof CalendarEngine.remakeTimeGridViews === 'function') {
+                    console.warn('eventsSet: still no event nodes, invoking remakeTimeGridViews');
+                    CalendarEngine.remakeTimeGridViews('timeGridWeek', window.scheduleData).catch(e=>console.warn('remake failed from eventsSet', e));
+                  }
+                } catch (e) { console.warn('eventsSet recheck failed', e); }
+              }, 220);
+            }
+          } catch (err) { console.warn('eventsSet hook failed', err); }
         },
         
         eventContent: (arg) => {
@@ -1211,6 +1271,15 @@ const CalendarEngine = {
    */
   async remakeTimeGridViews(preferredView = 'timeGridWeek', scheduleDataParam) {
     try {
+      // Throttle repeated remakes to once every 4 seconds
+      const now = Date.now();
+      this._lastRemakeAt = this._lastRemakeAt || 0;
+      if (now - this._lastRemakeAt < 4000) {
+        console.warn('⚠ remakeTimeGridViews called too frequently — skipping this call');
+        return this.calendar || null;
+      }
+      this._lastRemakeAt = now;
+
       console.log('🔁 Remaking Day/Week views (preferredView=', preferredView, ')');
       const schedule = scheduleDataParam || (typeof window !== 'undefined' ? window.scheduleData : null);
 
