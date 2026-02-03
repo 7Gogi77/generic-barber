@@ -2240,9 +2240,7 @@
                     console.warn('⚠ Legacy appointments migration failed', e);
                 }
 
-                // Ensure adminSchedule entries from site_config are merged even when there
-                // are no legacy localStorage appointments. This ensures appointments created
-                // via admin or from other clients appear in the calendar.
+                // Ensure adminSchedule entries from site_config are merged only if not marked deleted
                 try {
                     const cfgRes2 = await fetch('https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app/site_config.json');
                     if (cfgRes2.ok) {
@@ -2258,11 +2256,11 @@
                                 scheduleData.events = scheduleData.events || [];
                                 pairList2.forEach(({ key, item }) => {
                                     try {
-                                        // skip if the key is marked deleted
+                                        // skip if the key is marked deleted (tombstone)
                                         if (key && deletedMap && deletedMap[key]) return;
-                                        const evId = item.id || (key ? `admin_${key}` : `admin_${Date.now()}_${Math.random().toString(36).slice(2,6)}`);
-                                        // Skip if identical adminKey present
+                                        // skip if identical adminKey present
                                         if (key && scheduleData.events.some(e => e.extendedProps && e.extendedProps.adminKey === key)) return;
+                                        // skip if event with same start/end/customer already present
                                         const sDate = item.startDate || item.start || null;
                                         const eDate = item.endDate || item.end || sDate;
                                         const sTime = (typeof item.startTime !== 'undefined' && item.startTime !== null) ? (String(item.startTime).padStart(2,'0') + ':00') : null;
@@ -2272,7 +2270,7 @@
                                         const customerName = item.customer || item.notes || '';
                                         if (scheduleData.events.some(e => e.start === start && e.end === end && ((e.extendedProps && e.extendedProps.customer) === customerName))) return;
                                         const newEvent = {
-                                            id: evId,
+                                            id: key ? `admin_${key}` : `admin_${Date.now()}_${Math.random().toString(36).slice(2,6)}`,
                                             title: item.customer || item.notes || 'Stranka',
                                             type: 'booking',
                                             start: start,
