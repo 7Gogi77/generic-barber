@@ -589,14 +589,17 @@ const CalendarEngine = {
         },
         
         eventContent: (arg) => {
-          // Custom rendering for booking events - show customer name and time
+          // Custom rendering for booking events - show customer name and time range
           if (arg.event.extendedProps?.isBooking || arg.event.id?.startsWith('apt_')) {
-            console.log('📝 Rendering booking content:', arg.event.title);
-            const customerName = arg.event.extendedProps?.customer || arg.event.title || 'Rezervacija';
-            const startTime = arg.event.start ? new Date(arg.event.start).toLocaleTimeString('sl-SI', {hour: '2-digit', minute: '2-digit'}) : '';
-            return {
-              html: `<div style="padding: 2px; font-size: 12px; font-weight: bold;">${customerName}</div><div style="padding: 2px; font-size: 10px;">${startTime}</div>`
-            };
+            try {
+              const customerName = arg.event.extendedProps?.customer || arg.event.title || 'Rezervacija';
+              const startTime = arg.event.start ? new Date(arg.event.start).toLocaleTimeString('sl-SI', {hour: '2-digit', minute: '2-digit'}) : '';
+              const endTime = arg.event.end ? new Date(arg.event.end).toLocaleTimeString('sl-SI', {hour: '2-digit', minute: '2-digit'}) : '';
+              const timeText = startTime ? (endTime ? `${startTime} - ${endTime}` : startTime) : '';
+              return {
+                html: `<div style="padding: 2px; font-size: 12px; font-weight: bold;">${customerName}</div><div style="padding: 2px; font-size: 10px;">${timeText}</div>`
+              };
+            } catch (err) { /* fallback to default booking rendering */ }
           }
           
           // Custom rendering for multi-day events
@@ -606,12 +609,14 @@ const CalendarEngine = {
             };
           }
           
-          // Default rendering for schedule events - show title with time
+          // Default rendering for schedule events - show title with time range when available
           if (arg.event.title) {
             const startTime = arg.event.start ? new Date(arg.event.start).toLocaleTimeString('sl-SI', {hour: '2-digit', minute: '2-digit'}) : '';
-            const title = arg.event.title.length > 15 ? arg.event.title.substring(0, 15) + '...' : arg.event.title;
+            const endTime = arg.event.end ? new Date(arg.event.end).toLocaleTimeString('sl-SI', {hour: '2-digit', minute: '2-digit'}) : '';
+            const timeText = startTime ? (endTime ? `${startTime} - ${endTime}` : startTime) : '';
+            const title = arg.event.title.length > 20 ? arg.event.title.substring(0, 20) + '...' : arg.event.title;
             return {
-              html: `<div style="padding: 1px 2px; font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${title}</div>`
+              html: `<div style="padding: 1px 2px; font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><div style=\"font-weight:600; font-size:12px;\">${timeText}</div><div>${title}</div></div>`
             };
           }
           
