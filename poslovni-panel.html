@@ -205,29 +205,39 @@
             height: 100% !important;
         }
 
-        .fc-scroller-harness {
+        /* Default harness sizing inside the calendar container */
+        #scheduleCalendar .fc-scroller-harness {
+            height: 100% !important;
+            position: static !important; /* default safe assume */
+        }
+
+        #scheduleCalendar .fc-scrollgrid {
             height: 100% !important;
         }
 
-        .fc-scrollgrid {
+        #scheduleCalendar .fc-scrollgrid-section.fc-scrollgrid-section-body {
             height: 100% !important;
         }
 
-        .fc-scrollgrid-section.fc-scrollgrid-section-body {
-            height: 100% !important;
-        }
-
-        .fc-scroller {
+        #scheduleCalendar .fc-scroller {
             overflow: visible !important;
             height: 100% !important;
         }
 
-        .fc-scroller-harness {
+        #scheduleCalendar .fc-scroller-harness-liquid {
             height: 100% !important;
         }
 
-        .fc-scroller-harness-liquid {
-            height: 100% !important;
+        /* View-scoped positioning - TimeGrid requires relative to contain absolutely positioned children */
+        #scheduleCalendar.view-timegrid .fc-scroller-harness { position: relative !important; }
+        #scheduleCalendar.view-daygrid .fc-scroller-harness { position: static !important; }
+
+        /* Temporary visual debug outlines (toggle via deletionDebug.toggleTimegridVisuals) */
+        #scheduleCalendar.debug-timegrid-visuals.view-timegrid .fc .fc-timegrid-slot {
+            outline: 2px dashed rgba(255,0,0,0.6) !important;
+        }
+        #scheduleCalendar.debug-timegrid-visuals.view-timegrid .fc .fc-event {
+            outline: 2px solid rgba(0,255,0,0.6) !important;
         }
         .fc .fc-button-primary {
             background-color: #3498db;
@@ -3253,6 +3263,15 @@
                     console.warn('calendarHealthCheck failed', err);
                     return false;
                 }
+            },
+            // Toggle temporary visual debug highlights for timeGrid
+            toggleTimegridVisuals: () => {
+                try {
+                    const el = document.getElementById('scheduleCalendar');
+                    if (!el) return console.warn('No #scheduleCalendar found');
+                    el.classList.toggle('debug-timegrid-visuals');
+                    console.log('toggleTimegridVisuals:', el.classList.contains('debug-timegrid-visuals'));
+                } catch (err) { console.warn('toggleTimegridVisuals failed', err); }
             }
         };
         console.log("💡 Use window.deletionDebug.show() to see deletion status");
