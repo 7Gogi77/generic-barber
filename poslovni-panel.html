@@ -876,8 +876,10 @@
         <div class="modal-content">
             <div class="modal-header">Dodaj dogodek</div>
             <form id="addEventForm">
-                <!-- Customer-only mode: worker tab removed -->
-                <input type="hidden" id="eventTabMode" value="customer">
+                <div style="display:flex; gap:10px; margin-bottom:18px;">
+                  <button type="button" id="tabWorker" class="btn btn-secondary" style="flex:1;" onclick="setEventTab('worker')">Delavec</button>
+                  <button type="button" id="tabCustomer" class="btn btn-secondary" style="flex:1;" onclick="setEventTab('customer')">Stranka</button>
+                </div>
                 <div class="form-horizontal">
                     <div class="form-column" style="flex:1;">
                         <!-- Customer-specific fields (first + last name) -->
@@ -897,10 +899,10 @@
                             <label>Telefon</label>
                             <input type="tel" id="eventPhone" placeholder="+386 40 123 456">
                         </div>
-                        <!-- Single title field for customer bookings (workers removed) -->
-                        <div class="form-group" id="workerTitleField" style="display:none;">
-                            <label>Naziv (deprecated)</label>
-                            <input type="text" id="eventTitle" placeholder="(removed)">
+                        <!-- For non-customer (worker) keep single title field -->
+                        <div class="form-group" id="workerTitleField">
+                            <label>Naziv</label>
+                            <input type="text" id="eventTitle" placeholder="Npr. Bolniška, Praznik, Striženje...">
                         </div>
                     </div>
                     <div class="form-column" style="flex:1;">
@@ -1071,11 +1073,17 @@
     <script type="module" src="/js/firebase-config.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
         <script>
-            // --- TAB LOGIC FOR ADD EVENT MODAL (CUSTOMER-ONLY) ---
-            let currentEventTab = 'customer';
-            // Worker concept removed — only customer bookings supported now
-            // Worker types/ui removed intentionally
-            
+            // --- TAB LOGIC FOR ADD EVENT MODAL ---
+            let currentEventTab = 'worker';
+            const workerTypes = [
+                { value: '', label: '-- Izberi tip --' },
+                { value: 'working_hours', label: 'Delovni čas' },
+                { value: 'break', label: 'Premor' },
+                { value: 'lunch', label: 'Kosilo' },
+                { value: 'vacation', label: 'Počitnice' },
+                { value: 'sick_leave', label: 'Bolniška' },
+                { value: 'day_off', label: 'Prosti dan' }
+            ];
             // Pridobi storitve iz SITE_CONFIG, če obstaja, sicer fallback
             function getCustomerTypes() {
                 let items = [];
@@ -1088,7 +1096,7 @@
                         function renderEventTypeOptions(tab) {
                                 const select = document.getElementById('eventType');
                                 select.innerHTML = '';
-                                let options = getCustomerTypes();
+                                let options = tab === 'worker' ? workerTypes : getCustomerTypes();
                                 // Če ni storitev, onemogoči select in prikaži opozorilo
                                 if (tab === 'customer') {
                                     if (options.length <= 1) {
@@ -1159,7 +1167,7 @@
                                         select.disabled = false;
                                         select.required = true;
                                     }
-                                document.getElementById('eventTypeLabel').textContent = 'Storitev';
+                                document.getElementById('eventTypeLabel').textContent = tab === 'worker' ? 'Tip' : 'Storitev';
                                 // show/hide contact fields and price for customer tab
                                 const contactWrapper = document.getElementById('customerContactFields');
                                 const phoneWrapper = document.getElementById('customerPhoneField');
@@ -1173,19 +1181,30 @@
                                     if (priceWrapper) priceWrapper.style.display = '';
                                     if (nameWrapper) { nameWrapper.style.display = ''; const el = nameWrapper.querySelector('input'); if (el) el.required = true; }
                                     if (surnameWrapper) { surnameWrapper.style.display = ''; const el2 = surnameWrapper.querySelector('input'); if (el2) el2.required = true; }
+                                    if (workerTitleWrapper) { workerTitleWrapper.style.display = 'none'; const el3 = workerTitleWrapper.querySelector('input'); if (el3) el3.required = false; }
+                                } else {
+                                    if (contactWrapper) contactWrapper.style.display = 'none';
+                                    if (phoneWrapper) phoneWrapper.style.display = 'none';
+                                    if (priceWrapper) priceWrapper.style.display = 'none';
+                                    if (nameWrapper) { nameWrapper.style.display = 'none'; const el = nameWrapper.querySelector('input'); if (el) el.required = false; }
+                                    if (surnameWrapper) { surnameWrapper.style.display = 'none'; const el2 = surnameWrapper.querySelector('input'); if (el2) el2.required = false; }
+                                    if (workerTitleWrapper) { workerTitleWrapper.style.display = ''; const el3 = workerTitleWrapper.querySelector('input'); if (el3) el3.required = true; }
                                 }
-                                // Worker title is deprecated and kept hidden
-                                if (workerTitleWrapper) { workerTitleWrapper.style.display = 'none'; const el3 = workerTitleWrapper.querySelector('input'); if (el3) el3.required = false; }
                         }
             function setEventTab(tab) {
-                // Worker concept removed; force customer tab always
-                currentEventTab = 'customer';
-                renderEventTypeOptions('customer');
-                const tabCustomer = document.getElementById('tabCustomer');
-                if (tabCustomer) { tabCustomer.classList.add('btn-primary'); tabCustomer.classList.remove('btn-secondary'); }
+                currentEventTab = tab;
+                renderEventTypeOptions(tab);
+                document.getElementById('tabWorker').classList.toggle('btn-primary', tab==='worker');
+                document.getElementById('tabWorker').classList.toggle('btn-secondary', tab!=='worker');
+                document.getElementById('tabCustomer').classList.toggle('btn-primary', tab==='customer');
+                document.getElementById('tabCustomer').classList.toggle('btn-secondary', tab!=='customer');
                 // focus convenient field
                 setTimeout(() => {
-                    const e = document.getElementById('eventFirstName'); if (e) e.focus();
+                    if (tab === 'customer') {
+                        const e = document.getElementById('eventFirstName'); if (e) e.focus();
+                    } else {
+                        const e = document.getElementById('eventTitle'); if (e) e.focus();
+                    }
                 }, 60);
             }
             // Always reload services when opening modal
@@ -1196,11 +1215,12 @@
                     setTimeout(() => openAddEventModalWithTab(startDate, retry + 1), 200);
                     return;
                 }
-                // default to customer tab
-                setEventTab('customer');
+                setEventTab('worker');
                 // Reset form fields if needed
                 const form = document.getElementById('addEventForm');
                 if (form) form.reset();
+                // Set default tab and reload options
+                setEventTab('worker');
                 // Show modal
                 const modal = document.getElementById('addEventModal');
                 if (modal) modal.classList.add('show');
@@ -1399,7 +1419,7 @@
                 // Merge saved customer base and derive customers from bookings
                 await loadCustomerBase();
                 const bookings = (scheduleData && Array.isArray(scheduleData.events))
-                    ? scheduleData.events.filter(e => (e.extendedProps && e.extendedProps.isBooking) || e.isBooking)
+                    ? scheduleData.events.filter(e => (e.extendedProps && e.extendedProps.isBooking) || e.isBooking || e.extendedProps?.tab === 'customer')
                     : [];
 
                 const customerMap = {};
@@ -2056,7 +2076,7 @@
             document.getElementById('editEventDescription').value = event.extendedProps?.description || '';
 
             // Show customer-specific fields when this is a booking
-            const isBooking = event.extendedProps?.isBooking || event.isBooking;
+            const isBooking = event.extendedProps?.isBooking || event.extendedProps?.tab === 'customer' || event.isBooking;
             const custWrapper = document.getElementById('editCustomerFields');
             const phoneWrapper = document.getElementById('editCustomerPhoneField');
             const servicesWrapper = document.getElementById('editEventServicesField');
@@ -2211,7 +2231,10 @@
                 type = typeSelect ? typeSelect.value : '';
             }
 
-            // Worker feature removed — no worker-type defaulting
+            // Ensure worker events have a sensible default type so they render with proper color/icon
+            if (currentEventTab === 'worker' && (!type || String(type).trim() === '')) {
+                type = 'working_hours';
+            }
             const startDate = document.getElementById('eventStartDate').value;
             const startTime = document.getElementById('eventStartTime').value;
             const endDate = document.getElementById('eventEndDate').value;
@@ -2221,19 +2244,22 @@
             const start = startTime ? `${startDate}T${startTime}` : `${startDate}T00:00`;
             const end = endTime ? `${endDate}T${endTime}` : `${endDate}T23:59`;
 
-            // Customer bookings only; isBooking true only for type 'booking'
+            // Shrani tab v extendedProps and mark bookings for DB persistence
             const eventPayload = {
                 title,
                 type,
                 start,
                 end,
                 description,
-                isBooking: (type === 'booking'),
+                tab: currentEventTab,
+                isBooking: currentEventTab === 'customer',
+                // For bookings keep customer info in extendedProps; for worker events keep worker name
                 extendedProps: {
-                    customer: title || null,
-                    email: document.getElementById('eventEmail') ? document.getElementById('eventEmail').value : null,
-                    phone: document.getElementById('eventPhone') ? document.getElementById('eventPhone').value : null,
-                    services: services || [],
+                    customer: currentEventTab === 'customer' ? title : undefined,
+                    worker: currentEventTab === 'worker' ? title : undefined,
+                    email: document.getElementById('eventEmail') ? document.getElementById('eventEmail').value : undefined,
+                    phone: document.getElementById('eventPhone') ? document.getElementById('eventPhone').value : undefined,
+                    services: currentEventTab === 'customer' ? services : [],
                     price: price || 0
                 }
             };
@@ -2301,29 +2327,20 @@
                 }
             }
 
-            // Mirror into adminSchedule only for customer bookings (worker feature removed)
-            if (eventPayload.isBooking) {
+            // Mirror into adminSchedule for both customer bookings and worker events
+            if (currentEventTab === 'customer' || currentEventTab === 'worker') {
                 try {
                     const sDate = startDate;
                     const eDate = endDate;
                     // Use full time (HH:MM) instead of rounding to hour — prevents near-duplicates
-                    const sTime = startTime ? String(startTime).slice(0,5) : null;
-                    const eTime = endTime ? String(endTime).slice(0,5) : null;
-
-                    // If this is a blocking all-day type and no time provided, prefer date-only representation
-                    const typeCfg = (typeof ScheduleRules !== 'undefined' && ScheduleRules.TYPE_CONFIG && ScheduleRules.TYPE_CONFIG[type]) ? ScheduleRules.TYPE_CONFIG[type] : null;
-                    let adminStartTime = sTime;
-                    let adminEndTime = eTime;
-                    if (typeCfg?.isBlocking && !sTime && !eTime) {
-                        adminStartTime = null;
-                        adminEndTime = null;
-                    }
-
+                    const sTime = startTime ? String(startTime).slice(0,5) : '09:00';
+                    const eTime = endTime ? String(endTime).slice(0,5) : '17:00';
+                    // Build admin entry with full booking/worker details
                     let durationMinutes = eventPayload.extendedProps && eventPayload.extendedProps.duration ? eventPayload.extendedProps.duration : null;
                     try {
-                        if (!durationMinutes && adminStartTime && adminEndTime) {
-                            const s = new Date(`${sDate}T${adminStartTime}`);
-                            const e = new Date(`${eDate}T${adminEndTime}`);
+                        if (!durationMinutes) {
+                            const s = new Date(`${sDate}T${sTime}`);
+                            const e = new Date(`${eDate}T${eTime}`);
                             const diff = (e - s) / 60000;
                             durationMinutes = Number.isFinite(diff) && diff > 0 ? Math.round(diff) : null;
                         }
@@ -2333,12 +2350,13 @@
 
                     const adminEntry = {
                         id: `event_${eventId}`,
-                        type: 'rezervacija',
+                        type: currentEventTab === 'customer' ? 'rezervacija' : (type || 'worker_event'),
                         startDate: sDate,
-                        startTime: adminStartTime,
+                        startTime: sTime,
                         endDate: eDate,
-                        endTime: adminEndTime,
-                        customer: eventPayload.extendedProps?.customer || title || null,
+                        endTime: eTime,
+                        customer: currentEventTab === 'customer' ? (eventPayload.extendedProps?.customer || title || null) : null,
+                        worker: currentEventTab === 'worker' ? (eventPayload.extendedProps?.worker || title || null) : null,
                         email: eventPayload.extendedProps?.email || null,
                         phone: eventPayload.extendedProps?.phone || null,
                         services: Array.isArray(eventPayload.extendedProps?.services) ? eventPayload.extendedProps.services : (services || []),
@@ -2413,11 +2431,14 @@
                 try {
                   const typeCfg = (typeof ScheduleRules !== 'undefined' && ScheduleRules.TYPE_CONFIG && ScheduleRules.TYPE_CONFIG[type]) ? ScheduleRules.TYPE_CONFIG[type] : null;
                   if (typeCfg) {
+                    const icon = typeCfg.icon || '';
+                    // prefix title for immediate UI if worker
+                    if (currentEditingEvent && (currentEditingEvent.extendedProps?.tab === 'worker' || currentEditingEvent.extendedProps?.worker)) {
+                      event.setProp('title', (icon ? (icon + ' ' + title) : title));
+                    }
                     if (typeof event.setProp === 'function') {
-                      // update visuals and normalize title to customer-only display
                       event.setProp('backgroundColor', typeCfg.backgroundColor);
                       event.setProp('borderColor', typeCfg.borderColor);
-                      event.setProp('title', title);
                     }
                     // update class name for CSS rules
                     try { if (Array.isArray(event.classNames)) event.setProp('classNames', ['event-type-' + type]); else event.setProp('classNames', ['event-type-' + type]); } catch (_) {}
@@ -2458,7 +2479,7 @@
                         // Keep customer names in extendedProps in sync with title for bookings
                         try {
                             // If booking, use separate name fields
-                            if (scheduleData.events[idx].extendedProps.isBooking) {
+                            if (scheduleData.events[idx].extendedProps.isBooking || scheduleData.events[idx].extendedProps.tab === 'customer') {
                                 const editFirst = document.getElementById('editEventFirstName') ? (document.getElementById('editEventFirstName').value || '').trim() : '';
                                 const editLast = document.getElementById('editEventLastName') ? (document.getElementById('editEventLastName').value || '').trim() : '';
                                 const fullName = (editFirst + (editLast ? ' ' + editLast : '')).trim() || title;
@@ -2503,7 +2524,7 @@
                         // Persist updated customer info to customer base (if this is a booking)
                         try {
                             const updated = scheduleData.events[idx];
-                            if ((updated && updated.extendedProps && updated.extendedProps.isBooking)) {
+                            if ((updated && updated.extendedProps && (updated.extendedProps.isBooking || updated.extendedProps.tab === 'customer'))) {
                                 const uFirst = updated.extendedProps.customerFirstName || (updated.extendedProps.customer ? String(updated.extendedProps.customer).split(/\s+/)[0] : '');
                                 const uLast = updated.extendedProps.customerSurname || (updated.extendedProps.customer ? String(updated.extendedProps.customer).split(/\s+/).slice(1).join(' ') : '');
                                 await persistCustomerToBase({ firstName: uFirst, surname: uLast, email: updated.extendedProps.email, phone: updated.extendedProps.phone });
@@ -2913,8 +2934,8 @@
                                                     // Compute start/end up-front so we can check for duplicates correctly
                                                     const sDate = item.startDate || item.start || null;
                                                     const eDate = item.endDate || item.end || sDate;
-                                                    const sTime = (typeof item.startTime !== 'undefined' && item.startTime !== null) ? String(item.startTime).slice(0,5) : null;
-                                                    const eTime = (typeof item.endTime !== 'undefined' && item.endTime !== null) ? String(item.endTime).slice(0,5) : null;
+                                                    const sTime = (typeof item.startTime !== 'undefined' && item.startTime !== null) ? (String(item.startTime).padStart(2,'0') + ':00') : null;
+                                                    const eTime = (typeof item.endTime !== 'undefined' && item.endTime !== null) ? (String(item.endTime).padStart(2,'0') + ':00') : null;
                                                     const start = sDate ? (sTime ? `${sDate}T${sTime}` : `${sDate}T09:00`) : null;
                                                     const end = eDate ? (eTime ? `${eDate}T${eTime}` : `${eDate}T17:00`) : null;
 
@@ -2933,7 +2954,7 @@
                                                     if (scheduleData.events.some(e => e.id === evId)) return;
 
                                                     // Skip if same start+end+customer already present (use tolerant time compare to avoid minor minute rounding duplicates)
-                                                    const matchName = item.customer || item.notes || '';
+                                                    const matchName = item.customer || item.worker || item.notes || '';
                                                     const TIME_TOLERANCE_MS = 30 * 60 * 1000; // 30 minutes
                                                     const timesApproxEqual = (aStart, aEnd, bStart, bEnd) => {
                                                         try {
@@ -2945,39 +2966,51 @@
                                                         } catch (_) { return false; }
                                                     };
                                                     if (start && end && scheduleData.events.some(e => {
-                                                        const eName = (e.extendedProps && e.extendedProps.customer) || (e.title || '');
+                                                        const eName = (e.extendedProps && ((e.extendedProps.customer) || e.extendedProps.worker)) || '';
                                                         return eName === matchName && timesApproxEqual(e.start, e.end, start, end);
                                                     })) return;
 
-                                                    // Ignore admin entries that describe workers — worker feature removed
+                                                    // If this admin entry describes a worker event, keep it as a worker-style event
+                                                    let newEvent = null;
                                                     if (item.worker) {
-                                                        console.log(`⏭️ Skipping admin worker entry ${evId} (worker feature removed)`);
-                                                        return;
+                                                        newEvent = {
+                                                            id: evId,
+                                                            title: item.worker || item.notes || 'Delavec',
+                                                            type: item.type || 'worker_event',
+                                                            start: start,
+                                                            end: end,
+                                                            extendedProps: {
+                                                                isBooking: false,
+                                                                adminKey: key || null,
+                                                                worker: item.worker || null,
+                                                                email: item.email || null,
+                                                                phone: item.phone || null,
+                                                                services: Array.isArray(item.services) ? item.services : (item.services ? [item.services] : []),
+                                                                price: (typeof item.price !== 'undefined' && item.price !== null) ? item.price : (item.cena || 0),
+                                                                duration: item.duration || null,
+                                                                notes: item.notes || ''
+                                                            }
+                                                        };
+                                                    } else {
+                                                        newEvent = {
+                                                            id: evId,
+                                                            title: item.customer || item.notes || 'Stranka',
+                                                            type: 'booking',
+                                                            start: start,
+                                                            end: end,
+                                                            extendedProps: {
+                                                                isBooking: true,
+                                                                adminKey: key || null,
+                                                                customer: item.customer || null,
+                                                                email: item.email || null,
+                                                                phone: item.phone || null,
+                                                                services: Array.isArray(item.services) ? item.services : (item.services ? [item.services] : []),
+                                                                price: (typeof item.price !== 'undefined' && item.price !== null) ? item.price : (item.cena || 0),
+                                                                duration: item.duration || null,
+                                                                notes: item.notes || ''
+                                                            }
+                                                        };
                                                     }
-
-                                                    // Normalize blocking (all-day) entries: if blocking and no times provided, use date-only
-                                                    const typeCfgItem = (typeof ScheduleRules !== 'undefined' && ScheduleRules.TYPE_CONFIG && ScheduleRules.TYPE_CONFIG[item.type]) ? ScheduleRules.TYPE_CONFIG[item.type] : null;
-                                                    const startVal = (typeCfgItem?.isBlocking && !sTime && !eTime) ? (sDate || null) : start;
-                                                    const endVal = (typeCfgItem?.isBlocking && !sTime && !eTime) ? (eDate ? (new Date(new Date(eDate + 'T00:00').getTime() + (24*60*60*1000)).toISOString().split('T')[0]) : null) : end; // end exclusive if all-day
-
-                                                    const newEvent = {
-                                                        id: evId,
-                                                        title: item.customer || item.notes || 'Stranka',
-                                                        type: 'booking',
-                                                        start: startVal,
-                                                        end: endVal,
-                                                        extendedProps: {
-                                                            isBooking: true,
-                                                            adminKey: key || null,
-                                                            customer: item.customer || null,
-                                                            email: item.email || null,
-                                                            phone: item.phone || null,
-                                                            services: Array.isArray(item.services) ? item.services : (item.services ? [item.services] : []),
-                                                            price: (typeof item.price !== 'undefined' && item.price !== null) ? item.price : (item.cena || 0),
-                                                            duration: item.duration || null,
-                                                            notes: item.notes || ''
-                                                        }
-                                                    };
                                                     scheduleData.events.push(newEvent);
                                                 } catch (inner) { console.warn('⚠ failed merging adminSchedule item', inner); }
                                             });
@@ -3029,7 +3062,7 @@
                                         const eTime = (typeof item.endTime !== 'undefined' && item.endTime !== null) ? String(item.endTime).slice(0,5) : null;
                                         const start = sDate ? (sTime ? `${sDate}T${sTime}` : `${sDate}T09:00`) : null;
                                         const end = eDate ? (eTime ? `${eDate}T${eTime}` : `${eDate}T17:00`) : null;
-                                        const matchName = item.customer || item.notes || '';
+                                        const matchName = item.customer || item.worker || item.notes || '';
 
                                         const TIME_TOLERANCE_MS = 30 * 60 * 1000; // 30 minutes
                                         const timesApproxEqual = (aStart, aEnd, bStart, bEnd) => {
@@ -3042,34 +3075,50 @@
                                             } catch (_) { return false; }
                                         };
                                         if (start && end && scheduleData.events.some(e => {
-                                            const eName = (e.extendedProps && e.extendedProps.customer) || (e.title || '');
+                                            const eName = (e.extendedProps && ((e.extendedProps.customer) || e.extendedProps.worker)) || '';
                                             return eName === matchName && timesApproxEqual(e.start, e.end, start, end);
                                         })) return;
-                                        // Skip admin entries that describe workers — worker feature removed
+                                        // Create worker-style event when admin entry contains worker
+                                        let newEvent = null;
                                         if (item.worker) {
-                                            console.log(`⏭️ Skipping admin worker entry ${key || '(no-key)'} (worker feature removed)`);
-                                            return;
+                                            newEvent = {
+                                                id: key ? `admin_${key}` : `admin_${Date.now()}_${Math.random().toString(36).slice(2,6)}`,
+                                                title: item.worker || item.notes || 'Delavec',
+                                                type: item.type || 'worker_event',
+                                                start: start,
+                                                end: end,
+                                                extendedProps: {
+                                                    isBooking: false,
+                                                    adminKey: key || null,
+                                                    worker: item.worker || null,
+                                                    email: item.email || null,
+                                                    phone: item.phone || null,
+                                                    services: Array.isArray(item.services) ? item.services : (item.services ? [item.services] : []),
+                                                    price: (typeof item.price !== 'undefined' && item.price !== null) ? item.price : (item.cena || 0),
+                                                    duration: item.duration || null,
+                                                    notes: item.notes || ''
+                                                }
+                                            };
+                                        } else {
+                                            newEvent = {
+                                                id: key ? `admin_${key}` : `admin_${Date.now()}_${Math.random().toString(36).slice(2,6)}`,
+                                                title: item.customer || item.notes || 'Stranka',
+                                                type: 'booking',
+                                                start: start,
+                                                end: end,
+                                                extendedProps: {
+                                                    isBooking: true,
+                                                    adminKey: key || null,
+                                                    customer: item.customer || null,
+                                                    email: item.email || null,
+                                                    phone: item.phone || null,
+                                                    services: Array.isArray(item.services) ? item.services : (item.services ? [item.services] : []),
+                                                    price: (typeof item.price !== 'undefined' && item.price !== null) ? item.price : (item.cena || 0),
+                                                    duration: item.duration || null,
+                                                    notes: item.notes || ''
+                                                }
+                                            };
                                         }
-
-                                        // Create booking-style event for remaining entries
-                                        const newEvent = {
-                                            id: key ? `admin_${key}` : `admin_${Date.now()}_${Math.random().toString(36).slice(2,6)}`,
-                                            title: item.customer || item.notes || 'Stranka',
-                                            type: 'booking',
-                                            start: start,
-                                            end: end,
-                                            extendedProps: {
-                                                isBooking: true,
-                                                adminKey: key || null,
-                                                customer: item.customer || null,
-                                                email: item.email || null,
-                                                phone: item.phone || null,
-                                                services: Array.isArray(item.services) ? item.services : (item.services ? [item.services] : []),
-                                                price: (typeof item.price !== 'undefined' && item.price !== null) ? item.price : (item.cena || 0),
-                                                duration: item.duration || null,
-                                                notes: item.notes || ''
-                                            }
-                                        };
                                         scheduleData.events.push(newEvent);
                                     } catch (inner2) { console.warn('⚠ failed merging adminSchedule item (post-load)', inner2); }
                                 });
