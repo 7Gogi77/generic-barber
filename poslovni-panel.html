@@ -276,7 +276,9 @@
             min-height: 0 !important;
         }
 
-
+        .fc .fc-daygrid-day {
+            height: 100%;
+        }
 
         .fc * {
             max-height: none !important;
@@ -316,28 +318,13 @@
         /* Prevent horizontal scroll inside time slots, but avoid changing display or flex order */
         .fc .fc-timegrid .fc-timegrid-slots { overflow-x: hidden !important; }
 
-        /* MONTH view: keep legacy styles (scoped to .fc-daygrid) */
-        .fc .fc-daygrid { height: 100% !important; display: flex !important; flex-direction: column !important; }
-        .fc .fc-daygrid .fc-daygrid-body { height: 100% !important; width: 100%; overflow: visible !important; }
-        .fc .fc-daygrid .fc-daygrid-row > div { flex: 1 !important; width: 100% !important; height: 100% !important; }
-        .fc .fc-daygrid-day-cell { flex: 1 !important; height: 100% !important; width: 100% !important; max-height: none !important; min-height: 0 !important; vertical-align: top; }
-
-        /* TIMEGRID (Day/Week) - NEW, isolated styles (do NOT inherit month rules) ✅ */
-        .fc .fc-timegrid { display: block !important; height: auto !important; min-height: 0 !important; }
-        .fc .fc-timegrid .fc-scrollgrid { display: flex !important; flex-direction: column !important; height: 100% !important; }
-        .fc .fc-timegrid .fc-scrollgrid-section-body { overflow-x: hidden !important; overflow-y: auto !important; -webkit-overflow-scrolling: touch; }
+        /* TimeGrid slot visibility / sizing fixes */
         .fc .fc-timegrid .fc-timegrid-slots { display: block !important; }
-        .fc .fc-timegrid .fc-timegrid-slot { display: block !important; min-height: 40px !important; height: auto !important; border-bottom: 1px solid rgba(0,0,0,0.04) !important; }
-        .fc .fc-timegrid .fc-timegrid-axis { display: block !important; width: 56px !important; }
+        .fc .fc-timegrid .fc-timegrid-slot { display: block !important; min-height: 2.2em !important; height: auto !important; }
+        .fc .fc-timegrid .fc-timegrid-axis { display: block !important; }
         .fc .fc-timegrid .fc-timegrid-cols { min-height: 200px !important; }
         .fc .fc-timegrid .fc-timegrid-col { min-height: 200px !important; }
-        .fc .fc-timegrid .fc-event { white-space: normal !important; }
-
-        /* Ensure timegrid scroller only vertically scrolls */
-        .fc .fc-timegrid .fc-scroller { overflow-x: hidden !important; overflow-y: auto !important; }
-
-        /* Prevent horizontal scroll inside time slots */
-        .fc .fc-timegrid .fc-timegrid-slots { overflow-x: hidden !important; }
+        .fc .fc-timegrid .fc-timegrid-slots .fc-timegrid-slot { border-bottom: 1px solid rgba(0,0,0,0.04) !important; }
 
         .fc-daygrid-body .fc-daygrid-row {
             overflow: visible !important;
@@ -2942,7 +2929,7 @@
                 
                 container.innerHTML = '🔄 Inicializiram koledar...';
                 
-                const calendar = CalendarEngine.initializeCleanCalendar(container, scheduleData);
+                const calendar = CalendarEngine.initializeCalendar(container, scheduleData);
                 debugLog(`📦 Calendar returned: ${calendar ? 'YES' : 'NO'}`);
 
                 if (!calendar) {
