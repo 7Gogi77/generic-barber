@@ -1165,22 +1165,43 @@
                     console.warn('⚠ Failed to load schedule for customers view', e);
                 }
 
-                // Derive customers from booking events in scheduleData
+                // Merge saved customer base and derive customers from bookings
+                loadCustomerBase();
                 const bookings = (scheduleData && Array.isArray(scheduleData.events))
                     ? scheduleData.events.filter(e => (e.extendedProps && e.extendedProps.isBooking) || e.isBooking || e.extendedProps?.tab === 'customer')
                     : [];
 
                 const customerMap = {};
+
+                // Seed from saved base
+                Object.entries(customerBase || {}).forEach(([k, rec]) => {
+                    const key = k;
+                    if (!customerMap[key]) {
+                        customerMap[key] = {
+                            firstName: rec.firstName || (rec.fullName || '').split(' ')[0] || '',
+                            surname: rec.surname || (rec.fullName || '').split(' ').slice(1).join(' ') || '',
+                            fullName: rec.fullName || '',
+                            email: rec.email || '',
+                            phone: rec.phone || '',
+                            count: 0
+                        };
+                    }
+                });
+
+                // Count bookings and merge booking-derived customers
                 bookings.forEach(ev => {
                     const name = (ev.extendedProps && ev.extendedProps.customer) || ev.title || '';
-                    const key = name.trim().toLowerCase();
-                    if (!key) return;
+                    const email = ev.extendedProps && ev.extendedProps.email ? ev.extendedProps.email : '';
+                    const phone = ev.extendedProps && ev.extendedProps.phone ? ev.extendedProps.phone : '';
+                    const key = makeCustomerKey(name, email, phone);
                     if (!customerMap[key]) {
-                        const parts = name.split(' ');
+                        const parts = (name || '').trim().split(' ');
                         customerMap[key] = {
                             firstName: parts[0] || name,
                             surname: parts.slice(1).join(' ') || '',
-                            fullName: name,
+                            fullName: name || '',
+                            email: email || '',
+                            phone: phone || '',
                             count: 0
                         };
                     }
@@ -1193,9 +1214,9 @@
                     html = '<div style="color:#888;">Ni strank.</div>';
                 } else {
                     html = '<table style="width:100%; border-collapse:collapse;">';
-                    html += '<thead><tr style="border-bottom:1px solid #eee;"><th style="text-align:left; padding:6px 4px;">Ime</th><th style="text-align:left; padding:6px 4px;">Priimek</th><th style="text-align:right; padding:6px 4px;">Št. terminov</th></tr></thead><tbody>';
+                    html += '<thead><tr style="border-bottom:1px solid #eee;"><th style="text-align:left; padding:6px 4px;">Ime</th><th style="text-align:left; padding:6px 4px;">Priimek</th><th style="text-align:left; padding:6px 4px;">Email</th><th style="text-align:left; padding:6px 4px;">Telefon</th><th style="text-align:right; padding:6px 4px;">Št. terminov</th></tr></thead><tbody>';
                     customers.forEach(c => {
-                        html += `<tr><td style="padding:6px 4px;">${c.firstName}</td><td style="padding:6px 4px;">${c.surname}</td><td style="padding:6px 4px; text-align:right;">${c.count}</td></tr>`;
+                        html += `<tr><td style="padding:6px 4px;">${c.firstName}</td><td style="padding:6px 4px;">${c.surname}</td><td style="padding:6px 4px;">${c.email || '-'}</td><td style="padding:6px 4px;">${c.phone || '-'}</td><td style="padding:6px 4px; text-align:right;">${c.count}</td></tr>`;
                     });
                     html += '</tbody></table>';
                 }
@@ -1203,6 +1224,56 @@
                 content.innerHTML = html;
                 panel.style.display = 'block';
             }
+
+        // ===== CUSTOMER BASE HELPERS =====
+        // Persist customer contact details locally and to site_config/customers in Firebase
+        let customerBase = {};
+        function loadCustomerBase() {
+            try {
+                const raw = localStorage.getItem('customers_base');
+                customerBase = raw ? JSON.parse(raw) : {};
+            } catch (e) { customerBase = {}; }
+        }
+        function saveCustomerBase() {
+            try { localStorage.setItem('customers_base', JSON.stringify(customerBase)); } catch (e) { /* ignore */ }
+        }
+        function makeCustomerKey(fullName, email, phone) {
+            if (email && typeof email === 'string' && email.trim().length) return email.replace(/[\.\$\[\]#\/]/g, '_').toLowerCase();
+            if (phone && typeof phone === 'string' && phone.trim().length) return ('phone_' + phone.replace(/\D/g,'')).toLowerCase();
+            return 'cust_' + Date.now();
+        }
+        async function persistCustomerToBase({ fullName, email, phone }) {
+            if (!fullName && !email && !phone) return null;
+            loadCustomerBase();
+            const parts = (fullName || '').trim().split(/\s+/);
+            const firstName = parts[0] || (fullName || '');
+            const surname = parts.slice(1).join(' ') || '';
+            const key = makeCustomerKey(fullName, email, phone);
+            const rec = Object.assign({
+                fullName: fullName || '',
+                firstName: firstName,
+                surname: surname,
+                email: email || null,
+                phone: phone || null,
+                updatedAt: new Date().toISOString()
+            }, customerBase[key] || {});
+            customerBase[key] = rec;
+            saveCustomerBase();
+            // Fire-and-forget write to site_config/customers/{key}
+            try {
+                const base = 'https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app/';
+                await fetch(base + `site_config/customers/${encodeURIComponent(key)}.json`, {
+                    method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(rec)
+                });
+                console.log('✓ persisted customer to cloud:', key);
+            } catch (e) {
+                console.warn('⚠ failed to persist customer to cloud', e);
+            }
+            return key;
+        }
+
+        // Load initial base immediately
+        loadCustomerBase();
 
         // Update existing event
         function updateScheduleEvent(eventId, event) {
@@ -1637,7 +1708,7 @@
         }
 
         // Handle add event form
-        document.getElementById('addEventForm').addEventListener('submit', (e) => {
+        document.getElementById('addEventForm').addEventListener('submit', async (e) => {
             e.preventDefault();
 
             const title = document.getElementById('eventTitle').value;
@@ -1694,6 +1765,13 @@
                     price: price || 0
                 }
             };
+
+            // Persist customer info into customer base when creating a booking
+            if (currentEventTab === 'customer') {
+                try {
+                    await persistCustomerToBase({ fullName: title, email: eventPayload.extendedProps?.email, phone: eventPayload.extendedProps?.phone });
+                } catch (e) { console.warn('⚠ persistCustomerToBase failed during add', e); }
+            }
 
             const eventId = (typeof window.addScheduleEvent === 'function')
                 ? window.addScheduleEvent(eventPayload)
@@ -1893,6 +1971,14 @@
                                 console.log('editEvent: mirrored update status', mirrorRes.status);
                             }
                         } catch (mirrorErr) { console.warn('⚠ failed to mirror edit to site_config', mirrorErr); }
+
+                        // Persist updated customer info to customer base (if this is a booking)
+                        try {
+                            const updated = scheduleData.events[idx];
+                            if ((updated && updated.extendedProps && (updated.extendedProps.isBooking || updated.extendedProps.tab === 'customer'))) {
+                                await persistCustomerToBase({ fullName: updated.extendedProps.customer || updated.title, email: updated.extendedProps.email, phone: updated.extendedProps.phone });
+                            }
+                        } catch (e) { console.warn('⚠ persistCustomerToBase failed during edit', e); }
                     }
                 } catch (e) {
                     console.warn('⚠ failed to update booking extendedProps', e);
