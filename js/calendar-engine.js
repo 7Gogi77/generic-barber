@@ -741,7 +741,25 @@ const CalendarEngine = {
               if (fcRoot) { fcRoot.style.height = avail + 'px'; fcRoot.style.minHeight = avail + 'px'; fcRoot.style.overflow = 'visible'; }
               if (viewHarness) { viewHarness.style.height = avail + 'px'; viewHarness.style.minHeight = avail + 'px'; }
               if (timegrid) { timegrid.style.height = avail + 'px'; timegrid.style.minHeight = avail + 'px'; timegrid.style.overflowX = 'hidden'; timegrid.style.overflowY = 'auto'; }
-              if (scrollBodies && scrollBodies.length) { scrollBodies.forEach(b => { b.style.height = avail + 'px'; b.style.minHeight = avail + 'px'; b.style.overflowX = 'hidden'; b.style.overflowY = 'auto'; }); }
+              if (scrollBodies && scrollBodies.length) {
+                // Apply normal sizing
+                scrollBodies.forEach(b => { b.style.height = avail + 'px'; b.style.minHeight = avail + 'px'; b.style.overflowX = 'hidden'; b.style.overflowY = 'auto'; b.style.display = 'block'; });
+
+                // If any body is collapsed set a conservative fallback minHeight so timegrid becomes visible
+                const collapsed = Array.from(scrollBodies).filter(b => b.getBoundingClientRect().height < 6);
+                if (collapsed.length > 0) {
+                  const fallback = Math.max(220, Math.round(avail / Math.max(1, scrollBodies.length)));
+                  console.warn('⚠ applySizing: detected collapsed scroll bodies, applying fallback minHeight', fallback, collapsed.length);
+                  collapsed.forEach(b => {
+                    try {
+                      b.style.minHeight = fallback + 'px';
+                      b.style.height = fallback + 'px';
+                      b.style.display = 'block';
+                      b.classList.add('fc-collapsed-repaired');
+                    } catch (err) { /* ignore per node */ }
+                  });
+                }
+              }
 
               // Also set calendar options so FullCalendar knows the explicit height
               try { if (calendar && typeof calendar.setOption === 'function') { calendar.setOption('height', avail); calendar.setOption('contentHeight', 'parent'); } } catch (err) { /* ignore */ }
@@ -766,6 +784,16 @@ const CalendarEngine = {
                 console.log('✅ Sizing successful — no collapsed scrollgrid sections');
                 return;
               }
+
+              // Attempt a local repair by giving collapsed sections a fallback minHeight
+              try {
+                const fallback = Math.max(240, Math.round(avail / Math.max(1, collapsed.length)));
+                console.warn('⚠ Local repair: setting fallback minHeight', fallback, 'on', collapsed.length, 'collapsed elements');
+                collapsed.forEach(b => {
+                  try { b.style.minHeight = fallback + 'px'; b.style.height = fallback + 'px'; b.style.display = 'block'; b.classList.add('fc-collapsed-repaired'); } catch (err) {}
+                });
+                if (calendar && typeof calendar.updateSize === 'function') calendar.updateSize();
+              } catch (err) { console.warn('⚠ Local repair failed', err); }
 
               if (n + 1 < maxAttempts) {
                 const delay = delays[n + 1];

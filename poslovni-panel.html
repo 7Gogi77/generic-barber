@@ -3010,7 +3010,28 @@
                 try {
                     console.log('dumpDiagnostics: calendar exists', !!window.calendar, 'events count', window.calendar ? window.calendar.getEvents().length : 0);
                     const scrollBodies = document.querySelectorAll('.fc-scrollgrid-section-body');
-                    console.log('scrollBodies heights:', Array.from(scrollBodies).map(b => Math.round(b.getBoundingClientRect().height)));
+                    if (!scrollBodies || scrollBodies.length === 0) {
+                        console.log('dumpDiagnostics: no .fc-scrollgrid-section-body found');
+                    } else {
+                        Array.from(scrollBodies).forEach((b, i) => {
+                            const r = b.getBoundingClientRect();
+                            const cs = window.getComputedStyle(b);
+                            console.log(`scrollBody[${i}] height=${Math.round(r.height)} offsetHeight=${b.offsetHeight} display=${cs.display} classes=${b.className}`);
+                        });
+                    }
+
+                    const timegrid = document.querySelector('.fc-timegrid');
+                    if (timegrid) {
+                        const scrollers = timegrid.querySelectorAll('.fc-scroller');
+                        console.log('timegrid scroller count', scrollers.length);
+                        Array.from(scrollers).forEach((s, i) => { const r = s.getBoundingClientRect(); console.log(`scroller[${i}] h=${Math.round(r.height)} offset=${s.offsetHeight} classes=${s.className}`); });
+                        const slots = timegrid.querySelectorAll('.fc-timegrid-slots');
+                        console.log('timegrid-slots count', slots.length);
+                        Array.from(slots).forEach((s, i) => { const r = s.getBoundingClientRect(); console.log(`slots[${i}] h=${Math.round(r.height)} offset=${s.offsetHeight} classes=${s.className}`); });
+                    } else {
+                        console.log('dumpDiagnostics: no .fc-timegrid element found');
+                    }
+
                     const dayCells = document.querySelectorAll('.fc-daygrid-day-cell');
                     console.log('dayCells:', dayCells.length);
                     const events = window.calendar ? window.calendar.getEvents().map(e => ({id:e.id, title:e.title, start:e.start, end:e.end, allDay:e.allDay})) : [];
