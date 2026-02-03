@@ -2248,18 +2248,16 @@
                 description,
                 tab: currentEventTab,
                 isBooking: currentEventTab === 'customer',
-                // For bookings keep customer info in extendedProps
+                // For bookings keep customer info in extendedProps; for worker events keep worker name
                 extendedProps: {
                     customer: currentEventTab === 'customer' ? title : undefined,
-                    customerFirstName: currentEventTab === 'customer' ? firstName : undefined,
-                    customerSurname: currentEventTab === 'customer' ? lastName : undefined,
+                    worker: currentEventTab === 'worker' ? title : undefined,
                     email: document.getElementById('eventEmail') ? document.getElementById('eventEmail').value : undefined,
                     phone: document.getElementById('eventPhone') ? document.getElementById('eventPhone').value : undefined,
                     services: currentEventTab === 'customer' ? services : [],
                     price: price || 0
                 }
             };
-
             // Persist customer info into customer base when creating a booking
             if (currentEventTab === 'customer') {
                 try {
@@ -2298,10 +2296,13 @@
             const cls = ['event-type-' + (type || 'booking')];
             if (typeCfg?.isBlocking) cls.push('event-blocking');
             const isAllDay = !startTime && !endTime;
+            // For immediate UI show emoji for worker types (customer titles stay as-is)
+            const icon = typeCfg?.icon || '';
+            const displayTitle = (currentEventTab === 'customer') ? title : (icon ? (icon + ' ' + title) : title);
 
             window.calendar.addEvent({
                 id: eventId,
-                title: title,
+                title: displayTitle,
                 start: isAllDay ? (startDate) : new Date(start).toISOString(),
                 end: isAllDay ? (endDate) : new Date(end).toISOString(),
                 allDay: isAllDay,
@@ -2317,14 +2318,14 @@
                 }, eventPayload.extendedProps || {})
             });
 
-            // If this was a customer booking, also push an adminSchedule entry into Firebase
-            if (currentEventTab === 'customer') {
+            // Mirror into adminSchedule for both customer bookings and worker events
+            if (currentEventTab === 'customer' || currentEventTab === 'worker') {
                 try {
                     const sDate = startDate;
                     const eDate = endDate;
                     const sHour = startTime ? parseInt(startTime.split(':')[0]) || 9 : 9;
                     const eHour = endTime ? parseInt(endTime.split(':')[0]) || 17 : 17;
-                    // Build admin entry with full booking details so admin DB has price, duration, services, email, phone
+                    // Build admin entry with full booking/worker details
                     let durationMinutes = eventPayload.extendedProps && eventPayload.extendedProps.duration ? eventPayload.extendedProps.duration : null;
                     try {
                         if (!durationMinutes) {
@@ -2339,18 +2340,19 @@
 
                     const adminEntry = {
                         id: Date.now(),
-                        type: 'rezervacija',
+                        type: currentEventTab === 'customer' ? 'rezervacija' : (type || 'worker_event'),
                         startDate: sDate,
                         startTime: sHour,
                         endDate: eDate,
                         endTime: eHour,
-                        customer: eventPayload.extendedProps?.customer || title || null,
+                        customer: currentEventTab === 'customer' ? (eventPayload.extendedProps?.customer || title || null) : null,
+                        worker: currentEventTab === 'worker' ? (eventPayload.extendedProps?.worker || title || null) : null,
                         email: eventPayload.extendedProps?.email || null,
                         phone: eventPayload.extendedProps?.phone || null,
                         services: Array.isArray(eventPayload.extendedProps?.services) ? eventPayload.extendedProps.services : (services || []),
                         price: (eventPayload.extendedProps && (eventPayload.extendedProps.price || eventPayload.extendedProps.price === 0)) ? eventPayload.extendedProps.price : (price || 0),
                         duration: durationMinutes,
-                        notes: `${eventPayload.extendedProps.customer || ''} ${eventPayload.extendedProps.services ? '| ' + (eventPayload.extendedProps.services.join(', ')) : ''}`.trim(),
+                        notes: (description || '') + (eventPayload.extendedProps && eventPayload.extendedProps.services ? ' | ' + (eventPayload.extendedProps.services.join(', ')) : ''),
                         createdAt: new Date().toISOString()
                     };
 
@@ -2411,6 +2413,24 @@
             const event = window.calendar.getEventById(currentEditingEvent.id);
             if (event) {
                 event.setProp('title', title);
+                // update visuals for type change
+                try {
+                  const typeCfg = (typeof ScheduleRules !== 'undefined' && ScheduleRules.TYPE_CONFIG && ScheduleRules.TYPE_CONFIG[type]) ? ScheduleRules.TYPE_CONFIG[type] : null;
+                  if (typeCfg) {
+                    const icon = typeCfg.icon || '';
+                    // prefix title for immediate UI if worker
+                    if (currentEditingEvent && (currentEditingEvent.extendedProps?.tab === 'worker' || currentEditingEvent.extendedProps?.worker)) {
+                      event.setProp('title', (icon ? (icon + ' ' + title) : title));
+                    }
+                    if (typeof event.setProp === 'function') {
+                      event.setProp('backgroundColor', typeCfg.backgroundColor);
+                      event.setProp('borderColor', typeCfg.borderColor);
+                    }
+                    // update class name for CSS rules
+                    try { if (Array.isArray(event.classNames)) event.setProp('classNames', ['event-type-' + type]); else event.setProp('classNames', ['event-type-' + type]); } catch (_) {}
+                  }
+                } catch (visErr) { /* ignore */ }
+
                 event.setStart(new Date(start).toISOString());
                 event.setEnd(new Date(end).toISOString());
                 event.setExtendedProp('type', type);

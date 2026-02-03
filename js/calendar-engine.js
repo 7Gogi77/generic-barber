@@ -601,6 +601,19 @@ const CalendarEngine = {
               };
             } catch (err) { /* fallback to default booking rendering */ }
           }
+
+          // Custom rendering for worker events - show worker label and time range (mirror of booking style)
+          if (arg.event.extendedProps?.worker || arg.event.extendedProps?.tab === 'worker') {
+            try {
+              const workerName = arg.event.extendedProps?.worker || arg.event.title || 'Delavec';
+              const startTime = arg.event.start ? new Date(arg.event.start).toLocaleTimeString('sl-SI', {hour: '2-digit', minute: '2-digit'}) : '';
+              const endTime = arg.event.end ? new Date(arg.event.end).toLocaleTimeString('sl-SI', {hour: '2-digit', minute: '2-digit'}) : '';
+              const timeText = startTime ? (endTime ? `${startTime} - ${endTime}` : startTime) : '';
+              return {
+                html: `<div style="padding: 2px; font-size: 12px; font-weight: bold;">${workerName}</div><div style="padding: 2px; font-size: 10px;">${timeText}</div>`
+              };
+            } catch (err) { /* fallback to default worker rendering */ }
+          }
           
           // Custom rendering for multi-day events
           if (arg.event.extendedProps?.isMultiDay && arg.event.allDay) {
