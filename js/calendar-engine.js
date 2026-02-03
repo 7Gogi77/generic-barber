@@ -68,27 +68,31 @@ const CalendarEngine = {
       });
     } catch (e) { /* ignore */ }
 
-    // Deduplicate events by stable key (prefer id, otherwise normalized start|end|customer)
-    const seen = new Set();
+    // Deduplicate events with tolerance for small time shifts (prefer id equality, otherwise collapse near-equal start/end + same customer/worker)
     const unique = [];
+    const TIME_TOLERANCE_MS = 10 * 60 * 1000; // 10 minutes
     events.forEach(e => {
       const cust = (e.extendedProps && e.extendedProps.customer) ? String(e.extendedProps.customer).trim() : ((e.extendedProps && e.extendedProps.worker) ? String(e.extendedProps.worker).trim() : (e.title ? String(e.title).replace(/^\S+\s/, '').trim() : ''));
-      // Normalize start/end to minute granularity so ISO string differences (seconds) don't prevent dedupe
-      let sNorm = e.start;
-      let eNorm = e.end;
-      try {
-        sNorm = new Date(e.start).toISOString().slice(0,16);
-      } catch (_) { sNorm = String(e.start || ''); }
-      try {
-        eNorm = new Date(e.end).toISOString().slice(0,16);
-      } catch (_) { eNorm = String(e.end || ''); }
+      const getMs = (val) => { try { return new Date(val).getTime(); } catch(_) { return NaN; } };
+      const sMs = getMs(e.start);
+      const eMs_ = getMs(e.end);
 
-      const key = e.id || `${sNorm}|${eNorm}|${cust}`;
-      if (seen.has(key)) {
-        console.log('⏭️ Skipping duplicate event:', key);
+      const isDup = unique.some(u => {
+        if (u.id && e.id && u.id === e.id) return true;
+        const uCust = (u.extendedProps && u.extendedProps.customer) ? String(u.extendedProps.customer).trim() : ((u.extendedProps && u.extendedProps.worker) ? String(u.extendedProps.worker).trim() : (u.title ? String(u.title).replace(/^\S+\s/, '').trim() : ''));
+        const usMs = getMs(u.start);
+        const ueMs = getMs(u.end);
+
+        const timesClose = Number.isFinite(sMs) && Number.isFinite(usMs) && Math.abs(sMs - usMs) <= TIME_TOLERANCE_MS && Number.isFinite(eMs_) && Number.isFinite(ueMs) && Math.abs(eMs_ - ueMs) <= TIME_TOLERANCE_MS;
+        const sameCust = (cust && uCust && cust === uCust) || (!cust && !uCust);
+        return timesClose && sameCust;
+      });
+
+      if (isDup) {
+        console.log('⏭️ Skipping near-duplicate event (time tolerance):', e);
         return;
       }
-      seen.add(key);
+
       unique.push(e);
     });
 

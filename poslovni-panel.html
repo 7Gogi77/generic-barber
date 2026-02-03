@@ -2332,14 +2332,15 @@
                 try {
                     const sDate = startDate;
                     const eDate = endDate;
-                    const sHour = startTime ? parseInt(startTime.split(':')[0]) || 9 : 9;
-                    const eHour = endTime ? parseInt(endTime.split(':')[0]) || 17 : 17;
+                    // Use full time (HH:MM) instead of rounding to hour — prevents near-duplicates
+                    const sTime = startTime ? String(startTime).slice(0,5) : '09:00';
+                    const eTime = endTime ? String(endTime).slice(0,5) : '17:00';
                     // Build admin entry with full booking/worker details
                     let durationMinutes = eventPayload.extendedProps && eventPayload.extendedProps.duration ? eventPayload.extendedProps.duration : null;
                     try {
                         if (!durationMinutes) {
-                            const s = startTime ? new Date(`${sDate}T${startTime}`) : new Date(`${sDate}T09:00`);
-                            const e = endTime ? new Date(`${eDate}T${endTime}`) : new Date(`${eDate}T17:00`);
+                            const s = new Date(`${sDate}T${sTime}`);
+                            const e = new Date(`${eDate}T${eTime}`);
                             const diff = (e - s) / 60000;
                             durationMinutes = Number.isFinite(diff) && diff > 0 ? Math.round(diff) : null;
                         }
@@ -2348,12 +2349,12 @@
                     }
 
                     const adminEntry = {
-                        id: Date.now(),
+                        id: `event_${eventId}`,
                         type: currentEventTab === 'customer' ? 'rezervacija' : (type || 'worker_event'),
                         startDate: sDate,
-                        startTime: sHour,
+                        startTime: sTime,
                         endDate: eDate,
-                        endTime: eHour,
+                        endTime: eTime,
                         customer: currentEventTab === 'customer' ? (eventPayload.extendedProps?.customer || title || null) : null,
                         worker: currentEventTab === 'worker' ? (eventPayload.extendedProps?.worker || title || null) : null,
                         email: eventPayload.extendedProps?.email || null,
