@@ -723,68 +723,62 @@ const CalendarEngine = {
         console.log('✅ FullCalendar rendered successfully, result:', renderResult);
         // Expose calendar globally for debug helpers
         try { window.calendar = calendar; } catch (err) { /* ignore */ }
-        // Defer sizing to allow DOM to settle
-        setTimeout(() => {
-          try {
-            const toolbar = containerElement.querySelector('.fc-toolbar');
-            const headerRow = containerElement.querySelector('.fc-col-header');
-            const fcRoot = containerElement.querySelector('.fc');
-            const viewHarness = containerElement.querySelector('.fc-view-harness');
-            const timegrid = containerElement.querySelector('.fc-timegrid');
-            const scrollBodies = containerElement.querySelectorAll('.fc-scrollgrid-section-body');
+        // Defer sizing — run a few attempts with increasing delays to allow FullCalendar DOM to settle
+        (function robustSizing() {
+          const delays = [50, 150, 350, 700];
+          const maxAttempts = delays.length;
 
-            const toolbarH = toolbar ? Math.ceil(toolbar.getBoundingClientRect().height) : 0;
-            const headerH = headerRow ? Math.ceil(headerRow.getBoundingClientRect().height) : 0;
+          function applySizing(avail) {
+            try {
+              const toolbar = containerElement.querySelector('.fc-toolbar');
+              const headerRow = containerElement.querySelector('.fc-col-header');
+              const fcRoot = containerElement.querySelector('.fc');
+              const viewHarness = containerElement.querySelector('.fc-view-harness');
+              const timegrid = containerElement.querySelector('.fc-timegrid');
+              const scrollBodies = containerElement.querySelectorAll('.fc-scrollgrid-section-body');
 
-            // Compute available height within container
-            const avail = Math.max(520, containerElement.clientHeight - toolbarH - headerH - 8);
-            console.log('Computed timeGrid height:', avail, { toolbarH, headerH, containerH: containerElement.clientHeight });
+              if (fcRoot) { fcRoot.style.height = avail + 'px'; fcRoot.style.minHeight = avail + 'px'; fcRoot.style.overflow = 'visible'; }
+              if (viewHarness) { viewHarness.style.height = avail + 'px'; viewHarness.style.minHeight = avail + 'px'; }
+              if (timegrid) { timegrid.style.height = avail + 'px'; timegrid.style.minHeight = avail + 'px'; timegrid.style.overflow = 'auto'; }
+              if (scrollBodies && scrollBodies.length) { scrollBodies.forEach(b => { b.style.height = avail + 'px'; b.style.minHeight = avail + 'px'; b.style.overflow = 'auto'; }); }
 
-            if (fcRoot) {
-              fcRoot.style.height = avail + 'px';
-              fcRoot.style.minHeight = avail + 'px';
-              fcRoot.style.overflow = 'visible';
-            }
+              // Also set calendar options so FullCalendar knows the explicit height
+              try { if (calendar && typeof calendar.setOption === 'function') { calendar.setOption('height', avail); calendar.setOption('contentHeight', 'parent'); } } catch (err) { /* ignore */ }
+              if (calendar && typeof calendar.updateSize === 'function') calendar.updateSize();
+            } catch (err) { console.warn('⚠ applySizing failed', err); }
+          }
 
-            if (viewHarness) {
-              viewHarness.style.height = avail + 'px';
-              viewHarness.style.minHeight = avail + 'px';
-            }
+          function attempt(n) {
+            try {
+              const toolbar = containerElement.querySelector('.fc-toolbar');
+              const headerRow = containerElement.querySelector('.fc-col-header');
+              const toolbarH = toolbar ? Math.ceil(toolbar.getBoundingClientRect().height) : 0;
+              const headerH = headerRow ? Math.ceil(headerRow.getBoundingClientRect().height) : 0;
+              const avail = Math.max(520, containerElement.clientHeight - toolbarH - headerH - 8);
 
-            if (timegrid) {
-              timegrid.style.height = avail + 'px';
-              timegrid.style.minHeight = avail + 'px';
-              timegrid.style.overflow = 'auto';
-            }
+              console.log(`sizing attempt #${n + 1}/${maxAttempts} — computed avail=${avail}px`, { toolbarH, headerH, containerH: containerElement.clientHeight });
+              applySizing(avail);
 
-            if (scrollBodies && scrollBodies.length) {
-              scrollBodies.forEach(b => {
-                b.style.height = avail + 'px';
-                b.style.minHeight = avail + 'px';
-                b.style.overflow = 'auto';
-              });
-            }
+              // If any scroll body is still tiny, retry
+              const collapsed = Array.from(containerElement.querySelectorAll('.fc-scrollgrid-section-body')).filter(b => b.getBoundingClientRect().height < 6);
+              if (collapsed.length === 0) {
+                console.log('✅ Sizing successful — no collapsed scrollgrid sections');
+                return;
+              }
 
-            if (calendar && typeof calendar.updateSize === 'function') calendar.updateSize();
+              if (n + 1 < maxAttempts) {
+                const delay = delays[n + 1];
+                console.log(`⚠ Detected ${collapsed.length} collapsed sections; retrying in ${delay}ms`);
+                setTimeout(() => attempt(n + 1), delay);
+              } else {
+                console.warn('⚠ Sizing attempts exhausted; collapsed sections remain:', collapsed.length);
+              }
+            } catch (err) { console.warn('⚠ sizing attempt failed', err); }
+          }
 
-            // If any scroll body is collapsed (very small height) retry once after a short delay
-            setTimeout(() => {
-              try {
-                const collapsed = Array.from(containerElement.querySelectorAll('.fc-scrollgrid-section-body')).filter(b => b.getBoundingClientRect().height < 6);
-                if (collapsed.length > 0) {
-                  console.log('⚠ Detected collapsed scrollgrid sections, forcing heights again', collapsed.length);
-                  const scrollBodies2 = containerElement.querySelectorAll('.fc-scrollgrid-section-body');
-                  scrollBodies2.forEach(b => {
-                    b.style.height = avail + 'px';
-                    b.style.minHeight = avail + 'px';
-                    b.style.overflow = 'auto';
-                  });
-                  if (calendar && typeof calendar.updateSize === 'function') calendar.updateSize();
-                }
-              } catch (err) { console.warn('⚠ Retry sizing failed', err); }
-            }, 250);
-          } catch (err) { console.warn('⚠ timeGrid sizing after render failed', err); }
-        }, 50);
+          // Run first attempt after a short delay
+          setTimeout(() => attempt(0), delays[0]);
+        })();
 
         // Safely process day cells (may not exist immediately after render).
         (function handleDayCells() {
