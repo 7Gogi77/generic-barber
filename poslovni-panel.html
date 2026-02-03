@@ -3161,6 +3161,8 @@
                 try {
                     const containerElement = document.getElementById('scheduleCalendar');
                     if (!containerElement) return console.warn('No #scheduleCalendar container found');
+                    const viewType = window.calendar && window.calendar.view && window.calendar.view.type ? window.calendar.view.type : null;
+                    if (viewType === 'dayGridMonth' || viewType === 'timeGridDay') return console.log('fixLayout: skipping for Month/Day view', viewType);
                     const toolbar = containerElement.querySelector('.fc-toolbar');
                     const headerRow = containerElement.querySelector('.fc-col-header');
                     const fcRoot = containerElement.querySelector('.fc');
@@ -3196,6 +3198,8 @@
             },
             remakeViews: async (view = 'timeGridWeek') => {
                 try {
+                    const disallowed = ['dayGridMonth', 'timeGridDay'];
+                    if (disallowed.includes(view)) return console.log('remakeViews: skipping remake for view', view);
                     console.log('remakeViews: calling CalendarEngine.remakeTimeGridViews', view);
                     await CalendarEngine.remakeTimeGridViews(view, scheduleData);
                     console.log('remakeViews: done');
@@ -3204,6 +3208,8 @@
             // Force timegrid visibility (temporary debug)
             forceTimegrid: () => {
                 try {
+                    const viewType = window.calendar && window.calendar.view && window.calendar.view.type ? window.calendar.view.type : null;
+                    if (viewType === 'dayGridMonth' || viewType === 'timeGridDay') return console.log('forceTimegrid: skipping for Month/Day view', viewType);
                     const timegrid = document.querySelector('.fc-timegrid');
                     const scrollBodies = document.querySelectorAll('.fc-scrollgrid-section-body');
                     if (timegrid) { timegrid.style.display = 'block'; timegrid.style.minHeight = '400px'; timegrid.style.height = '400px'; }
@@ -3215,6 +3221,11 @@
             // Health check: tries soft fixes (fixLayout / forceTimegrid) and falls back to full remake
             calendarHealthCheck: async (opts = { autoRemake: true }) => {
                 try {
+                    const viewType = window.calendar && window.calendar.view && window.calendar.view.type ? window.calendar.view.type : null;
+                    if (viewType === 'dayGridMonth' || viewType === 'timeGridDay') {
+                        console.log('calendarHealthCheck: skipping health checks for Month/Day view', viewType);
+                        return true;
+                    }
                     console.log('calendarHealthCheck: starting');
                     const hasTimegrid = !!document.querySelector('.fc-timegrid');
                     const scrollBodies = document.querySelectorAll('.fc-scrollgrid-section-body');

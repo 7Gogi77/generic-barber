@@ -582,16 +582,21 @@ const CalendarEngine = {
             const timegrid = document.querySelector('.fc-timegrid');
             const timegridEventEls = document.querySelectorAll('.fc-timegrid .fc-event');
             if (timed > 0 && timegrid && timegridEventEls.length === 0) {
-              console.warn('eventsSet detected timed events but NO event nodes in timeGrid - scheduling a sanity recheck');
-              setTimeout(() => {
-                try {
-                  const timegridEventEls2 = document.querySelectorAll('.fc-timegrid .fc-event');
-                  if (timegridEventEls2.length === 0 && typeof CalendarEngine.remakeTimeGridViews === 'function') {
-                    console.warn('eventsSet: still no event nodes, invoking remakeTimeGridViews');
-                    CalendarEngine.remakeTimeGridViews('timeGridWeek', window.scheduleData).catch(e=>console.warn('remake failed from eventsSet', e));
-                  }
-                } catch (e) { console.warn('eventsSet recheck failed', e); }
-              }, 220);
+              const currentView = calendar && calendar.view && calendar.view.type ? calendar.view.type : null;
+              if (currentView !== 'timeGridWeek') {
+                console.warn('eventsSet: timed events present but skipping remediation because current view is not timeGridWeek:', currentView);
+              } else {
+                console.warn('eventsSet detected timed events but NO event nodes in timeGrid (week view) - scheduling a sanity recheck');
+                setTimeout(() => {
+                  try {
+                    const timegridEventEls2 = document.querySelectorAll('.fc-timegrid .fc-event');
+                    if (timegridEventEls2.length === 0 && typeof CalendarEngine.remakeTimeGridViews === 'function') {
+                      console.warn('eventsSet: still no event nodes, invoking remakeTimeGridViews (week-only)');
+                      CalendarEngine.remakeTimeGridViews('timeGridWeek', window.scheduleData).catch(e=>console.warn('remake failed from eventsSet', e));
+                    }
+                  } catch (e) { console.warn('eventsSet recheck failed', e); }
+                }, 220);
+              }
             }
           } catch (err) { console.warn('eventsSet hook failed', err); }
         },
@@ -719,9 +724,9 @@ const CalendarEngine = {
               }
             }
             
-            // For timeGrid views, ensure timegrid and scroll bodies are sized
-            if (arg.view.type === 'timeGridWeek' || arg.view.type === 'timeGridDay') {
-              console.log('🔧 Sizing timeGrid view:', arg.view.type);
+            // For timeGridWeek only, ensure timegrid and scroll bodies are sized (skip Day to avoid fallbacks there)
+            if (arg.view.type === 'timeGridWeek') {
+              console.log('🔧 Sizing timeGridWeek view:', arg.view.type);
               setTimeout(() => {
                 try {
                   const containerElement = document.getElementById('scheduleCalendar');
@@ -828,20 +833,20 @@ const CalendarEngine = {
               }
             }
 
-            // TIMEGRID SANITY CHECK - if view is timeGrid and timed events exist but no event DOM is rendered in the timeGrid, trigger a full remake
+            // TIMEGRID SANITY CHECK - only apply to timeGridWeek (do not attempt fallbacks for Day view)
             try {
               const v = arg && arg.view && arg.view.type ? arg.view.type : '';
-              if (v && v.startsWith('timeGrid')) {
+              if (v === 'timeGridWeek') {
                 setTimeout(async () => {
                   try {
                     const timedEvents = (calendar && typeof calendar.getEvents === 'function') ? calendar.getEvents().filter(e => !e.allDay) : [];
                     const timegridEventEls = containerElement.querySelectorAll('.fc-timegrid .fc-event');
                     const slots = containerElement.querySelectorAll('.fc-timegrid .fc-timegrid-slot');
-                    console.log('viewDidMount sanity:', { view: v, timedEvents: timedEvents.length, timegridEventEls: timegridEventEls.length, slots: slots.length });
+                    console.log('viewDidMount sanity (week-only):', { view: v, timedEvents: timedEvents.length, timegridEventEls: timegridEventEls.length, slots: slots.length });
 
                     // If there are timed events but nothing rendered in the timeGrid, it's likely FullCalendar DOM failed to create time slot or event nodes
                     if (timedEvents.length > 0 && timegridEventEls.length === 0) {
-                      console.warn('⚠ viewDidMount sanity failed: timed events present but no event elements in timeGrid — attempting full remake');
+                      console.warn('⚠ viewDidMount sanity failed: timed events present but no event elements in timeGrid — attempting full remake (week-only)');
                       if (typeof CalendarEngine.remakeTimeGridViews === 'function') {
                         try { await CalendarEngine.remakeTimeGridViews(v, scheduleData); } catch (remErr) { console.warn('remakeTimeGridViews failed', remErr); }
                       } else {
@@ -852,7 +857,7 @@ const CalendarEngine = {
 
                     // If there are no slots at all (collapsed DOM), try forcing a view re-render to rebuild DOM
                     if (slots.length === 0) {
-                      console.warn('⚠ viewDidMount sanity: no timeGrid slots found — forcing view re-render');
+                      console.warn('⚠ viewDidMount sanity: no timeGrid slots found — forcing view re-render (week-only)');
                       try { if (calendar && typeof calendar.changeView === 'function') calendar.changeView(v); } catch (err) { console.warn('Failed to changeView for sanity check', err); }
                     }
                   } catch (err) { console.warn('viewDidMount sanity check failed', err); }
