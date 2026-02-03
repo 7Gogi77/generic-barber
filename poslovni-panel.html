@@ -376,7 +376,7 @@
 
         /* Explicit overrides to prevent Month CSS bleed into TimeGrid */
         /* Reset dayGrid-specific rules inside timeGrid context */
-        .fc .fc-timegrid .fc-daygrid-day, .fc .fc-timegrid .fc-daygrid-day-frame, .fc .fc-timegrid .fc-daygrid-day-number, .fc .fc-timegrid .fc-daygrid-day-events { all: unset; display: block; }
+        .fc .fc-timegrid .fc-daygrid-day, .fc .fc-timegrid .fc-daygrid-day-frame, .fc .fc-timegrid .fc-daygrid-day-number, .fc .fc-timegrid .fc-daygrid-day-events { display: block; }
         .fc .fc-timegrid .fc-daygrid-day-number { font-size: 12px; color: #7f8c8d !important; }
         /* Override generic event styles to timeGrid specific */
         .fc .fc-timegrid .fc-event { background: linear-gradient(180deg,#3498db,#2c7cc3) !important; color: #fff !important; border: none !important; }
@@ -391,8 +391,10 @@
         /* Strongly scoped overrides when container explicitly is in timegrid view */
         #scheduleCalendar.view-timegrid .fc .fc-timegrid { background: #fff !important; }
         #scheduleCalendar.view-timegrid .fc .fc-timegrid .fc-col-header-cell { background: #fbfdff !important; }
-        #scheduleCalendar.view-timegrid .fc .fc-timegrid .fc-event { background: linear-gradient(180deg,#3498db,#2c7cc3) !important; color: #fff !important; }
+        #scheduleCalendar.view-timegrid .fc .fc-timegrid .fc-event { background: linear-gradient(180deg,#3498db,#2c7cc3) !important; color: #fff !important; visibility: visible !important; opacity: 1 !important; z-index: 3 !important; }
         #scheduleCalendar.view-timegrid .fc .fc-timegrid .fc-timegrid-slot { min-height: 42px !important; height: 42px !important; }
+        #scheduleCalendar.view-timegrid .fc .fc-timegrid .fc-timegrid-axis { display: block !important; }
+        #scheduleCalendar.view-timegrid .fc .fc-timegrid .fc-timegrid-slots { display: block !important; }
 
         #scheduleCalendar.view-timegrid .fc .fc-scrollgrid-section-body { overflow-x: hidden !important; overflow-y: auto !important; }
 
@@ -3188,6 +3190,58 @@
                     if (window.calendar && typeof window.calendar.updateSize === 'function') window.calendar.updateSize();
                     console.log('forceTimegrid: applied min-height 400px and display block');
                 } catch (err) { console.warn('forceTimegrid failed', err); }
+            },
+            // Health check: tries soft fixes (fixLayout / forceTimegrid) and falls back to full remake
+            calendarHealthCheck: async (opts = { autoRemake: true }) => {
+                try {
+                    console.log('calendarHealthCheck: starting');
+                    const hasTimegrid = !!document.querySelector('.fc-timegrid');
+                    const scrollBodies = document.querySelectorAll('.fc-scrollgrid-section-body');
+                    const bodiesCount = scrollBodies ? scrollBodies.length : 0;
+                    const bodyHeights = Array.from(scrollBodies || []).map(b => Math.round(b.getBoundingClientRect().height));
+                    console.log('calendarHealthCheck: timegrid?', hasTimegrid, 'scrollBodies', bodiesCount, 'heights', bodyHeights);
+                    if (hasTimegrid && bodiesCount > 0 && bodyHeights.some(h => h > 120)) {
+                        console.log('calendarHealthCheck: OK - timegrid present and scroll bodies tall enough');
+                        return true;
+                    }
+                    console.warn('calendarHealthCheck: soft-fix attempt: fixLayout + forceTimegrid');
+                    if (typeof window.deletionDebug?.fixLayout === 'function') window.deletionDebug.fixLayout();
+                    await new Promise(r => setTimeout(r, 180));
+                    if (typeof window.deletionDebug?.forceTimegrid === 'function') window.deletionDebug.forceTimegrid();
+                    await new Promise(r => setTimeout(r, 220));
+                    const hasTimegrid2 = !!document.querySelector('.fc-timegrid');
+                    const scrollBodies2 = document.querySelectorAll('.fc-scrollgrid-section-body');
+                    const bodyHeights2 = Array.from(scrollBodies2 || []).map(b => Math.round(b.getBoundingClientRect().height));
+                    console.log('calendarHealthCheck: after soft-fix timegrid?', hasTimegrid2, 'heights', bodyHeights2);
+                    if (hasTimegrid2 && scrollBodies2.length > 0 && bodyHeights2.some(h => h > 120)) {
+                        console.log('calendarHealthCheck: soft-fix succeeded');
+                        return true;
+                    }
+                    if (opts && opts.autoRemake) {
+                        console.warn('calendarHealthCheck: soft-fix failed, attempting full remake via CalendarEngine.remakeTimeGridViews');
+                        if (typeof CalendarEngine?.remakeTimeGridViews === 'function') {
+                            try {
+                                await CalendarEngine.remakeTimeGridViews('timeGridWeek', scheduleData);
+                                await new Promise(r => setTimeout(r, 300));
+                                const hasTimegrid3 = !!document.querySelector('.fc-timegrid');
+                                const scrollBodies3 = document.querySelectorAll('.fc-scrollgrid-section-body');
+                                const bodyHeights3 = Array.from(scrollBodies3 || []).map(b => Math.round(b.getBoundingClientRect().height));
+                                console.log('calendarHealthCheck: after remake timegrid?', hasTimegrid3, 'heights', bodyHeights3);
+                                if (hasTimegrid3 && scrollBodies3.length > 0 && bodyHeights3.some(h => h > 120)) {
+                                    console.log('calendarHealthCheck: remake succeeded');
+                                    return true;
+                                }
+                            } catch (remErr) { console.warn('calendarHealthCheck: remake failed', remErr); }
+                        } else {
+                            console.warn('calendarHealthCheck: CalendarEngine.remakeTimeGridViews not available');
+                        }
+                    }
+                    console.error('calendarHealthCheck: all attempts failed');
+                    return false;
+                } catch (err) {
+                    console.warn('calendarHealthCheck failed', err);
+                    return false;
+                }
             }
         };
         console.log("💡 Use window.deletionDebug.show() to see deletion status");
@@ -3205,6 +3259,7 @@
         <button id="fixLayoutBtn" onclick="window.deletionDebug.fixLayout()">🔧 Fix calendar layout</button>
         <button id="dumpDiagBtn" onclick="window.deletionDebug.dumpDiagnostics()">📋 Dump calendar diagnostics</button>
         <button id="forceTimegridBtn" onclick="window.deletionDebug.forceTimegrid()">⏰ Force timegrid visibility</button>
+        <button id="healthCheckBtn" onclick="window.deletionDebug.calendarHealthCheck()">🩺 Calendar health check</button>
         <button id="remakeViewsBtn" onclick="window.deletionDebug.remakeViews()">🔁 Remake Day & Week</button>
     </div>
 
