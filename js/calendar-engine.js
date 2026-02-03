@@ -738,6 +738,8 @@ const CalendarEngine = {
               const timegrid = containerElement.querySelector('.fc-timegrid');
               const scrollBodies = containerElement.querySelectorAll('.fc-scrollgrid-section-body');
 
+              console.log('applySizing: timegrid found?', !!timegrid, 'scrollBodies count', scrollBodies.length);
+
               if (fcRoot) { fcRoot.style.height = avail + 'px'; fcRoot.style.minHeight = avail + 'px'; fcRoot.style.overflow = 'visible'; }
               if (viewHarness) { viewHarness.style.height = avail + 'px'; viewHarness.style.minHeight = avail + 'px'; }
               if (timegrid) { timegrid.style.height = avail + 'px'; timegrid.style.minHeight = avail + 'px'; timegrid.style.overflowX = 'hidden'; timegrid.style.overflowY = 'auto'; }
@@ -760,10 +762,15 @@ const CalendarEngine = {
               console.log(`sizing attempt #${n + 1}/${maxAttempts} — computed avail=${avail}px`, { toolbarH, headerH, containerH: containerElement.clientHeight });
               applySizing(avail);
 
-              // If any scroll body is still tiny, retry
+              // Check for collapsed sections
               const collapsed = Array.from(containerElement.querySelectorAll('.fc-scrollgrid-section-body')).filter(b => b.getBoundingClientRect().height < 6);
-              if (collapsed.length === 0) {
-                console.log('✅ Sizing successful — no collapsed scrollgrid sections');
+              const timegrid = containerElement.querySelector('.fc-timegrid');
+              const timegridCollapsed = timegrid && timegrid.getBoundingClientRect().height < 6;
+
+              console.log('collapsed scrollBodies:', collapsed.length, 'timegrid collapsed?', timegridCollapsed);
+
+              if (collapsed.length === 0 && !timegridCollapsed) {
+                console.log('✅ Sizing successful — no collapsed sections');
                 return;
               }
 
@@ -772,7 +779,14 @@ const CalendarEngine = {
                 console.log(`⚠ Detected ${collapsed.length} collapsed sections; retrying in ${delay}ms`);
                 setTimeout(() => attempt(n + 1), delay);
               } else {
-                console.warn('⚠ Sizing attempts exhausted; collapsed sections remain:', collapsed.length);
+                console.warn('⚠ Sizing attempts exhausted; applying fallback');
+                // Fallback: force timegrid and scroll bodies to min height
+                const timegrid = containerElement.querySelector('.fc-timegrid');
+                const scrollBodies = containerElement.querySelectorAll('.fc-scrollgrid-section-body');
+                if (timegrid) { timegrid.style.minHeight = '400px'; timegrid.style.height = '400px'; }
+                scrollBodies.forEach(b => { b.style.minHeight = '400px'; b.style.height = '400px'; });
+                if (calendar && typeof calendar.updateSize === 'function') calendar.updateSize();
+                console.log('Fallback applied: forced min-height 400px on timegrid and scroll bodies');
               }
             } catch (err) { console.warn('⚠ sizing attempt failed', err); }
           }
