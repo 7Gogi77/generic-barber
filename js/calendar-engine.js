@@ -1148,6 +1148,28 @@ const CalendarEngine = {
                     if (slots.length === 0) {
                       // No-op: do not force view re-render.
                     }
+
+                    // Ensure the slots container has a minHeight large enough to force scrolling when there are many slots.
+                    try {
+                      const slotsContainer = containerElement.querySelector('.fc-timegrid .fc-timegrid-slots');
+                      const scrollBody = containerElement.querySelector('.fc-timegrid .fc-scrollgrid-section-body') || containerElement.querySelector('.fc-scrollgrid-section-body');
+                      if (slotsContainer && slots && slots.length && scrollBody) {
+                        const sample = slots[0];
+                        const slotH = Math.ceil((sample && sample.getBoundingClientRect && sample.getBoundingClientRect().height) || 42);
+                        const requiredH = slots.length * slotH;
+                        // Only set it when it's actually taller than current to avoid interfering with natural sizing
+                        if (requiredH > slotsContainer.clientHeight) {
+                          slotsContainer.style.minHeight = requiredH + 'px';
+                          console.log('🔧 Enforced slotsContainer minHeight:', requiredH);
+                        }
+
+                        // If, after setting, the scroll body still doesn't report overflow, increase the scroll area by adding padding-bottom
+                        if (scrollBody.scrollHeight <= scrollBody.clientHeight) {
+                          scrollBody.style.paddingBottom = '600px';
+                          console.log('🔧 Added paddingBottom to force scrollability');
+                        }
+                      }
+                    } catch (e) { console.warn('⚠ failed to enforce timegrid slot heights', e); }
                   } catch (err) { console.warn('viewDidMount sanity check failed', err); }
                 }, 220);
               }
