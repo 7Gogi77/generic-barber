@@ -2512,8 +2512,53 @@
                 } catch (_) {}
 
                 // Save and refresh
-                try { if (typeof window.saveScheduleData === 'function') await window.saveScheduleData(); else try { localStorage.setItem('schedule', JSON.stringify(scheduleData)); } catch(_){} } catch (_) {}
-                if (typeof loadAppointmentsToCalendarNow === 'function') await loadAppointmentsToCalendarNow(); else if (window.calendar && typeof window.calendar.addEvent === 'function') { const evt = scheduleData.events.find(e => e.id === eventId); if (evt && typeof CalendarEngine !== 'undefined' && CalendarEngine.formatCalendarEvent) { const formatted = CalendarEngine.formatCalendarEvent(evt); if (formatted) window.calendar.addEvent(formatted); } }
+                try {
+                    if (typeof window.saveScheduleData === 'function') await window.saveScheduleData();
+                    else try { localStorage.setItem('schedule', JSON.stringify(scheduleData)); } catch(_){}
+                } catch (_) {}
+
+                // Ensure the newly created event appears immediately in the UI for responsiveness.
+                // We still call the canonical refresh afterwards so dedupe and rules remain authoritative.
+                const evt = scheduleData.events.find(e => e.id === eventId);
+                try {
+                    if (evt && window.calendar && typeof window.calendar.addEvent === 'function') {
+                        let added = false;
+                        if (typeof CalendarEngine !== 'undefined' && CalendarEngine.formatCalendarEvent) {
+                            try {
+                                const formatted = CalendarEngine.formatCalendarEvent(evt);
+                                if (formatted) {
+                                    window.calendar.addEvent(formatted);
+                                    added = true;
+                                }
+                            } catch (fe) {
+                                console.warn('⚠ CalendarEngine.formatCalendarEvent threw for new event', fe);
+                            }
+                        }
+                        if (!added) {
+                            // Fallback: add a simple event object using the raw stored start/end so the user sees it immediately.
+                            try {
+                                const fallback = {
+                                    id: evt.id,
+                                    title: evt.title || '',
+                                    start: evt.start,
+                                    end: evt.end,
+                                    allDay: !(String(evt.start || '').includes('T') || String(evt.end || '').includes('T')),
+                                    extendedProps: evt.extendedProps || {}
+                                };
+                                window.calendar.addEvent(fallback);
+                                console.warn('⚠ Added fallback event to calendar UI for immediate display; consider fixing event time formatting', evt.id);
+                            } catch (e) {
+                                console.warn('⚠ Failed to add fallback event to calendar', e);
+                            }
+                        }
+                    }
+                } catch (e) { console.warn('⚠ Immediate calendar add failed', e); }
+
+                // Refresh canonical source (this will keep UI in sync and dedupe)
+                if (typeof loadAppointmentsToCalendarNow === 'function') await loadAppointmentsToCalendarNow();
+                else if (window.calendar && typeof window.calendar.refetchEvents === 'function') {
+                    try { window.calendar.refetchEvents(); } catch(e) {}
+                }
 
                 // Mirror to adminSchedule and attach adminKey when possible
                 try {
