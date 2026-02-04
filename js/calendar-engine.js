@@ -296,6 +296,12 @@ const CalendarEngine = {
           isSubtractive: event.rules?.isSubtractive || typeConfig?.isSubtractive || false,
           priority: event.rules?.conflictPriority || typeConfig?.priority || 0,
           isMultiDay: isMultiDay,
+          // Preserve key extended props so downstream merge/dedupe logic can make correct choices
+          origin: event.extendedProps?.origin || null,
+          adminKey: event.extendedProps?.adminKey || null,
+          worker: event.extendedProps?.worker || null,
+          createdAt: event.extendedProps?.createdAt || event.createdAt || null,
+          lastModified: event.extendedProps?.lastModified || null,
           // Merge booking-specific extended props (customer, email, phone, services, price, duration, notes)
           isBooking: isBooking,
           customer: customerName || event.extendedProps?.customerName || null,
@@ -342,6 +348,12 @@ const CalendarEngine = {
         isSubtractive: event.rules?.isSubtractive || false,
         priority: event.rules?.conflictPriority || 0,
         isMultiDay: isMultiDay,
+        // Preserve key extended props so downstream merge/dedupe logic can make correct choices
+        origin: event.extendedProps?.origin || null,
+        adminKey: event.extendedProps?.adminKey || null,
+        worker: event.extendedProps?.worker || null,
+        createdAt: event.extendedProps?.createdAt || event.createdAt || null,
+        lastModified: event.extendedProps?.lastModified || null,
         // Merge booking-specific extended props (customer, email, phone, services, price, duration, notes)
         isBooking: isBooking,
         customer: customerName || event.extendedProps?.customerName || null,
