@@ -147,7 +147,7 @@ const CalendarEngine = {
         // same id -> skip
         if (u.id && e.id && u.id === e.id) {
           console.log('⏭️ Skipping exact-duplicate by id:', e);
-          continue;
+          return; // skip this incoming event
         }
 
         // Decide which to keep
@@ -155,10 +155,10 @@ const CalendarEngine = {
         if (!keepExisting) {
           console.log('🔁 Replacing event due to preference (keep incoming):', e, 'replacing', u);
           unique[conflictIdx] = e; // prefer incoming
-          continue;
+          return; // replaced existing, skip further processing
         } else {
           console.log('⏭️ Skipping near-duplicate event (kept existing):', e);
-          continue;
+          return; // keep existing, skip incoming
         }
       }
 
