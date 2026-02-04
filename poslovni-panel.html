@@ -1805,7 +1805,10 @@
                             const localTitle = localEv.extendedProps?.customer || localEv.title || '';
                             // Replace remote if local clearly preferable (local origin or non-generic title)
                             const replace = (localEv.extendedProps?.origin === 'local') || (genericTitle(remoteTitle) && !genericTitle(localTitle));
-                            if (replace) merged[byId] = localEv;
+                            if (replace) {
+                                merged[byId] = localEv;
+                                debugLog && debugLog(`onScheduleUpdated: replaced remote ${remote?.id || byId} with local ${localEv?.id} (by id)`);
+                            }
                             return;
                         }
 
@@ -1818,6 +1821,7 @@
                             const replace = (localEv.extendedProps?.origin === 'local') || (genericTitle(remoteTitle) && !genericTitle(localTitle));
                             if (replace) {
                                 merged[conflictIdx] = localEv;
+                                debugLog && debugLog(`onScheduleUpdated: replaced remote ${remote?.id || conflictIdx} with local ${localEv?.id} (time conflict)`);
                             }
                             // if not replacing, keep remote and do not append local
                             return;
@@ -3140,6 +3144,59 @@
                         debugLog(`🔍 Filtered ${before - scheduleData.events.length} deleted events on load`);
                     }
                 }
+
+                // Merge local fallback events from localStorage (preserve locally-created events that may not have been saved to remote)
+                try {
+                    const localRaw = localStorage.getItem('schedule');
+                    if (localRaw) {
+                        const localSched = JSON.parse(localRaw);
+                        const localEvents = Array.isArray(localSched.events) ? localSched.events.filter(ev => ev.extendedProps && ev.extendedProps.origin === 'local') : [];
+                        if (localEvents.length > 0) {
+                            debugLog(`📥 Found ${localEvents.length} local-origin events in localStorage; attempting to merge`);
+                            const TIME_TOLERANCE_MS = 10 * 60 * 1000;
+                            const timesApproxEqual = (aStart, aEnd, bStart, bEnd) => {
+                                try {
+                                    const as = new Date(aStart).getTime();
+                                    const bs = new Date(bStart).getTime();
+                                    const ae = new Date(aEnd).getTime();
+                                    const be = new Date(bEnd).getTime();
+                                    return Number.isFinite(as) && Number.isFinite(bs) && Number.isFinite(ae) && Number.isFinite(be) && Math.abs(as - bs) <= TIME_TOLERANCE_MS && Math.abs(ae - be) <= TIME_TOLERANCE_MS;
+                                } catch (_) { return false; }
+                            };
+                            const genericTitle = t => {
+                                if (!t) return true;
+                                const s = String(t).trim();
+                                return s === '' || s === 'Stranka' || s === 'Rezervacija' || s === 'Customer';
+                            };
+
+                            localEvents.forEach(localEv => {
+                                try {
+                                    if (!scheduleData.events.some(e => e.id === localEv.id)) {
+                                        // look for a time-conflict
+                                        const conflictIdx = scheduleData.events.findIndex(m => timesApproxEqual(localEv.start, localEv.end, m.start, m.end));
+                                        if (conflictIdx !== -1) {
+                                            const remote = scheduleData.events[conflictIdx];
+                                            const remoteTitle = remote.extendedProps?.customer || remote.title || '';
+                                            const localTitle = localEv.extendedProps?.customer || localEv.title || '';
+                                            if (genericTitle(remoteTitle) && !genericTitle(localTitle)) {
+                                                debugLog(`🔁 Replacing remote generic event ${remote.id || 'unknown'} with local event ${localEv.id}`);
+                                                scheduleData.events[conflictIdx] = localEv;
+                                            } else {
+                                                debugLog(`➕ Appending local event ${localEv.id} (no replace)`);
+                                                scheduleData.events.push(localEv);
+                                            }
+                                        } else {
+                                            debugLog(`➕ Appending local event ${localEv.id} (no conflict found)`);
+                                            scheduleData.events.push(localEv);
+                                        }
+                                    }
+                                } catch (e) { /* ignore per-event merge errors */ }
+                            });
+
+                            try { await StorageManager.save('schedule', scheduleData); debugLog('✅ Merged local fallback events saved to canonical schedule'); } catch(e) { console.warn('⚠ failed to save merged schedule after local fallback merge', e); }
+                        }
+                    }
+                } catch (e) { console.warn('⚠ failed merging local fallback events', e); }
                 
                 // Migrate legacy localStorage 'appointments' into schedule (DB-backed) if present
                 try {
