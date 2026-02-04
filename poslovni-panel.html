@@ -1811,6 +1811,12 @@
                                 debugLog && debugLog(`onScheduleUpdated: replaced remote ${remote?.id || byId} with local ${localEv?.id} (by id)`, { localPreferred, localId: localEv?.id, localTitle, remoteId: remote?.id, remoteTitle });
                             } else {
                                 debugLog && debugLog(`onScheduleUpdated: kept remote ${remote?.id || byId} (local ${localEv?.id} not preferred)`, { localPreferred, localId: localEv?.id, localTitle, remoteId: remote?.id, remoteTitle });
+                            }
+
+                            // matched by id — no further matching needed for this local event
+                            return;
+                        }
+
                         // then try tolerant time-based match (same times +/- tolerance)
                         const conflictIdx = merged.findIndex(m => timesApproxEqual(localEv.start, localEv.end, m.start, m.end));
                         if (conflictIdx !== -1) {
