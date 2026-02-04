@@ -386,6 +386,35 @@
             display: block !important;
             min-height: 1200px !important; /* fallback baseline to allow scrolling */
         }
+
+        /* WEEK/DAY SEPARATION - force distinct layout for timeGrid week/day */
+        #scheduleCalendar.view-timegrid-week .fc, #scheduleCalendar.view-timegrid-day .fc {
+            height: 100% !important;
+            box-sizing: border-box;
+        }
+
+        #scheduleCalendar.view-timegrid-week .fc .fc-view-harness,
+        #scheduleCalendar.view-timegrid-day .fc .fc-view-harness {
+            height: 100% !important;
+            min-height: 520px !important;
+            position: relative !important;
+            overflow: visible !important;
+        }
+
+        #scheduleCalendar.view-timegrid-week .fc .fc-timegrid,
+        #scheduleCalendar.view-timegrid-day .fc .fc-timegrid {
+            position: relative !important;
+            height: auto !important;
+            min-height: 520px !important;
+            overflow: visible !important;
+        }
+
+        #scheduleCalendar.view-timegrid-week .fc .fc-timegrid .fc-scrollgrid-section-body,
+        #scheduleCalendar.view-timegrid-day .fc .fc-timegrid .fc-scrollgrid-section-body {
+            max-height: calc(100vh - 220px) !important;
+            overflow-y: auto !important;
+            -webkit-overflow-scrolling: touch !important;
+        }
         #scheduleCalendar.view-timegrid .fc .fc-timegrid .fc-timegrid-slots .fc-timegrid-slot { background: transparent; }
         #scheduleCalendar.view-timegrid .fc .fc-timegrid .fc-event {
             border-radius: 8px !important;
