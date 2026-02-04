@@ -393,6 +393,12 @@
         #scheduleCalendar.view-timegrid .fc .fc-timegrid .fc-timegrid-slots {
             display: block !important;
             min-height: 0;
+            /* Ensure slots are in normal flow so their height contributes to the scroll container */
+            position: relative !important;
+        }
+
+        #scheduleCalendar.view-timegrid .fc .fc-timegrid .fc-timegrid-slot {
+            position: relative !important;
         }
 
         /* WEEK/DAY SEPARATION - force distinct layout for timeGrid week/day */
