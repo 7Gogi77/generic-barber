@@ -136,6 +136,15 @@ const CalendarEngine = {
       event.end = event.end.replace(/\s+/, 'T');
     }
 
+    // Normalize hour-only ISO times (e.g. '2026-02-04T12' -> '2026-02-04T12:00') to avoid inconsistent parsing
+    const hourOnlyRegex = /^\d{4}-\d{2}-\d{2}T\d{1,2}(:)?$/;
+    if (typeof event.start === 'string' && /^\d{4}-\d{2}-\d{2}T\d{1,2}$/.test(event.start)) {
+      event.start = event.start + ':00';
+    }
+    if (typeof event.end === 'string' && /^\d{4}-\d{2}-\d{2}T\d{1,2}$/.test(event.end)) {
+      event.end = event.end + ':00';
+    }
+
     // Normalize start/end to Date objects with sensible fallbacks
     let startDate, endDate;
     let displayEnd = event.end;
