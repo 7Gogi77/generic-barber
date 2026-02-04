@@ -561,19 +561,29 @@ const CalendarEngine = {
       const initialScrollTime = options.scrollTime || (window.SITE_CONFIG && window.SITE_CONFIG.booking && window.SITE_CONFIG.booking.scrollTime) || '12:00:00';
 
       // Small helper to scroll current view by px (positive -> down)
-      const scrollCurrentView = (px) => {
+      const scrollCurrentView = (directive) => {
         try {
-          // Prefer timeGrid scroll bodies
+          // Accept either 'top' | 'bottom' or numeric px
           const timeScroll = containerElement.querySelector('.fc-timegrid .fc-scrollgrid-section-body');
+          const daygridBody = containerElement.querySelector('.fc-daygrid-body');
+
+          const targetScroll = (el, dir) => {
+            if (!el) return;
+            if (dir === 'top') { el.scrollTop = 0; return; }
+            if (dir === 'bottom') { el.scrollTop = el.scrollHeight - el.clientHeight; return; }
+            const px = Number(dir) || 0;
+            el.scrollTop = Math.max(0, Math.min(el.scrollHeight - el.clientHeight, el.scrollTop + px));
+          };
+
           if (timeScroll) {
-            timeScroll.scrollTop = Math.max(0, Math.min(timeScroll.scrollHeight - timeScroll.clientHeight, timeScroll.scrollTop + px));
+            if (directive === 'top' || directive === 'bottom') targetScroll(timeScroll, directive);
+            else targetScroll(timeScroll, Number(directive) || 0);
             return;
           }
 
-          // Fallback to month daygrid body
-          const daygridBody = containerElement.querySelector('.fc-daygrid-body');
           if (daygridBody) {
-            daygridBody.scrollTop = Math.max(0, Math.min(daygridBody.scrollHeight - daygridBody.clientHeight, daygridBody.scrollTop + px));
+            if (directive === 'top' || directive === 'bottom') targetScroll(daygridBody, directive);
+            else targetScroll(daygridBody, Number(directive) || 0);
             return;
           }
         } catch (e) { console.warn('scrollCurrentView failed', e); }
@@ -589,10 +599,18 @@ const CalendarEngine = {
           scrollDown: {
             text: '↓',
             click: () => { scrollCurrentView(200); }
+          },
+          scrollTop: {
+            text: 'Top',
+            click: () => { scrollCurrentView('top'); }
+          },
+          scrollBottom: {
+            text: 'Bottom',
+            click: () => { scrollCurrentView('bottom'); }
           }
         },
         headerToolbar: {
-          left: 'prev,next today scrollUp scrollDown',
+          left: 'prev,next today scrollTop scrollBottom scrollUp scrollDown',
           center: 'title',
           right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
         },
@@ -617,8 +635,9 @@ const CalendarEngine = {
         allDaySlot: false,
         views: {
           dayGridMonth: { type: 'dayGridMonth' },
-          timeGridWeek: { type: 'timeGrid', slotMinTime: slotMinTimeVal, slotMaxTime: timeGridSlotMax },
-          timeGridDay: { type: 'timeGrid', slotMinTime: slotMinTimeVal, slotMaxTime: timeGridSlotMax }
+          // Force full 24-hour rendering for timeGrid week/day views
+          timeGridWeek: { type: 'timeGrid', slotMinTime: '00:00:00', slotMaxTime: '24:00:00' },
+          timeGridDay: { type: 'timeGrid', slotMinTime: '00:00:00', slotMaxTime: '24:00:00' }
         },
         // Initial vertical scroll position in timeGrid views
         scrollTime: initialScrollTime,
@@ -820,7 +839,12 @@ const CalendarEngine = {
           try {
             const v2 = arg && arg.view && arg.view.type ? arg.view.type : '';
             if (v2.startsWith('timeGrid')) {
-              try { if (calendar && typeof calendar.setOption === 'function') calendar.setOption('scrollTime', initialScrollTime); } catch (_) {}
+              try { if (calendar && typeof calendar.setOption === 'function') {
+                calendar.setOption('scrollTime', initialScrollTime);
+                // Ensure slot bounds are set for full 24h in case the internal options didn't apply
+                calendar.setOption('slotMinTime', '00:00:00');
+                calendar.setOption('slotMaxTime', '24:00:00');
+              } } catch (_) {}
 
               // Attempt to scroll the timegrid body to the approximate time slot
               setTimeout(() => {
@@ -840,6 +864,11 @@ const CalendarEngine = {
                           break;
                         }
                       }
+                    }
+                    // If no matching slot found, ensure we can scroll to bottom so late slots are reachable
+                    // (this helps if slot labels are not present or in unexpected format)
+                    if (scrollBody.scrollHeight > scrollBody.clientHeight && scrollBody.scrollTop === 0) {
+                      // leave as-is; user can use the Bottom button to jump to end
                     }
                   }
                 } catch (_) { /* ignore scrolling failures */ }
@@ -1015,13 +1044,21 @@ const CalendarEngine = {
             // TIMEGRID SANITY CHECK - only apply to timeGridWeek (do not attempt fallbacks for Day view)
             try {
               const v = arg && arg.view && arg.view.type ? arg.view.type : '';
-              if (v === 'timeGridWeek') {
+              if (v === 'timeGridWeek' || v === 'timeGridDay') {
+                // Force slot bounds for full day and set initial scrollTime again in case options didn't apply earlier
+                try { if (calendar && typeof calendar.setOption === 'function') {
+                  calendar.setOption('slotMinTime', '00:00:00');
+                  calendar.setOption('slotMaxTime', '24:00:00');
+                  calendar.setOption('scrollTime', initialScrollTime);
+                  console.log('🔧 Applied timeGrid full-day options:', { slotMinTime: '00:00:00', slotMaxTime: '24:00:00', scrollTime: initialScrollTime });
+                } } catch (_) {}
+
                 setTimeout(async () => {
                   try {
                     const timedEvents = (calendar && typeof calendar.getEvents === 'function') ? calendar.getEvents().filter(e => !e.allDay) : [];
                     const timegridEventEls = containerElement.querySelectorAll('.fc-timegrid .fc-event');
                     const slots = containerElement.querySelectorAll('.fc-timegrid .fc-timegrid-slot');
-                    console.log('viewDidMount sanity (week-only):', { view: v, timedEvents: timedEvents.length, timegridEventEls: timegridEventEls.length, slots: slots.length });
+                    console.log('viewDidMount sanity (timeGrid):', { view: v, timedEvents: timedEvents.length, timegridEventEls: timegridEventEls.length, slots: slots.length });
 
                     // If there are timed events but nothing rendered in the timeGrid, it's likely FullCalendar DOM failed to create time slot or event nodes
                     if (timedEvents.length > 0 && timegridEventEls.length === 0) {
