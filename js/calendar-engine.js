@@ -609,36 +609,58 @@ const CalendarEngine = {
 
       // Diagnostic helper to print sizes and computed styles for calendar scroll debugging
       const runScrollDiagnostics = () => {
+        const out = [];
         try {
-          console.log('🔎 Scroll diagnostics start');
+          out.push('🔎 Scroll diagnostics start');
+
+          const safeGet = (fn, fallback) => { try { return fn(); } catch (e) { return fallback; } };
+
           const nodes = {
-            container: containerElement,
-            parent: containerElement && containerElement.parentElement,
-            fc: containerElement && containerElement.querySelector('.fc'),
-            fcRoot: containerElement && containerElement.querySelector('.fc-root'),
-            viewHarness: containerElement && containerElement.querySelector('.fc-view-harness'),
-            timegrid: containerElement && containerElement.querySelector('.fc-timegrid'),
-            daygridBody: containerElement && containerElement.querySelector('.fc-daygrid-body'),
-            timeScrollBodies: containerElement ? Array.from(containerElement.querySelectorAll('.fc-scrollgrid-section-body')) : []
+            container: safeGet(() => containerElement, null),
+            parent: safeGet(() => containerElement && containerElement.parentElement, null),
+            fc: safeGet(() => containerElement && containerElement.querySelector('.fc'), null),
+            fcRoot: safeGet(() => containerElement && containerElement.querySelector('.fc-root'), null),
+            viewHarness: safeGet(() => containerElement && containerElement.querySelector('.fc-view-harness'), null),
+            timegrid: safeGet(() => containerElement && containerElement.querySelector('.fc-timegrid'), null),
+            daygridBody: safeGet(() => containerElement && containerElement.querySelector('.fc-daygrid-body'), null),
+            timeScrollBodies: safeGet(() => containerElement ? Array.from(containerElement.querySelectorAll('.fc-scrollgrid-section-body')) : [], [])
           };
 
           Object.entries(nodes).forEach(([k, el]) => {
-            if (!el) { console.log(` - ${k}: <missing>`); return; }
-            const cs = window.getComputedStyle(el);
-            console.log(` - ${k}: tag=${el.tagName} class="${el.className}" id="${el.id || ''}" clientH=${el.clientHeight} scrollH=${el.scrollHeight} overflowY=${cs.overflowY} position=${cs.position} `);
+            if (!el) { out.push(` - ${k}: <missing>`); return; }
+            const cs = safeGet(() => window.getComputedStyle(el), {});
+            out.push(` - ${k}: tag=${el.tagName} class="${el.className}" id="${el.id || ''}" clientH=${el.clientHeight} scrollH=${el.scrollHeight} overflowY=${cs.overflowY} position=${cs.position}`);
           });
 
           // List first few scrollable descendants
-          const all = Array.from(containerElement.querySelectorAll('*'));
+          const all = safeGet(() => Array.from(containerElement.querySelectorAll('*')), []);
           const scrollables = all.filter(el => {
             try { const cs = window.getComputedStyle(el); return (cs.overflowY === 'auto' || cs.overflowY === 'scroll') && el.scrollHeight > el.clientHeight; } catch (_) { return false; }
           }).slice(0, 8);
-          if (scrollables.length === 0) console.log(' - No descendant scrollable elements found');
-          scrollables.forEach((s, idx) => { const cs = window.getComputedStyle(s); console.log(`   ${idx}. el <${s.tagName}> .${s.className} id=${s.id} clientH=${s.clientHeight} scrollH=${s.scrollHeight} overflowY=${cs.overflowY} position=${cs.position}`); });
 
-          console.log('🔎 Scroll diagnostics end');
-          alert('Scroll diagnostics written to console. Please paste logs here.');
-        } catch (err) { console.warn('runScrollDiagnostics failed', err); alert('Diagnostics failed - see console'); }
+          if (scrollables.length === 0) out.push(' - No descendant scrollable elements found');
+          scrollables.forEach((s, idx) => { const cs = safeGet(() => window.getComputedStyle(s), {}); out.push(`   ${idx}. el <${s.tagName}> .${s.className} id=${s.id} clientH=${s.clientHeight} scrollH=${s.scrollHeight} overflowY=${cs.overflowY} position=${cs.position}`); });
+
+          out.push('🔎 Scroll diagnostics end');
+
+          // Write to console and debug panel if present
+          out.forEach(l => console.log(l));
+
+          const debugPanel = document.getElementById('debugPanel');
+          const debugOutput = document.getElementById('debugOutput');
+          if (debugOutput) {
+            debugOutput.innerHTML = '';
+            out.forEach(l => { debugOutput.innerHTML += l.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '<br>'; });
+            if (debugPanel) debugPanel.style.display = 'block';
+            alert('Diagnostics written to visible debug panel. Check the panel at bottom-right.');
+          } else {
+            alert('Diagnostics written to console. Please paste logs here.');
+          }
+        } catch (err) {
+          try { console.warn('runScrollDiagnostics failed', err); } catch (_) {}
+          try { const debugPanel = document.getElementById('debugPanel'); if (debugPanel) { debugPanel.style.display = 'block'; const debugOutput = document.getElementById('debugOutput'); if (debugOutput) debugOutput.innerText = 'Diagnostics failed: ' + (err && err.message ? err.message : String(err)); } } catch (_) {}
+          alert('Diagnostics failed - check debug panel or console for details');
+        }
       };
 
       const calendar = new FullCalendar.Calendar(containerElement, {
