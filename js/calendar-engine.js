@@ -666,7 +666,7 @@ const CalendarEngine = {
           }
         },
         headerToolbar: {
-          left: 'prev,next today scrollTop scrollBottom scrollUp scrollDown',
+          left: 'prev,next today diag scrollTop scrollBottom scrollUp scrollDown',
           center: 'title',
           right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
         },
