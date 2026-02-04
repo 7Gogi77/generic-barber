@@ -414,6 +414,9 @@
             max-height: calc(100vh - 220px) !important;
             overflow-y: auto !important;
             -webkit-overflow-scrolling: touch !important;
+            /* Ensure scrollable area can grow as needed */
+            min-height: 400px !important;
+            height: auto !important;
         }
         #scheduleCalendar.view-timegrid .fc .fc-timegrid .fc-timegrid-slots .fc-timegrid-slot { background: transparent; }
         #scheduleCalendar.view-timegrid .fc .fc-timegrid .fc-event {

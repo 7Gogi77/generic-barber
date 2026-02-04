@@ -1162,6 +1162,18 @@ const CalendarEngine = {
                   calendar.setOption('slotMaxTime', '24:00:00');
                   calendar.setOption('scrollTime', initialScrollTime);
                   console.log('🔧 Applied timeGrid full-day options:', { slotMinTime: '00:00:00', slotMaxTime: '24:00:00', scrollTime: initialScrollTime });
+
+                  // Defensive: override inline positioning on the timeGrid view element so scrolling works
+                  try {
+                    const tg = containerElement.querySelector('.fc-timeGridWeek-view') || containerElement.querySelector('.fc-timeGridDay-view') || containerElement.querySelector('.fc-timegrid');
+                    if (tg) {
+                      tg.style.position = 'relative';
+                      tg.style.height = 'auto';
+                      tg.style.overflow = 'visible';
+                      console.log('🔧 Overrode timeGrid view element to position:relative to enable scrolling');
+                    }
+                  } catch (_) {}
+
                 } } catch (_) {}
 
                 setTimeout(async () => {
@@ -1222,6 +1234,18 @@ const CalendarEngine = {
                             const extra = Math.max(0, forcedMax + 200 - slotsContainer.clientHeight);
                             slotsContainer.style.minHeight = (slotsContainer.clientHeight + extra) + 'px';
                             console.log('🔧 Increased slotsContainer.minHeight (extra)', extra);
+                          }
+
+                          // STRONGER: if still no overflow, set explicit minHeight and height on scrollBody to required slot height
+                          if (requiredH && scrollBody && scrollBody.scrollHeight <= scrollBody.clientHeight) {
+                            try {
+                              // compute a forced height (at most availH)
+                              const forcedH = Math.min(requiredH, Math.max(forcedMax, 800));
+                              scrollBody.style.minHeight = requiredH + 'px';
+                              scrollBody.style.height = forcedH + 'px';
+                              scrollBody.style.overflowY = 'auto';
+                              console.log('🔧 Forcing scrollBody minHeight and height', { requiredH, forcedH });
+                            } catch (_) { /* ignore */ }
                           }
                         } catch (_) { /* ignore aggressive fallback errors */ }
 
