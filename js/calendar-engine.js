@@ -497,7 +497,6 @@ const CalendarEngine = {
     // Store for later reference
     this.currentScheduleData = scheduleData;
 
-    try {
       // Clear container first
       containerElement.innerHTML = '';
       
@@ -1208,45 +1207,31 @@ const CalendarEngine = {
         // Ensure all-day slot hidden (no dedicated all-day column/row)
         allDaySlot: false,
             // Let FullCalendar compute content height so timeGrid gets a proper scrollable area
-            contentHeight: 'auto'
-              const toolbar = containerElement.querySelector('.fc-toolbar');
-              const headerRow = containerElement.querySelector('.fc-col-header');
-              const toolbarH = toolbar ? Math.ceil(toolbar.getBoundingClientRect().height) : 0;
-              const headerH = headerRow ? Math.ceil(headerRow.getBoundingClientRect().height) : 0;
-              const avail = Math.max(520, containerElement.clientHeight - toolbarH - headerH - 8);
+        contentHeight: 'auto',
 
-              console.log(`sizing attempt #${n + 1}/${maxAttempts} — computed avail=${avail}px`, { toolbarH, headerH, containerH: containerElement.clientHeight });
-              applySizing(avail);
+        // Post-render sizing handled after render (IIFE moved to after render to avoid invalid statements inside options)
 
-              // Check for collapsed sections
-              const collapsed = Array.from(containerElement.querySelectorAll('.fc-scrollgrid-section-body')).filter(b => b.getBoundingClientRect().height < 6);
-              const timegrid = containerElement.querySelector('.fc-timegrid');
-              const timegridCollapsed = timegrid && timegrid.getBoundingClientRect().height < 6;
 
-              console.log('collapsed scrollBodies:', collapsed.length, 'timegrid collapsed?', timegridCollapsed);
 
-              if (collapsed.length === 0 && !timegridCollapsed) {
-                console.log('✅ Sizing successful — no collapsed sections');
-                return;
-              }
+        // Prepare to render and then safely process day cells (may not exist immediately after render).
+      });
 
-              if (n + 1 < maxAttempts) {
-                const delay = delays[n + 1];
-                console.log(`⚠ Detected ${collapsed.length} collapsed sections; retrying in ${delay}ms`);
-                setTimeout(() => attempt(n + 1), delay);
-              } else {
-                // Sizing attempts exhausted. No automatic DOM fallbacks will be applied here to avoid unexpected layout changes.
-                // The caller/view may opt to handle layout issues explicitly. (No-op)
-              }
-            } catch (err) { console.warn('⚠ sizing attempt failed', err); }
-          }
+      console.log('📅 About to call calendar.render()...');
+        try {
+          console.log('Calling render...');
+          const renderResult = calendar.render();
+          console.log('✅ FullCalendar rendered successfully, result:', renderResult);
+          try { window.calendar = calendar; } catch (_) {}
+          try {
+            const curView = (calendar && calendar.view && calendar.view.type) ? calendar.view.type : null;
+            if (curView) {
+              containerElement.classList.toggle('view-timegrid', curView.startsWith('timeGrid'));
+              containerElement.classList.toggle('view-daygrid', curView === 'dayGridMonth');
+            }
+          } catch (_) {}
 
-          // Run first attempt after a short delay
-          setTimeout(() => attempt(0), delays[0]);
-        })();
-
-        // Safely process day cells (may not exist immediately after render).
-        (function handleDayCells() {
+          // Safely process day cells (may not exist immediately after render).
+          (function handleDayCells() {
           function processDayCell(dayCell) {
             const eventsContainer = dayCell.querySelector('.fc-daygrid-day-events');
             if (eventsContainer) {
@@ -1353,18 +1338,7 @@ const CalendarEngine = {
       });
 
       return calendar;
-    } catch (error) {
-      console.error('❌ Error in initializeCalendar:', error);
-      console.error(error.stack);
-      containerElement.innerHTML = '<p style="color: #e74c3c; padding: 20px;">Error: ' + error.message + '</p>';
-      return null;
     }
-  },
-
-  /**
-   * Remake Day/Week timeGrid views by fully reinitializing the calendar and cycling views
-   * Useful when FullCalendar's timeGrid DOM fails to render the hourly slots
-   */
   async remakeTimeGridViews(preferredView = 'timeGridWeek', scheduleDataParam) {
     // REMOVED: fallback remediation disabled by request
     // This function is intentionally a no-op to prevent automatic re-initialization or forced view changes.
@@ -1845,4 +1819,6 @@ async function createWorkingHoursEvents(startTime, endTime) {
 // Export CalendarEngine to window so it can be accessed globally
 window.CalendarEngine = CalendarEngine;
 console.log('✅ CalendarEngine exported to window:', typeof window.CalendarEngine);
-console.log('✅ CalendarEngine.initializeCalendar exists:', typeof window.CalendarEngine?.initializeCalendar);
+console.log('✅ CalendarEngine.initializeCalendar exists:', window.CalendarEngine && typeof window.CalendarEngine.initializeCalendar ? typeof window.CalendarEngine.initializeCalendar : 'undefined');
+
+}
