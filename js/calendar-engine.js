@@ -1820,5 +1820,3 @@ async function createWorkingHoursEvents(startTime, endTime) {
 window.CalendarEngine = CalendarEngine;
 console.log('✅ CalendarEngine exported to window:', typeof window.CalendarEngine);
 console.log('✅ CalendarEngine.initializeCalendar exists:', window.CalendarEngine && typeof window.CalendarEngine.initializeCalendar ? typeof window.CalendarEngine.initializeCalendar : 'undefined');
-
-}
