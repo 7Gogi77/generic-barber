@@ -229,9 +229,23 @@
             height: 100% !important;
         }
 
-        /* View-scoped positioning - TimeGrid requires relative to contain absolutely positioned children */
-        #scheduleCalendar.view-timegrid .fc-scroller-harness { position: relative !important; }
+        /* View-scoped positioning - TimeGrid requires scroller harness to allow its children to scroll */
+        #scheduleCalendar.view-timegrid .fc-scroller-harness {
+            position: relative !important;
+            overflow: visible !important; /* allow child scroller to exceed harness so scrollHeight is measurable */
+            height: auto !important;
+        }
         #scheduleCalendar.view-daygrid .fc-scroller-harness { position: static !important; }
+
+        /* Ensure the internal absolute scroller participates in flow for Week/Day views */
+        #scheduleCalendar.view-timegrid .fc .fc-scroller-liquid-absolute {
+            position: static !important;
+            overflow: visible !important;
+            height: auto !important;
+        }
+
+        /* Make native scroller the actual scroll container */
+        #scheduleCalendar.view-timegrid .fc .fc-scrollgrid-section-body { overflow-y: auto !important; -webkit-overflow-scrolling: touch !important; }
 
         /* Temporary visual debug outlines (toggle via deletionDebug.toggleTimegridVisuals) */
         #scheduleCalendar.debug-timegrid-visuals.view-timegrid .fc .fc-timegrid-slot {
