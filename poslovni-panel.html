@@ -877,8 +877,7 @@
             <div class="modal-header">Dodaj dogodek</div>
             <form id="addEventForm">
                 <div style="display:flex; gap:10px; margin-bottom:18px;">
-                  <button type="button" id="tabWorker" class="btn btn-secondary" style="flex:1;" onclick="setEventTab('worker')">Delavec</button>
-                  <button type="button" id="tabCustomer" class="btn btn-secondary" style="flex:1;" onclick="setEventTab('customer')">Stranka</button>
+                  <button type="button" id="tabCustomer" class="btn btn-primary" style="flex:1;" onclick="setEventTab('customer')">Stranka</button>
                 </div>
                 <div class="form-horizontal">
                     <div class="form-column" style="flex:1;">
@@ -899,11 +898,7 @@
                             <label>Telefon</label>
                             <input type="tel" id="eventPhone" placeholder="+386 40 123 456">
                         </div>
-                        <!-- For non-customer (worker) keep single title field -->
-                        <div class="form-group" id="workerTitleField">
-                            <label>Naziv</label>
-                            <input type="text" id="eventTitle" placeholder="Npr. Bolniška, Praznik, Striženje...">
-                        </div>
+
                     </div>
                     <div class="form-column" style="flex:1;">
                         <div class="form-group">
@@ -1074,16 +1069,8 @@
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
         <script>
             // --- TAB LOGIC FOR ADD EVENT MODAL ---
-            let currentEventTab = 'worker';
-            const workerTypes = [
-                { value: '', label: '-- Izberi tip --' },
-                { value: 'working_hours', label: 'Delovni čas' },
-                { value: 'break', label: 'Premor' },
-                { value: 'lunch', label: 'Kosilo' },
-                { value: 'vacation', label: 'Počitnice' },
-                { value: 'sick_leave', label: 'Bolniška' },
-                { value: 'day_off', label: 'Prosti dan' }
-            ];
+            // Worker mode removed: default to customer bookings only
+            let currentEventTab = 'customer';
             // Pridobi storitve iz SITE_CONFIG, če obstaja, sicer fallback
             function getCustomerTypes() {
                 let items = [];
@@ -1096,78 +1083,62 @@
                         function renderEventTypeOptions(tab) {
                                 const select = document.getElementById('eventType');
                                 select.innerHTML = '';
-                                let options = tab === 'worker' ? workerTypes : getCustomerTypes();
-                                // Če ni storitev, onemogoči select in prikaži opozorilo
-                                if (tab === 'customer') {
-                                    if (options.length <= 1) {
-                                        select.disabled = true;
-                                        select.innerHTML = '<option value="">-- Ni storitev v sistemu --</option>';
-                                        if (!document.getElementById('noServicesWarning')) {
-                                            const warn = document.createElement('div');
-                                            warn.id = 'noServicesWarning';
-                                            warn.style.color = '#e74c3c';
-                                            warn.style.fontSize = '13px';
-                                            warn.style.marginTop = '6px';
-                                            warn.textContent = 'Storitve niso nastavljene v admin panelu ali še niso naložene iz oblaka.';
-                                            select.parentNode.appendChild(warn);
-                                        }
-                                    } else {
-                                        select.disabled = false;
-                                        if (document.getElementById('noServicesWarning')) document.getElementById('noServicesWarning').remove();
+                                let options = getCustomerTypes();
+
+                                // If no services, show disabled select and a warning
+                                if (options.length <= 1) {
+                                    select.disabled = true;
+                                    select.innerHTML = '<option value="">-- Ni storitev v sistemu --</option>';
+                                    if (!document.getElementById('noServicesWarning')) {
+                                        const warn = document.createElement('div');
+                                        warn.id = 'noServicesWarning';
+                                        warn.style.color = '#e74c3c';
+                                        warn.style.fontSize = '13px';
+                                        warn.style.marginTop = '6px';
+                                        warn.textContent = 'Storitve niso nastavljene v admin panelu ali še niso naložene iz oblaka.';
+                                        select.parentNode.appendChild(warn);
                                     }
                                 } else {
                                     select.disabled = false;
                                     if (document.getElementById('noServicesWarning')) document.getElementById('noServicesWarning').remove();
                                 }
+
                                 options.forEach(opt => {
                                     const o = document.createElement('option');
                                     o.value = opt.value;
                                     o.textContent = opt.label;
                                     select.appendChild(o);
                                 });
-                                // If selecting services (customer tab), allow multiple selection
-                                    const checkboxContainer = document.getElementById('eventTypeCheckboxes');
-                                    if (tab === 'customer') {
-                                        // hide select and show checkboxes for easier multi-select on desktop
-                                        // also disable/remove required so browser won't block form submission
-                                        select.style.display = 'none';
-                                        select.disabled = true;
-                                        select.required = false;
-                                        if (checkboxContainer) {
-                                            checkboxContainer.innerHTML = '';
-                                            // skip placeholder option at index 0
-                                            options.slice(1).forEach(opt => {
-                                                const id = `evtype_chk_${opt.value.replace(/[^a-z0-9]/gi,'_')}_${Math.random().toString(36).slice(2,6)}`;
-                                                const wrapper = document.createElement('div');
-                                                wrapper.style.cssText = 'display:flex; align-items:center; gap:8px; margin-bottom:6px;';
-                                                const chk = document.createElement('input');
-                                                chk.type = 'checkbox';
-                                                chk.id = id;
-                                                chk.value = opt.value;
-                                                chk.style.marginRight = '8px';
-                                                const lbl = document.createElement('label');
-                                                lbl.htmlFor = id;
-                                                lbl.textContent = opt.label;
-                                                lbl.style.margin = '0';
-                                                wrapper.appendChild(chk);
-                                                wrapper.appendChild(lbl);
-                                                checkboxContainer.appendChild(wrapper);
-                                                // recalc price when checkbox toggled
-                                                chk.addEventListener('change', recalcServicePrice);
-                                            });
-                                            checkboxContainer.style.display = options.length > 1 ? 'block' : 'none';
-                                        }
-                                    } else {
-                                        // show select for worker types
-                                        select.style.display = '';
-                                        if (checkboxContainer) checkboxContainer.style.display = 'none';
-                                        select.multiple = false;
-                                        select.size = 1;
-                                        // ensure select participates in validation when visible
-                                        select.disabled = false;
-                                        select.required = true;
-                                    }
-                                document.getElementById('eventTypeLabel').textContent = tab === 'worker' ? 'Tip' : 'Storitev';
+
+                                // Use checkboxes for customer service selection (hide select)
+                                const checkboxContainer = document.getElementById('eventTypeCheckboxes');
+                                select.style.display = 'none';
+                                select.disabled = true;
+                                select.required = false;
+                                if (checkboxContainer) {
+                                    checkboxContainer.innerHTML = '';
+                                    options.slice(1).forEach(opt => {
+                                        const id = `evtype_chk_${opt.value.replace(/[^a-z0-9]/gi,'_')}_${Math.random().toString(36).slice(2,6)}`;
+                                        const wrapper = document.createElement('div');
+                                        wrapper.style.cssText = 'display:flex; align-items:center; gap:8px; margin-bottom:6px;';
+                                        const chk = document.createElement('input');
+                                        chk.type = 'checkbox';
+                                        chk.id = id;
+                                        chk.value = opt.value;
+                                        chk.style.marginRight = '8px';
+                                        const lbl = document.createElement('label');
+                                        lbl.htmlFor = id;
+                                        lbl.textContent = opt.label;
+                                        lbl.style.margin = '0';
+                                        wrapper.appendChild(chk);
+                                        wrapper.appendChild(lbl);
+                                        checkboxContainer.appendChild(wrapper);
+                                        chk.addEventListener('change', recalcServicePrice);
+                                    });
+                                    checkboxContainer.style.display = options.length > 1 ? 'block' : 'none';
+                                }
+
+                                document.getElementById('eventTypeLabel').textContent = 'Storitev';
                                 // show/hide contact fields and price for customer tab
                                 const contactWrapper = document.getElementById('customerContactFields');
                                 const phoneWrapper = document.getElementById('customerPhoneField');
@@ -1175,36 +1146,29 @@
                                 const nameWrapper = document.getElementById('customerNameFields');
                                 const surnameWrapper = document.getElementById('customerSurnameField');
                                 const workerTitleWrapper = document.getElementById('workerTitleField');
-                                if (tab === 'customer') {
-                                    if (contactWrapper) contactWrapper.style.display = '';
-                                    if (phoneWrapper) phoneWrapper.style.display = '';
-                                    if (priceWrapper) priceWrapper.style.display = '';
-                                    if (nameWrapper) { nameWrapper.style.display = ''; const el = nameWrapper.querySelector('input'); if (el) el.required = true; }
-                                    if (surnameWrapper) { surnameWrapper.style.display = ''; const el2 = surnameWrapper.querySelector('input'); if (el2) el2.required = true; }
-                                    if (workerTitleWrapper) { workerTitleWrapper.style.display = 'none'; const el3 = workerTitleWrapper.querySelector('input'); if (el3) el3.required = false; }
-                                } else {
-                                    if (contactWrapper) contactWrapper.style.display = 'none';
-                                    if (phoneWrapper) phoneWrapper.style.display = 'none';
-                                    if (priceWrapper) priceWrapper.style.display = 'none';
-                                    if (nameWrapper) { nameWrapper.style.display = 'none'; const el = nameWrapper.querySelector('input'); if (el) el.required = false; }
-                                    if (surnameWrapper) { surnameWrapper.style.display = 'none'; const el2 = surnameWrapper.querySelector('input'); if (el2) el2.required = false; }
-                                    if (workerTitleWrapper) { workerTitleWrapper.style.display = ''; const el3 = workerTitleWrapper.querySelector('input'); if (el3) el3.required = true; }
-                                }
+                                if (contactWrapper) contactWrapper.style.display = '';
+                                if (phoneWrapper) phoneWrapper.style.display = '';
+                                if (priceWrapper) priceWrapper.style.display = '';
+                                if (nameWrapper) { nameWrapper.style.display = ''; const el = nameWrapper.querySelector('input'); if (el) el.required = true; }
+                                if (surnameWrapper) { surnameWrapper.style.display = ''; const el2 = surnameWrapper.querySelector('input'); if (el2) el2.required = true; }
+                                if (workerTitleWrapper) { workerTitleWrapper.style.display = 'none'; const el3 = workerTitleWrapper.querySelector('input'); if (el3) el3.required = false; }
                         }
             function setEventTab(tab) {
+                // Worker support removed — force to customer tab only
+                tab = 'customer';
                 currentEventTab = tab;
                 renderEventTypeOptions(tab);
-                document.getElementById('tabWorker').classList.toggle('btn-primary', tab==='worker');
-                document.getElementById('tabWorker').classList.toggle('btn-secondary', tab!=='worker');
-                document.getElementById('tabCustomer').classList.toggle('btn-primary', tab==='customer');
-                document.getElementById('tabCustomer').classList.toggle('btn-secondary', tab!=='customer');
+                // Keep buttons visually consistent but they will map to customer
+                try {
+                    const tabCust = document.getElementById('tabCustomer');
+                    if (tabCust) {
+                        tabCust.classList.toggle('btn-primary', true);
+                        tabCust.classList.toggle('btn-secondary', false);
+                    }
+                } catch (_) {}
                 // focus convenient field
                 setTimeout(() => {
-                    if (tab === 'customer') {
-                        const e = document.getElementById('eventFirstName'); if (e) e.focus();
-                    } else {
-                        const e = document.getElementById('eventTitle'); if (e) e.focus();
-                    }
+                    const e = document.getElementById('eventFirstName'); if (e) e.focus();
                 }, 60);
             }
             // Always reload services when opening modal
@@ -1215,12 +1179,10 @@
                     setTimeout(() => openAddEventModalWithTab(startDate, retry + 1), 200);
                     return;
                 }
-                setEventTab('worker');
+                setEventTab('customer');
                 // Reset form fields if needed
                 const form = document.getElementById('addEventForm');
                 if (form) form.reset();
-                // Set default tab and reload options
-                setEventTab('worker');
                 // Show modal
                 const modal = document.getElementById('addEventModal');
                 if (modal) modal.classList.add('show');
@@ -2231,10 +2193,7 @@
                 type = typeSelect ? typeSelect.value : '';
             }
 
-            // Ensure worker events have a sensible default type so they render with proper color/icon
-            if (currentEventTab === 'worker' && (!type || String(type).trim() === '')) {
-                type = 'working_hours';
-            }
+
             const startDate = document.getElementById('eventStartDate').value;
             const startTime = document.getElementById('eventStartTime').value;
             const endDate = document.getElementById('eventEndDate').value;
@@ -2244,22 +2203,20 @@
             const start = startTime ? `${startDate}T${startTime}` : `${startDate}T00:00`;
             const end = endTime ? `${endDate}T${endTime}` : `${endDate}T23:59`;
 
-            // Shrani tab v extendedProps and mark bookings for DB persistence
+            // Simplified: only customer bookings supported
             const eventPayload = {
                 title,
                 type,
                 start,
                 end,
                 description,
-                tab: currentEventTab,
-                isBooking: currentEventTab === 'customer',
-                // For bookings keep customer info in extendedProps; for worker events keep worker name
+                tab: 'customer',
+                isBooking: true,
                 extendedProps: {
-                    customer: currentEventTab === 'customer' ? title : undefined,
-                    worker: currentEventTab === 'worker' ? title : undefined,
-                    email: document.getElementById('eventEmail') ? document.getElementById('eventEmail').value : undefined,
-                    phone: document.getElementById('eventPhone') ? document.getElementById('eventPhone').value : undefined,
-                    services: currentEventTab === 'customer' ? services : [],
+                    customer: title || null,
+                    email: document.getElementById('eventEmail') ? document.getElementById('eventEmail').value : null,
+                    phone: document.getElementById('eventPhone') ? document.getElementById('eventPhone').value : null,
+                    services: Array.isArray(services) ? services : [],
                     price: price || 0
                 }
             };
@@ -2301,6 +2258,18 @@
             const cls = ['event-type-' + (type || 'booking')];
             if (typeCfg?.isBlocking) cls.push('event-blocking');
             const isAllDay = !startTime && !endTime;
+
+            // Ensure saved event records TYPE_CONFIG rules so blocking types render properly in month view
+            try {
+                const idx = scheduleData.events.findIndex(e => e.id === eventId);
+                if (idx !== -1 && typeCfg) {
+                    scheduleData.events[idx].rules = scheduleData.events[idx].rules || {};
+                    scheduleData.events[idx].rules.isBlocking = typeCfg.isBlocking || false;
+                    scheduleData.events[idx].rules.isSubtractive = typeCfg.isSubtractive || false;
+                    scheduleData.events[idx].rules.conflictPriority = typeCfg.priority || 0;
+                    try { localStorage.setItem('schedule', JSON.stringify(scheduleData)); } catch(_){}
+                }
+            } catch (_) {}
             // For immediate UI show emoji for worker types (customer titles stay as-is)
             const icon = typeCfg?.icon || '';
             const displayTitle = (currentEventTab === 'customer') ? title : (icon ? (icon + ' ' + title) : title);
@@ -2327,8 +2296,8 @@
                 }
             }
 
-            // Mirror into adminSchedule for both customer bookings and worker events
-            if (currentEventTab === 'customer' || currentEventTab === 'worker') {
+            // Mirror into adminSchedule for customer bookings only (worker removed)
+            if (currentEventTab === 'customer') {
                 try {
                     const sDate = startDate;
                     const eDate = endDate;
@@ -2380,6 +2349,16 @@
                                         const keyToSet = (typeof resKey === 'string') ? resKey : (resKey && resKey.name ? resKey.name : (resKey === true ? ('local_' + eventId) : null));
                                         if (keyToSet) {
                                             scheduleData.events[idx].extendedProps.adminKey = keyToSet;
+                                            // Ensure event rules are persisted from TYPE_CONFIG so blocking types render correctly in month
+                                            try {
+                                                const cfg = (typeof ScheduleRules !== 'undefined' && ScheduleRules.TYPE_CONFIG && ScheduleRules.TYPE_CONFIG[type]) ? ScheduleRules.TYPE_CONFIG[type] : null;
+                                                if (cfg) {
+                                                    scheduleData.events[idx].rules = scheduleData.events[idx].rules || {};
+                                                    scheduleData.events[idx].rules.isBlocking = cfg.isBlocking || false;
+                                                    scheduleData.events[idx].rules.isSubtractive = cfg.isSubtractive || false;
+                                                    scheduleData.events[idx].rules.conflictPriority = cfg.priority || 0;
+                                                }
+                                            } catch (_) {}
                                             try { await saveScheduleData(); } catch(e) { if (window.saveScheduleData) window.saveScheduleData(); }
                                             // Refresh calendar from canonical schedule so any merge/dedupe rules apply
                                             if (typeof loadAppointmentsToCalendarNow === 'function') {
@@ -2970,47 +2949,40 @@
                                                         return eName === matchName && timesApproxEqual(e.start, e.end, start, end);
                                                     })) return;
 
-                                                    // If this admin entry describes a worker event, keep it as a worker-style event
-                                                    let newEvent = null;
+                                                    // Skip admin entries tagged with 'worker' (worker flow removed)
                                                     if (item.worker) {
-                                                        newEvent = {
-                                                            id: evId,
-                                                            title: item.worker || item.notes || 'Delavec',
-                                                            type: item.type || 'worker_event',
-                                                            start: start,
-                                                            end: end,
-                                                            extendedProps: {
-                                                                isBooking: false,
-                                                                adminKey: key || null,
-                                                                worker: item.worker || null,
-                                                                email: item.email || null,
-                                                                phone: item.phone || null,
-                                                                services: Array.isArray(item.services) ? item.services : (item.services ? [item.services] : []),
-                                                                price: (typeof item.price !== 'undefined' && item.price !== null) ? item.price : (item.cena || 0),
-                                                                duration: item.duration || null,
-                                                                notes: item.notes || ''
-                                                            }
-                                                        };
-                                                    } else {
-                                                        newEvent = {
-                                                            id: evId,
-                                                            title: item.customer || item.notes || 'Stranka',
-                                                            type: 'booking',
-                                                            start: start,
-                                                            end: end,
-                                                            extendedProps: {
-                                                                isBooking: true,
-                                                                adminKey: key || null,
-                                                                customer: item.customer || null,
-                                                                email: item.email || null,
-                                                                phone: item.phone || null,
-                                                                services: Array.isArray(item.services) ? item.services : (item.services ? [item.services] : []),
-                                                                price: (typeof item.price !== 'undefined' && item.price !== null) ? item.price : (item.cena || 0),
-                                                                duration: item.duration || null,
-                                                                notes: item.notes || ''
-                                                            }
-                                                        };
+                                                        console.log('⏭️ Skipping admin entry with worker field (worker feature removed):', key || evId);
+                                                        return;
                                                     }
+                                                    // Create booking event for customer admin entries
+                                                    let newEvent = {
+                                                        id: evId,
+                                                        title: item.customer || item.notes || 'Stranka',
+                                                        type: 'booking',
+                                                        start: start,
+                                                        end: end,
+                                                        extendedProps: {
+                                                            isBooking: true,
+                                                            adminKey: key || null,
+                                                            customer: item.customer || null,
+                                                            email: item.email || null,
+                                                            phone: item.phone || null,
+                                                            services: Array.isArray(item.services) ? item.services : (item.services ? [item.services] : []),
+                                                            price: (typeof item.price !== 'undefined' && item.price !== null) ? item.price : (item.cena || 0),
+                                                            duration: item.duration || null,
+                                                            notes: item.notes || ''
+                                                        }
+                                                    };
+                                                    // Set rules from TYPE_CONFIG where possible so display behavior is consistent
+                                                    try {
+                                                        const cfg = (typeof ScheduleRules !== 'undefined' && ScheduleRules.TYPE_CONFIG && ScheduleRules.TYPE_CONFIG[newEvent.type]) ? ScheduleRules.TYPE_CONFIG[newEvent.type] : null;
+                                                        if (cfg) {
+                                                            newEvent.rules = newEvent.rules || {};
+                                                            newEvent.rules.isBlocking = cfg.isBlocking || false;
+                                                            newEvent.rules.isSubtractive = cfg.isSubtractive || false;
+                                                            newEvent.rules.conflictPriority = cfg.priority || 0;
+                                                        }
+                                                    } catch (_) {}
                                                     scheduleData.events.push(newEvent);
                                                 } catch (inner) { console.warn('⚠ failed merging adminSchedule item', inner); }
                                             });
@@ -3080,26 +3052,34 @@
                                         })) return;
                                         // Create worker-style event when admin entry contains worker
                                         let newEvent = null;
-                                        if (item.worker) {
-                                            newEvent = {
-                                                id: key ? `admin_${key}` : `admin_${Date.now()}_${Math.random().toString(36).slice(2,6)}`,
-                                                title: item.worker || item.notes || 'Delavec',
-                                                type: item.type || 'worker_event',
-                                                start: start,
-                                                end: end,
-                                                extendedProps: {
-                                                    isBooking: false,
-                                                    adminKey: key || null,
-                                                    worker: item.worker || null,
-                                                    email: item.email || null,
-                                                    phone: item.phone || null,
-                                                    services: Array.isArray(item.services) ? item.services : (item.services ? [item.services] : []),
-                                                    price: (typeof item.price !== 'undefined' && item.price !== null) ? item.price : (item.cena || 0),
-                                                    duration: item.duration || null,
-                                                    notes: item.notes || ''
-                                                }
-                                            };
-                                        } else {
+                                        // Worker admin entries are skipped; treat remaining items as bookings
+                                        newEvent = {
+                                            id: key ? `admin_${key}` : `admin_${Date.now()}_${Math.random().toString(36).slice(2,6)}`,
+                                            title: item.customer || item.notes || 'Stranka',
+                                            type: 'booking',
+                                            start: start,
+                                            end: end,
+                                            extendedProps: {
+                                                isBooking: true,
+                                                adminKey: key || null,
+                                                customer: item.customer || null,
+                                                email: item.email || null,
+                                                phone: item.phone || null,
+                                                services: Array.isArray(item.services) ? item.services : (item.services ? [item.services] : []),
+                                                price: (typeof item.price !== 'undefined' && item.price !== null) ? item.price : (item.cena || 0),
+                                                duration: item.duration || null,
+                                                notes: item.notes || ''
+                                            }
+                                        };
+                                        try {
+                                            const cfg = (typeof ScheduleRules !== 'undefined' && ScheduleRules.TYPE_CONFIG && ScheduleRules.TYPE_CONFIG[newEvent.type]) ? ScheduleRules.TYPE_CONFIG[newEvent.type] : null;
+                                            if (cfg) {
+                                                newEvent.rules = newEvent.rules || {};
+                                                newEvent.rules.isBlocking = cfg.isBlocking || false;
+                                                newEvent.rules.isSubtractive = cfg.isSubtractive || false;
+                                                newEvent.rules.conflictPriority = cfg.priority || 0;
+                                            }
+                                        } catch (_) {}
                                             newEvent = {
                                                 id: key ? `admin_${key}` : `admin_${Date.now()}_${Math.random().toString(36).slice(2,6)}`,
                                                 title: item.customer || item.notes || 'Stranka',
@@ -3118,7 +3098,6 @@
                                                     notes: item.notes || ''
                                                 }
                                             };
-                                        }
                                         scheduleData.events.push(newEvent);
                                     } catch (inner2) { console.warn('⚠ failed merging adminSchedule item (post-load)', inner2); }
                                 });
