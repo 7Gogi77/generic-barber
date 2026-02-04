@@ -858,33 +858,25 @@ const CalendarEngine = {
                 }
               });
               
-        // NOW FORCE ROWS TO STRETCH - USE PIXEL HEIGHTS BASED ON CONTAINER SIZE
+        // Do NOT force equal pixel heights on month rows — allow natural flow and let the grid be scrollable
               const daygridBody = document.querySelector('.fc-daygrid-body');
               if (daygridBody) {
-                const rows = daygridBody.querySelectorAll('.fc-daygrid-row');
-                if (rows.length > 0) {
-                  const bodyHeight = daygridBody.offsetHeight;
-                  const rowHeight = bodyHeight / rows.length;
-                  
-                  console.log(`datesSet: daygrid-body height=${bodyHeight}px, setting each row to ${rowHeight}px`);
-                  
-                  // Set each row to equal pixel height
-                  rows.forEach((row, i) => {
-                    row.style.height = rowHeight + 'px';
-                    row.style.minHeight = rowHeight + 'px';
-                    row.style.maxHeight = rowHeight + 'px';
-                    row.style.overflow = 'visible';
-                    
-                    // Also ensure day cells stretch within their row
-                    const cells = row.querySelectorAll('.fc-daygrid-day-cell');
-                    cells.forEach(cell => {
-                      cell.style.height = '100%';
-                      cell.style.minHeight = '100%';
+                try {
+                  daygridBody.style.overflowY = 'auto';
+                  daygridBody.style.webkitOverflowScrolling = 'touch';
+                  // Remove any inline per-row heights if present
+                  const rows = daygridBody.querySelectorAll('.fc-daygrid-row');
+                  if (rows.length > 0) {
+                    rows.forEach((row) => {
+                      row.style.height = '';
+                      row.style.minHeight = '';
+                      row.style.maxHeight = '';
+                      row.style.overflow = '';
+                      const cells = row.querySelectorAll('.fc-daygrid-day-cell');
+                      cells.forEach(cell => { cell.style.height = ''; cell.style.minHeight = ''; });
                     });
-                  });
-                  
-                  console.log(`✅ All ${rows.length} rows set to ${rowHeight}px`);
-                }
+                  }
+                } catch (e) { /* ignore */ }
               }
             }
             
@@ -975,25 +967,19 @@ const CalendarEngine = {
             if (daygridBody) {
               const rows = daygridBody.querySelectorAll('.fc-daygrid-row');
               if (rows.length > 0) {
-                const bodyHeight = daygridBody.offsetHeight;
-                const rowHeight = bodyHeight / rows.length;
-                
-                console.log(`%cVIEW MOUNTED: daygrid-body height=${bodyHeight}px, setting each row to ${rowHeight}px`, 'color: purple; font-weight: bold');
-                
-                rows.forEach((row, i) => {
-                  row.style.height = rowHeight + 'px';
-                  row.style.minHeight = rowHeight + 'px';
-                  row.style.maxHeight = rowHeight + 'px';
-                  row.style.overflow = 'visible';
-                  
-                  const cells = row.querySelectorAll('.fc-daygrid-day-cell');
-                  cells.forEach(cell => {
-                    cell.style.height = '100%';
-                    cell.style.minHeight = '100%';
+                // Do not force equal pixel heights on mount; allow natural heights and enable scrolling
+                try {
+                  daygridBody.style.overflowY = 'auto';
+                  daygridBody.style.webkitOverflowScrolling = 'touch';
+                  rows.forEach((row) => {
+                    row.style.height = '';
+                    row.style.minHeight = '';
+                    row.style.maxHeight = '';
+                    row.style.overflow = '';
+                    row.querySelectorAll('.fc-daygrid-day-cell').forEach(cell => { cell.style.height = ''; cell.style.minHeight = ''; });
                   });
-                });
-                
-                console.log(`✅ All ${rows.length} rows set to ${rowHeight}px height`);
+                  console.log(`✅ Daygrid mount: cleared forced row sizing (${rows.length} rows)`);
+                } catch (e) { /* ignore */ }
               }
             }
 
