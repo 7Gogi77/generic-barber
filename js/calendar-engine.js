@@ -560,10 +560,39 @@ const CalendarEngine = {
       const timeGridSlotMax = '24:00:00';
       const initialScrollTime = options.scrollTime || (window.SITE_CONFIG && window.SITE_CONFIG.booking && window.SITE_CONFIG.booking.scrollTime) || '12:00:00';
 
+      // Small helper to scroll current view by px (positive -> down)
+      const scrollCurrentView = (px) => {
+        try {
+          // Prefer timeGrid scroll bodies
+          const timeScroll = containerElement.querySelector('.fc-timegrid .fc-scrollgrid-section-body');
+          if (timeScroll) {
+            timeScroll.scrollTop = Math.max(0, Math.min(timeScroll.scrollHeight - timeScroll.clientHeight, timeScroll.scrollTop + px));
+            return;
+          }
+
+          // Fallback to month daygrid body
+          const daygridBody = containerElement.querySelector('.fc-daygrid-body');
+          if (daygridBody) {
+            daygridBody.scrollTop = Math.max(0, Math.min(daygridBody.scrollHeight - daygridBody.clientHeight, daygridBody.scrollTop + px));
+            return;
+          }
+        } catch (e) { console.warn('scrollCurrentView failed', e); }
+      };
+
       const calendar = new FullCalendar.Calendar(containerElement, {
         initialView: options.initialView || 'dayGridMonth',
+        customButtons: {
+          scrollUp: {
+            text: '↑',
+            click: () => { scrollCurrentView(-200); }
+          },
+          scrollDown: {
+            text: '↓',
+            click: () => { scrollCurrentView(200); }
+          }
+        },
         headerToolbar: {
-          left: 'prev,next today',
+          left: 'prev,next today scrollUp scrollDown',
           center: 'title',
           right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
         },
