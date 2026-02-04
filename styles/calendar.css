@@ -268,7 +268,8 @@
 }
 
 #scheduleCalendar.view-timegrid .fc .fc-timegrid-slot {
-  height: 3em;
+  min-height: 2.5em;
+  height: auto;
 }
 
 #scheduleCalendar.view-timegrid .fc .fc-timegrid {
@@ -314,7 +315,7 @@
 #scheduleCalendar.view-timegrid-week .fc .fc-timegrid .fc-timegrid-slots,
 #scheduleCalendar.view-timegrid-day .fc .fc-timegrid .fc-timegrid-slots {
   display: block !important;
-  min-height: 1200px !important;
+  min-height: 0;
 }
 
 /* Ensure month/dayGrid styling is strictly scoped to .view-daygrid */

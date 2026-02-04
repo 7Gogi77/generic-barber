@@ -376,15 +376,15 @@
         #scheduleCalendar.view-timegrid .fc .fc-timegrid .fc-timegrid-slots { display: block !important; }
         #scheduleCalendar.view-timegrid .fc .fc-timegrid .fc-timegrid-slot {
             display: block !important;
-            min-height: 42px !important;
-            height: 42px !important;
+            min-height: 2.5em; /* allow library to size rows naturally; avoid hard forcing pixel heights */
+            height: auto !important;
             border-bottom: 1px solid #f3f6f8;
             background: transparent;
         }
-        /* Make the slots container naturally tall when required so the view can scroll vertically */
+        /* Let the slots container grow naturally; removed aggressive fixed min-height fallback */
         #scheduleCalendar.view-timegrid .fc .fc-timegrid .fc-timegrid-slots {
             display: block !important;
-            min-height: 1200px !important; /* fallback baseline to allow scrolling */
+            min-height: 0;
         }
 
         /* WEEK/DAY SEPARATION - force distinct layout for timeGrid week/day */
@@ -3716,8 +3716,12 @@
             },
             // Toggle temporary visual debug highlights disabled
             toggleTimegridVisuals: () => {
-                // No-op: visual debug toggles removed by request
-                return null;
+                try {
+                    const el = document.getElementById('scheduleCalendar');
+                    if (!el) return false;
+                    el.classList.toggle('debug-timegrid-visuals');
+                    return el.classList.contains('debug-timegrid-visuals');
+                } catch (e) { console.warn('toggleTimegridVisuals failed', e); return false; }
             }
         };
         console.log("💡 Use window.deletionDebug.show() to see deletion status");

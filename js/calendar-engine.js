@@ -1163,16 +1163,7 @@ const CalendarEngine = {
                   calendar.setOption('scrollTime', initialScrollTime);
                   console.log('🔧 Applied timeGrid full-day options:', { slotMinTime: '00:00:00', slotMaxTime: '24:00:00', scrollTime: initialScrollTime });
 
-                  // Defensive: override inline positioning on the timeGrid view element so scrolling works
-                  try {
-                    const tg = containerElement.querySelector('.fc-timeGridWeek-view') || containerElement.querySelector('.fc-timeGridDay-view') || containerElement.querySelector('.fc-timegrid');
-                    if (tg) {
-                      tg.style.position = 'relative';
-                      tg.style.height = 'auto';
-                      tg.style.overflow = 'visible';
-                      console.log('🔧 Overrode timeGrid view element to position:relative to enable scrolling');
-                    }
-                  } catch (_) {}
+                  // Note: we avoid DOM overrides to prevent fallback side-effects. If slots do not render properly, investigate CSS/FullCalendar options instead.
 
                 } } catch (_) {}
 
@@ -1194,121 +1185,16 @@ const CalendarEngine = {
                       // No-op: do not force view re-render.
                     }
 
-                    // Ensure the slots container has a minHeight large enough to force scrolling when there are many slots.
+                    // Minimal approach: check and log slot counts and presence of scroll body; do NOT modify DOM (no fallbacks)
                     try {
                       const slotsContainer = containerElement.querySelector('.fc-timegrid .fc-timegrid-slots');
                       const scrollBody = containerElement.querySelector('.fc-timegrid .fc-scrollgrid-section-body') || containerElement.querySelector('.fc-scrollgrid-section-body');
                       if (slotsContainer && slots && slots.length && scrollBody) {
-                        const sample = slots[0];
-                        const slotH = Math.ceil((sample && sample.getBoundingClientRect && sample.getBoundingClientRect().height) || 42);
-                        const requiredH = slots.length * slotH;
-                        // Only set it when it's actually taller than current to avoid interfering with natural sizing
-                        if (requiredH > slotsContainer.clientHeight) {
-                          slotsContainer.style.minHeight = requiredH + 'px';
-                          console.log('🔧 Enforced slotsContainer minHeight:', requiredH);
-                        }
-
-                        // If, after setting, the scroll body still doesn't report overflow, increase the scroll area by adding padding-bottom
-                        if (scrollBody.scrollHeight <= scrollBody.clientHeight) {
-                          scrollBody.style.paddingBottom = '600px';
-                          console.log('🔧 Added paddingBottom to force scrollability');
-                        }
-
-                        // Aggressive fallback: constrain the scroll body's maxHeight to ensure overflow when viewing full 24h
-                        try {
-                          const toolbarEl = containerElement.querySelector('.fc-toolbar');
-                          const headerEl = containerElement.querySelector('.fc-col-header');
-                          const toolbarH = toolbarEl ? Math.ceil(toolbarEl.getBoundingClientRect().height) : 0;
-                          const headerH = headerEl ? Math.ceil(headerEl.getBoundingClientRect().height) : 0;
-
-                          const availH = Math.max(400, containerElement.clientHeight - toolbarH - headerH - 80);
-                          const forcedMax = Math.min(availH, 800);
-                          scrollBody.style.maxHeight = forcedMax + 'px';
-                          scrollBody.style.overflowY = 'auto';
-                          scrollBody.style.webkitOverflowScrolling = 'touch';
-
-                          console.log('🔧 Forced scrollBody.maxHeight to', forcedMax, 'toolbarH', toolbarH, 'headerH', headerH);
-
-                          // If slotsContainer is still shorter than forced max, add extra minHeight to guarantee overflow
-                          if (slotsContainer && slotsContainer.clientHeight <= forcedMax) {
-                            const extra = Math.max(0, forcedMax + 200 - slotsContainer.clientHeight);
-                            slotsContainer.style.minHeight = (slotsContainer.clientHeight + extra) + 'px';
-                            console.log('🔧 Increased slotsContainer.minHeight (extra)', extra);
-                          }
-
-                          // STRONGER: if still no overflow, set explicit minHeight and height on scrollBody to required slot height
-                          if (requiredH && scrollBody && scrollBody.scrollHeight <= scrollBody.clientHeight) {
-                            try {
-                              // compute a forced height (at most availH)
-                              const forcedH = Math.min(requiredH, Math.max(forcedMax, 800));
-                              scrollBody.style.minHeight = requiredH + 'px';
-                              scrollBody.style.height = forcedH + 'px';
-                              scrollBody.style.overflowY = 'auto';
-                              console.log('🔧 Forcing scrollBody minHeight and height', { requiredH, forcedH });
-
-                              // Additional: ensure slots container is visible and participates in normal flow
-                              try {
-                                if (slotsContainer) {
-                                  slotsContainer.style.position = 'relative';
-                                  slotsContainer.style.display = 'block';
-                                  slotsContainer.style.visibility = 'visible';
-                                  console.log('🔧 Ensured slotsContainer visible and relative');
-                                }
-                              } catch (_) {}
-                            } catch (_) { /* ignore */ }
-                          }
-
-                          // If after all of the above there is still no overflow, attempt to find any ancestor hiding overflow and relax it
-                          try {
-                            let anc = scrollBody || slotsContainer || containerElement.querySelector('.fc-timegrid');
-                            while (anc && anc !== document.body) {
-                              try {
-                                const cs = window.getComputedStyle(anc);
-                                if (cs.overflowY === 'hidden') {
-                                  anc.style.overflowY = 'auto';
-                                  anc.style.overflow = 'auto';
-                                  console.log('🔧 Relaxed overflow on ancestor', anc.tagName, anc.className);
-                                }
-                                // ensure ancestor is not absolutely limiting layout
-                                if (cs.position === 'absolute') {
-                                  anc.style.position = 'relative';
-                                  console.log('🔧 Changed ancestor position to relative', anc.tagName, anc.className);
-                                }
-                              } catch (e) { /* ignore per ancestor */ }
-
-                              anc = anc.parentElement;
-                            }
-                          } catch (_) {}
-                        } catch (_) { /* ignore aggressive fallback errors */ }
-
-                        // If after all of the above there is still no overflow, attempt to re-render the view with forced 24h slot options
-                        try {
-                          const expectedSlots = Math.ceil((24 * 60) / (slotMinutes || 15));
-                          if (slots.length < expectedSlots - 2) {
-                            console.log('⚠ Detected fewer slots than expected, attempting forced re-render with 24h options', { actual: slots.length, expected: expectedSlots });
-                            try {
-                              if (calendar && typeof calendar.setOption === 'function') {
-                                calendar.setOption('slotMinTime', '00:00:00');
-                                calendar.setOption('slotMaxTime', '24:00:00');
-                                calendar.setOption('scrollTime', initialScrollTime);
-                                if (typeof calendar.updateSize === 'function') calendar.updateSize();
-                              }
-                              // Force a view change to cause a re-render
-                              setTimeout(() => {
-                                try {
-                                  const curView = (calendar && calendar.view && calendar.view.type) ? calendar.view.type : null;
-                                  if (curView) {
-                                    calendar.changeView(curView);
-                                    console.log('🔁 Forced calendar.changeView to re-render slots for', curView);
-                                  }
-                                } catch (cvErr) { console.warn('⚠ changeView failed', cvErr); }
-                              }, 150);
-                            } catch (optErr) { console.warn('⚠ failed to set slot options', optErr); }
-                          }
-                        } catch (_) { }
-
+                        console.log('ℹ timeGrid slots detected:', { slots: slots.length, slotsContainerClientH: slotsContainer.clientHeight, scrollBodyClientH: scrollBody.clientHeight });
+                      } else {
+                        console.log('ℹ timeGrid slots or scroll body missing or insufficient:', { slots: slots.length, hasSlotsContainer: !!slotsContainer, hasScrollBody: !!scrollBody });
                       }
-                    } catch (e) { console.warn('⚠ failed to enforce timegrid slot heights', e); }
+                    } catch (e) { console.warn('ℹ timeGrid slot check failed', e); }
                   } catch (err) { console.warn('viewDidMount sanity check failed', err); }
                 }, 220);
               }
