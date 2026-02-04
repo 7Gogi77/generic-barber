@@ -213,8 +213,9 @@ const CalendarEngine = {
       isAllDay: isAllDay
     });
 
-    // Decide display mode for blocking types: show background only for vacation/day_off so sick_leave remains visible
-    const BLOCKING_BACKGROUND_TYPES = new Set(['vacation', 'day_off']);
+    // Decide display mode for blocking types: render blocking events visibly by default
+    // (previously vacation/day_off used 'background' which hid them; show all blocking types as visible)
+    const BLOCKING_BACKGROUND_TYPES = new Set([]);
     const isBlockingType = event.rules?.isBlocking || typeConfig?.isBlocking;
     const displayMode = (isBlockingType && BLOCKING_BACKGROUND_TYPES.has(event.type)) ? 'background' : 'auto';
 
