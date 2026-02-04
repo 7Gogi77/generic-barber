@@ -764,10 +764,16 @@ const CalendarEngine = {
           console.log('📅 Dates set');
 
           // Update view-specific classes so styles can be scoped (dayGrid vs timeGrid)
+          // Restore granular classes so week and day can have separate CSS
           try {
             const v = arg && arg.view && arg.view.type ? arg.view.type : '';
             if (containerElement) {
+              // Generic timegrid indicator
               containerElement.classList.toggle('view-timegrid', v.startsWith('timeGrid'));
+              // Specific timegrid variants
+              containerElement.classList.toggle('view-timegrid-week', v === 'timeGridWeek');
+              containerElement.classList.toggle('view-timegrid-day', v === 'timeGridDay');
+              // Month/daygrid
               containerElement.classList.toggle('view-daygrid', v === 'dayGridMonth');
             }
           } catch (e) { /* ignore */ }
@@ -912,6 +918,17 @@ const CalendarEngine = {
             if (calendar.updateSize) {
               calendar.updateSize();
             }
+
+            // Apply view-specific classes on mount so each view can be targeted independently
+            try {
+              const v = arg && arg.view && arg.view.type ? arg.view.type : '';
+              if (containerElement) {
+                containerElement.classList.toggle('view-timegrid', v.startsWith('timeGrid'));
+                containerElement.classList.toggle('view-timegrid-week', v === 'timeGridWeek');
+                containerElement.classList.toggle('view-timegrid-day', v === 'timeGridDay');
+                containerElement.classList.toggle('view-daygrid', v === 'dayGridMonth');
+              }
+            } catch (e) { /* ignore */ }
             
             // STRETCH ROWS EQUALLY - runs after view fully mounted
             const daygridBody = document.querySelector('.fc-daygrid-body');
