@@ -607,6 +607,40 @@ const CalendarEngine = {
       };
       window.addEventListener('keydown', keyboardScrollHandler);
 
+      // Diagnostic helper to print sizes and computed styles for calendar scroll debugging
+      const runScrollDiagnostics = () => {
+        try {
+          console.log('🔎 Scroll diagnostics start');
+          const nodes = {
+            container: containerElement,
+            parent: containerElement && containerElement.parentElement,
+            fc: containerElement && containerElement.querySelector('.fc'),
+            fcRoot: containerElement && containerElement.querySelector('.fc-root'),
+            viewHarness: containerElement && containerElement.querySelector('.fc-view-harness'),
+            timegrid: containerElement && containerElement.querySelector('.fc-timegrid'),
+            daygridBody: containerElement && containerElement.querySelector('.fc-daygrid-body'),
+            timeScrollBodies: containerElement ? Array.from(containerElement.querySelectorAll('.fc-scrollgrid-section-body')) : []
+          };
+
+          Object.entries(nodes).forEach(([k, el]) => {
+            if (!el) { console.log(` - ${k}: <missing>`); return; }
+            const cs = window.getComputedStyle(el);
+            console.log(` - ${k}: tag=${el.tagName} class="${el.className}" id="${el.id || ''}" clientH=${el.clientHeight} scrollH=${el.scrollHeight} overflowY=${cs.overflowY} position=${cs.position} `);
+          });
+
+          // List first few scrollable descendants
+          const all = Array.from(containerElement.querySelectorAll('*'));
+          const scrollables = all.filter(el => {
+            try { const cs = window.getComputedStyle(el); return (cs.overflowY === 'auto' || cs.overflowY === 'scroll') && el.scrollHeight > el.clientHeight; } catch (_) { return false; }
+          }).slice(0, 8);
+          if (scrollables.length === 0) console.log(' - No descendant scrollable elements found');
+          scrollables.forEach((s, idx) => { const cs = window.getComputedStyle(s); console.log(`   ${idx}. el <${s.tagName}> .${s.className} id=${s.id} clientH=${s.clientHeight} scrollH=${s.scrollHeight} overflowY=${cs.overflowY} position=${cs.position}`); });
+
+          console.log('🔎 Scroll diagnostics end');
+          alert('Scroll diagnostics written to console. Please paste logs here.');
+        } catch (err) { console.warn('runScrollDiagnostics failed', err); alert('Diagnostics failed - see console'); }
+      };
+
       const calendar = new FullCalendar.Calendar(containerElement, {
         initialView: options.initialView || 'dayGridMonth',
         customButtons: {
@@ -625,6 +659,10 @@ const CalendarEngine = {
           scrollBottom: {
             text: 'Bottom',
             click: () => { scrollCurrentView('bottom'); }
+          },
+          diag: {
+            text: 'Diag',
+            click: () => { runScrollDiagnostics(); }
           }
         },
         headerToolbar: {
