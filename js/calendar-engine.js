@@ -1191,6 +1191,33 @@ const CalendarEngine = {
                             console.log('🔧 Increased slotsContainer.minHeight (extra)', extra);
                           }
                         } catch (_) { /* ignore aggressive fallback errors */ }
+
+                        // If after all of the above there is still no overflow, attempt to re-render the view with forced 24h slot options
+                        try {
+                          const expectedSlots = Math.ceil((24 * 60) / (slotMinutes || 15));
+                          if (slots.length < expectedSlots - 2) {
+                            console.log('⚠ Detected fewer slots than expected, attempting forced re-render with 24h options', { actual: slots.length, expected: expectedSlots });
+                            try {
+                              if (calendar && typeof calendar.setOption === 'function') {
+                                calendar.setOption('slotMinTime', '00:00:00');
+                                calendar.setOption('slotMaxTime', '24:00:00');
+                                calendar.setOption('scrollTime', initialScrollTime);
+                                if (typeof calendar.updateSize === 'function') calendar.updateSize();
+                              }
+                              // Force a view change to cause a re-render
+                              setTimeout(() => {
+                                try {
+                                  const curView = (calendar && calendar.view && calendar.view.type) ? calendar.view.type : null;
+                                  if (curView) {
+                                    calendar.changeView(curView);
+                                    console.log('🔁 Forced calendar.changeView to re-render slots for', curView);
+                                  }
+                                } catch (cvErr) { console.warn('⚠ changeView failed', cvErr); }
+                              }, 150);
+                            } catch (optErr) { console.warn('⚠ failed to set slot options', optErr); }
+                          }
+                        } catch (_) { }
+
                       }
                     } catch (e) { console.warn('⚠ failed to enforce timegrid slot heights', e); }
                   } catch (err) { console.warn('viewDidMount sanity check failed', err); }
