@@ -230,7 +230,7 @@
         }
 
         /* View-scoped positioning - TimeGrid requires relative to contain absolutely positioned children */
-        #scheduleCalendar.view-timegrid .fc-scroller-harness { position: relative !important; }
+        #scheduleCalendar.view-timegrid-week .fc-scroller-harness, #scheduleCalendar.view-timegrid-day .fc-scroller-harness { position: relative !important; }
         #scheduleCalendar.view-daygrid .fc-scroller-harness { position: static !important; }
 
         /* Temporary visual debug outlines (toggle via deletionDebug.toggleTimegridVisuals) */
@@ -302,7 +302,7 @@
         #scheduleCalendar.view-daygrid .fc * {
             max-height: none !important;
         }
-        #scheduleCalendar.view-timegrid .fc * {
+        #scheduleCalendar.view-timegrid-week .fc *, #scheduleCalendar.view-timegrid-day .fc * {
             max-height: none !important;
         }
 
@@ -335,14 +335,14 @@
 
         /* Keep all-day above timed grid, but do not change display/flex defaults (reverting prior interfering rules) */
         /* Only force vertical-only scrolling on the time-grid scroll bodies and scrollers (timeGrid view scoped) */
-        #scheduleCalendar.view-timegrid .fc .fc-timegrid .fc-scrollgrid-section-body { overflow-x: hidden !important; overflow-y: auto !important; -webkit-overflow-scrolling: touch; max-height: calc(100vh - 220px) !important; }
-        #scheduleCalendar.view-timegrid .fc .fc-timegrid .fc-scroller { overflow-x: hidden !important; overflow-y: auto !important; max-height: calc(100vh - 220px) !important; }
+        #scheduleCalendar.view-timegrid-week .fc .fc-timegrid .fc-scrollgrid-section-body, #scheduleCalendar.view-timegrid-day .fc .fc-timegrid .fc-scrollgrid-section-body { overflow-x: hidden !important; overflow-y: auto !important; -webkit-overflow-scrolling: touch; max-height: calc(100vh - 220px) !important; }
+        #scheduleCalendar.view-timegrid-week .fc .fc-timegrid .fc-scroller, #scheduleCalendar.view-timegrid-day .fc .fc-timegrid .fc-scroller { overflow-x: hidden !important; overflow-y: auto !important; max-height: calc(100vh - 220px) !important; }
         /* Prevent horizontal scroll inside time slots, but avoid changing display or flex order */
-        #scheduleCalendar.view-timegrid .fc .fc-timegrid .fc-timegrid-slots { overflow-x: hidden !important; }
+        #scheduleCalendar.view-timegrid-week .fc .fc-timegrid .fc-timegrid-slots, #scheduleCalendar.view-timegrid-day .fc .fc-timegrid .fc-timegrid-slots { overflow-x: hidden !important; }
 
         /* TimeGrid slot visibility / sizing fixes (Week/Day specific styling) */
         /* Keep Month (dayGrid) styling unchanged; target only the timeGrid structures */
-        #scheduleCalendar.view-timegrid .fc .fc-timegrid {
+        #scheduleCalendar.view-timegrid-week .fc .fc-timegrid, #scheduleCalendar.view-timegrid-day .fc .fc-timegrid {
             background: #ffffff;
             font-size: 13px;
             color: #24313a;
@@ -353,36 +353,36 @@
             overflow: visible !important;
             box-sizing: border-box;
         }
-        #scheduleCalendar.view-timegrid .fc .fc-timegrid .fc-col-header-cell {
+        #scheduleCalendar.view-timegrid-week .fc .fc-timegrid .fc-col-header-cell, #scheduleCalendar.view-timegrid-day .fc .fc-timegrid .fc-col-header-cell {
             background: #f9fbfd;
             color: #2c3e50;
             font-weight: 600;
             border-bottom: 1px solid #eef3f6;
         }
-        #scheduleCalendar.view-timegrid .fc .fc-timegrid .fc-timegrid-axis .fc-col-time-cell {
+        #scheduleCalendar.view-timegrid-week .fc .fc-timegrid .fc-timegrid-axis .fc-col-time-cell, #scheduleCalendar.view-timegrid-day .fc .fc-timegrid .fc-timegrid-axis .fc-col-time-cell {
             color: #7f8c8d;
             font-size: 13px;
             width: 64px;
             padding: 8px 6px;
             text-align: right;
         }
-        #scheduleCalendar.view-timegrid .fc .fc-timegrid .fc-timegrid-cols {
+        #scheduleCalendar.view-timegrid-week .fc .fc-timegrid .fc-timegrid-cols, #scheduleCalendar.view-timegrid-day .fc .fc-timegrid .fc-timegrid-cols {
             display: flex;
         }
-        #scheduleCalendar.view-timegrid .fc .fc-timegrid .fc-timegrid-col {
+        #scheduleCalendar.view-timegrid-week .fc .fc-timegrid .fc-timegrid-col, #scheduleCalendar.view-timegrid-day .fc .fc-timegrid .fc-timegrid-col {
             border-left: 1px solid #eef3f6;
             min-height: 300px;
         }
-        #scheduleCalendar.view-timegrid .fc .fc-timegrid .fc-timegrid-slots { display: block !important; }
-        #scheduleCalendar.view-timegrid .fc .fc-timegrid .fc-timegrid-slot {
+        #scheduleCalendar.view-timegrid-week .fc .fc-timegrid .fc-timegrid-slots, #scheduleCalendar.view-timegrid-day .fc .fc-timegrid .fc-timegrid-slots { display: block !important; }
+        #scheduleCalendar.view-timegrid-week .fc .fc-timegrid .fc-timegrid-slot, #scheduleCalendar.view-timegrid-day .fc .fc-timegrid .fc-timegrid-slot {
             display: block !important;
             min-height: 2.5em; /* allow library to size rows naturally; avoid hard forcing pixel heights */
             height: auto !important;
             border-bottom: 1px solid #f3f6f8;
             background: transparent;
         }
-        /* Let the slots container grow naturally; removed aggressive fixed min-height fallback */
-        #scheduleCalendar.view-timegrid .fc .fc-timegrid .fc-timegrid-slots {
+        /* Let the slots container grow naturally; removed aggressive fixed min-height fallback (week/day only) */
+        #scheduleCalendar.view-timegrid-week .fc .fc-timegrid .fc-timegrid-slots, #scheduleCalendar.view-timegrid-day .fc .fc-timegrid .fc-timegrid-slots {
             display: block !important;
             min-height: 0;
         }
@@ -418,8 +418,8 @@
             min-height: 400px !important;
             height: auto !important;
         }
-        #scheduleCalendar.view-timegrid .fc .fc-timegrid .fc-timegrid-slots .fc-timegrid-slot { background: transparent; }
-        #scheduleCalendar.view-timegrid .fc .fc-timegrid .fc-event {
+        #scheduleCalendar.view-timegrid-week .fc .fc-timegrid .fc-timegrid-slots .fc-timegrid-slot, #scheduleCalendar.view-timegrid-day .fc .fc-timegrid .fc-timegrid-slots .fc-timegrid-slot { background: transparent; }
+        #scheduleCalendar.view-timegrid-week .fc .fc-timegrid .fc-event, #scheduleCalendar.view-timegrid-day .fc .fc-timegrid .fc-event {
             border-radius: 8px !important;
             padding: 6px !important;
             font-size: 12px !important;
@@ -428,38 +428,38 @@
             border: none !important;
             box-shadow: 0 2px 8px rgba(0,0,0,0.08) !important;
         }
-        #scheduleCalendar.view-timegrid .fc .fc-timegrid .fc-all-day {
+        #scheduleCalendar.view-timegrid-week .fc .fc-timegrid .fc-all-day, #scheduleCalendar.view-timegrid-day .fc .fc-timegrid .fc-all-day {
             background: #f8fafc;
             padding: 6px;
             border-bottom: 1px solid #eee;
         }
-        /* Ensure vertical scrolling only */
-        #scheduleCalendar.view-timegrid .fc .fc-timegrid .fc-scrollgrid-section-body { overflow-x: hidden !important; overflow-y: auto !important; }
-        #scheduleCalendar.view-timegrid .fc .fc-timegrid .fc-scroller { overflow-x: hidden !important; overflow-y: auto !important; }
-        /* Subtle slot separators */
-        #scheduleCalendar.view-timegrid .fc .fc-timegrid .fc-timegrid-slots .fc-timegrid-slot { border-bottom: 1px solid rgba(0,0,0,0.03) !important; }
+        /* Ensure vertical scrolling only (week/day only) */
+        #scheduleCalendar.view-timegrid-week .fc .fc-timegrid .fc-scrollgrid-section-body, #scheduleCalendar.view-timegrid-day .fc .fc-timegrid .fc-scrollgrid-section-body { overflow-x: hidden !important; overflow-y: auto !important; }
+        #scheduleCalendar.view-timegrid-week .fc .fc-timegrid .fc-scroller, #scheduleCalendar.view-timegrid-day .fc .fc-timegrid .fc-scroller { overflow-x: hidden !important; overflow-y: auto !important; }
+        /* Subtle slot separators (week/day only) */
+        #scheduleCalendar.view-timegrid-week .fc .fc-timegrid .fc-timegrid-slots .fc-timegrid-slot, #scheduleCalendar.view-timegrid-day .fc .fc-timegrid .fc-timegrid-slots .fc-timegrid-slot { border-bottom: 1px solid rgba(0,0,0,0.03) !important; }
 
-        /* Explicit overrides to prevent Month CSS bleed into TimeGrid */
+        /* Explicit overrides to prevent Month CSS bleed into TimeGrid (week/day only) */
         /* Reset dayGrid-specific rules inside timeGrid context */
-        #scheduleCalendar.view-timegrid .fc .fc-daygrid-day, #scheduleCalendar.view-timegrid .fc .fc-daygrid-day-frame, #scheduleCalendar.view-timegrid .fc .fc-daygrid-day-number, #scheduleCalendar.view-timegrid .fc .fc-daygrid-day-events { display: block; }
-        #scheduleCalendar.view-timegrid .fc .fc-daygrid-day-number { font-size: 12px; color: #7f8c8d !important; }
-        /* Override generic event styles to timeGrid specific */
-        #scheduleCalendar.view-timegrid .fc .fc-timegrid .fc-event { background: linear-gradient(180deg,#3498db,#2c7cc3) !important; color: #fff !important; border: none !important; }
-        /* Ensure month-specific row stretching doesn't affect timeGrid columns */
-        #scheduleCalendar.view-timegrid .fc .fc-daygrid-row, #scheduleCalendar.view-timegrid .fc .fc-daygrid-body { height: auto !important; min-height: 0 !important; }
-        /* Reinforce axis and slot visibility */
-        #scheduleCalendar.view-timegrid .fc .fc-timegrid-axis, #scheduleCalendar.view-timegrid .fc .fc-timegrid-slots { display: block !important; }
-        /* Specificity for conflicts */
-        #scheduleCalendar.view-timegrid .fc-timegrid .fc-event, #scheduleCalendar.view-timegrid .fc .fc-timegrid .fc-event { border-radius: 8px !important; }
-        #scheduleCalendar.view-timegrid .fc-timegrid .fc-timegrid-slot, #scheduleCalendar.view-timegrid .fc .fc-timegrid .fc-timegrid-slot { min-height: 42px !important; height: 42px !important; }
+        #scheduleCalendar.view-timegrid-week .fc .fc-daygrid-day, #scheduleCalendar.view-timegrid-day .fc .fc-daygrid-day, #scheduleCalendar.view-timegrid-week .fc .fc-daygrid-day-frame, #scheduleCalendar.view-timegrid-day .fc .fc-daygrid-day-frame, #scheduleCalendar.view-timegrid-week .fc .fc-daygrid-day-number, #scheduleCalendar.view-timegrid-day .fc .fc-daygrid-day-number, #scheduleCalendar.view-timegrid-week .fc .fc-daygrid-day-events, #scheduleCalendar.view-timegrid-day .fc .fc-daygrid-day-events { display: block; }
+        #scheduleCalendar.view-timegrid-week .fc .fc-daygrid-day-number, #scheduleCalendar.view-timegrid-day .fc .fc-daygrid-day-number { font-size: 12px; color: #7f8c8d !important; }
+        /* Override generic event styles to timeGrid specific (week/day only) */
+        #scheduleCalendar.view-timegrid-week .fc .fc-timegrid .fc-event, #scheduleCalendar.view-timegrid-day .fc .fc-timegrid .fc-event { background: linear-gradient(180deg,#3498db,#2c7cc3) !important; color: #fff !important; border: none !important; }
+        /* Ensure month-specific row stretching doesn't affect timeGrid columns (week/day only) */
+        #scheduleCalendar.view-timegrid-week .fc .fc-daygrid-row, #scheduleCalendar.view-timegrid-day .fc .fc-daygrid-row, #scheduleCalendar.view-timegrid-week .fc .fc-daygrid-body, #scheduleCalendar.view-timegrid-day .fc .fc-daygrid-body { height: auto !important; min-height: 0 !important; }
+        /* Reinforce axis and slot visibility (week/day only) */
+        #scheduleCalendar.view-timegrid-week .fc .fc-timegrid-axis, #scheduleCalendar.view-timegrid-day .fc .fc-timegrid-axis, #scheduleCalendar.view-timegrid-week .fc .fc-timegrid-slots, #scheduleCalendar.view-timegrid-day .fc .fc-timegrid-slots { display: block !important; }
+        /* Specificity for conflicts (week/day only) */
+        #scheduleCalendar.view-timegrid-week .fc-timegrid .fc-event, #scheduleCalendar.view-timegrid-day .fc-timegrid .fc-event, #scheduleCalendar.view-timegrid-week .fc .fc-timegrid .fc-event, #scheduleCalendar.view-timegrid-day .fc .fc-timegrid .fc-event { border-radius: 8px !important; }
+        #scheduleCalendar.view-timegrid-week .fc-timegrid .fc-timegrid-slot, #scheduleCalendar.view-timegrid-day .fc-timegrid .fc-timegrid-slot, #scheduleCalendar.view-timegrid-week .fc .fc-timegrid .fc-timegrid-slot, #scheduleCalendar.view-timegrid-day .fc .fc-timegrid .fc-timegrid-slot { min-height: 2.5em !important; height: auto !important; }
 
-        /* Strongly scoped overrides when container explicitly is in timegrid view */
-        #scheduleCalendar.view-timegrid .fc .fc-timegrid { background: #fff !important; }
-        #scheduleCalendar.view-timegrid .fc .fc-timegrid .fc-col-header-cell { background: #fbfdff !important; }
-        #scheduleCalendar.view-timegrid .fc .fc-timegrid .fc-event { background: linear-gradient(180deg,#3498db,#2c7cc3) !important; color: #fff !important; visibility: visible !important; opacity: 1 !important; z-index: 3 !important; }
-        #scheduleCalendar.view-timegrid .fc .fc-timegrid .fc-timegrid-slot { min-height: 42px !important; height: 42px !important; }
-        #scheduleCalendar.view-timegrid .fc .fc-timegrid .fc-timegrid-axis { display: block !important; }
-        #scheduleCalendar.view-timegrid .fc .fc-timegrid .fc-timegrid-slots { display: block !important; }
+        /* Strongly scoped overrides when container explicitly is in timegrid WEEK/DAY view */
+        #scheduleCalendar.view-timegrid-week .fc .fc-timegrid, #scheduleCalendar.view-timegrid-day .fc .fc-timegrid { background: #fff !important; }
+        #scheduleCalendar.view-timegrid-week .fc .fc-timegrid .fc-col-header-cell, #scheduleCalendar.view-timegrid-day .fc .fc-timegrid .fc-col-header-cell { background: #fbfdff !important; }
+        #scheduleCalendar.view-timegrid-week .fc .fc-timegrid .fc-event, #scheduleCalendar.view-timegrid-day .fc .fc-timegrid .fc-event { background: linear-gradient(180deg,#3498db,#2c7cc3) !important; color: #fff !important; visibility: visible !important; opacity: 1 !important; z-index: 3 !important; }
+        #scheduleCalendar.view-timegrid-week .fc .fc-timegrid .fc-timegrid-slot, #scheduleCalendar.view-timegrid-day .fc .fc-timegrid .fc-timegrid-slot { min-height: 2.5em !important; height: auto !important; }
+        #scheduleCalendar.view-timegrid-week .fc .fc-timegrid .fc-timegrid-axis, #scheduleCalendar.view-timegrid-day .fc .fc-timegrid .fc-timegrid-axis { display: block !important; }
+        #scheduleCalendar.view-timegrid-week .fc .fc-timegrid .fc-timegrid-slots, #scheduleCalendar.view-timegrid-day .fc .fc-timegrid .fc-timegrid-slots { display: block !important; }
 
         #scheduleCalendar.view-timegrid .fc .fc-scrollgrid-section-body { overflow-x: hidden !important; overflow-y: auto !important; }
 
