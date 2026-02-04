@@ -37,7 +37,16 @@ const CalendarEngine = {
 
       // Weekly recurring events
       if (event.recurring === 'weekly' && event.daysOfWeek) {
-        let current = new Date(today);
+        // Recurrence expansion starts at the later of today or the event's start date (if provided)
+        let startFrom = new Date(today);
+        if (event.start) {
+          try {
+            const eventStartDate = new Date((String(event.start)).split('T')[0] + 'T00:00:00');
+            if (!isNaN(eventStartDate.getTime()) && eventStartDate > startFrom) startFrom = eventStartDate;
+          } catch (_) { /* ignore parsing errors */ }
+        }
+
+        let current = new Date(startFrom);
 
         while (current <= endDate) {
           if (event.daysOfWeek.includes(current.getDay())) {
@@ -401,16 +410,16 @@ const CalendarEngine = {
         return;
       }
       
-      // Group events by their parent row/day
+      // Group events by their parent day cell (use data-date where possible)
       const eventsByDay = new Map();
       
       allEvents.forEach((eventEl, idx) => {
         try {
-          // Find the parent row (which contains all events for that day)
+          // Find the parent day cell (which contains all events for that day)
           let parent = eventEl.parentElement;
           
-          // Go up until we find a unique container for this day
-          while (parent && parent.classList && !parent.classList.contains('fc-daygrid-day-frame')) {
+          // Go up until we find a day cell container
+          while (parent && parent.classList && !parent.classList.contains('fc-daygrid-day-cell')) {
             parent = parent.parentElement;
           }
           
@@ -418,7 +427,8 @@ const CalendarEngine = {
             parent = eventEl.parentElement; // fallback
           }
           
-          const key = parent ? parent.getAttribute('data-datekey') || String(Math.random()) : String(idx);
+          // Prefer the explicit `data-date` attribute if present, fall back to index
+          const key = parent ? (parent.getAttribute('data-date') || parent.getAttribute('data-datekey') || String(idx)) : String(idx);
           
           if (!eventsByDay.has(key)) {
             eventsByDay.set(key, []);
@@ -438,20 +448,31 @@ const CalendarEngine = {
           
           // Hide events beyond max
           for (let i = maxEvents; i < dayEvents.length; i++) {
-            dayEvents[i].style.display = 'none !important';
-            dayEvents[i].style.visibility = 'hidden !important';
+            // Use setProperty so '!important' is honored when needed
+            try {
+              dayEvents[i].style.setProperty('display', 'none', 'important');
+              dayEvents[i].style.setProperty('visibility', 'hidden', 'important');
+            } catch (_) {
+              // Fallback for older browsers
+              dayEvents[i].style.display = 'none';
+              dayEvents[i].style.visibility = 'hidden';
+            }
           }
           
-          // Add more link
+          // Add or update "more" link (avoid adding duplicates)
           const hiddenCount = dayEvents.length - maxEvents;
-          const moreDiv = document.createElement('div');
-          moreDiv.className = 'fc-daygrid-day-more';
-          moreDiv.style.cssText = 'padding: 2px 4px; font-size: 11px; color: #3498db; font-weight: 600;';
-          moreDiv.textContent = `+${hiddenCount} više`;
-          
           const lastVisible = dayEvents[maxEvents - 1];
-          if (lastVisible && lastVisible.parentElement) {
-            lastVisible.parentElement.appendChild(moreDiv);
+          let moreDiv = (lastVisible && lastVisible.parentElement) ? lastVisible.parentElement.querySelector('.fc-daygrid-day-more') : null;
+          if (!moreDiv) {
+            moreDiv = document.createElement('div');
+            moreDiv.className = 'fc-daygrid-day-more';
+            moreDiv.style.cssText = 'padding: 2px 4px; font-size: 11px; color: #3498db; font-weight: 600;';
+            if (lastVisible && lastVisible.parentElement) {
+              lastVisible.parentElement.appendChild(moreDiv);
+            }
+          }
+          if (moreDiv) {
+            moreDiv.textContent = `+${hiddenCount} više`;
           }
         }
       });
@@ -575,31 +596,8 @@ const CalendarEngine = {
         },
 
         // Basic sizing hooks so FullCalendar can recompute after view changes
-        datesSet: (dateInfo) => {
-          try {
-            if (calendar && typeof calendar.updateSize === 'function') calendar.updateSize();
-            // Add view-specific classes to container to scope styles
-            try {
-              const v = dateInfo && dateInfo.view && dateInfo.view.type ? dateInfo.view.type : '';
-              if (containerElement) {
-                containerElement.classList.toggle('view-timegrid', v.startsWith('timeGrid'));
-                containerElement.classList.toggle('view-daygrid', v === 'dayGridMonth');
-              }
-            } catch (e) { /* ignore */ }
-          } catch (e) { console.warn('⚠ datesSet failed', e); }
-        },
-        viewDidMount: (arg) => {
-          try {
-            if (calendar && typeof calendar.updateSize === 'function') calendar.updateSize();
-            try {
-              const v = arg && arg.view && arg.view.type ? arg.view.type : '';
-              if (containerElement) {
-                containerElement.classList.toggle('view-timegrid', v.startsWith('timeGrid'));
-                containerElement.classList.toggle('view-daygrid', v === 'dayGridMonth');
-              }
-            } catch (e) { /* ignore */ }
-          } catch (e) { console.warn('⚠ viewDidMount failed', e); }
-        },
+
+
 
         // Interactions
         selectable: true,
@@ -764,7 +762,16 @@ const CalendarEngine = {
 
         datesSet: (arg) => {
           console.log('📅 Dates set');
-          
+
+          // Update view-specific classes so styles can be scoped (dayGrid vs timeGrid)
+          try {
+            const v = arg && arg.view && arg.view.type ? arg.view.type : '';
+            if (containerElement) {
+              containerElement.classList.toggle('view-timegrid', v.startsWith('timeGrid'));
+              containerElement.classList.toggle('view-daygrid', v === 'dayGridMonth');
+            }
+          } catch (e) { /* ignore */ }
+
           // After view renders, limit timed events to 3 per day
           setTimeout(() => {
             if (arg.view.type === 'dayGridMonth') {
@@ -1210,7 +1217,9 @@ const CalendarEngine = {
       btn.style.color = '#2c3e50';
 
       const type = btn.getAttribute('data-type');
-      if (type === (event?.extendedProps?.type || selectInfo ? 'working_hours' : typeInput.value)) {
+      // Determine initial selection: explicit event type > selectInfo (new-event defaults) > form input value
+      const initialType = event?.extendedProps?.type ?? (selectInfo ? 'working_hours' : (typeInput ? typeInput.value : 'working_hours'));
+      if (type === initialType) {
         btn.style.borderColor = '#3498db';
         btn.style.backgroundColor = '#3498db';
         btn.style.color = 'white';
@@ -1230,13 +1239,22 @@ const CalendarEngine = {
       };
     });
 
+    // Helper: format a Date (or date-like) into a local 'YYYY-MM-DDTHH:mm' for datetime-local inputs
+    const fmtLocal = (d) => {
+      try {
+        const dt = (d instanceof Date) ? d : new Date(d);
+        const pad = (n) => String(n).padStart(2, '0');
+        return `${dt.getFullYear()}-${pad(dt.getMonth() + 1)}-${pad(dt.getDate())}T${pad(dt.getHours())}:${pad(dt.getMinutes())}`;
+      } catch (_) { return ''; }
+    };
+
     // Set form values
     if (event) {
-      // Editing existing event
+      // Editing existing event (FullCalendar EventApi or plain object)
       titleInput.value = event.title || '';
       typeInput.value = event.extendedProps?.type || 'working_hours';
-      startInput.value = event.start;
-      endInput.value = event.end || event.start;
+      startInput.value = event.start ? fmtLocal(event.start) : '';
+      endInput.value = event.end ? fmtLocal(event.end) : (event.start ? fmtLocal(event.start) : '');
       deleteBtn.style.display = 'flex';
     } else {
       // Creating new event
@@ -1267,13 +1285,13 @@ const CalendarEngine = {
           startDate.setHours(9, 0, 0, 0);
           endDate.setHours(17, 0, 0, 0);
           
-          // Convert to datetime-local format (YYYY-MM-DDTHH:mm)
-          const startStr = startDate.toISOString().slice(0, 16);
-          const endStr = endDate.toISOString().slice(0, 16);
-          
-          console.log('Formatted start:', startStr);
-          console.log('Formatted end:', endStr);
-          
+          // Convert to datetime-local format (local time) using helper
+          const startStr = fmtLocal(startDate);
+          const endStr = fmtLocal(endDate);
+
+          console.log('Formatted start (local):', startStr);
+          console.log('Formatted end (local):', endStr);
+
           startInput.value = startStr;
           endInput.value = endStr;
         } catch (err) {
@@ -1349,12 +1367,16 @@ const CalendarEngine = {
           eventObj.end = end;
           eventObj.color = typeColors[type];
 
-          // Update in calendar
-          event.setProp('title', title);
-          event.setProp('backgroundColor', typeColors[type]);
-          event.setExtendedProp('type', type);
-          event.setStart(start);
-          event.setEnd(end);
+          // Update in calendar when EventApi instance is provided (guarded)
+          try {
+            if (typeof event.setProp === 'function') {
+              event.setProp('title', title);
+              event.setProp('backgroundColor', typeColors[type]);
+              if (typeof event.setExtendedProp === 'function') event.setExtendedProp('type', type);
+              event.setStart(start);
+              event.setEnd(end);
+            }
+          } catch (updateErr) { console.warn('⚠ Failed to update EventApi instance', updateErr); }
 
           // Persist update to storage/DB
           try {
@@ -1425,9 +1447,11 @@ const CalendarEngine = {
       if (!confirm('Izbriši ta dogodek?')) return;
 
       // Remove from storage
-      const eventId = event.id;
-      scheduleData.events = scheduleData.events.filter(e => e.id !== eventId);
-      event.remove();
+      const eventId = event && (event.id || event.extendedProps?.eventId);
+      scheduleData.events = scheduleData.events.filter(ev => ev.id !== eventId);
+
+      // Remove from calendar if EventApi instance
+      try { if (event && typeof event.remove === 'function') event.remove(); } catch (_) { }
 
       await StorageManager.save('schedule', scheduleData);
 
