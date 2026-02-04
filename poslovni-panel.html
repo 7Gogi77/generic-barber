@@ -1769,6 +1769,25 @@
         // Load initial base immediately
         loadCustomerBase();
 
+        // Merge handler: preserve locally-created events when schedule is updated remotely
+        window.onScheduleUpdated = async function(newScheduleData) {
+            try {
+                // preserve local-origin events from current scheduleData
+                const localEvents = (scheduleData && Array.isArray(scheduleData.events)) ? scheduleData.events.filter(ev => ev.extendedProps && ev.extendedProps.origin === 'local') : [];
+                const newIds = new Set((newScheduleData && Array.isArray(newScheduleData.events) ? newScheduleData.events.map(e => e.id) : []));
+                const merged = Array.isArray(newScheduleData.events) ? newScheduleData.events.slice() : [];
+                // append local events not present remotely
+                localEvents.forEach(ev => { if (!newIds.has(ev.id)) merged.push(ev); });
+                newScheduleData.events = merged;
+
+                // Assign canonical scheduleData and refresh calendar
+                scheduleData = newScheduleData;
+                if (typeof loadAppointmentsToCalendarNow === 'function') await loadAppointmentsToCalendarNow();
+            } catch (err) {
+                console.warn('⚠ onScheduleUpdated merge failed', err);
+            }
+        };
+
         // Update existing event
         function updateScheduleEvent(eventId, event) {
             const idx = scheduleData.events.findIndex(e => e.id === eventId);
@@ -2027,6 +2046,9 @@
                 }
 
                 scheduleData.events = scheduleData.events || [];
+                // Ensure we mark local-origin events so they are preserved when remote updates arrive
+                normalized.extendedProps = normalized.extendedProps || {};
+                if (!normalized.extendedProps.origin) normalized.extendedProps.origin = 'local';
                 scheduleData.events.push(normalized);
                         // Persist immediately to localStorage as a reliable fallback so
                         // the event survives a page reload even if remote save fails.
@@ -2471,21 +2493,28 @@
                 const typeSelect = document.getElementById('eventType');
                 const selectedType = typeSelect ? typeSelect.value : (tab === 'worker' ? 'working_hours' : 'booking');
 
+                const eventType = (tab === 'customer') ? 'booking' : (selectedType || 'working_hours');
                 const eventPayload = {
                     title,
-                    type: (tab === 'customer') ? 'booking' : (selectedType || 'working_hours'),
+                    type: eventType,
                     start,
                     end,
                     description,
                     tab,
                     isBooking: tab === 'customer',
+                    // apply type-based colors so events stay visually distinct
+                    color: (typeof ScheduleRules !== 'undefined' && ScheduleRules.TYPE_CONFIG && ScheduleRules.TYPE_CONFIG[eventType]) ? ScheduleRules.TYPE_CONFIG[eventType].color : undefined,
+                    backgroundColor: (typeof ScheduleRules !== 'undefined' && ScheduleRules.TYPE_CONFIG && ScheduleRules.TYPE_CONFIG[eventType]) ? ScheduleRules.TYPE_CONFIG[eventType].backgroundColor : undefined,
+                    borderColor: (typeof ScheduleRules !== 'undefined' && ScheduleRules.TYPE_CONFIG && ScheduleRules.TYPE_CONFIG[eventType]) ? ScheduleRules.TYPE_CONFIG[eventType].borderColor : undefined,
                     extendedProps: {
                         customer: tab === 'customer' ? title : null,
                         worker: tab === 'worker' ? title : null,
                         email,
                         phone,
                         services,
-                        price
+                        price,
+                        // mark local origin so merge can preserve these events
+                        origin: 'local'
                     }
                 };
 

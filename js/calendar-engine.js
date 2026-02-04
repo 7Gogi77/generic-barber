@@ -232,9 +232,9 @@ const CalendarEngine = {
         start: startDate,
         end: endDate,
         allDay: false,
-        color: typeConfig?.color || '#95a5a6',
-        backgroundColor: typeConfig?.backgroundColor || 'rgba(149, 165, 166, 0.15)',
-        borderColor: typeConfig?.borderColor || '#7f8c8d',
+        color: event.color || typeConfig?.color || '#95a5a6',
+        backgroundColor: event.backgroundColor || typeConfig?.backgroundColor || 'rgba(149, 165, 166, 0.15)',
+        borderColor: event.borderColor || typeConfig?.borderColor || '#7f8c8d',
         textColor: '#2c3e50',
         extendedProps: {
           type: event.type,
@@ -278,9 +278,9 @@ const CalendarEngine = {
       start: startIso,
       end: endIso,
       allDay: true,
-      color: typeConfig?.color || '#95a5a6',
-      backgroundColor: typeConfig?.backgroundColor || 'rgba(149, 165, 166, 0.15)',
-      borderColor: typeConfig?.borderColor || '#7f8c8d',
+      color: event.color || typeConfig?.color || '#95a5a6',
+      backgroundColor: event.backgroundColor || typeConfig?.backgroundColor || 'rgba(149, 165, 166, 0.15)',
+      borderColor: event.borderColor || typeConfig?.borderColor || '#7f8c8d',
       textColor: '#2c3e50',
       extendedProps: {
         type: event.type,
@@ -613,13 +613,13 @@ const CalendarEngine = {
               info.el.style.zIndex = 3;
             }
 
-            // Style booking events
+            // Style booking events (respect explicit per-event coloring when present)
             if (info.event.extendedProps?.isBooking || info.event.id?.startsWith('apt_')) {
               if (info.el) {
-                info.el.style.backgroundColor = 'rgba(52, 152, 219, 0.2)';
-                info.el.style.borderColor = '#3498db';
+                if (!info.event.backgroundColor && !info.event.color) info.el.style.backgroundColor = 'rgba(52, 152, 219, 0.2)';
+                if (!info.event.borderColor) info.el.style.borderColor = '#3498db';
                 info.el.style.borderWidth = '1px';
-                info.el.style.color = '#2c3e50';
+                if (!info.event.textColor) info.el.style.color = '#2c3e50';
               }
             }
           } catch (err) { console.warn('eventDidMount hook failed', err); }
@@ -645,7 +645,7 @@ const CalendarEngine = {
           // Custom rendering for booking events - show customer name and time range
           if (arg.event.extendedProps?.isBooking || arg.event.id?.startsWith('apt_')) {
             try {
-              const customerName = arg.event.extendedProps?.customer || arg.event.title || 'Rezervacija';
+              const customerName = arg.event.extendedProps?.customer || arg.event.extendedProps?.worker || arg.event.title || 'Rezervacija';
               const startTime = arg.event.start ? new Date(arg.event.start).toLocaleTimeString('sl-SI', {hour: '2-digit', minute: '2-digit'}) : '';
               const endTime = arg.event.end ? new Date(arg.event.end).toLocaleTimeString('sl-SI', {hour: '2-digit', minute: '2-digit'}) : '';
               const timeText = startTime ? (endTime ? `${startTime} - ${endTime}` : startTime) : '';
