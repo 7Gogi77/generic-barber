@@ -615,37 +615,70 @@ const CalendarEngine = {
 
           const safeGet = (fn, fallback) => { try { return fn(); } catch (e) { return fallback; } };
 
+          const container = safeGet(() => containerElement, null);
+          const timegrid = safeGet(() => container && container.querySelector('.fc-timegrid'), null);
+
+          out.push(` - container present? ${!!container} - id=${container?.id || ''}`);
+
+          // Basic elements
           const nodes = {
-            container: safeGet(() => containerElement, null),
-            parent: safeGet(() => containerElement && containerElement.parentElement, null),
-            fc: safeGet(() => containerElement && containerElement.querySelector('.fc'), null),
-            fcRoot: safeGet(() => containerElement && containerElement.querySelector('.fc-root'), null),
-            viewHarness: safeGet(() => containerElement && containerElement.querySelector('.fc-view-harness'), null),
-            timegrid: safeGet(() => containerElement && containerElement.querySelector('.fc-timegrid'), null),
-            daygridBody: safeGet(() => containerElement && containerElement.querySelector('.fc-daygrid-body'), null),
-            timeScrollBodies: safeGet(() => containerElement ? Array.from(containerElement.querySelectorAll('.fc-scrollgrid-section-body')) : [], [])
+            parent: safeGet(() => container && container.parentElement, null),
+            viewHarness: safeGet(() => container && container.querySelector('.fc-view-harness'), null),
+            timegrid: timegrid,
+            timeSlots: safeGet(() => (timegrid ? Array.from(timegrid.querySelectorAll('.fc-timegrid-slot')) : []), []),
+            scrollBodies: safeGet(() => (container ? Array.from(container.querySelectorAll('.fc-scrollgrid-section-body')) : []), [])
           };
 
           Object.entries(nodes).forEach(([k, el]) => {
+            if (Array.isArray(el)) {
+              out.push(` - ${k}: length=${el.length}`);
+              return;
+            }
             if (!el) { out.push(` - ${k}: <missing>`); return; }
             const cs = safeGet(() => window.getComputedStyle(el), {});
             out.push(` - ${k}: tag=${el.tagName} class="${el.className}" id="${el.id || ''}" clientH=${el.clientHeight} scrollH=${el.scrollHeight} overflowY=${cs.overflowY} position=${cs.position}`);
+
+            // Walk up ancestor chain for this element to find blocking styles
+            try {
+              let anc = el;
+              const ancList = [];
+              for (let i = 0; i < 6 && anc; i++) {
+                const cs2 = window.getComputedStyle(anc);
+                ancList.push(`${anc.tagName}.${anc.className || ''} id=${anc.id || ''} pos=${cs2.position} overflowY=${cs2.overflowY} h=${anc.clientHeight} scrollH=${anc.scrollHeight}`);
+                anc = anc.parentElement;
+              }
+              out.push(`   ancestors: ${ancList.join(' | ')}`);
+            } catch (_) { /* ignore */ }
           });
 
-          // List first few scrollable descendants
-          const all = safeGet(() => Array.from(containerElement.querySelectorAll('*')), []);
+          // If there are zero slots, report slot duration settings
+          if (nodes.timeSlots && nodes.timeSlots.length === 0) {
+            out.push(' - WARNING: no .fc-timegrid-slot elements found.');
+            out.push(` - slotMinTime: ${slotMinTimeVal}, slotMaxTime: ${slotMaxTimeVal}, slotDuration: ${slotDurationStr}, scrollTime: ${initialScrollTime}`);
+          } else {
+            out.push(` - slots count: ${nodes.timeSlots.length}`);
+            // sample slot geometry
+            const s0 = nodes.timeSlots[0];
+            const r = s0.getBoundingClientRect();
+            out.push(` - sample slot rect: top=${r.top.toFixed(1)} h=${r.height.toFixed(1)}`);
+          }
+
+          // Find any descendant manually scrollable elements
+          const all = safeGet(() => Array.from(container.querySelectorAll('*')), []);
           const scrollables = all.filter(el => {
-            try { const cs = window.getComputedStyle(el); return (cs.overflowY === 'auto' || cs.overflowY === 'scroll') && el.scrollHeight > el.clientHeight; } catch (_) { return false; }
-          }).slice(0, 8);
+            try { const cs = window.getComputedStyle(el); return (cs.overflowY === 'auto' || cs.overflowY === 'scroll') && el.scrollHeight > el.clientHeight + 2; } catch (_) { return false; }
+          });
 
           if (scrollables.length === 0) out.push(' - No descendant scrollable elements found');
-          scrollables.forEach((s, idx) => { const cs = safeGet(() => window.getComputedStyle(s), {}); out.push(`   ${idx}. el <${s.tagName}> .${s.className} id=${s.id} clientH=${s.clientHeight} scrollH=${s.scrollHeight} overflowY=${cs.overflowY} position=${cs.position}`); });
+          else {
+            out.push(' - descendant scrollables (first 8):');
+            scrollables.slice(0, 8).forEach((s, idx) => { const cs = safeGet(() => window.getComputedStyle(s), {}); out.push(`   ${idx}. el <${s.tagName}> .${s.className} id=${s.id} clientH=${s.clientHeight} scrollH=${s.scrollHeight} overflowY=${cs.overflowY} position=${cs.position}`); });
+          }
 
           out.push('🔎 Scroll diagnostics end');
 
-          // Write to console and debug panel if present
+          // Output to console and debug panel
           out.forEach(l => console.log(l));
-
           const debugPanel = document.getElementById('debugPanel');
           const debugOutput = document.getElementById('debugOutput');
           if (debugOutput) {

@@ -346,6 +346,12 @@
             background: #ffffff;
             font-size: 13px;
             color: #24313a;
+            /* Force timeGrid to be relative and not absolutely positioned so scrolling works */
+            position: relative !important;
+            height: 100% !important;
+            min-height: 520px !important;
+            overflow: visible !important;
+            box-sizing: border-box;
         }
         #scheduleCalendar.view-timegrid .fc .fc-timegrid .fc-col-header-cell {
             background: #f9fbfd;
@@ -374,6 +380,11 @@
             height: 42px !important;
             border-bottom: 1px solid #f3f6f8;
             background: transparent;
+        }
+        /* Make the slots container naturally tall when required so the view can scroll vertically */
+        #scheduleCalendar.view-timegrid .fc .fc-timegrid .fc-timegrid-slots {
+            display: block !important;
+            min-height: 1200px !important; /* fallback baseline to allow scrolling */
         }
         #scheduleCalendar.view-timegrid .fc .fc-timegrid .fc-timegrid-slots .fc-timegrid-slot { background: transparent; }
         #scheduleCalendar.view-timegrid .fc .fc-timegrid .fc-event {
