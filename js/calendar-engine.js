@@ -554,6 +554,12 @@ const CalendarEngine = {
       const slotMinutes = (window.SITE_CONFIG && window.SITE_CONFIG.booking && window.SITE_CONFIG.booking.slotDuration) ? window.SITE_CONFIG.booking.slotDuration : 15;
       const slotDurationStr = `00:${('0' + slotMinutes).slice(-2)}:00`;
 
+      // Compute commonly used slot min/max strings and allow timeGrid views to show the full day (scrollable)
+      const slotMinTimeVal = (window.SITE_CONFIG && window.SITE_CONFIG.booking && window.SITE_CONFIG.booking.businessHours) ? (('0' + window.SITE_CONFIG.booking.businessHours.start).slice(-2) + ':00:00') : '06:00:00';
+      const slotMaxTimeVal = (window.SITE_CONFIG && window.SITE_CONFIG.booking && window.SITE_CONFIG.booking.businessHours) ? (('0' + window.SITE_CONFIG.booking.businessHours.end).slice(-2) + ':00:00') : '22:00:00';
+      const timeGridSlotMax = '24:00:00';
+      const initialScrollTime = options.scrollTime || (window.SITE_CONFIG && window.SITE_CONFIG.booking && window.SITE_CONFIG.booking.scrollTime) || '12:00:00';
+
       const calendar = new FullCalendar.Calendar(containerElement, {
         initialView: options.initialView || 'dayGridMonth',
         headerToolbar: {
@@ -572,9 +578,9 @@ const CalendarEngine = {
           startTime: (window.SITE_CONFIG && window.SITE_CONFIG.booking && window.SITE_CONFIG.booking.businessHours) ? (('0' + window.SITE_CONFIG.booking.businessHours.start).slice(-2) + ':00') : '09:00',
           endTime: (window.SITE_CONFIG && window.SITE_CONFIG.booking && window.SITE_CONFIG.booking.businessHours) ? (('0' + window.SITE_CONFIG.booking.businessHours.end).slice(-2) + ':00') : '17:00'
         },
-        // TimeGrid options
-        slotMinTime: (window.SITE_CONFIG && window.SITE_CONFIG.booking && window.SITE_CONFIG.booking.businessHours) ? (('0' + window.SITE_CONFIG.booking.businessHours.start).slice(-2) + ':00:00') : '06:00:00',
-        slotMaxTime: (window.SITE_CONFIG && window.SITE_CONFIG.booking && window.SITE_CONFIG.booking.businessHours) ? (('0' + window.SITE_CONFIG.booking.businessHours.end).slice(-2) + ':00:00') : '22:00:00',
+        // TimeGrid options (defaults apply globally, views override to show full day)
+        slotMinTime: slotMinTimeVal,
+        slotMaxTime: slotMaxTimeVal,
         slotDuration: slotDurationStr,
         slotLabelInterval: { hours: 1 },
         slotLabelFormat: { hour: '2-digit', minute: '2-digit', hour12: false },
@@ -582,9 +588,11 @@ const CalendarEngine = {
         allDaySlot: false,
         views: {
           dayGridMonth: { type: 'dayGridMonth' },
-          timeGridWeek: { type: 'timeGrid' },
-          timeGridDay: { type: 'timeGrid' }
+          timeGridWeek: { type: 'timeGrid', slotMinTime: slotMinTimeVal, slotMaxTime: timeGridSlotMax },
+          timeGridDay: { type: 'timeGrid', slotMinTime: slotMinTimeVal, slotMaxTime: timeGridSlotMax }
         },
+        // Initial vertical scroll position in timeGrid views
+        scrollTime: initialScrollTime,
         height: calcHeight,
         contentHeight: 'auto',
 
@@ -778,6 +786,37 @@ const CalendarEngine = {
               containerElement.classList.toggle('view-daygrid', v === 'dayGridMonth');
             }
           } catch (e) { /* ignore */ }
+
+          // If view is a timeGrid, ensure initial scroll position and allow vertical scrolling
+          try {
+            const v2 = arg && arg.view && arg.view.type ? arg.view.type : '';
+            if (v2.startsWith('timeGrid')) {
+              try { if (calendar && typeof calendar.setOption === 'function') calendar.setOption('scrollTime', initialScrollTime); } catch (_) {}
+
+              // Attempt to scroll the timegrid body to the approximate time slot
+              setTimeout(() => {
+                try {
+                  const timeParts = (initialScrollTime || '12:00:00').split(':');
+                  const targetHour = parseInt(timeParts[0], 10) || 12;
+                  const scrollBody = containerElement.querySelector('.fc-scrollgrid-section-body');
+                  const slotEls = containerElement.querySelectorAll('.fc-timegrid .fc-timegrid-slot');
+                  if (scrollBody && slotEls && slotEls.length) {
+                    // Find a slot whose label matches targetHour
+                    for (let i = 0; i < slotEls.length; i++) {
+                      const label = slotEls[i].querySelector('.fc-timegrid-slot-label');
+                      if (label && /\d{1,2}/.test(label.textContent || '')) {
+                        const h = parseInt((label.textContent || '').trim().split(':')[0], 10);
+                        if (!isNaN(h) && h >= targetHour) {
+                          scrollBody.scrollTop = Math.max(0, slotEls[i].offsetTop - 40);
+                          break;
+                        }
+                      }
+                    }
+                  }
+                } catch (_) { /* ignore scrolling failures */ }
+              }, 120);
+            }
+          } catch (_) { /* ignore */ }
 
           // After view renders, limit timed events to 3 per day
           setTimeout(() => {
