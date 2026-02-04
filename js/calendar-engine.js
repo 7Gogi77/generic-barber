@@ -84,29 +84,82 @@ const CalendarEngine = {
       });
     } catch (e) { /* ignore */ }
 
-    // Deduplicate events with tolerance for small time shifts (prefer id equality, otherwise collapse near-equal start/end + same customer/worker)
+    // Deduplicate events with tolerance for small time shifts (prefer id equality,
+    // but prefer local-origin events and non-generic titles when times collide)
     const unique = [];
     const TIME_TOLERANCE_MS = 10 * 60 * 1000; // 10 minutes
+
+    const isTimesClose = (aStart, aEnd, bStart, bEnd) => {
+      try {
+        const as = new Date(aStart).getTime();
+        const bs = new Date(bStart).getTime();
+        const ae = new Date(aEnd).getTime();
+        const be = new Date(bEnd).getTime();
+        return Number.isFinite(as) && Number.isFinite(bs) && Number.isFinite(ae) && Number.isFinite(be) && Math.abs(as - bs) <= TIME_TOLERANCE_MS && Math.abs(ae - be) <= TIME_TOLERANCE_MS;
+      } catch (_) { return false; }
+    };
+
+    const genericTitle = t => {
+      if (!t) return true;
+      const s = String(t).trim();
+      return s === '' || s === 'Stranka' || s === 'Rezervacija' || s === 'Customer';
+    };
+
+    const prefer = (keep, incoming) => {
+      // prefer local-origin events
+      const keepLocal = keep.extendedProps?.origin === 'local';
+      const incomingLocal = incoming.extendedProps?.origin === 'local';
+      if (keepLocal !== incomingLocal) return keepLocal; // if keepLocal true, keep the existing one
+
+      // prefer events with non-generic titles (e.g., not 'Stranka')
+      const kTitle = keep.extendedProps?.customer || keep.title || '';
+      const iTitle = incoming.extendedProps?.customer || incoming.title || '';
+      const kGeneric = genericTitle(kTitle);
+      const iGeneric = genericTitle(iTitle);
+      if (kGeneric !== iGeneric) return !kGeneric; // if keep is non-generic, keep it
+
+      // prefer non-booking types (prefer worker/event types over generic booking)
+      const kBooking = keep.extendedProps?.isBooking || keep.type === 'booking';
+      const iBooking = incoming.extendedProps?.isBooking || incoming.type === 'booking';
+      if (kBooking !== iBooking) return !kBooking;
+
+      // as a last resort, keep the existing one
+      return true;
+    };
+
     events.forEach(e => {
       const cust = (e.extendedProps && e.extendedProps.customer) ? String(e.extendedProps.customer).trim() : (e.title ? String(e.title).replace(/^\S+\s/, '').trim() : '');
       const getMs = (val) => { try { return new Date(val).getTime(); } catch(_) { return NaN; } };
       const sMs = getMs(e.start);
       const eMs_ = getMs(e.end);
 
-      const isDup = unique.some(u => {
-        if (u.id && e.id && u.id === e.id) return true;
+      // Find an index of a conflicting event (times close + same/empty customer)
+      let conflictIdx = -1;
+      for (let i = 0; i < unique.length; i++) {
+        const u = unique[i];
+        if (u.id && e.id && u.id === e.id) { conflictIdx = i; break; }
         const uCust = (u.extendedProps && u.extendedProps.customer) ? String(u.extendedProps.customer).trim() : (u.title ? String(u.title).replace(/^\S+\s/, '').trim() : '');
-        const usMs = getMs(u.start);
-        const ueMs = getMs(u.end);
+        if (isTimesClose(e.start, e.end, u.start, u.end) && ((cust && uCust && cust === uCust) || (!cust && !uCust))) { conflictIdx = i; break; }
+      }
 
-        const timesClose = Number.isFinite(sMs) && Number.isFinite(usMs) && Math.abs(sMs - usMs) <= TIME_TOLERANCE_MS && Number.isFinite(eMs_) && Number.isFinite(ueMs) && Math.abs(eMs_ - ueMs) <= TIME_TOLERANCE_MS;
-        const sameCust = (cust && uCust && cust === uCust) || (!cust && !uCust);
-        return timesClose && sameCust;
-      });
+      if (conflictIdx !== -1) {
+        const u = unique[conflictIdx];
+        // same id -> skip
+        if (u.id && e.id && u.id === e.id) {
+          console.log('⏭️ Skipping exact-duplicate by id:', e);
+          continue;
+        }
 
-      if (isDup) {
-        console.log('⏭️ Skipping near-duplicate event (time tolerance):', e);
-        return;
+        // Decide which to keep
+        const keepExisting = prefer(u, e);
+        if (!keepExisting) {
+          console.log('🔁 Replacing event due to preference (keep incoming):', e, 'replacing', u);
+          unique[conflictIdx] = e; // prefer incoming
+          continue;
+        } else {
+          console.log('⏭️ Skipping near-duplicate event (kept existing):', e);
+          continue;
+        }
       }
 
       unique.push(e);
