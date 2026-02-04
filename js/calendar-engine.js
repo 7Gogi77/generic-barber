@@ -563,31 +563,49 @@ const CalendarEngine = {
       // Small helper to scroll current view by px (positive -> down)
       const scrollCurrentView = (directive) => {
         try {
-          // Accept either 'top' | 'bottom' or numeric px
+          // Try to find the most appropriate scrollable container under the calendar
+          const candidates = Array.from(containerElement.querySelectorAll('*'));
+
+          const isScrollable = (el) => {
+            try {
+              const cs = window.getComputedStyle(el);
+              return (cs.overflowY === 'auto' || cs.overflowY === 'scroll' || cs.overflow === 'auto' || cs.overflow === 'scroll') && el.scrollHeight > el.clientHeight + 2;
+            } catch (_) { return false; }
+          };
+
+          // Find the first visible scrollable candidate in priority order (timegrid then daygrid then any)
           const timeScroll = containerElement.querySelector('.fc-timegrid .fc-scrollgrid-section-body');
           const daygridBody = containerElement.querySelector('.fc-daygrid-body');
 
-          const targetScroll = (el, dir) => {
-            if (!el) return;
-            if (dir === 'top') { el.scrollTop = 0; return; }
-            if (dir === 'bottom') { el.scrollTop = el.scrollHeight - el.clientHeight; return; }
-            const px = Number(dir) || 0;
-            el.scrollTop = Math.max(0, Math.min(el.scrollHeight - el.clientHeight, el.scrollTop + px));
-          };
+          let targetEl = null;
+          if (timeScroll && isScrollable(timeScroll)) targetEl = timeScroll;
+          else if (daygridBody && isScrollable(daygridBody)) targetEl = daygridBody;
+          else targetEl = candidates.find(isScrollable) || null;
 
-          if (timeScroll) {
-            if (directive === 'top' || directive === 'bottom') targetScroll(timeScroll, directive);
-            else targetScroll(timeScroll, Number(directive) || 0);
+          if (!targetEl) {
+            console.log('scrollCurrentView: no scrollable element found under calendar');
             return;
           }
 
-          if (daygridBody) {
-            if (directive === 'top' || directive === 'bottom') targetScroll(daygridBody, directive);
-            else targetScroll(daygridBody, Number(directive) || 0);
-            return;
-          }
+          // Support 'top'/'bottom' directives and numeric deltas
+          if (directive === 'top') { targetEl.scrollTop = 0; return; }
+          if (directive === 'bottom') { targetEl.scrollTop = targetEl.scrollHeight - targetEl.clientHeight; return; }
+
+          const px = Number(directive) || 0;
+          targetEl.scrollTop = Math.max(0, Math.min(targetEl.scrollHeight - targetEl.clientHeight, targetEl.scrollTop + px));
+          console.log('scrollCurrentView: scrolled', { target: targetEl.className, scrollTop: targetEl.scrollTop, clientHeight: targetEl.clientHeight, scrollHeight: targetEl.scrollHeight });
         } catch (e) { console.warn('scrollCurrentView failed', e); }
       };
+
+      // Keyboard shortcuts for scrolling in active view
+      const keyboardScrollHandler = (e) => {
+        // PageUp/PageDown/Home/End
+        if (e.key === 'PageDown') { e.preventDefault(); scrollCurrentView(300); }
+        if (e.key === 'PageUp') { e.preventDefault(); scrollCurrentView(-300); }
+        if (e.key === 'Home') { e.preventDefault(); scrollCurrentView('top'); }
+        if (e.key === 'End') { e.preventDefault(); scrollCurrentView('bottom'); }
+      };
+      window.addEventListener('keydown', keyboardScrollHandler);
 
       const calendar = new FullCalendar.Calendar(containerElement, {
         initialView: options.initialView || 'dayGridMonth',
