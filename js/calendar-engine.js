@@ -736,9 +736,9 @@ const CalendarEngine = {
           startTime: (window.SITE_CONFIG && window.SITE_CONFIG.booking && window.SITE_CONFIG.booking.businessHours) ? (('0' + window.SITE_CONFIG.booking.businessHours.start).slice(-2) + ':00') : '09:00',
           endTime: (window.SITE_CONFIG && window.SITE_CONFIG.booking && window.SITE_CONFIG.booking.businessHours) ? (('0' + window.SITE_CONFIG.booking.businessHours.end).slice(-2) + ':00') : '17:00'
         },
-        // TimeGrid options (defaults apply globally) - default to full day so FullCalendar builds complete table
-        slotMinTime: '00:00:00',
-        slotMaxTime: '24:00:00',
+        // TimeGrid options (defaults apply globally, views override to show full day)
+        slotMinTime: slotMinTimeVal,
+        slotMaxTime: slotMaxTimeVal,
         slotDuration: slotDurationStr,
         slotLabelInterval: { hours: 1 },
         slotLabelFormat: { hour: '2-digit', minute: '2-digit', hour12: false },
@@ -1207,8 +1207,63 @@ const CalendarEngine = {
         eventDisplay: 'block',
         // Ensure all-day slot hidden (no dedicated all-day column/row)
         allDaySlot: false,
-            // Let FullCalendar compute content height so timeGrid gets a proper scrollable area
-            contentHeight: 'auto'
+        height: window._calendarHeight || 600,
+        contentHeight: 'parent'
+      });
+
+      console.log('✅ Calendar object created:', calendar);
+      console.log('Calendar constructor type:', typeof calendar);
+      console.log('Calendar is FullCalendar.Calendar:', calendar instanceof FullCalendar.Calendar);
+      console.log('Calendar methods:', Object.getOwnPropertyNames(Object.getPrototypeOf(calendar)).slice(0, 10));
+
+      // Render the calendar
+      console.log('📅 About to call calendar.render()...');
+      console.log('Calendar object:', calendar);
+      console.log('Calendar._component:', calendar._component);
+      
+      try {
+        console.log('Calling render...');
+        const renderResult = calendar.render();
+        console.log('✅ FullCalendar rendered successfully, result:', renderResult);
+        // Expose calendar globally for debug helpers
+        try { window.calendar = calendar; } catch (err) { /* ignore */ }
+        // Apply initial view class to container
+        try {
+          const initView = calendar && calendar.view && calendar.view.type ? calendar.view.type : null;
+          if (initView && containerElement) {
+            containerElement.classList.toggle('view-timegrid', initView.startsWith('timeGrid'));
+            containerElement.classList.toggle('view-daygrid', initView === 'dayGridMonth');
+          }
+        } catch (e) { /* ignore */ }
+        // Defer sizing — run a few attempts with increasing delays to allow FullCalendar DOM to settle
+        (function robustSizing() {
+          const delays = [50, 150, 350, 700];
+          const maxAttempts = delays.length;
+
+          function applySizing(avail) {
+            try {
+              const toolbar = containerElement.querySelector('.fc-toolbar');
+              const headerRow = containerElement.querySelector('.fc-col-header');
+              const fcRoot = containerElement.querySelector('.fc');
+              const viewHarness = containerElement.querySelector('.fc-view-harness');
+              const timegrid = containerElement.querySelector('.fc-timegrid');
+              const scrollBodies = containerElement.querySelectorAll('.fc-scrollgrid-section-body');
+
+              console.log('applySizing: timegrid found?', !!timegrid, 'scrollBodies count', scrollBodies.length);
+
+              if (fcRoot) { fcRoot.style.height = avail + 'px'; fcRoot.style.minHeight = avail + 'px'; fcRoot.style.overflow = 'visible'; }
+              if (viewHarness) { viewHarness.style.height = avail + 'px'; viewHarness.style.minHeight = avail + 'px'; }
+              if (timegrid) { timegrid.style.height = avail + 'px'; timegrid.style.minHeight = avail + 'px'; timegrid.style.overflowX = 'hidden'; timegrid.style.overflowY = 'auto'; }
+              if (scrollBodies && scrollBodies.length) { scrollBodies.forEach(b => { b.style.height = avail + 'px'; b.style.minHeight = avail + 'px'; b.style.overflowX = 'hidden'; b.style.overflowY = 'auto'; }); }
+
+              // Also set calendar options so FullCalendar knows the explicit height
+              try { if (calendar && typeof calendar.setOption === 'function') { calendar.setOption('height', avail); calendar.setOption('contentHeight', 'parent'); } } catch (err) { /* ignore */ }
+              if (calendar && typeof calendar.updateSize === 'function') calendar.updateSize();
+            } catch (err) { console.warn('⚠ applySizing failed', err); }
+          }
+
+          function attempt(n) {
+            try {
               const toolbar = containerElement.querySelector('.fc-toolbar');
               const headerRow = containerElement.querySelector('.fc-col-header');
               const toolbarH = toolbar ? Math.ceil(toolbar.getBoundingClientRect().height) : 0;
