@@ -1245,8 +1245,40 @@ const CalendarEngine = {
                               scrollBody.style.height = forcedH + 'px';
                               scrollBody.style.overflowY = 'auto';
                               console.log('🔧 Forcing scrollBody minHeight and height', { requiredH, forcedH });
+
+                              // Additional: ensure slots container is visible and participates in normal flow
+                              try {
+                                if (slotsContainer) {
+                                  slotsContainer.style.position = 'relative';
+                                  slotsContainer.style.display = 'block';
+                                  slotsContainer.style.visibility = 'visible';
+                                  console.log('🔧 Ensured slotsContainer visible and relative');
+                                }
+                              } catch (_) {}
                             } catch (_) { /* ignore */ }
                           }
+
+                          // If after all of the above there is still no overflow, attempt to find any ancestor hiding overflow and relax it
+                          try {
+                            let anc = scrollBody || slotsContainer || containerElement.querySelector('.fc-timegrid');
+                            while (anc && anc !== document.body) {
+                              try {
+                                const cs = window.getComputedStyle(anc);
+                                if (cs.overflowY === 'hidden') {
+                                  anc.style.overflowY = 'auto';
+                                  anc.style.overflow = 'auto';
+                                  console.log('🔧 Relaxed overflow on ancestor', anc.tagName, anc.className);
+                                }
+                                // ensure ancestor is not absolutely limiting layout
+                                if (cs.position === 'absolute') {
+                                  anc.style.position = 'relative';
+                                  console.log('🔧 Changed ancestor position to relative', anc.tagName, anc.className);
+                                }
+                              } catch (e) { /* ignore per ancestor */ }
+
+                              anc = anc.parentElement;
+                            }
+                          } catch (_) {}
                         } catch (_) { /* ignore aggressive fallback errors */ }
 
                         // If after all of the above there is still no overflow, attempt to re-render the view with forced 24h slot options
