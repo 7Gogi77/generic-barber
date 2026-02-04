@@ -213,6 +213,11 @@ const CalendarEngine = {
       isAllDay: isAllDay
     });
 
+    // Decide display mode for blocking types: show background only for vacation/day_off so sick_leave remains visible
+    const BLOCKING_BACKGROUND_TYPES = new Set(['vacation', 'day_off']);
+    const isBlockingType = event.rules?.isBlocking || typeConfig?.isBlocking;
+    const displayMode = (isBlockingType && BLOCKING_BACKGROUND_TYPES.has(event.type)) ? 'background' : 'auto';
+
       // Booking events should render the customer name (no icon prefix) to avoid duplicate/emoji-titled items
     const isBooking = event.extendedProps?.isBooking || false;
     const customerName = event.extendedProps?.customer || null;
@@ -247,8 +252,8 @@ const CalendarEngine = {
           duration: event.extendedProps?.duration || null,
           notes: event.extendedProps?.notes || ''
         },
-        // Blocking events (vacation, sick leave, day off) show as background
-        display: (event.rules?.isBlocking || typeConfig?.isBlocking) ? 'background' : 'auto',
+        // Blocking events: use displayMode (background only for vacation/day_off, others visible)
+        display: displayMode,
         // Allow drag & drop
         editable: true,
         durationEditable: true,
@@ -293,8 +298,8 @@ const CalendarEngine = {
         duration: event.extendedProps?.duration || null,
         notes: event.extendedProps?.notes || ''
       },
-      // Blocking events (vacation, sick leave, day off) show as background
-      display: event.rules?.isBlocking ? 'background' : 'auto',
+      // Blocking events: use displayMode (background only for vacation/day_off, others visible)
+      display: displayMode,
       // Allow drag & drop
       editable: true,
       durationEditable: true,
