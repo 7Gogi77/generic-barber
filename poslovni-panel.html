@@ -209,23 +209,27 @@
         /* Default harness sizing inside the calendar container */
         #scheduleCalendar .fc-scroller-harness {
             height: 100% !important;
-            position: static !important; /* default safe assume */
+        }
+        /* For Month (dayGrid) we keep the harness static to preserve month layout */
+        #scheduleCalendar.view-daygrid .fc-scroller-harness {
+            position: static !important; /* month-specific */
         }
 
-        #scheduleCalendar .fc-scrollgrid {
+        #scheduleCalendar.view-daygrid .fc-scrollgrid {
             height: 100% !important;
         }
 
-        #scheduleCalendar .fc-scrollgrid-section.fc-scrollgrid-section-body {
+        #scheduleCalendar.view-daygrid .fc-scrollgrid-section.fc-scrollgrid-section-body {
             height: 100% !important;
         }
 
-        #scheduleCalendar .fc-scroller {
+        /* Month-specific scroller behavior */
+        #scheduleCalendar.view-daygrid .fc-scroller {
             overflow: visible !important;
             height: 100% !important;
         }
 
-        #scheduleCalendar .fc-scroller-harness-liquid {
+        #scheduleCalendar.view-daygrid .fc-scroller-harness-liquid {
             height: 100% !important;
         }
 
