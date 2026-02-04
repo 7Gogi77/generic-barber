@@ -244,24 +244,6 @@
             height: auto !important;
         }
 
-        /* Stronger: force all scroller/harness variants into flow and remove transforms that keep them out of the parent's scroll measurement */
-        #scheduleCalendar.view-timegrid .fc .fc-scroller,
-        #scheduleCalendar.view-timegrid .fc .fc-scroller-liquid-absolute,
-        #scheduleCalendar.view-timegrid .fc .fc-scroller-harness,
-        #scheduleCalendar.view-timegrid .fc .fc-scroller-harness-liquid {
-            position: static !important;
-            overflow: visible !important;
-            height: auto !important;
-            max-height: none !important;
-            transform: none !important;
-        }
-
-        /* Allow the scrollgrid section to measure its table content; this keeps layout intact but lets the outer section become scrollable when content is tall */
-        #scheduleCalendar.view-timegrid .fc .fc-scrollgrid-section-body > table {
-            display: block !important;
-            width: 100% !important;
-        }
-
         /* Make native scroller the actual scroll container */
         #scheduleCalendar.view-timegrid .fc .fc-scrollgrid-section-body { overflow-y: auto !important; -webkit-overflow-scrolling: touch !important; }
 
