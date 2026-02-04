@@ -1168,6 +1168,29 @@ const CalendarEngine = {
                           scrollBody.style.paddingBottom = '600px';
                           console.log('🔧 Added paddingBottom to force scrollability');
                         }
+
+                        // Aggressive fallback: constrain the scroll body's maxHeight to ensure overflow when viewing full 24h
+                        try {
+                          const toolbarEl = containerElement.querySelector('.fc-toolbar');
+                          const headerEl = containerElement.querySelector('.fc-col-header');
+                          const toolbarH = toolbarEl ? Math.ceil(toolbarEl.getBoundingClientRect().height) : 0;
+                          const headerH = headerEl ? Math.ceil(headerEl.getBoundingClientRect().height) : 0;
+
+                          const availH = Math.max(400, containerElement.clientHeight - toolbarH - headerH - 80);
+                          const forcedMax = Math.min(availH, 800);
+                          scrollBody.style.maxHeight = forcedMax + 'px';
+                          scrollBody.style.overflowY = 'auto';
+                          scrollBody.style.webkitOverflowScrolling = 'touch';
+
+                          console.log('🔧 Forced scrollBody.maxHeight to', forcedMax, 'toolbarH', toolbarH, 'headerH', headerH);
+
+                          // If slotsContainer is still shorter than forced max, add extra minHeight to guarantee overflow
+                          if (slotsContainer && slotsContainer.clientHeight <= forcedMax) {
+                            const extra = Math.max(0, forcedMax + 200 - slotsContainer.clientHeight);
+                            slotsContainer.style.minHeight = (slotsContainer.clientHeight + extra) + 'px';
+                            console.log('🔧 Increased slotsContainer.minHeight (extra)', extra);
+                          }
+                        } catch (_) { /* ignore aggressive fallback errors */ }
                       }
                     } catch (e) { console.warn('⚠ failed to enforce timegrid slot heights', e); }
                   } catch (err) { console.warn('viewDidMount sanity check failed', err); }
