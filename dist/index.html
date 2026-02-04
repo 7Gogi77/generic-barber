@@ -108,7 +108,7 @@
             .appointment-step { padding: 0 !important; }
         }
     </style>
-  <script type="module" crossorigin src="/assets/main-uQipiXp4.js"></script>
+  <script type="module" crossorigin src="/assets/main-CgMe8HQj.js"></script>
   <link rel="stylesheet" crossorigin href="/assets/main-D60lb7-0.css">
 </head>
 <body class="bg-dark text-white font-sans overflow-x-hidden cursor-none">
@@ -307,9 +307,8 @@
         const bookedSlots = new Set(); // Track booked times
         
         // Load saved config from localStorage (admin changes)
-        function loadSavedConfig() {
+        async function loadSavedConfig() {
             const saved = localStorage.getItem('site_config_backup');
-            const savedAppts = localStorage.getItem('appointments');
             
             if (saved) {
                 try {
@@ -326,15 +325,36 @@
                     console.log('Could not load saved config, using defaults');
                 }
             }
-            
-            // Separately load appointments from appointments storage
-            if (savedAppts) {
-                try {
-                    const appts = JSON.parse(savedAppts);
-                    SITE_CONFIG.appointments = appts;
-                    console.log('Loaded ' + appts.length + ' appointments');
-                } catch (e) {
-                    console.log('Could not load appointments');
+
+            // Load appointments from StorageManager schedule when available
+            try {
+                if (typeof StorageManager !== 'undefined' && StorageManager.load) {
+                    const schedule = await StorageManager.load('schedule');
+                    const bookings = (schedule && Array.isArray(schedule.events))
+                        ? schedule.events.filter(e => (e.extendedProps && e.extendedProps.isBooking) || e.isBooking || e.type === 'booking')
+                        : [];
+                    if (bookings.length > 0) {
+                        SITE_CONFIG.appointments = bookings.map(b => ({
+                            id: b.id || Date.now(),
+                            date: (b.start || '').split('T')[0] || '',
+                            time: (b.start || '').split('T')[1] || '',
+                            firstName: (b.extendedProps && b.extendedProps.customer) ? (b.extendedProps.customer.split(' ')[0] || '') : (b.title || ''),
+                            surname: (b.extendedProps && b.extendedProps.customer) ? (b.extendedProps.customer.split(' ').slice(1).join(' ') || '') : '',
+                            fullName: (b.extendedProps && b.extendedProps.customer) || b.title || '',
+                            email: b.extendedProps?.email || '',
+                            phone: b.extendedProps?.phone || '',
+                            services: b.extendedProps?.services || [],
+                            totalDuration: b.extendedProps?.duration || 0,
+                            totalPrice: b.extendedProps?.price || 0
+                        }));
+                        console.log('Loaded', SITE_CONFIG.appointments.length, 'appointments from schedule');
+                    }
+                }
+            } catch (e) {
+                console.warn('Could not load appointments from StorageManager, falling back to localStorage', e);
+                const savedAppts = localStorage.getItem('appointments');
+                if (savedAppts) {
+                    try { SITE_CONFIG.appointments = JSON.parse(savedAppts); } catch (err) { console.log('Could not load appointments'); }
                 }
             }
         }
@@ -722,10 +742,38 @@
                 id: Date.now()
             };
             
-            // Save appointment
+            // Save appointment to SITE_CONFIG and persist to schedule via StorageManager
             SITE_CONFIG.appointments.push(appointment);
-            localStorage.setItem('appointments', JSON.stringify(SITE_CONFIG.appointments));
             localStorage.setItem('site_config_backup', JSON.stringify(SITE_CONFIG));
+            // Persist booking into schedule
+            (async () => {
+                try {
+                    const ev = {
+                        id: `apt_${appointment.id}`,
+                        title: appointment.fullName,
+                        start: `${appointment.date}T${appointment.time}`,
+                        end: new Date(new Date(`${appointment.date}T${appointment.time}`).getTime() + (appointment.totalDuration || 60) * 60000).toISOString(),
+                        type: 'booking',
+                        extendedProps: {
+                            isBooking: true,
+                            customer: appointment.fullName,
+                            email: appointment.email,
+                            phone: appointment.phone,
+                            services: appointment.services,
+                            duration: appointment.totalDuration,
+                            price: appointment.totalPrice
+                        }
+                    };
+                    if (typeof window.addScheduleEvent === 'function') {
+                        window.addScheduleEvent(ev);
+                    } else if (typeof StorageManager !== 'undefined' && StorageManager.load) {
+                        const schedule = await StorageManager.load('schedule');
+                        schedule.events = schedule.events || [];
+                        schedule.events.push(ev);
+                        await StorageManager.save('schedule', schedule);
+                    }
+                } catch (e) { console.warn('Could not persist appointment to schedule', e); }
+            })();
             
             // Show success
             document.getElementById('successFirstName').innerText = firstName;
