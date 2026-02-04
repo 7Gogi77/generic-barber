@@ -877,6 +877,7 @@
             <div class="modal-header">Dodaj dogodek</div>
             <form id="addEventForm">
                 <div style="display:flex; gap:10px; margin-bottom:18px;">
+                  <button type="button" id="tabWorker" class="btn btn-secondary" style="flex:1;" onclick="setEventTab('worker')">Delavec</button>
                   <button type="button" id="tabCustomer" class="btn btn-primary" style="flex:1;" onclick="setEventTab('customer')">Stranka</button>
                 </div>
                 <div class="form-horizontal">
@@ -897,6 +898,11 @@
                         <div class="form-group" id="customerPhoneField" style="display:none;">
                             <label>Telefon</label>
                             <input type="tel" id="eventPhone" placeholder="+386 40 123 456">
+                        </div>
+                        <!-- Worker title field (hidden by default; shown in worker tab) -->
+                        <div class="form-group" id="workerTitleField" style="display:none;">
+                            <label>Naziv</label>
+                            <input type="text" id="eventTitle" placeholder="Npr. Bolniška, Praznik, Striženje...">
                         </div>
 
                     </div>
@@ -1069,8 +1075,17 @@
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
         <script>
             // --- TAB LOGIC FOR ADD EVENT MODAL ---
-            // Worker mode removed: default to customer bookings only
+            // Tab logic
             let currentEventTab = 'customer';
+            // Types used for worker-mode events
+            const workerTypes = [
+                { value: 'working_hours', label: 'Delovni čas' },
+                { value: 'break', label: 'Premor' },
+                { value: 'lunch', label: 'Kosilo' },
+                { value: 'vacation', label: 'Počitnice' },
+                { value: 'sick_leave', label: 'Bolniška' },
+                { value: 'day_off', label: 'Prosti dan' }
+            ];
             // Pridobi storitve iz SITE_CONFIG, če obstaja, sicer fallback
             function getCustomerTypes() {
                 let items = [];
@@ -1083,7 +1098,51 @@
                         function renderEventTypeOptions(tab) {
                                 const select = document.getElementById('eventType');
                                 select.innerHTML = '';
-                                let options = getCustomerTypes();
+                                const checkboxContainer = document.getElementById('eventTypeCheckboxes');
+
+                                if (tab === 'worker') {
+                                    // Populate select with worker types
+                                    const options = workerTypes || [];
+                                    if (options.length === 0) {
+                                        select.disabled = true;
+                                        select.innerHTML = '<option value="">-- Ni tipov --</option>';
+                                    } else {
+                                        select.disabled = false;
+                                        options.forEach(opt => {
+                                            const o = document.createElement('option');
+                                            o.value = opt.value;
+                                            o.textContent = opt.label;
+                                            select.appendChild(o);
+                                        });
+                                    }
+
+                                    // Show select, hide checkboxes
+                                    select.style.display = '';
+                                    select.disabled = false;
+                                    select.required = true;
+                                    select.multiple = false;
+                                    if (checkboxContainer) checkboxContainer.style.display = 'none';
+
+                                    // Show/hide fields suitable for worker
+                                    const contactWrapper = document.getElementById('customerContactFields');
+                                    const phoneWrapper = document.getElementById('customerPhoneField');
+                                    const priceWrapper = document.getElementById('eventPriceWrapper');
+                                    const nameWrapper = document.getElementById('customerNameFields');
+                                    const surnameWrapper = document.getElementById('customerSurnameField');
+                                    const workerTitleWrapper = document.getElementById('workerTitleField');
+                                    if (contactWrapper) contactWrapper.style.display = 'none';
+                                    if (phoneWrapper) phoneWrapper.style.display = 'none';
+                                    if (priceWrapper) priceWrapper.style.display = 'none';
+                                    if (nameWrapper) { nameWrapper.style.display = 'none'; const el = nameWrapper.querySelector('input'); if (el) el.required = false; }
+                                    if (surnameWrapper) { surnameWrapper.style.display = 'none'; const el2 = surnameWrapper.querySelector('input'); if (el2) el2.required = false; }
+                                    if (workerTitleWrapper) { workerTitleWrapper.style.display = ''; const el3 = workerTitleWrapper.querySelector('input'); if (el3) el3.required = true; }
+
+                                    document.getElementById('eventTypeLabel').textContent = 'Tip';
+                                    return;
+                                }
+
+                                // Default: customer (services as checkboxes)
+                                const options = getCustomerTypes();
 
                                 // If no services, show disabled select and a warning
                                 if (options.length <= 1) {
@@ -1111,7 +1170,6 @@
                                 });
 
                                 // Use checkboxes for customer service selection (hide select)
-                                const checkboxContainer = document.getElementById('eventTypeCheckboxes');
                                 select.style.display = 'none';
                                 select.disabled = true;
                                 select.required = false;
@@ -1154,32 +1212,30 @@
                                 if (workerTitleWrapper) { workerTitleWrapper.style.display = 'none'; const el3 = workerTitleWrapper.querySelector('input'); if (el3) el3.required = false; }
                         }
             function setEventTab(tab) {
-                // Worker support removed — force to customer tab only
-                tab = 'customer';
                 currentEventTab = tab;
                 renderEventTypeOptions(tab);
-                // Keep buttons visually consistent but they will map to customer
+                // Update button visual states
                 try {
+                    const tabWorker = document.getElementById('tabWorker');
                     const tabCust = document.getElementById('tabCustomer');
-                    if (tabCust) {
-                        tabCust.classList.toggle('btn-primary', true);
-                        tabCust.classList.toggle('btn-secondary', false);
-                    }
+                    if (tabWorker) { tabWorker.classList.toggle('btn-primary', tab === 'worker'); tabWorker.classList.toggle('btn-secondary', tab !== 'worker'); }
+                    if (tabCust) { tabCust.classList.toggle('btn-primary', tab === 'customer'); tabCust.classList.toggle('btn-secondary', tab !== 'customer'); }
                 } catch (_) {}
                 // focus convenient field
                 setTimeout(() => {
-                    const e = document.getElementById('eventFirstName'); if (e) e.focus();
+                    if (tab === 'customer') { const e = document.getElementById('eventFirstName'); if (e) e.focus(); }
+                    else { const e = document.getElementById('eventTitle'); if (e) e.focus(); }
                 }, 60);
             }
             // Always reload services when opening modal
-            function openAddEventModalWithTab(startDate = null, endDate = null, retry = 0) {
+            function openAddEventModalWithTab(startDate = null, endDate = null, retry = 0, tab = null) {
                 // Če storitve še niso naložene iz Firebase, počakaj in poskusi znova
                 const ready = window.SITE_CONFIG && window.SITE_CONFIG.servicesSection && Array.isArray(window.SITE_CONFIG.servicesSection.items) && window.SITE_CONFIG.servicesSection.items.length > 0;
                 if (!ready && retry < 10) {
-                    setTimeout(() => openAddEventModalWithTab(startDate, retry + 1), 200);
+                    setTimeout(() => openAddEventModalWithTab(startDate, retry + 1, tab), 200);
                     return;
                 }
-                setEventTab('customer');
+                setEventTab(tab || 'customer');
                 // Reset form fields if needed
                 const form = document.getElementById('addEventForm');
                 if (form) form.reset();
@@ -2155,6 +2211,7 @@
         // Handle add event form
         document.getElementById('addEventForm').addEventListener('submit', async (e) => {
             e.preventDefault();
+            return window.handleAddEventSimplified(e);
 
             let title = '';
             let firstName = '';
@@ -2377,6 +2434,104 @@
 
             closeAddEventModal();
         });
+
+        // Simplified add handler implementation
+        window.handleAddEventSimplified = async function(e) {
+            try {
+                e.preventDefault && e.preventDefault();
+                const tab = (currentEventTab === 'worker') ? 'worker' : 'customer';
+
+                // Collect input
+                const firstName = (document.getElementById('eventFirstName')?.value || '').trim();
+                const lastName = (document.getElementById('eventLastName')?.value || '').trim();
+                const title = (tab === 'customer') ? ((firstName || lastName) ? (firstName + (lastName ? ' ' + lastName : '')).trim() : 'Rezervacija') : ((document.getElementById('eventTitle')?.value || '').trim() || 'Delavec dogodek');
+                const email = (document.getElementById('eventEmail')?.value || '').trim() || null;
+                const phone = (document.getElementById('eventPhone')?.value || '').trim() || null;
+                const description = (document.getElementById('eventDescription')?.value || '').trim() || '';
+
+                const services = Array.from(document.querySelectorAll('#eventTypeCheckboxes input[type=checkbox]:checked')).map(i => i.value).filter(Boolean);
+                const price = (typeof recalcServicePrice === 'function') ? recalcServicePrice() : 0;
+
+                // Dates/times
+                const startDate = document.getElementById('eventStartDate')?.value;
+                const startTimeRaw = document.getElementById('eventStartTime')?.value;
+                const endDate = document.getElementById('eventEndDate')?.value || startDate;
+                let endTimeRaw = document.getElementById('eventEndTime')?.value;
+
+                const defaultStart = '09:00';
+                const defaultDurationMinutes = 30;
+                const sTime = startTimeRaw || defaultStart;
+                if (!endTimeRaw) {
+                    try { const s = new Date(`${startDate}T${sTime}`); s.setMinutes(s.getMinutes() + defaultDurationMinutes); endTimeRaw = s.toTimeString().slice(0,5); } catch (_) { endTimeRaw = '09:30'; }
+                }
+
+                const start = `${startDate}T${sTime}`;
+                const end = `${endDate}T${endTimeRaw}`;
+
+                const typeSelect = document.getElementById('eventType');
+                const selectedType = typeSelect ? typeSelect.value : (tab === 'worker' ? 'working_hours' : 'booking');
+
+                const eventPayload = {
+                    title,
+                    type: (tab === 'customer') ? 'booking' : (selectedType || 'working_hours'),
+                    start,
+                    end,
+                    description,
+                    tab,
+                    isBooking: tab === 'customer',
+                    extendedProps: {
+                        customer: tab === 'customer' ? title : null,
+                        worker: tab === 'worker' ? title : null,
+                        email,
+                        phone,
+                        services,
+                        price
+                    }
+                };
+
+                if (tab === 'customer') {
+                    try { await persistCustomerToBase({ firstName, surname: lastName, email, phone }); } catch (_) {}
+                }
+
+                // Persist event
+                let eventId = null;
+                try {
+                    if (typeof window.addScheduleEvent === 'function') eventId = window.addScheduleEvent(eventPayload);
+                    else { eventPayload.id = eventPayload.id || `event_${Date.now()}`; scheduleData.events = scheduleData.events || []; scheduleData.events.push(eventPayload); eventId = eventPayload.id; try { localStorage.setItem('schedule', JSON.stringify(scheduleData)); } catch(_){} }
+                } catch (err) {
+                    console.error('✗ addScheduleEvent failed', err);
+                    alert('Napaka pri ustvarjanju termina');
+                    return false;
+                }
+
+                // Ensure TYPE_CONFIG rules
+                try {
+                    const cfg = (typeof ScheduleRules !== 'undefined' && ScheduleRules.TYPE_CONFIG && ScheduleRules.TYPE_CONFIG[eventPayload.type]) ? ScheduleRules.TYPE_CONFIG[eventPayload.type] : null;
+                    const idx = scheduleData.events.findIndex(e => e.id === eventId);
+                    if (idx !== -1 && cfg) { scheduleData.events[idx].rules = scheduleData.events[idx].rules || {}; scheduleData.events[idx].rules.isBlocking = cfg.isBlocking || false; scheduleData.events[idx].rules.isSubtractive = cfg.isSubtractive || false; scheduleData.events[idx].rules.conflictPriority = cfg.priority || 0; }
+                } catch (_) {}
+
+                // Save and refresh
+                try { if (typeof window.saveScheduleData === 'function') await window.saveScheduleData(); else try { localStorage.setItem('schedule', JSON.stringify(scheduleData)); } catch(_){} } catch (_) {}
+                if (typeof loadAppointmentsToCalendarNow === 'function') await loadAppointmentsToCalendarNow(); else if (window.calendar && typeof window.calendar.addEvent === 'function') { const evt = scheduleData.events.find(e => e.id === eventId); if (evt && typeof CalendarEngine !== 'undefined' && CalendarEngine.formatCalendarEvent) { const formatted = CalendarEngine.formatCalendarEvent(evt); if (formatted) window.calendar.addEvent(formatted); } }
+
+                // Mirror to adminSchedule and attach adminKey when possible
+                try {
+                    const adminEntry = { id: `event_${eventId}`, type: (tab === 'customer') ? 'rezervacija' : (selectedType || 'worker_event'), startDate, startTime: sTime, endDate, endTime: endTimeRaw, customer: tab === 'customer' ? title : null, worker: tab === 'worker' ? title : null, email, phone, services, price, duration: (new Date(end) - new Date(start)) / 60000, notes: description, createdAt: new Date().toISOString() };
+                    if (typeof sendAdminScheduleEntry === 'function') {
+                        const res = await sendAdminScheduleEntry(adminEntry).catch(() => false);
+                        if (res) { const idx = scheduleData.events.findIndex(e => e.id === eventId); if (idx !== -1) { scheduleData.events[idx].extendedProps = scheduleData.events[idx].extendedProps || {}; if (typeof res === 'string') scheduleData.events[idx].extendedProps.adminKey = res; try { if (typeof window.saveScheduleDataNoBroadcast === 'function') await window.saveScheduleDataNoBroadcast(); else if (typeof window.saveScheduleData === 'function') await window.saveScheduleData(); } catch (_){} } }
+                    }
+                } catch (_) {}
+
+                closeAddEventModal();
+                return true;
+            } catch (err) {
+                console.error('handleAddEventSimplified failed', err);
+                alert('Napaka pri dodajanju termina');
+                return false;
+            }
+        }
 
         // Handle edit event form
         document.getElementById('editEventForm').addEventListener('submit', async (e) => {
