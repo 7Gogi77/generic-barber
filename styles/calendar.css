@@ -57,11 +57,12 @@
   table-layout: fixed !important;
 }
 
-#scheduleCalendar .fc-col {
+/* Month-only column widths (do not affect timeGrid week/day) */
+#scheduleCalendar.view-daygrid .fc .fc-col {
   width: 14.28% !important;
 }
 
-#scheduleCalendar .fc-daygrid-day-frame {
+#scheduleCalendar.view-daygrid .fc .fc-daygrid-day-frame {
   min-height: auto !important;
 }
 

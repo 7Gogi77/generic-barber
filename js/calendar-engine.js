@@ -578,7 +578,8 @@ const CalendarEngine = {
         slotDuration: slotDurationStr,
         slotLabelInterval: { hours: 1 },
         slotLabelFormat: { hour: '2-digit', minute: '2-digit', hour12: false },
-        allDaySlot: true,
+        // Hide the all-day slot so week/day views don't show a separate all-day row
+        allDaySlot: false,
         views: {
           dayGridMonth: { type: 'dayGridMonth' },
           timeGridWeek: { type: 'timeGrid' },
@@ -988,7 +989,8 @@ const CalendarEngine = {
         // Styling
         nowIndicator: true,
         eventDisplay: 'block',
-        allDaySlot: true,
+        // Ensure all-day slot hidden (no dedicated all-day column/row)
+        allDaySlot: false,
         height: window._calendarHeight || 600,
         contentHeight: 'parent'
       });
