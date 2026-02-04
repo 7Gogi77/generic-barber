@@ -234,10 +234,12 @@
         #scheduleCalendar.view-daygrid .fc-scroller-harness { position: static !important; }
 
         /* Temporary visual debug outlines (toggle via deletionDebug.toggleTimegridVisuals) */
-        #scheduleCalendar.debug-timegrid-visuals.view-timegrid .fc .fc-timegrid-slot {
+        #scheduleCalendar.debug-timegrid-visuals.view-timegrid-week .fc .fc-timegrid-slot,
+        #scheduleCalendar.debug-timegrid-visuals.view-timegrid-day .fc .fc-timegrid-slot {
             outline: 2px dashed rgba(255,0,0,0.6) !important;
         }
-        #scheduleCalendar.debug-timegrid-visuals.view-timegrid .fc .fc-event {
+        #scheduleCalendar.debug-timegrid-visuals.view-timegrid-week .fc .fc-event,
+        #scheduleCalendar.debug-timegrid-visuals.view-timegrid-day .fc .fc-event {
             outline: 2px solid rgba(0,255,0,0.6) !important;
         }
         .fc .fc-button-primary {
@@ -461,7 +463,7 @@
         #scheduleCalendar.view-timegrid-week .fc .fc-timegrid .fc-timegrid-axis, #scheduleCalendar.view-timegrid-day .fc .fc-timegrid .fc-timegrid-axis { display: block !important; }
         #scheduleCalendar.view-timegrid-week .fc .fc-timegrid .fc-timegrid-slots, #scheduleCalendar.view-timegrid-day .fc .fc-timegrid .fc-timegrid-slots { display: block !important; }
 
-        #scheduleCalendar.view-timegrid .fc .fc-scrollgrid-section-body { overflow-x: hidden !important; overflow-y: auto !important; }
+        #scheduleCalendar.view-timegrid-week .fc .fc-scrollgrid-section-body, #scheduleCalendar.view-timegrid-day .fc .fc-scrollgrid-section-body { overflow-x: hidden !important; overflow-y: auto !important; }
 
         #scheduleCalendar.view-daygrid .fc .fc-daygrid-body .fc-daygrid-row {
             overflow: visible !important;

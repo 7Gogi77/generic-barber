@@ -936,9 +936,7 @@ const CalendarEngine = {
           try {
             const v = arg && arg.view && arg.view.type ? arg.view.type : '';
             if (containerElement) {
-              // Generic timegrid indicator
-              containerElement.classList.toggle('view-timegrid', v.startsWith('timeGrid'));
-              // Specific timegrid variants
+              // Specific timegrid variants (no generic view-timegrid class to avoid bleed)
               containerElement.classList.toggle('view-timegrid-week', v === 'timeGridWeek');
               containerElement.classList.toggle('view-timegrid-day', v === 'timeGridDay');
               // Month/daygrid
@@ -1124,10 +1122,7 @@ const CalendarEngine = {
             try {
               const v = arg && arg.view && arg.view.type ? arg.view.type : '';
               if (containerElement) {
-                containerElement.classList.toggle('view-timegrid', v.startsWith('timeGrid'));
-                containerElement.classList.toggle('view-timegrid-week', v === 'timeGridWeek');
-                containerElement.classList.toggle('view-timegrid-day', v === 'timeGridDay');
-                containerElement.classList.toggle('view-daygrid', v === 'dayGridMonth');
+
               }
             } catch (e) { /* ignore */ }
             
@@ -1231,7 +1226,8 @@ const CalendarEngine = {
         try {
           const initView = calendar && calendar.view && calendar.view.type ? calendar.view.type : null;
           if (initView && containerElement) {
-            containerElement.classList.toggle('view-timegrid', initView.startsWith('timeGrid'));
+            containerElement.classList.toggle('view-timegrid-week', initView === 'timeGridWeek');
+            containerElement.classList.toggle('view-timegrid-day', initView === 'timeGridDay');
             containerElement.classList.toggle('view-daygrid', initView === 'dayGridMonth');
           }
         } catch (e) { /* ignore */ }

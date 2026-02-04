@@ -540,8 +540,10 @@
     gap: 5px;
   }
 
-  #scheduleCalendar.view-timegrid .fc .fc-timegrid-slot {
-    height: 2em;
+  #scheduleCalendar.view-timegrid-week .fc .fc-timegrid-slot,
+  #scheduleCalendar.view-timegrid-day .fc .fc-timegrid-slot {
+    min-height: 2.5em;
+    height: auto;
   }
 }
 
