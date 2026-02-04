@@ -22,9 +22,17 @@ const CalendarEngine = {
     eventsSource.forEach((event) => {
       // Single events
       if (event.recurring === 'once' || !event.recurring) {
-        const formattedEvent = this.formatCalendarEvent(event);
-        console.log('📌 Adding single event:', formattedEvent);
-        events.push(formattedEvent);
+        try {
+          const formattedEvent = this.formatCalendarEvent(event);
+          if (!formattedEvent) {
+            console.warn('⚠ Skipping event due to format error:', event?.id || event?.title);
+          } else {
+            console.log('📌 Adding single event:', formattedEvent);
+            events.push(formattedEvent);
+          }
+        } catch (err) {
+          console.warn('⚠ formatCalendarEvent threw for event:', event?.id || event?.title, err);
+        }
       }
 
       // Weekly recurring events
@@ -43,9 +51,17 @@ const CalendarEngine = {
             recurrenceEvent.start = current.toISOString().split('T')[0] + 'T' + startTimeUse;
             recurrenceEvent.end = current.toISOString().split('T')[0] + 'T' + endTimeUse;
 
-            const formattedEvent = this.formatCalendarEvent(recurrenceEvent);
-            console.log('🔁 Adding recurring event:', formattedEvent);
-            events.push(formattedEvent);
+            try {
+              const formattedEvent = this.formatCalendarEvent(recurrenceEvent);
+              if (!formattedEvent) {
+                console.warn('⚠ Skipping recurring event due to format error:', recurrenceEvent?.id || recurrenceEvent?.title);
+              } else {
+                console.log('🔁 Adding recurring event:', formattedEvent);
+                events.push(formattedEvent);
+              }
+            } catch (err) {
+              console.warn('⚠ formatCalendarEvent threw for recurring event:', recurrenceEvent?.id || recurrenceEvent?.title, err);
+            }
           }
 
           current.setDate(current.getDate() + 1);
@@ -143,8 +159,26 @@ const CalendarEngine = {
       }
     } catch (err) {
       console.warn('⚠ formatCalendarEvent parsing fallback', err);
+      // Fallback to attempt gentle parsing; do not throw — return null when unfixable
       startDate = new Date(event.start || Date.now());
       endDate = new Date(event.end || event.start || Date.now());
+    }
+
+    // If dates are invalid (NaN), try common fallback strategies
+    if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+      // Try using admin-style fields when present: startDate/startTime and endDate/endTime
+      try {
+        const maybeStart = (event.startDate && event.startTime) ? (String(event.startDate) + 'T' + String(event.startTime)) : null;
+        const maybeEnd = (event.endDate && event.endTime) ? (String(event.endDate) + 'T' + String(event.endTime)) : null;
+        if (maybeStart) startDate = new Date(maybeStart);
+        if (maybeEnd) endDate = new Date(maybeEnd);
+      } catch (_) { /* ignore */ }
+
+      // Final check; if still invalid, log and skip this event safely
+      if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+        console.warn('⚠ formatCalendarEvent: invalid dates for event, skipping:', event?.id || event?.title, { start: event.start, end: event.end, startDateField: event.startDate, startTimeField: event.startTime, endDateField: event.endDate, endTimeField: event.endTime });
+        return null;
+      }
     }
 
     const durationMs = endDate - startDate;
