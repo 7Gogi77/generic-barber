@@ -348,10 +348,18 @@
             color: #24313a;
             /* Force timeGrid to be relative and not absolutely positioned so scrolling works */
             position: relative !important;
-            height: 100% !important;
+            height: auto !important;
             min-height: 520px !important;
             overflow: visible !important;
             box-sizing: border-box;
+        }
+        /* Extra high-specificity overrides for FullCalendar internals to prevent absolute positioning that truncates slot rendering */
+        #scheduleCalendar.view-timegrid .fc .fc-timeGridWeek-view.fc-timegrid,
+        #scheduleCalendar.view-timegrid .fc .fc-timeGridDay-view.fc-timegrid {
+            position: relative !important;
+            height: auto !important;
+            min-height: 520px !important;
+            overflow: visible !important;
         }
         #scheduleCalendar.view-timegrid .fc .fc-timegrid .fc-col-header-cell {
             background: #f9fbfd;
