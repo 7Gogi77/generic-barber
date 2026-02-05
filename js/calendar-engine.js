@@ -1222,6 +1222,38 @@ const CalendarEngine = {
         console.log('✅ FullCalendar rendered successfully, result:', renderResult);
         // Expose calendar globally for debug helpers
         try { window.calendar = calendar; } catch (err) { /* ignore */ }
+
+        // Diagnostic helpers: inspect computed styles for rendered events (call from console)
+        try {
+          window.calendarDebug = window.calendarDebug || {};
+          window.calendarDebug.logEventStyles = () => {
+            try {
+              const firstTimeEvent = document.querySelector('.fc-timegrid .fc-event');
+              const firstDayEvent = document.querySelector('.fc-daygrid .fc-event');
+              const describe = (el) => {
+                if (!el) return null;
+                const cs = window.getComputedStyle(el);
+                return {
+                  tag: el.tagName,
+                  className: el.className,
+                  inlineStyle: el.getAttribute('style'),
+                  background: cs.background,
+                  backgroundImage: cs.backgroundImage,
+                  backgroundColor: cs.backgroundColor,
+                  color: cs.color,
+                  opacity: cs.opacity,
+                  visibility: cs.visibility,
+                  display: cs.display,
+                  zIndex: cs.zIndex
+                };
+              };
+              const res = { timeEvent: describe(firstTimeEvent), dayEvent: describe(firstDayEvent) };
+              console.log('🔬 calendarDebug.logEventStyles result:', res);
+              return res;
+            } catch (e) { console.warn('calendarDebug.logEventStyles failed', e); return null; }
+          };
+        } catch (e) { /* ignore diagnostic helper failure */ }
+
         // Apply initial view class to container
         try {
           const initView = calendar && calendar.view && calendar.view.type ? calendar.view.type : null;
