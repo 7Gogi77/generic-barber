@@ -50,6 +50,7 @@
             --gradient-start: #007AFF;
             --gradient-end: #5AC8FA;
             --subtitle-color: #007AFF;
+            --color-primary: #007AFF;
             --scrollbar-track: #1C1C1E;
             --scrollbar-thumb: #007AFF;
         }
@@ -985,6 +986,7 @@
             
             // Subtitle (hero-sub) color - uses primary accent
             root.style.setProperty('--subtitle-color', t.primary || primary);
+            root.style.setProperty('--color-primary', t.primary || primary);
             
             // Scrollbar colors - uses config values or primary accent
             root.style.setProperty('--scrollbar-track', t.scrollbarTrack || t.dark || '#1C1C1E');
