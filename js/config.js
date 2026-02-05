@@ -152,6 +152,24 @@ const SITE_CONFIG = {
         slotDuration: 15 // 15 minute slots
     },
     
+    // Booking Page Content (rezervacija.html)
+    bookingPage: {
+        pageTitle: "Rezervacija Termina",
+        pageSubtitle: "Izberite storitve in termin",
+        step1Title: "Izberite Storitve",
+        step1Desc: "Izberite eno ali več storitev",
+        step2Title: "Izberite Datum",
+        step2Desc: "Izberite želeni datum",
+        step3Title: "Vaši Podatki",
+        step3Desc: "Vnesite kontaktne podatke",
+        step4Title: "Potrditev",
+        step4Desc: "Preglejte in potrdite",
+        successTitle: "Rezervacija Uspešna!",
+        successMessage: "Vaša rezervacija je bila uspešno oddana. Potrditev boste prejeli na e-pošto.",
+        nextButton: "Naprej",
+        confirmButton: "Potrdi Rezervacijo"
+    },
+    
     // ADMIN & SECURITY SETTINGS
     admin: {
         // Admin login credentials (change these immediately in production!)

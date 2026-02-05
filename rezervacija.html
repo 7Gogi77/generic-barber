@@ -817,19 +817,19 @@
                 </div>
                 <div class="card-body">
                     <div class="form-group">
-                        <label class="form-label">Ime in priimek *</label>
+                        <label class="form-label" id="labelName">Ime in priimek *</label>
                         <input type="text" class="form-input" id="customerName" placeholder="Janez Novak" required>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">E-pošta *</label>
+                        <label class="form-label" id="labelEmail">E-pošta *</label>
                         <input type="email" class="form-input" id="customerEmail" placeholder="janez@email.com" required>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Telefon *</label>
+                        <label class="form-label" id="labelPhone">Telefon *</label>
                         <input type="tel" class="form-input" id="customerPhone" placeholder="+386 40 123 456" required>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Opombe (neobvezno)</label>
+                        <label class="form-label" id="labelNotes">Opombe (neobvezno)</label>
                         <textarea class="form-input" id="customerNotes" placeholder="Posebne želje ali opombe..."></textarea>
                     </div>
                 </div>
@@ -850,23 +850,23 @@
                 <div class="card-body">
                     <div class="summary-section">
                         <div class="summary-row">
-                            <span class="summary-label">Storitve</span>
+                            <span class="summary-label" id="summaryLabelServices">Storitve</span>
                             <span class="summary-value" id="summaryServices">-</span>
                         </div>
                         <div class="summary-row">
-                            <span class="summary-label">Datum</span>
+                            <span class="summary-label" id="summaryLabelDate">Datum</span>
                             <span class="summary-value" id="summaryDate">-</span>
                         </div>
                         <div class="summary-row">
-                            <span class="summary-label">Ura</span>
+                            <span class="summary-label" id="summaryLabelTime">Ura</span>
                             <span class="summary-value" id="summaryTime">-</span>
                         </div>
                         <div class="summary-row">
-                            <span class="summary-label">Trajanje</span>
+                            <span class="summary-label" id="summaryLabelDuration">Trajanje</span>
                             <span class="summary-value" id="summaryDuration">-</span>
                         </div>
                         <div class="summary-row">
-                            <span class="summary-label">Stranka</span>
+                            <span class="summary-label" id="summaryLabelCustomer">Stranka</span>
                             <span class="summary-value" id="summaryCustomer">-</span>
                         </div>
                         <div class="summary-row">
@@ -943,6 +943,69 @@
             return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
         }
 
+        // ===== APPLY BOOKING PAGE CONTENT FROM CONFIG =====
+        function applyBookingPageContent() {
+            const bp = window.SITE_CONFIG?.bookingPage || {};
+            
+            // Header
+            const headerTitle = document.querySelector('.header h1');
+            const headerSubtitle = document.querySelector('.header .subtitle');
+            if (headerTitle && bp.pageTitle) headerTitle.textContent = bp.pageTitle;
+            if (headerSubtitle && bp.pageSubtitle) headerSubtitle.textContent = bp.pageSubtitle;
+            
+            // Step 1
+            const step1Title = document.querySelector('#step1 .card-header h2');
+            const step1Desc = document.querySelector('#step1 .card-header p');
+            if (step1Title && bp.step1Title) step1Title.textContent = bp.step1Title;
+            if (step1Desc && bp.step1Desc) step1Desc.textContent = bp.step1Desc;
+            
+            // Step 2
+            const step2Title = document.querySelector('#step2 .card-header h2');
+            const step2Desc = document.querySelector('#step2 .card-header p');
+            if (step2Title && bp.step2Title) step2Title.textContent = bp.step2Title;
+            if (step2Desc && bp.step2Desc) step2Desc.textContent = bp.step2Desc;
+            
+            // Step 3
+            const step3Title = document.querySelector('#step3 .card-header h2');
+            const step3Desc = document.querySelector('#step3 .card-header p');
+            if (step3Title && bp.step3Title) step3Title.textContent = bp.step3Title;
+            if (step3Desc && bp.step3Desc) step3Desc.textContent = bp.step3Desc;
+            
+            // Step 4
+            const step4Title = document.querySelector('#step4 .card-header h2');
+            const step4Desc = document.querySelector('#step4 .card-header p');
+            if (step4Title && bp.step4Title) step4Title.textContent = bp.step4Title;
+            if (step4Desc && bp.step4Desc) step4Desc.textContent = bp.step4Desc;
+            
+            // Success step
+            const successTitle = document.querySelector('#step5 .success-title');
+            const successMessage = document.querySelector('#step5 .success-message');
+            if (successTitle && bp.successTitle) successTitle.textContent = bp.successTitle;
+            if (successMessage && bp.successMessage) {
+                successMessage.innerHTML = bp.successMessage + '<br>Potrditev bo poslana na vaš e-poštni naslov.';
+            }
+            
+            // Buttons - Next
+            const nextBtns = document.querySelectorAll('#toStep2Btn, #toStep3Btn, #toStep4Btn');
+            nextBtns.forEach(btn => {
+                if (bp.nextButton) btn.textContent = bp.nextButton;
+            });
+            
+            // Buttons - Back
+            const backBtns = document.querySelectorAll('#backToStep1, #backToStep2, #backToStep3');
+            backBtns.forEach(btn => {
+                if (bp.backButton) btn.textContent = bp.backButton;
+            });
+            
+            // Confirm button
+            const confirmBtn = document.getElementById('confirmBookingBtn');
+            if (confirmBtn && bp.confirmButton) confirmBtn.textContent = bp.confirmButton;
+            
+            // New booking button
+            const newBtn = document.querySelector('#step5 .btn-primary');
+            if (newBtn && bp.newButton) newBtn.textContent = bp.newButton;
+        }
+
         // ===== INIT =====
         document.addEventListener('DOMContentLoaded', async () => {
             showLoading(true);
@@ -954,6 +1017,9 @@
             if (window.SITE_CONFIG && window.SITE_CONFIG.shopName) {
                 document.getElementById('shopName').textContent = window.SITE_CONFIG.shopName;
             }
+            
+            // Apply booking page content from config
+            applyBookingPageContent();
 
             // Load events from storage
             await loadEvents();
@@ -997,6 +1063,9 @@
                     // Update business hours display
                     updateBusinessHoursDisplay();
                     
+                    // Apply theme colors from admin panel
+                    applyThemeColors();
+                    
                 } else {
                     console.warn('⚠ Firebase response not OK:', response.status);
                 }
@@ -1007,6 +1076,29 @@
                     servicesData = SITE_CONFIG.servicesSection.items || [];
                 }
             }
+        }
+        
+        // ===== APPLY THEME COLORS FROM CONFIG =====
+        function applyThemeColors() {
+            const theme = window.SITE_CONFIG?.theme || {};
+            const root = document.documentElement;
+            
+            // Apply primary color to iOS blue if set
+            if (theme.primaryColor) {
+                root.style.setProperty('--ios-blue', theme.primaryColor);
+            }
+            
+            // Apply button color
+            if (theme.buttonColor) {
+                root.style.setProperty('--ios-blue', theme.buttonColor);
+            }
+            
+            // Apply button text color
+            if (theme.buttonTextColor) {
+                // Used in button text
+            }
+            
+            console.log('✅ Theme colors applied from config');
         }
         
         // ===== UPDATE BUSINESS HOURS DISPLAY =====

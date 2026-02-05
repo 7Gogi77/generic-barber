@@ -1113,6 +1113,102 @@
                     <button class="save-btn" onclick="saveBooking()">Shrani Nastavitve</button>
                 </div>
 
+                <!-- BOOKING PAGE CONTENT SECTION -->
+                <div class="admin-section">
+                    <div class="section-title">📝 Vsebina Rezervacijske Strani</div>
+                    <p style="font-size: 13px; color: var(--ios-text-secondary, #8E8E93); margin-bottom: 16px;">Uredi besedila na rezervacija.html strani</p>
+                    
+                    <div class="form-row">
+                        <div class="form-group-admin">
+                            <label class="form-label-admin">Naslov Strani (Header)</label>
+                            <input id="bookingPageTitle" type="text" class="form-input-admin" placeholder="Rezervacija termina">
+                        </div>
+                        <div class="form-group-admin">
+                            <label class="form-label-admin">Podnaslov</label>
+                            <input id="bookingPageSubtitle" type="text" class="form-input-admin" placeholder="Izberite storitev in termin">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group-admin">
+                            <label class="form-label-admin">Korak 1: Naslov</label>
+                            <input id="bookingStep1Title" type="text" class="form-input-admin" placeholder="1. Izberite storitev">
+                        </div>
+                        <div class="form-group-admin">
+                            <label class="form-label-admin">Korak 1: Opis</label>
+                            <input id="bookingStep1Desc" type="text" class="form-input-admin" placeholder="Izberite eno ali več storitev">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group-admin">
+                            <label class="form-label-admin">Korak 2: Naslov</label>
+                            <input id="bookingStep2Title" type="text" class="form-input-admin" placeholder="2. Izberite datum">
+                        </div>
+                        <div class="form-group-admin">
+                            <label class="form-label-admin">Korak 2: Opis</label>
+                            <input id="bookingStep2Desc" type="text" class="form-input-admin" placeholder="Zeleni datumi imajo proste termine">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group-admin">
+                            <label class="form-label-admin">Korak 3: Naslov</label>
+                            <input id="bookingStep3Title" type="text" class="form-input-admin" placeholder="3. Vaši podatki">
+                        </div>
+                        <div class="form-group-admin">
+                            <label class="form-label-admin">Korak 3: Opis</label>
+                            <input id="bookingStep3Desc" type="text" class="form-input-admin" placeholder="Vnesite kontaktne podatke">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group-admin">
+                            <label class="form-label-admin">Korak 4: Naslov</label>
+                            <input id="bookingStep4Title" type="text" class="form-input-admin" placeholder="4. Potrditev">
+                        </div>
+                        <div class="form-group-admin">
+                            <label class="form-label-admin">Korak 4: Opis</label>
+                            <input id="bookingStep4Desc" type="text" class="form-input-admin" placeholder="Preverite podatke in potrdite">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group-admin">
+                            <label class="form-label-admin">Uspešna Rezervacija: Naslov</label>
+                            <input id="bookingSuccessTitle" type="text" class="form-input-admin" placeholder="Rezervacija uspešna!">
+                        </div>
+                        <div class="form-group-admin">
+                            <label class="form-label-admin">Uspešna Rezervacija: Sporočilo</label>
+                            <input id="bookingSuccessMessage" type="text" class="form-input-admin" placeholder="Vaš termin je bil uspešno rezerviran.">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group-admin">
+                            <label class="form-label-admin">Gumb "Naprej"</label>
+                            <input id="bookingBtnNext" type="text" class="form-input-admin" placeholder="Naprej">
+                        </div>
+                        <div class="form-group-admin">
+                            <label class="form-label-admin">Gumb "Nazaj"</label>
+                            <input id="bookingBtnBack" type="text" class="form-input-admin" placeholder="Nazaj">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group-admin">
+                            <label class="form-label-admin">Gumb "Potrdi Rezervacijo"</label>
+                            <input id="bookingBtnConfirm" type="text" class="form-input-admin" placeholder="Potrdi rezervacijo">
+                        </div>
+                        <div class="form-group-admin">
+                            <label class="form-label-admin">Gumb "Nova Rezervacija"</label>
+                            <input id="bookingBtnNew" type="text" class="form-input-admin" placeholder="Nova rezervacija">
+                        </div>
+                    </div>
+                    
+                    <button class="save-btn" onclick="saveBookingPageContent()">Shrani Vsebino Strani</button>
+                </div>
+
             </div> <!-- END storitve tab -->
 
             <!-- ===== TAB 4: PANEL (BUSINESS ANALYTICS) ===== -->
@@ -1591,6 +1687,25 @@
             document.getElementById('ownerEmail').value = (SITE_CONFIG.ownerContact?.email) || '';
             document.getElementById('ownerPhone').value = (SITE_CONFIG.ownerContact?.phone) || '';
 
+            // Booking Page Content (rezervacija.html)
+            const bp = SITE_CONFIG.bookingPage || {};
+            document.getElementById('bookingPageTitle').value = bp.pageTitle || 'Rezervacija termina';
+            document.getElementById('bookingPageSubtitle').value = bp.pageSubtitle || 'Izberite storitev in termin';
+            document.getElementById('bookingStep1Title').value = bp.step1Title || '1. Izberite storitev';
+            document.getElementById('bookingStep1Desc').value = bp.step1Desc || 'Izberite eno ali več storitev';
+            document.getElementById('bookingStep2Title').value = bp.step2Title || '2. Izberite datum';
+            document.getElementById('bookingStep2Desc').value = bp.step2Desc || 'Zeleni datumi imajo proste termine';
+            document.getElementById('bookingStep3Title').value = bp.step3Title || '3. Vaši podatki';
+            document.getElementById('bookingStep3Desc').value = bp.step3Desc || 'Vnesite kontaktne podatke';
+            document.getElementById('bookingStep4Title').value = bp.step4Title || '4. Potrditev';
+            document.getElementById('bookingStep4Desc').value = bp.step4Desc || 'Preverite podatke in potrdite';
+            document.getElementById('bookingSuccessTitle').value = bp.successTitle || 'Rezervacija uspešna!';
+            document.getElementById('bookingSuccessMessage').value = bp.successMessage || 'Vaš termin je bil uspešno rezerviran.';
+            document.getElementById('bookingBtnNext').value = bp.nextButton || 'Naprej';
+            document.getElementById('bookingBtnBack').value = bp.backButton || 'Nazaj';
+            document.getElementById('bookingBtnConfirm').value = bp.confirmButton || 'Potrdi rezervacijo';
+            document.getElementById('bookingBtnNew').value = bp.newButton || 'Nova rezervacija';
+
             // Services
             loadServices();
 
@@ -2053,6 +2168,38 @@
             SITE_CONFIG.ownerContact.email = document.getElementById('ownerEmail').value;
             SITE_CONFIG.ownerContact.phone = document.getElementById('ownerPhone').value;
             saveConfig();
+        }
+
+        // Save booking page content (rezervacija.html)
+        function saveBookingPageContent() {
+            if (!SITE_CONFIG.bookingPage) SITE_CONFIG.bookingPage = {};
+            
+            // Page header
+            SITE_CONFIG.bookingPage.pageTitle = document.getElementById('bookingPageTitle').value || 'Rezervacija termina';
+            SITE_CONFIG.bookingPage.pageSubtitle = document.getElementById('bookingPageSubtitle').value || 'Izberite storitev in termin';
+            
+            // Step titles and descriptions
+            SITE_CONFIG.bookingPage.step1Title = document.getElementById('bookingStep1Title').value || '1. Izberite storitev';
+            SITE_CONFIG.bookingPage.step1Desc = document.getElementById('bookingStep1Desc').value || 'Izberite eno ali več storitev';
+            SITE_CONFIG.bookingPage.step2Title = document.getElementById('bookingStep2Title').value || '2. Izberite datum';
+            SITE_CONFIG.bookingPage.step2Desc = document.getElementById('bookingStep2Desc').value || 'Zeleni datumi imajo proste termine';
+            SITE_CONFIG.bookingPage.step3Title = document.getElementById('bookingStep3Title').value || '3. Vaši podatki';
+            SITE_CONFIG.bookingPage.step3Desc = document.getElementById('bookingStep3Desc').value || 'Vnesite kontaktne podatke';
+            SITE_CONFIG.bookingPage.step4Title = document.getElementById('bookingStep4Title').value || '4. Potrditev';
+            SITE_CONFIG.bookingPage.step4Desc = document.getElementById('bookingStep4Desc').value || 'Preverite podatke in potrdite';
+            
+            // Success messages
+            SITE_CONFIG.bookingPage.successTitle = document.getElementById('bookingSuccessTitle').value || 'Rezervacija uspešna!';
+            SITE_CONFIG.bookingPage.successMessage = document.getElementById('bookingSuccessMessage').value || 'Vaš termin je bil uspešno rezerviran.';
+            
+            // Button labels
+            SITE_CONFIG.bookingPage.nextButton = document.getElementById('bookingBtnNext').value || 'Naprej';
+            SITE_CONFIG.bookingPage.backButton = document.getElementById('bookingBtnBack').value || 'Nazaj';
+            SITE_CONFIG.bookingPage.confirmButton = document.getElementById('bookingBtnConfirm').value || 'Potrdi rezervacijo';
+            SITE_CONFIG.bookingPage.newButton = document.getElementById('bookingBtnNew').value || 'Nova rezervacija';
+            
+            saveConfig();
+            showNotification('Vsebina rezervacijske strani shranjena!', 'success');
         }
 
         // Update working days
