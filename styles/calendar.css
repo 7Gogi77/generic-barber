@@ -90,9 +90,9 @@
 }
 
 #scheduleCalendar.view-daygrid .fc-daygrid-day-container {
-  overflow: hidden !important;
-  max-height: 75px !important;
-  height: 75px !important;
+  overflow: visible !important;
+  max-height: none !important;
+  height: auto !important;
 }
 
 #scheduleCalendar.view-daygrid .fc .fc-daygrid-day-events {

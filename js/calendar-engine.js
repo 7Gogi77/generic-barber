@@ -853,6 +853,31 @@ const CalendarEngine = {
                 if (!info.event.textColor) info.el.style.color = '#2c3e50';
               }
             }
+
+            // General fallback: if an event (any type) lacks explicit colors, apply TYPE_CONFIG values
+            try {
+              const evt = info.event || {};
+              const el = info.el;
+              const type = evt.extendedProps && evt.extendedProps.type ? evt.extendedProps.type : (evt.extendedProps && evt.extendedProps.worker ? 'worker_event' : (evt.type || null));
+              const typeCfg = (typeof ScheduleRules !== 'undefined' && ScheduleRules.TYPE_CONFIG && type) ? ScheduleRules.TYPE_CONFIG[type] : null;
+
+              if (el) {
+                // Only apply if computed background is transparent or no explicit background provided
+                const cs = window.getComputedStyle(el);
+                const isTransparentBg = cs && (cs.background === 'rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box' || cs.backgroundColor === 'rgba(0, 0, 0, 0)');
+
+                if ((!evt.backgroundColor && typeCfg && typeCfg.backgroundColor) || isTransparentBg) {
+                  try { el.style.backgroundColor = (evt.backgroundColor || typeCfg.backgroundColor || typeCfg && typeCfg.color || 'rgba(52, 152, 219, 0.2)'); } catch(_){}
+                }
+                if ((!evt.borderColor && typeCfg && typeCfg.borderColor) || (cs && (!cs.borderColor || cs.borderColor === 'transparent'))) {
+                  try { el.style.borderColor = (evt.borderColor || typeCfg.borderColor || '#3498db'); el.style.borderWidth = el.style.borderWidth || '1px'; } catch(_){}
+                }
+                if ((!evt.textColor && typeCfg && typeCfg.color) || (cs && (!cs.color || cs.color === 'rgba(0, 0, 0, 0)')) ) {
+                  try { el.style.color = (evt.textColor || typeCfg.color || '#2c3e50'); } catch(_){}
+                }
+              }
+            } catch (fbErr) { /* ignore fallback failures */ }
+
           } catch (err) { console.warn('eventDidMount hook failed', err); }
         },
 
@@ -1025,25 +1050,56 @@ const CalendarEngine = {
                 }
               });
               
-        // Do NOT force equal pixel heights on month rows — allow natural flow and let the grid be scrollable
+        // Enforce equal pixel heights for month rows to prevent single tall cells when multiple events are present
               const daygridBody = document.querySelector('.fc-daygrid-body');
               if (daygridBody) {
                 try {
+                  // Allow vertical scrolling inside the month grid (if rows exceed available height)
                   daygridBody.style.overflowY = 'auto';
                   daygridBody.style.webkitOverflowScrolling = 'touch';
-                  // Remove any inline per-row heights if present
-                  const rows = daygridBody.querySelectorAll('.fc-daygrid-row');
+
+                  // Compute equal heights for each month row so day cells cannot grow arbitrarily tall
+                  const rows = Array.from(daygridBody.querySelectorAll('.fc-daygrid-row'));
                   if (rows.length > 0) {
+                    // Determine the available height inside the daygrid body. If zero, fallback to container height minus toolbar/header.
+                    const availBodyH = daygridBody.clientHeight && daygridBody.clientHeight > 40 ? daygridBody.clientHeight : Math.max(300, containerElement.clientHeight - 120);
+                    const perRowH = Math.floor(availBodyH / rows.length);
+
                     rows.forEach((row) => {
-                      row.style.height = '';
-                      row.style.minHeight = '';
-                      row.style.maxHeight = '';
-                      row.style.overflow = '';
+                      row.style.height = perRowH + 'px';
+                      row.style.minHeight = perRowH + 'px';
+                      row.style.maxHeight = perRowH + 'px';
+                      row.style.overflow = 'hidden';
+
+                      // Ensure inner day cells fill the row but cap their internal event area to avoid overflow changing the row height
                       const cells = row.querySelectorAll('.fc-daygrid-day-cell');
-                      cells.forEach(cell => { cell.style.height = ''; cell.style.minHeight = ''; });
+                      cells.forEach(cell => {
+                        cell.style.height = '100%';
+                        cell.style.minHeight = '0';
+
+                        const eventsContainer = cell.querySelector('.fc-daygrid-day-events');
+                        if (eventsContainer) {
+                          // Limit events container to the remaining area inside the cell (leave space for day number/header)
+                          const dayNumber = cell.querySelector('.fc-daygrid-day-number');
+                          const headerH = dayNumber ? Math.ceil(dayNumber.getBoundingClientRect().height) : 20;
+                          try {
+                            // Compute available inner height from the actual cell size and paddings (more robust than a magic constant)
+                            const cellStyle = window.getComputedStyle(cell);
+                            const cellInnerH = Math.max(0, cell.clientHeight - parseFloat(cellStyle.paddingTop || 0) - parseFloat(cellStyle.paddingBottom || 0));
+                            const availableForEvents = Math.max(0, cellInnerH - headerH);
+                            // Leave a small safety gap to avoid touching edges; ensure a minimum of 48px
+                            const maxEventsH = Math.max(48, availableForEvents - 4);
+                            eventsContainer.style.maxHeight = maxEventsH + 'px';
+                            eventsContainer.style.overflowY = 'auto';
+                            eventsContainer.style.boxSizing = 'border-box';
+                          } catch (_) {}
+                        }
+                      });
                     });
+
+                    console.log('🔧 Month rows forced to equal heights:', rows.length, 'perRowH=' + perRowH + 'px');
                   }
-                } catch (e) { /* ignore */ }
+                } catch (e) { console.warn('⚠ Failed to enforce month row heights', e); }
               }
             }
             

@@ -162,6 +162,7 @@
   transform: translateY(-2px) !important;
 }
 
+
 #scheduleCalendar .fc-event-title {
   font-weight: 600 !important;
   font-size: 13px !important;
@@ -172,6 +173,15 @@
   word-break: break-word !important;
   font-family: 'Poppins', sans-serif !important;
 }
+
+/* Per-type event colors (use event-type-<type> classes added by CalendarEngine) */
+#scheduleCalendar .fc-event.event-type-working_hours { background: linear-gradient(180deg,#27ae60,#229954) !important; color: #fff !important; border-color: #229954 !important; }
+#scheduleCalendar .fc-event.event-type-break { background: linear-gradient(180deg,#f39c12,#d68910) !important; color: #fff !important; border-color: #d68910 !important; }
+#scheduleCalendar .fc-event.event-type-lunch { background: linear-gradient(180deg,#e67e22,#ca6f1e) !important; color: #fff !important; border-color: #ca6f1e !important; }
+#scheduleCalendar .fc-event.event-type-vacation { background: linear-gradient(180deg,#3498db,#2980b9) !important; color: #fff !important; border-color: #2980b9 !important; }
+#scheduleCalendar .fc-event.event-type-sick_leave { background: linear-gradient(180deg,#9b59b6,#8e44ad) !important; color: #fff !important; border-color: #8e44ad !important; }
+#scheduleCalendar .fc-event.event-type-day_off { background: linear-gradient(180deg,#e74c3c,#c0392b) !important; color: #fff !important; border-color: #c0392b !important; }
+#scheduleCalendar .fc-event.event-type-booking { background: linear-gradient(180deg,#3498db,#2980b9) !important; color: #fff !important; border-color: #2980b9 !important; }
 
 
 /* Hover */
