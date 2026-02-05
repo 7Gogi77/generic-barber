@@ -574,34 +574,41 @@
            TIMEGRID (WEEK/DAY) - ENABLE VERTICAL SCROLLING
            ============================================ */
         
-        /* Enable scrolling for timegrid views to see all hours */
-        #scheduleCalendar.view-timegrid-week .fc-scroller,
-        #scheduleCalendar.view-timegrid-day .fc-scroller {
+        /* Disable scrollbar on the outer view container */
+        .fc-timeGridWeek-view,
+        .fc-timeGridDay-view,
+        .fc-timegrid {
+            overflow: hidden !important;
+        }
+
+        /* Enable scrolling only on the inner liquid scroller */
+        #scheduleCalendar.view-timegrid-week .fc-scroller-liquid-absolute,
+        #scheduleCalendar.view-timegrid-day .fc-scroller-liquid-absolute {
             overflow-y: auto !important;
         }
 
         /* Style scrollbars for a cleaner look */
-        #scheduleCalendar .fc-scroller::-webkit-scrollbar {
+        #scheduleCalendar .fc-scroller-liquid-absolute::-webkit-scrollbar {
             width: 8px;
             height: 8px;
         }
 
-        #scheduleCalendar .fc-scroller::-webkit-scrollbar-track {
+        #scheduleCalendar .fc-scroller-liquid-absolute::-webkit-scrollbar-track {
             background: var(--ios-bg-tertiary);
             border-radius: 4px;
         }
 
-        #scheduleCalendar .fc-scroller::-webkit-scrollbar-thumb {
+        #scheduleCalendar .fc-scroller-liquid-absolute::-webkit-scrollbar-thumb {
             background: var(--ios-text-tertiary);
             border-radius: 4px;
         }
 
-        #scheduleCalendar .fc-scroller::-webkit-scrollbar-thumb:hover {
+        #scheduleCalendar .fc-scroller-liquid-absolute::-webkit-scrollbar-thumb:hover {
             background: var(--ios-text-secondary);
         }
 
         /* Firefox scrollbar styling */
-        #scheduleCalendar .fc-scroller {
+        #scheduleCalendar .fc-scroller-liquid-absolute {
             scrollbar-width: thin;
             scrollbar-color: var(--ios-text-tertiary) var(--ios-bg-tertiary);
         }
