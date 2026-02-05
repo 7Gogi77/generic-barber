@@ -758,7 +758,7 @@
                             <label class="form-label-admin">Primarna Barva</label>
                             <div style="display: flex; gap: 10px; align-items: center;">
                                 <input id="theme-primary" type="color" class="form-input-admin" style="flex: 0.3; height: 40px; cursor: pointer;">
-                                <input id="theme-primary-text" type="text" class="form-input-admin" placeholder="#DC143C" style="flex: 0.7;">
+                                <input id="theme-primary-text" type="text" class="form-input-admin" placeholder="#007AFF" style="flex: 0.7;">
                             </div>
                         </div>
                         <div class="form-group-admin">
@@ -781,7 +781,7 @@
                             <label class="form-label-admin">Barva Gradienta - Start</label>
                             <div style="display: flex; gap: 10px; align-items: center;">
                                 <input id="theme-gradient-start" type="color" class="form-input-admin" style="flex: 0.3; height: 40px; cursor: pointer;">
-                                <input id="theme-gradient-start-text" type="text" class="form-input-admin" placeholder="#DC143C" style="flex: 0.7;">
+                                <input id="theme-gradient-start-text" type="text" class="form-input-admin" placeholder="#007AFF" style="flex: 0.7;">
                             </div>
                         </div>
                     </div>
@@ -827,7 +827,7 @@
                             <label class="form-label-admin">Barva Gumbov</label>
                             <div style="display: flex; gap: 10px; align-items: center;">
                                 <input id="button-color" type="color" class="form-input-admin" style="flex: 0.3; height: 40px; cursor: pointer;">
-                                <input id="button-color-text" type="text" class="form-input-admin" placeholder="#DC143C" style="flex: 0.7;">
+                                <input id="button-color-text" type="text" class="form-input-admin" placeholder="#007AFF" style="flex: 0.7;">
                             </div>
                         </div>
                         <div class="form-group-admin">
@@ -850,7 +850,7 @@
                             <label class="form-label-admin">Barva Podčrtave Navigacije</label>
                             <div style="display: flex; gap: 10px; align-items: center;">
                                 <input id="nav-hover-color" type="color" class="form-input-admin" style="flex: 0.3; height: 40px; cursor: pointer;">
-                                <input id="nav-hover-color-text" type="text" class="form-input-admin" placeholder="#DC143C" style="flex: 0.7;">
+                                <input id="nav-hover-color-text" type="text" class="form-input-admin" placeholder="#007AFF" style="flex: 0.7;">
                             </div>
                         </div>
                     </div>
@@ -1628,36 +1628,36 @@
 
             // Colors
             if (SITE_CONFIG.theme) {
-                document.getElementById('theme-primary').value = SITE_CONFIG.theme.primary || '#DC143C';
-                document.getElementById('theme-primary-text').value = SITE_CONFIG.theme.primary || '#DC143C';
-                document.getElementById('theme-dark').value = SITE_CONFIG.theme.dark || '#1a1a1a';
-                document.getElementById('theme-dark-text').value = SITE_CONFIG.theme.dark || '#1a1a1a';
-                document.getElementById('theme-card').value = SITE_CONFIG.theme.card || '#ffffff';
-                document.getElementById('theme-card-text').value = SITE_CONFIG.theme.card || '#ffffff';
-                document.getElementById('theme-gradient-start').value = SITE_CONFIG.theme.gradientStart || '#DC143C';
-                document.getElementById('theme-gradient-start-text').value = SITE_CONFIG.theme.gradientStart || '#DC143C';
-                document.getElementById('theme-gradient-end').value = SITE_CONFIG.theme.gradientEnd || '#FF6B6B';
-                document.getElementById('theme-gradient-end-text').value = SITE_CONFIG.theme.gradientEnd || '#FF6B6B';
+                document.getElementById('theme-primary').value = SITE_CONFIG.theme.primary || '#007AFF';
+                document.getElementById('theme-primary-text').value = SITE_CONFIG.theme.primary || '#007AFF';
+                document.getElementById('theme-dark').value = SITE_CONFIG.theme.dark || '#0A0A0A';
+                document.getElementById('theme-dark-text').value = SITE_CONFIG.theme.dark || '#0A0A0A';
+                document.getElementById('theme-card').value = SITE_CONFIG.theme.card || '#141414';
+                document.getElementById('theme-card-text').value = SITE_CONFIG.theme.card || '#141414';
+                document.getElementById('theme-gradient-start').value = SITE_CONFIG.theme.gradientStart || '#007AFF';
+                document.getElementById('theme-gradient-start-text').value = SITE_CONFIG.theme.gradientStart || '#007AFF';
+                document.getElementById('theme-gradient-end').value = SITE_CONFIG.theme.gradientEnd || '#5AC8FA';
+                document.getElementById('theme-gradient-end-text').value = SITE_CONFIG.theme.gradientEnd || '#5AC8FA';
                 
                 // Text & UI Colors
                 document.getElementById('text-primary').value = SITE_CONFIG.theme.textPrimary || '#FFFFFF';
                 document.getElementById('text-primary-text').value = SITE_CONFIG.theme.textPrimary || '#FFFFFF';
-                document.getElementById('text-secondary').value = SITE_CONFIG.theme.textSecondary || '#A0A0A0';
-                document.getElementById('text-secondary-text').value = SITE_CONFIG.theme.textSecondary || '#A0A0A0';
-                document.getElementById('button-color').value = SITE_CONFIG.theme.buttonColor || '#DC143C';
-                document.getElementById('button-color-text').value = SITE_CONFIG.theme.buttonColor || '#DC143C';
-                document.getElementById('button-text-color').value = SITE_CONFIG.theme.buttonTextColor || '#0A0A0A';
-                document.getElementById('button-text-color-text').value = SITE_CONFIG.theme.buttonTextColor || '#0A0A0A';
+                document.getElementById('text-secondary').value = SITE_CONFIG.theme.textSecondary || '#8E8E93';
+                document.getElementById('text-secondary-text').value = SITE_CONFIG.theme.textSecondary || '#8E8E93';
+                document.getElementById('button-color').value = SITE_CONFIG.theme.buttonColor || '#007AFF';
+                document.getElementById('button-color-text').value = SITE_CONFIG.theme.buttonColor || '#007AFF';
+                document.getElementById('button-text-color').value = SITE_CONFIG.theme.buttonTextColor || '#FFFFFF';
+                document.getElementById('button-text-color-text').value = SITE_CONFIG.theme.buttonTextColor || '#FFFFFF';
                 
                 // Nav & Footer Colors
-                document.getElementById('nav-text-color').value = SITE_CONFIG.theme.navTextColor || '#A0A0A0';
-                document.getElementById('nav-text-color-text').value = SITE_CONFIG.theme.navTextColor || '#A0A0A0';
-                document.getElementById('nav-hover-color').value = SITE_CONFIG.theme.navHoverColor || '#DC143C';
-                document.getElementById('nav-hover-color-text').value = SITE_CONFIG.theme.navHoverColor || '#DC143C';
+                document.getElementById('nav-text-color').value = SITE_CONFIG.theme.navTextColor || '#8E8E93';
+                document.getElementById('nav-text-color-text').value = SITE_CONFIG.theme.navTextColor || '#8E8E93';
+                document.getElementById('nav-hover-color').value = SITE_CONFIG.theme.navHoverColor || '#007AFF';
+                document.getElementById('nav-hover-color-text').value = SITE_CONFIG.theme.navHoverColor || '#007AFF';
                 document.getElementById('footer-bg-color').value = SITE_CONFIG.theme.footerBgColor || '#0A0A0A';
                 document.getElementById('footer-bg-color-text').value = SITE_CONFIG.theme.footerBgColor || '#0A0A0A';
-                document.getElementById('footer-text-color').value = SITE_CONFIG.theme.footerTextColor || '#606060';
-                document.getElementById('footer-text-color-text').value = SITE_CONFIG.theme.footerTextColor || '#606060';
+                document.getElementById('footer-text-color').value = SITE_CONFIG.theme.footerTextColor || '#636366';
+                document.getElementById('footer-text-color-text').value = SITE_CONFIG.theme.footerTextColor || '#636366';
 
                 // Sync color pickers with text inputs
                 syncColorInputs();
@@ -2457,19 +2457,20 @@
         function applyThemeToPage() {
             const t = SITE_CONFIG.theme;
             const root = document.documentElement;
-            root.style.setProperty('--color-primary', t.primary);
-            root.style.setProperty('--color-dark', t.dark);
-            root.style.setProperty('--color-card', t.card);
-            root.style.setProperty('--gradient-start', t.gradientStart);
-            root.style.setProperty('--gradient-end', t.gradientEnd);
+            root.style.setProperty('--color-primary', t.primary || '#007AFF');
+            root.style.setProperty('--color-dark', t.dark || '#0A0A0A');
+            root.style.setProperty('--color-card', t.card || '#141414');
+            root.style.setProperty('--gradient-start', t.gradientStart || t.primary || '#007AFF');
+            root.style.setProperty('--gradient-end', t.gradientEnd || '#5AC8FA');
             root.style.setProperty('--text-primary', t.textPrimary || '#FFFFFF');
-            root.style.setProperty('--text-secondary', t.textSecondary || '#A0A0A0');
-            root.style.setProperty('--button-color', t.buttonColor || '#DC143C');
-            root.style.setProperty('--button-text-color', t.buttonTextColor || '#0A0A0A');
-            root.style.setProperty('--nav-text-color', t.navTextColor || '#A0A0A0');
-            root.style.setProperty('--nav-hover-color', t.navHoverColor || '#DC143C');
+            root.style.setProperty('--text-secondary', t.textSecondary || '#8E8E93');
+            root.style.setProperty('--button-color', t.buttonColor || t.primary || '#007AFF');
+            root.style.setProperty('--button-text-color', t.buttonTextColor || '#FFFFFF');
+            root.style.setProperty('--nav-text-color', t.navTextColor || '#8E8E93');
+            root.style.setProperty('--nav-hover-color', t.navHoverColor || t.primary || '#007AFF');
             root.style.setProperty('--footer-bg-color', t.footerBgColor || '#0A0A0A');
-            root.style.setProperty('--footer-text-color', t.footerTextColor || '#606060');
+            root.style.setProperty('--footer-text-color', t.footerTextColor || '#636366');
+            root.style.setProperty('--text-gold', t.primary || '#007AFF');
         }
 
         function showNotification(message, type) {

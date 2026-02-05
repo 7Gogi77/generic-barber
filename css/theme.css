@@ -11,22 +11,23 @@
  */
 
 :root {
-    /* Color Variables (updated dynamically by admin.js) */
-    --color-primary: #DC143C;
+    /* Color Variables (updated dynamically by admin.js from Firebase config) */
+    /* These defaults are intentionally neutral - actual colors come from SITE_CONFIG */
+    --color-primary: #007AFF;
     --color-dark: #0A0A0A;
     --color-card: #141414;
-    --gradient-start: #DC143C;
-    --gradient-end: #FF6B6B;
-    --color-accent-blue: #003DA5;
+    --gradient-start: #007AFF;
+    --gradient-end: #5AC8FA;
+    --color-accent-blue: #007AFF;
     --text-primary: #FFFFFF;
-    --text-secondary: #A0A0A0;
-    --text-gold: #DC143C;
-    --button-color: #DC143C;
-    --button-text-color: #0A0A0A;
-    --nav-text-color: #A0A0A0;
-    --nav-hover-color: #DC143C;
+    --text-secondary: #8E8E93;
+    --text-gold: #007AFF;
+    --button-color: #007AFF;
+    --button-text-color: #FFFFFF;
+    --nav-text-color: #8E8E93;
+    --nav-hover-color: #007AFF;
     --footer-bg-color: #0A0A0A;
-    --footer-text-color: #606060;
+    --footer-text-color: #636366;
     
     /* Fonts */
     --font-serif: 'Cormorant Garamond', serif;
@@ -95,9 +96,9 @@ body {
 .gradient-overlay {
     background: linear-gradient(
         135deg,
-        rgba(220, 20, 60, 0.1) 0%,
-        rgba(255, 107, 107, 0.05) 50%,
-        rgba(220, 20, 60, 0.1) 100%
+        color-mix(in srgb, var(--color-primary) 10%, transparent) 0%,
+        color-mix(in srgb, var(--gradient-end) 5%, transparent) 50%,
+        color-mix(in srgb, var(--color-primary) 10%, transparent) 100%
     );
 }
 
@@ -340,7 +341,7 @@ section {
     padding: 40px;
     max-width: 400px;
     width: 90%;
-    box-shadow: 0 20px 60px rgba(220, 20, 60, 0.15);
+    box-shadow: 0 20px 60px color-mix(in srgb, var(--color-primary) 15%, transparent);
 }
 
 .admin-login-title {

@@ -22,32 +22,32 @@ const SITE_CONFIG = {
     
     // CENTRALIZED THEME SYSTEM
     // This object controls all visual styling across the site
-    // Colors inspired by classic barber shop aesthetic (Red, White, Blue)
+    // Default colors are neutral - customize via admin panel
     theme: {
-        // Primary Colors (Classic Barber Pole Colors)
-        primary: "#DC143C",           // Classic barber red
+        // Primary Colors
+        primary: "#007AFF",           // Default accent (iOS blue)
         dark: "#0A0A0A",              // Dark background
         card: "#141414",              // Card background
         
-        // Gradients (Red & Navy barber aesthetic)
-        gradientStart: "#DC143C",     // Crimson red start
-        gradientEnd: "#FF6B6B",       // Light red end
+        // Gradients
+        gradientStart: "#007AFF",     // Accent color start
+        gradientEnd: "#5AC8FA",       // Lighter accent end
         gradientDark: "#0A0A0A",      // Dark gradient
-        gradientAccent: "#003DA5",    // Navy blue accent
+        gradientAccent: "#007AFF",    // Accent
         
         // Text Colors
         textPrimary: "#FFFFFF",       // Main text (white)
-        textSecondary: "#A0A0A0",     // Secondary text
-        textGold: "#DC143C",          // Red accent text
+        textSecondary: "#8E8E93",     // Secondary text
+        textGold: "#007AFF",          // Accent text
         
-        // Accent Colors (Barber Pole)
-        accentRed: "#DC143C",         // Primary red
-        accentBlue: "#003DA5",        // Navy blue
+        // Accent Colors
+        accentRed: "#007AFF",         // Primary accent
+        accentBlue: "#007AFF",        // Blue accent
         accentWhite: "#FFFFFF",       // White
         
         // Border Colors
         borderLight: "rgba(255,255,255,0.1)",
-        borderGold: "rgba(220,20,60,0.3)",
+        borderGold: "rgba(0,122,255,0.3)",
         
         // Functional Colors
         success: "#4ADE80",           // Success messages
@@ -59,8 +59,8 @@ const SITE_CONFIG = {
         fontSans: "Montserrat, sans-serif"
     },
     
-    // PRIMARY GOLD (kept for backward compatibility - now uses barber red)
-    primaryGold: "#DC143C",      // Barber red accent color
+    // PRIMARY ACCENT (kept for backward compatibility)
+    primaryGold: "#007AFF",      // Primary accent color
     
 	// Navigation Menu
     navLinks: [
