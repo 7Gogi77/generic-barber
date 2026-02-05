@@ -4,9 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rezervacija termina</title>
+    <!-- PWA Meta Tags -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#007AFF">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="/icons/icon-192.png">
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/premium-enhancements.css">
     <style>
         /* ===== iOS DESIGN SYSTEM ===== */
         :root {
@@ -1777,6 +1785,11 @@
                 // Go to success step
                 goToStep(5);
                 
+                // Fire confetti celebration! 🎉
+                if (typeof fireConfetti === 'function') {
+                    fireConfetti();
+                }
+                
             } catch (err) {
                 console.error('❌ Error saving booking:', err);
                 alert('Prišlo je do napake. Prosimo, poskusite znova.');
@@ -1866,5 +1879,7 @@
             updateNavigationButtons();
         }
     </script>
+    <!-- Premium Enhancements (PWA, Confetti, etc.) -->
+    <script src="js/premium-enhancements.js"></script>
 </body>
 </html>
