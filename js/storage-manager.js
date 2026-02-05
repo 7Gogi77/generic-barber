@@ -1,13 +1,13 @@
 /**
- * Storage Manager - Abstraction layer for Vercel KV or localStorage
- * Provides consistent API regardless of backend
+ * Storage Manager - Abstraction layer with Firebase sync
+ * Always syncs to Firebase for reliable cross-device access
  */
 
 const StorageManager = {
   /**
-   * Detect if Vercel KV is available
+   * Firebase Database URL
    */
-  isKVAvailable: typeof fetch !== 'undefined',
+  firebaseUrl: 'https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app',
 
   /**
    * Save schedule data
@@ -20,48 +20,32 @@ const StorageManager = {
     data.metadata.lastModified = Date.now();
     data.metadata.lastSync = Date.now();
 
-    // Skip KV API call in local development (http-server can't run Node.js)
-    // Just use localStorage directly for local testing
-    if (!this._isProduction()) {
-      try {
-        localStorage.setItem(key, JSON.stringify(data));
-        console.log('✓ Saved to localStorage:', key);
-        return { ok: true, method: 'localStorage' };
-      } catch (lsError) {
-        console.error('✗ localStorage save failed:', lsError);
-        return { ok: false, error: lsError };
-      }
-    }
-
-    // Try Vercel KV first (production only)
-    if (this.isKVAvailable) {
-      try {
-        const response = await fetch('/api/schedule', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            key: key,
-            data: data
-          })
-        });
-
-        if (!response.ok) throw new Error('KV save failed');
-
-        console.log('✓ Saved to Vercel KV:', key);
-        return { ok: true, method: 'kv' };
-      } catch (kvError) {
-        console.warn('⚠ KV save failed, falling back to localStorage:', kvError);
-      }
-    }
-
-    // Fallback to localStorage
+    // Always save to localStorage first (fast, reliable)
     try {
       localStorage.setItem(key, JSON.stringify(data));
       console.log('✓ Saved to localStorage:', key);
-      return { ok: true, method: 'localStorage' };
     } catch (lsError) {
-      console.error('✗ localStorage save failed:', lsError);
-      return { ok: false, error: lsError };
+      console.warn('⚠ localStorage save failed:', lsError);
+    }
+
+    // Always sync to Firebase (works everywhere)
+    try {
+      const response = await fetch(`${this.firebaseUrl}/${key}.json`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+
+      if (response.ok) {
+        console.log('✓ Saved to Firebase:', key);
+        return { ok: true, method: 'firebase' };
+      } else {
+        throw new Error('Firebase save failed');
+      }
+    } catch (fbError) {
+      console.warn('⚠ Firebase save failed:', fbError);
+      // localStorage already saved, so return ok
+      return { ok: true, method: 'localStorage' };
     }
   },
 
@@ -70,81 +54,56 @@ const StorageManager = {
    * @param {string} key - Storage key
    */
   async load(key) {
-    // Skip KV API call in local development
-    if (!this._isProduction()) {
-      try {
-        const item = localStorage.getItem(key);
-        const data = item ? JSON.parse(item) : this._getDefaultSchedule();
-        console.log('✓ Loaded from localStorage:', key);
-        return data;
-      } catch (lsError) {
-        console.warn('⚠ localStorage load failed, using default:', lsError);
-        return this._getDefaultSchedule();
-      }
-    }
-
-    // Try Vercel KV first (production only)
-    if (this.isKVAvailable) {
-      try {
-        const response = await fetch(`/api/schedule?key=${key}`);
-
-        if (response.ok) {
-          const data = await response.json();
-          console.log('✓ Loaded from Vercel KV:', key);
+    // Try Firebase first (single source of truth)
+    try {
+      const response = await fetch(`${this.firebaseUrl}/${key}.json`);
+      
+      if (response.ok) {
+        const data = await response.json();
+        
+        if (data && data.events) {
+          console.log('✓ Loaded from Firebase:', key, '- Events:', data.events.length);
+          // Update localStorage cache
+          localStorage.setItem(key, JSON.stringify(data));
           return data;
         }
-      } catch (kvError) {
-        console.warn('⚠ KV load failed, trying localStorage:', kvError);
       }
+    } catch (fbError) {
+      console.warn('⚠ Firebase load failed, trying localStorage:', fbError);
     }
 
     // Fallback to localStorage
     try {
-      const data = localStorage.getItem(key);
-      if (data) {
+      const item = localStorage.getItem(key);
+      if (item) {
+        const data = JSON.parse(item);
         console.log('✓ Loaded from localStorage:', key);
-        return JSON.parse(data);
+        return data;
       }
     } catch (lsError) {
       console.warn('⚠ localStorage load failed:', lsError);
     }
 
-    // Return empty schedule if nothing found
-    return {
-      version: '1.0',
-      timezone: 'UTC',
-      settings: {
-        weekStart: 1,
-        defaultWorkStart: 9,
-        defaultWorkEnd: 17
-      },
-      events: [],
-      metadata: {
-        lastSync: 0,
-        lastModified: 0
-      }
-    };
+    // Return default schedule
+    console.log('📋 No schedule found, returning default');
+    return this._getDefaultSchedule();
   },
 
   /**
    * Delete schedule data
    */
   async delete(key) {
-    // Try KV
-    if (this.isKVAvailable) {
-      try {
-        await fetch('/api/schedule', {
-          method: 'DELETE',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ key })
-        });
-        console.log('✓ Deleted from Vercel KV:', key);
-      } catch (e) {
-        console.warn('⚠ KV delete failed, trying localStorage:', e);
-      }
+    // Delete from Firebase
+    try {
+      await fetch(`${this.firebaseUrl}/${key}.json`, {
+        method: 'DELETE'
+      });
+      console.log('✓ Deleted from Firebase:', key);
+    } catch (e) {
+      console.warn('⚠ Firebase delete failed:', e);
     }
 
-    // Try localStorage
+    // Delete from localStorage
     try {
       localStorage.removeItem(key);
       console.log('✓ Deleted from localStorage:', key);
@@ -223,13 +182,6 @@ const StorageManager = {
       reader.onerror = () => reject(reader.error);
       reader.readAsText(file);
     });
-  },
-
-  /**
-   * Check if running in production (Vercel)
-   */
-  _isProduction() {
-    return typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
   },
 
   /**
