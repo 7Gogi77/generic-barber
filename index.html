@@ -131,7 +131,7 @@
         <div class="relative z-20 text-center px-4">
             <span class="block text-gold tracking-[0.5em] text-xs mb-4 reveal" id="hero-sub"></span>
             <h1 class="text-6xl md:text-8xl font-serif mb-8 reveal italic" id="hero-main"></h1>
-            <a href="#services" id="hero-btn" class="inline-block border border-white/20 px-10 py-4 uppercase tracking-widest text-[10px] hover:border-gold reveal"></a>
+            <a href="rezervacija.html" id="hero-btn" class="inline-block border border-white/20 px-10 py-4 uppercase tracking-widest text-[10px] hover:border-gold reveal"></a>
         </div>
     </section>
 
@@ -174,110 +174,6 @@
 
     <section id="gallery" class="bg-dark py-20 px-8 reveal">
         <div id="gallery-list" class="max-w-6xl mx-auto columns-1 md:columns-3 gap-4 space-y-4"></div>
-    </section>
-
-    <section id="booking" class="bg-card py-32 px-8 reveal text-center">
-        <div class="max-w-4xl mx-auto">
-            <h2 id="booking-title" class="text-4xl font-serif mb-16 italic text-gold uppercase tracking-widest"></h2>
-            
-            <div id="appointmentWidget" class="bg-dark rounded-lg p-8 shadow-2xl">
-                <!-- Step 1: Service Selection -->
-                <div id="step1" class="appointment-step active">
-                    <div class="text-center mb-8">
-                        <h3 class="text-2xl font-serif text-white mb-2">Izberi Storitve</h3>
-                        <p class="text-gray-400 text-sm">Izberi eno ali več storitev</p>
-                    </div>
-                    <div id="servicesGrid" class="grid md:grid-cols-2 gap-4 mb-8"></div>
-                    <div class="bg-card p-4 rounded border border-white/10 mb-8">
-                        <div class="flex justify-between items-center mb-2">
-                            <span class="text-gray-400">Skupni čas:</span>
-                            <span class="text-gold font-serif text-lg" id="totalDuration">0 min</span>
-                        </div>
-                        <div class="flex justify-between items-center">
-                            <span class="text-gray-400">Skupna cena:</span>
-                            <span class="text-gold font-serif text-lg" id="totalPrice">0€</span>
-                        </div>
-                    </div>
-                    <button id="nextBtn1" onclick="nextStep()" class="w-full bg-gold text-dark py-3 font-bold uppercase tracking-widest text-sm hover:bg-white transition-all rounded disabled:opacity-50 disabled:cursor-not-allowed" disabled>Naprej</button>
-                </div>
-
-                <!-- Step 2: Calendar & Time Selection -->
-                <div id="step2" class="appointment-step">
-                    <div class="text-center mb-8">
-                        <h3 class="text-2xl font-serif text-white mb-2">Izberi Termin</h3>
-                        <p class="text-gray-400 text-sm">Izberi dan in čas</p>
-                    </div>
-                    
-                    <div class="grid md:grid-cols-2 gap-8 mb-8">
-                        <!-- Calendar -->
-                        <div class="bg-card p-6 rounded border border-white/10">
-                            <div id="calendar" class="calendar-widget"></div>
-                        </div>
-                        
-                        <!-- Time Slots -->
-                        <div class="bg-card p-6 rounded border border-white/10">
-                            <h4 class="text-white font-serif mb-4">Dostopni Termini</h4>
-                            <div id="timeSlots" class="space-y-2 max-h-96 overflow-y-auto"></div>
-                            <p id="noSlotsMsg" class="text-gray-500 text-sm text-center py-8">Izberi dan</p>
-                        </div>
-                    </div>
-                    
-                    <div class="flex gap-4">
-                        <button onclick="prevStep()" class="flex-1 bg-gray-700 text-white py-3 font-bold uppercase tracking-widest text-sm hover:bg-gray-600 transition-all rounded">Nazaj</button>
-                        <button id="nextBtn2" onclick="nextStep()" class="flex-1 bg-gold text-dark py-3 font-bold uppercase tracking-widest text-sm hover:bg-white transition-all rounded disabled:opacity-50 disabled:cursor-not-allowed" disabled>Naprej</button>
-                    </div>
-                </div>
-
-                <!-- Step 3: Contact Details & Confirmation -->
-                <div id="step3" class="appointment-step">
-                    <div class="text-center mb-8">
-                        <h3 class="text-2xl font-serif text-white mb-2">Potrditev</h3>
-                        <p class="text-gray-400 text-sm">Vpiši svoje podatke</p>
-                    </div>
-                    
-                    <form id="appointmentForm" class="space-y-4 mb-8">
-                        <div class="grid md:grid-cols-2 gap-4">
-                            <input type="text" id="appointmentFirstName" placeholder="Ime" class="w-full bg-transparent border-b border-gold/30 py-3 outline-none focus:border-gold text-white text-sm tracking-widest" required>
-                            <input type="text" id="appointmentSurname" placeholder="Priimek" class="w-full bg-transparent border-b border-gold/30 py-3 outline-none focus:border-gold text-white text-sm tracking-widest" required>
-                        </div>
-                        <input type="email" id="appointmentEmail" placeholder="E-pošta" class="w-full bg-transparent border-b border-gold/30 py-3 outline-none focus:border-gold text-white text-sm tracking-widest" required>
-                        <input type="tel" id="appointmentPhone" placeholder="Telefonska Številka" class="w-full bg-transparent border-b border-gold/30 py-3 outline-none focus:border-gold text-white text-sm tracking-widest" required>
-                    </form>
-                    
-                    <div class="bg-card p-4 rounded border border-white/10 mb-8 text-left">
-                        <h4 class="text-white font-serif mb-4">Povzetek Naročila</h4>
-                        <div id="summaryServices" class="text-gray-300 text-sm mb-3"></div>
-                        <div class="border-t border-white/10 pt-3 flex justify-between">
-                            <span class="text-gray-400">Termin:</span>
-                            <span id="summaryDateTime" class="text-gold">—</span>
-                        </div>
-                    </div>
-                    
-                    <div class="flex gap-4">
-                        <button onclick="prevStep()" class="flex-1 bg-gray-700 text-white py-3 font-bold uppercase tracking-widest text-sm hover:bg-gray-600 transition-all rounded">Nazaj</button>
-                        <button id="confirmBtn" onclick="confirmAppointment()" class="flex-1 bg-gold text-dark py-3 font-bold uppercase tracking-widest text-sm hover:bg-white transition-all rounded">Potrdi Termin</button>
-                    </div>
-                </div>
-
-                <!-- Step 4: Success Confirmation -->
-                <div id="step4" class="appointment-step text-center">
-                    <div class="mb-8">
-                        <div class="text-6xl mb-4">✓</div>
-                        <h3 class="text-2xl font-serif text-gold mb-4">Termin Potrjen!</h3>
-                        <p class="text-gray-400 mb-6">Preverite svojo e-pošto za potrdilo naročila</p>
-                        <div id="successDetails" class="bg-card p-6 rounded border border-gold/30 mb-8 text-left text-sm">
-                            <p><span class="text-gray-500">Ime:</span> <span class="text-white" id="successFirstName"></span></p>
-                            <p><span class="text-gray-500">Priimek:</span> <span class="text-white" id="successSurname"></span></p>
-                            <p><span class="text-gray-500">E-pošta:</span> <span class="text-white" id="successEmail"></span></p>
-                            <p><span class="text-gray-500">Telefonska Številka:</span> <span class="text-white" id="successPhone"></span></p>
-                            <p><span class="text-gray-500">Termin:</span> <span class="text-white" id="successDateTime"></span></p>
-                            <p><span class="text-gray-500">Storitve:</span> <span class="text-white" id="successServices"></span></p>
-                        </div>
-                    </div>
-                    <button onclick="resetAppointment()" class="w-full bg-gold text-dark py-3 font-bold uppercase tracking-widest text-sm hover:bg-white transition-all rounded">Nazaj na Domačo Stran</button>
-                </div>
-            </div>
-        </div>
     </section>
 
     <footer class="py-12 border-t border-white/5 text-center text-[9px] tracking-[0.4em] uppercase">
