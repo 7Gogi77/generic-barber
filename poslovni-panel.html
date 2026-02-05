@@ -571,39 +571,39 @@
         }
 
         /* ============================================
-           TIMEGRID (WEEK/DAY) - HIDE ALL SCROLLBARS
+           TIMEGRID (WEEK/DAY) - ENABLE VERTICAL SCROLLING
            ============================================ */
         
-        /* Main calendar container in timegrid views - hide overflow */
-        #scheduleCalendar.view-timegrid-week,
-        #scheduleCalendar.view-timegrid-day {
-            overflow: hidden !important;
+        /* Enable scrolling for timegrid views to see all hours */
+        #scheduleCalendar.view-timegrid-week .fc-scroller,
+        #scheduleCalendar.view-timegrid-day .fc-scroller {
+            overflow-y: auto !important;
         }
 
-        /* NUCLEAR OPTION - Hide ALL scrollbars everywhere in calendar */
-        #scheduleCalendar *,
-        #scheduleCalendar .fc-scroller,
-        #scheduleCalendar .fc-scroller-harness,
-        #scheduleCalendar .fc-scroller-liquid,
-        #scheduleCalendar .fc-scroller-liquid-absolute,
-        #scheduleCalendar .fc-timegrid-body,
-        #scheduleCalendar .fc-timegrid-slots,
-        #scheduleCalendar .fc-scrollgrid-section,
-        #scheduleCalendar .fc-scrollgrid-section-body,
-        #scheduleCalendar .fc-scrollgrid-section-header {
-            scrollbar-width: none !important; /* Firefox */
-            -ms-overflow-style: none !important; /* IE/Edge */
+        /* Style scrollbars for a cleaner look */
+        #scheduleCalendar .fc-scroller::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
         }
 
-        #scheduleCalendar *::-webkit-scrollbar,
-        #scheduleCalendar .fc-scroller::-webkit-scrollbar,
-        #scheduleCalendar .fc-scroller-harness::-webkit-scrollbar,
-        #scheduleCalendar .fc-scroller-liquid::-webkit-scrollbar,
-        #scheduleCalendar .fc-scroller-liquid-absolute::-webkit-scrollbar {
-            display: none !important; /* Chrome/Safari */
-            width: 0 !important;
-            height: 0 !important;
-            background: transparent !important;
+        #scheduleCalendar .fc-scroller::-webkit-scrollbar-track {
+            background: var(--ios-bg-tertiary);
+            border-radius: 4px;
+        }
+
+        #scheduleCalendar .fc-scroller::-webkit-scrollbar-thumb {
+            background: var(--ios-text-tertiary);
+            border-radius: 4px;
+        }
+
+        #scheduleCalendar .fc-scroller::-webkit-scrollbar-thumb:hover {
+            background: var(--ios-text-secondary);
+        }
+
+        /* Firefox scrollbar styling */
+        #scheduleCalendar .fc-scroller {
+            scrollbar-width: thin;
+            scrollbar-color: var(--ios-text-tertiary) var(--ios-bg-tertiary);
         }
 
         /* TimeGrid styling */
