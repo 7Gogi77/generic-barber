@@ -535,14 +535,14 @@
         .fc-view-harness {
             flex: 1 !important;
             min-height: 0 !important; /* Allow shrinking */
-            overflow: hidden;
+            overflow: visible;
             border-radius: 0 0 var(--ios-radius-lg) var(--ios-radius-lg);
         }
 
         .fc-view-harness-active {
             flex: 1 !important;
             min-height: 0 !important;
-            overflow: hidden;
+            overflow: visible;
         }
 
         /* Make views fill the harness and use internal scrolling */
@@ -574,23 +574,18 @@
            TIMEGRID (WEEK/DAY) - ENABLE VERTICAL SCROLLING
            ============================================ */
         
-        /* Disable scrollbar on the outer view container only */
-        .fc-timeGridWeek-view,
-        .fc-timeGridDay-view {
-            overflow: hidden !important;
+        /* Force scrolling on the scroller element */
+        #scheduleCalendar .fc-scroller {
+            overflow: auto !important;
         }
-
-        /* Allow the scroller harness to contain the scrollable area */
-        #scheduleCalendar.view-timegrid-week .fc-scroller-harness,
-        #scheduleCalendar.view-timegrid-day .fc-scroller-harness {
-            overflow: visible !important;
-        }
-
-        /* Enable scrolling only on the inner liquid scroller */
-        #scheduleCalendar.view-timegrid-week .fc-scroller-liquid-absolute,
-        #scheduleCalendar.view-timegrid-day .fc-scroller-liquid-absolute {
-            overflow-y: auto !important;
-            overflow-x: hidden !important;
+        
+        #scheduleCalendar .fc-scroller-liquid-absolute {
+            overflow: auto !important;
+            position: absolute !important;
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            bottom: 0 !important;
         }
 
         /* Style scrollbars for a cleaner look */
