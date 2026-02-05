@@ -605,7 +605,7 @@ const CalendarEngine = {
         // Initial vertical scroll position in timeGrid views
         scrollTime: initialScrollTime,
         height: calcHeight,
-        contentHeight: 'auto',
+        // Remove contentHeight: 'auto' to enable scrolling in timegrid views
 
         // Load events - always fetch fresh from storage to avoid duplicates
         events: async (info, successCallback, failureCallback) => {
