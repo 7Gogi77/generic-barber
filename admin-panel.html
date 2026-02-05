@@ -999,6 +999,55 @@
                     </div>
                 </div>
 
+                <!-- CTA SECTION -->
+                <div class="admin-section">
+                    <div class="section-title"><i class="bi bi-megaphone"></i> CTA Sekcija (Poziv k Akciji)</div>
+                    <p style="font-size: 12px; color: #666; margin-bottom: 15px;">Sekcija pred nogo strani z gumbom za rezervacijo</p>
+                    <div class="form-row">
+                        <div class="form-group-admin">
+                            <label class="form-label-admin">Naslov CTA</label>
+                            <input id="ctaTitle" type="text" class="form-input-admin" placeholder="Pripravljeni na Spremembo?">
+                        </div>
+                    </div>
+                    <div class="form-row full">
+                        <div class="form-group-admin">
+                            <label class="form-label-admin">Besedilo CTA</label>
+                            <textarea id="ctaText" class="form-input-admin" style="min-height: 60px;" placeholder="Rezervirajte svoj termin danes in doživite našo profesionalno storitev."></textarea>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group-admin">
+                            <label class="form-label-admin">Besedilo Gumba CTA</label>
+                            <input id="ctaButtonText" type="text" class="form-input-admin" placeholder="Rezerviraj Zdaj">
+                        </div>
+                    </div>
+                    <button class="save-btn" onclick="saveCtaSection()">Shrani CTA</button>
+                </div>
+
+                <!-- FOOTER SECTION -->
+                <div class="admin-section">
+                    <div class="section-title"><i class="bi bi-layout-text-sidebar"></i> Noga Strani (Footer)</div>
+                    <div class="form-row full">
+                        <div class="form-group-admin">
+                            <label class="form-label-admin">Besedilo Avtorskih Pravic</label>
+                            <input id="footerCopyText" type="text" class="form-input-admin" placeholder="Vse pravice pridržane.">
+                            <small style="color: #666; font-size: 11px;">Pred tekstom se samodejno doda "© leto ImePodjeta."</small>
+                        </div>
+                    </div>
+                    <button class="save-btn" onclick="saveFooterCopy()">Shrani Nogo</button>
+                </div>
+
+                <!-- NAVIGATION LINKS SECTION -->
+                <div class="admin-section">
+                    <div class="section-title"><i class="bi bi-list-ul"></i> Navigacijske Povezave</div>
+                    <p style="font-size: 12px; color: #666; margin-bottom: 15px;">Upravljaj povezave v navigaciji in nogi strani</p>
+                    <div id="navLinksContainer"></div>
+                    <button class="save-btn" style="background: #28a745; margin-top: 10px;" onclick="addNavLink()">
+                        <i class="bi bi-plus-circle"></i> Dodaj Povezavo
+                    </button>
+                    <button class="save-btn" onclick="saveNavLinks()" style="margin-top: 10px;">Shrani Povezave</button>
+                </div>
+
                 <!-- SECTION TITLES -->
                 <div class="admin-section">
                     <div class="section-title"><i class="bi bi-pin-angle"></i> Naslovi Razdelkov</div>
@@ -1636,6 +1685,19 @@
             // Testimonial
             document.getElementById('testimonialQuote').value = SITE_CONFIG.testimonial?.quote || '';
             document.getElementById('testimonialAuthor').value = SITE_CONFIG.testimonial?.author || '';
+
+            // CTA Section
+            if (SITE_CONFIG.ctaSection) {
+                document.getElementById('ctaTitle').value = SITE_CONFIG.ctaSection.title || 'Pripravljeni na Spremembo?';
+                document.getElementById('ctaText').value = SITE_CONFIG.ctaSection.text || '';
+                document.getElementById('ctaButtonText').value = SITE_CONFIG.ctaSection.buttonText || 'Rezerviraj Zdaj';
+            }
+
+            // Footer Copy
+            document.getElementById('footerCopyText').value = SITE_CONFIG.footerCopy || 'Vse pravice pridržane.';
+
+            // Navigation Links
+            renderNavLinks();
 
             // Navigation
             document.getElementById('navButtonText').value = SITE_CONFIG.navButtonText || 'Book Now';
@@ -2405,6 +2467,83 @@
             }
             saveConfig();
             showNotification('Naslovi shranjeni', 'success');
+        }
+
+        // Save CTA section
+        function saveCtaSection() {
+            if (!SITE_CONFIG.ctaSection) SITE_CONFIG.ctaSection = {};
+            SITE_CONFIG.ctaSection.title = document.getElementById('ctaTitle').value || 'Pripravljeni na Spremembo?';
+            SITE_CONFIG.ctaSection.text = document.getElementById('ctaText').value || 'Rezervirajte svoj termin danes in doživite našo profesionalno storitev.';
+            SITE_CONFIG.ctaSection.buttonText = document.getElementById('ctaButtonText').value || 'Rezerviraj Zdaj';
+            saveConfig();
+            showNotification('CTA sekcija shranjena!', 'success');
+        }
+
+        // Save footer copy
+        function saveFooterCopy() {
+            SITE_CONFIG.footerCopy = document.getElementById('footerCopyText').value || 'Vse pravice pridržane.';
+            saveConfig();
+            showNotification('Noga strani shranjena!', 'success');
+        }
+
+        // Navigation links management
+        function renderNavLinks() {
+            const container = document.getElementById('navLinksContainer');
+            if (!container) return;
+            container.innerHTML = '';
+            
+            const links = SITE_CONFIG.navLinks || [];
+            links.forEach((link, index) => {
+                const row = document.createElement('div');
+                row.className = 'form-row';
+                row.style.marginBottom = '10px';
+                row.innerHTML = `
+                    <div class="form-group-admin" style="flex: 1;">
+                        <label class="form-label-admin">Ime Povezave</label>
+                        <input type="text" class="form-input-admin nav-link-name" data-index="${index}" value="${link.name || ''}" placeholder="Home">
+                    </div>
+                    <div class="form-group-admin" style="flex: 1;">
+                        <label class="form-label-admin">URL / Anchor</label>
+                        <input type="text" class="form-input-admin nav-link-url" data-index="${index}" value="${link.link || ''}" placeholder="#home">
+                    </div>
+                    <div class="form-group-admin" style="flex: 0 0 auto; display: flex; align-items: flex-end;">
+                        <button class="save-btn" style="background: #dc3545; padding: 8px 12px;" onclick="removeNavLink(${index})">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                `;
+                container.appendChild(row);
+            });
+        }
+
+        function addNavLink() {
+            if (!SITE_CONFIG.navLinks) SITE_CONFIG.navLinks = [];
+            SITE_CONFIG.navLinks.push({ name: '', link: '' });
+            renderNavLinks();
+        }
+
+        function removeNavLink(index) {
+            if (SITE_CONFIG.navLinks && SITE_CONFIG.navLinks[index] !== undefined) {
+                SITE_CONFIG.navLinks.splice(index, 1);
+                renderNavLinks();
+            }
+        }
+
+        function saveNavLinks() {
+            const nameInputs = document.querySelectorAll('.nav-link-name');
+            const urlInputs = document.querySelectorAll('.nav-link-url');
+            
+            SITE_CONFIG.navLinks = [];
+            nameInputs.forEach((input, i) => {
+                const name = input.value.trim();
+                const link = urlInputs[i] ? urlInputs[i].value.trim() : '';
+                if (name || link) {
+                    SITE_CONFIG.navLinks.push({ name, link });
+                }
+            });
+            
+            saveConfig();
+            showNotification('Navigacijske povezave shranjene!', 'success');
         }
 
         // Save theme colors

@@ -152,6 +152,16 @@ const SITE_CONFIG = {
         author: "James Harrington"
     },
 
+    // CTA (Call to Action) Section
+    ctaSection: {
+        title: "Pripravljeni na Spremembo?",
+        text: "Rezervirajte svoj termin danes in doživite našo profesionalno storitev.",
+        buttonText: "Rezerviraj Zdaj"
+    },
+
+    // Footer Section
+    footerCopy: "Vse pravice pridržane.",
+
     // Appointment / Booking Section
     booking: {
         title: "Naročilo Termina",              // Headline for the booking form (editable in admin)

@@ -890,10 +890,10 @@
     <!-- CTA Section -->
     <section class="cta-section reveal">
         <div class="container">
-            <h2 class="display-md">Pripravljeni na Spremembo?</h2>
-            <p>Rezervirajte svoj termin danes in doživite našo profesionalno storitev.</p>
+            <h2 class="display-md" id="cta-title">Pripravljeni na Spremembo?</h2>
+            <p id="cta-text">Rezervirajte svoj termin danes in doživite našo profesionalno storitev.</p>
             <a href="rezervacija.html" class="cta-button">
-                <span>Rezerviraj Zdaj</span>
+                <span id="cta-button-text">Rezerviraj Zdaj</span>
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
                 </svg>
@@ -1112,7 +1112,15 @@
                 link.innerText = item.name;
                 footerLinks.appendChild(link);
             });
-            document.getElementById('footer-copy').innerHTML = `© ${new Date().getFullYear()} ${SITE_CONFIG.shopName}. Vse pravice pridržane.`;
+            const footerCopyText = SITE_CONFIG.footerCopy || 'Vse pravice pridržane.';
+            document.getElementById('footer-copy').innerHTML = `© ${new Date().getFullYear()} ${SITE_CONFIG.shopName}. ${footerCopyText}`;
+            
+            // CTA Section
+            if (SITE_CONFIG.ctaSection) {
+                document.getElementById('cta-title').innerText = SITE_CONFIG.ctaSection.title || 'Pripravljeni na Spremembo?';
+                document.getElementById('cta-text').innerText = SITE_CONFIG.ctaSection.text || 'Rezervirajte svoj termin danes in doživite našo profesionalno storitev.';
+                document.getElementById('cta-button-text').innerText = SITE_CONFIG.ctaSection.buttonText || 'Rezerviraj Zdaj';
+            }
         }
         
         async function initSite() {
