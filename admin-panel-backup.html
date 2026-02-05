@@ -1,259 +1,101 @@
 <!DOCTYPE html>
 <html lang="sl">
 <head>
+        <!-- Bootstrap Icons -->
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Administracija | Blade & Bourbon</title>
-    <!-- Bootstrap Icons -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="js/config.js"></script>
     <link rel="stylesheet" href="admin-style.css">
     <style>
-        /* iOS-inspired overrides for admin panel */
-        :root {
-            --ios-blue: #007AFF;
-            --ios-green: #34C759;
-            --ios-red: #FF3B30;
-            --ios-orange: #FF9500;
-            --ios-bg-primary: #F2F2F7;
-            --ios-bg-secondary: #FFFFFF;
-            --ios-text-primary: #000000;
-            --ios-text-secondary: #8E8E93;
-            --ios-separator: rgba(60, 60, 67, 0.12);
-            --ios-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
-            --ios-radius-md: 12px;
-            --ios-radius-lg: 16px;
-        }
-        
-        body { 
-            background: var(--ios-bg-primary); 
-            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
-        }
+        body { background: #f5f5f5; }
         
         .admin-tabs {
             display: flex;
             gap: 0;
-            margin-bottom: 20px;
-            padding: 6px;
-            background: var(--ios-bg-secondary);
-            border-radius: var(--ios-radius-lg);
-            box-shadow: var(--ios-shadow-sm);
-            overflow-x: auto;
+            margin-bottom: 0;
+            border-bottom: 2px solid #e8ecf1;
+            padding: 0;
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
-        
         .tab-btn {
-            flex: 1;
-            min-width: fit-content;
-            padding: 14px 20px;
-            background: transparent;
+            padding: 14px 24px;
+            background: white;
             border: none;
-            border-radius: var(--ios-radius-md);
+            border-bottom: 4px solid transparent;
             cursor: pointer;
             font-size: 14px;
             font-weight: 500;
-            color: var(--ios-text-secondary);
-            transition: all 0.2s ease;
-            white-space: nowrap;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
+            color: #7f8c8d;
+            transition: all 0.3s ease;
+            margin: 0 2px;
         }
-        
         .tab-btn:hover {
-            background: var(--ios-bg-primary);
-            color: var(--ios-text-primary);
+            background: #f8fafb;
+            color: #2c3e50;
+            border-bottom-color: #bdc3c7;
         }
-        
         .tab-btn.active {
-            background: var(--ios-blue);
-            color: white;
+            color: #2c3e50;
+            border-bottom-color: #3498db;
+            background: white;
             font-weight: 600;
-            box-shadow: var(--ios-shadow-sm);
         }
-        
         .tab-content {
             display: none;
             padding: 20px;
-            animation: iosFadeIn 0.3s ease;
+            background: white;
         }
-        
         .tab-content.active {
             display: block;
         }
         
-        @keyframes iosFadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        .admin-header { background: white; border-bottom: 1px solid #ddd; padding: 20px; }
+        .admin-header h1 { margin: 0; font-size: 20px; color: #2c3e50; }
+        .logout-btn { background: #555; color: white; border: none; padding: 8px 16px; border-radius: 3px; cursor: pointer; font-size: 13px; }
+        .logout-btn:hover { background: #333; }
         
-        @keyframes iosSpin {
-            to { transform: rotate(360deg); }
-        }
+        .admin-section { margin-bottom: 20px; padding: 20px; background: white; border: 1px solid #e8ecf1; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .section-title { font-size: 15px; font-weight: 700; color: #2c3e50; margin-bottom: 18px; padding-bottom: 12px; border-bottom: 2px solid #ecf0f1; }
         
-        .admin-header { 
-            background: linear-gradient(180deg, #1C1C1E 0%, #2C2C2E 100%);
-            padding: 20px 24px; 
-            border-radius: var(--ios-radius-lg);
-            margin: 16px;
-            box-shadow: var(--ios-shadow-sm);
-        }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+        .form-row.full { grid-template-columns: 1fr; }
+        .form-group-admin { display: flex; flex-direction: column; }
+        .form-label-admin { font-size: 13px; font-weight: 600; color: #2c3e50; margin-bottom: 8px; }
+        .form-input-admin { padding: 10px 12px; border: 1.5px solid #d5dce0; border-radius: 6px; font-size: 13px; font-family: Poppins, sans-serif; background: #fafbfc; transition: all 0.3s; }
+        .form-input-admin:focus { outline: none; border-color: #3498db; background: white; box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1); }
         
-        .admin-header h1 { 
-            margin: 0; 
-            font-size: 20px; 
-            color: white;
-            font-weight: 600;
-        }
-        
-        .logout-btn { 
-            background: rgba(255, 255, 255, 0.1); 
-            color: white; 
-            border: none; 
-            padding: 10px 18px; 
-            border-radius: 8px; 
-            cursor: pointer; 
-            font-size: 13px;
-            font-weight: 500;
-            transition: all 0.2s;
-        }
-        
-        .logout-btn:hover { 
-            background: var(--ios-blue); 
-        }
-        
-        .admin-section { 
-            margin-bottom: 16px; 
-            padding: 20px; 
-            background: var(--ios-bg-secondary); 
-            border-radius: var(--ios-radius-lg); 
-            box-shadow: var(--ios-shadow-sm); 
-        }
-        
-        .section-title { 
-            font-size: 17px; 
-            font-weight: 600; 
-            color: var(--ios-text-primary); 
-            margin-bottom: 16px; 
-            padding-bottom: 12px; 
-            border-bottom: 1px solid var(--ios-separator); 
-        }
-        
-        .form-row { 
-            display: grid; 
-            grid-template-columns: 1fr 1fr; 
-            gap: 16px; 
-            margin-bottom: 16px; 
-        }
-        
-        .form-row.full { 
-            grid-template-columns: 1fr; 
-        }
-        
-        .form-group-admin { 
-            display: flex; 
-            flex-direction: column; 
-        }
-        
-        .form-label-admin { 
-            font-size: 13px; 
-            font-weight: 600; 
-            color: var(--ios-text-secondary); 
-            margin-bottom: 8px; 
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        
-        .form-input-admin { 
-            padding: 14px 16px; 
-            border: none; 
-            border-radius: var(--ios-radius-md); 
-            font-size: 16px; 
-            font-family: inherit; 
-            background: var(--ios-bg-primary); 
-            color: var(--ios-text-primary);
-            transition: all 0.2s; 
-        }
-        
-        .form-input-admin:focus { 
-            outline: none; 
-            background: white; 
-            box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.25); 
-        }
-        
-        .save-btn { 
-            background: var(--ios-blue); 
-            color: white; 
-            border: none; 
-            padding: 14px 24px; 
-            border-radius: var(--ios-radius-md); 
-            cursor: pointer; 
-            font-size: 16px; 
-            font-weight: 600; 
-            transition: all 0.2s; 
-        }
-        
-        .save-btn:hover { 
-            background: #0066d6;
-            transform: scale(1.02); 
-        }
+        .save-btn { background: #3498db; color: white; border: none; padding: 11px 22px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.3s; box-shadow: 0 2px 6px rgba(52, 152, 219, 0.3); }
+        .save-btn:hover { background: #2980b9; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(52, 152, 219, 0.4); }
 
-        /* iOS-style chart container */
-        .chart-container { 
-            background: var(--ios-bg-secondary); 
-            padding: 16px; 
-            border-radius: var(--ios-radius-lg); 
-            box-shadow: var(--ios-shadow-sm); 
-            min-height: 280px; 
-        }
+        /* Chart Container Class */
+        .chart-container { background: white; padding: 15px; border: 1.5px solid #e8ecf1; border-radius: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); min-height: 300px; display: flex; flex-direction: column; }
         
-        /* Working Hours Container */
-        .working-hours-container { 
-            display: grid; 
-            gap: 12px; 
-            margin-top: 12px; 
-        }
-
-        /* iOS color picker styling */
-        input[type="color"] {
-            width: 50px;
-            height: 50px;
-            border: 2px solid #C6C6C8;
-            border-radius: var(--ios-radius-md);
-            cursor: pointer;
-            padding: 3px;
-            background: white;
-        }
-        
-        input[type="color"]::-webkit-color-swatch-wrapper {
-            padding: 0;
-        }
-        
-        input[type="color"]::-webkit-color-swatch {
-            border-radius: 8px;
-            border: none;
-        }
+        /* Working Hours Container Class */
+        .working-hours-container { display: grid; gap: 12px; margin-top: 12px; }
 
         /* Responsive Design */
         @media (max-width: 1200px) {
             .form-row { grid-template-columns: 1fr; }
             .dashboard-grid { grid-template-columns: repeat(2, 1fr) !important; }
-            .tab-content { padding: 16px; }
+            .tab-content { padding: 18px; }
         }
 
         @media (max-width: 1024px) {
             .form-row { grid-template-columns: 1fr; }
-            .tab-content { padding: 14px; }
-            .admin-section { padding: 16px; margin-bottom: 14px; }
-            .section-title { font-size: 15px; margin-bottom: 14px; }
+            .tab-content { padding: 15px; }
+            .admin-section { padding: 18px; margin-bottom: 18px; }
+            .section-title { font-size: 14px; margin-bottom: 15px; }
         }
 
         @media (max-width: 768px) {
             .admin-tabs {
                 overflow-x: auto;
                 flex-wrap: nowrap;
-                padding: 4px;
             }
             .tab-btn {
                 padding: 12px 16px;
@@ -450,12 +292,12 @@
             }
             
             .fc-button-primary:not(:disabled):hover {
-                background-color: #0055cc !important;
+                background-color: #2980b9 !important;
             }
             
             .fc .fc-button-primary {
-                background-color: var(--ios-blue, #007AFF) !important;
-                border-color: var(--ios-blue, #007AFF) !important;
+                background-color: #3498db !important;
+                border-color: #3498db !important;
             }
             
             .fc .fc-col-header-cell {
@@ -711,7 +553,7 @@
 
             <!-- ===== TAB 1: VIDEZ (APPEARANCE) ===== -->
             <div id="videz" class="tab-content active">
-                <h2 style="margin: 0 0 20px 0; color: var(--ios-text-primary, #000); font-size: 22px; font-weight: 700; border-bottom: none; padding-bottom: 0;">Nastavitve Videza</h2>
+                <h2 style="margin: 0 0 20px 0; color: #2c3e50; font-size: 18px; border-bottom: 1px solid #ddd; padding-bottom: 10px;">Nastavitve Videza</h2>
                 
                 <!-- LOGO SECTION -->
                 <div class="admin-section">
@@ -883,7 +725,7 @@
 
             <!-- ===== TAB 2: VSEBINA (CONTENT) ===== -->
             <div id="vsebina" class="tab-content">
-                <h2 style="margin: 0 0 20px 0; color: var(--ios-text-primary, #000); font-size: 22px; font-weight: 700; border-bottom: none; padding-bottom: 0;">Vsebina in Tekst</h2>
+                <h2 style="margin: 0 0 20px 0; color: #2c3e50; font-size: 18px; border-bottom: 1px solid #ddd; padding-bottom: 10px;">Vsebina in Tekst</h2>
                 
                 <!-- SHOP NAME SECTION -->
                 <div class="admin-section">
@@ -1024,16 +866,16 @@
 
             <!-- ===== TAB 3: STORITVE (SERVICES & BARBERS) ===== -->
             <div id="storitve" class="tab-content">
-                <h2 style="margin: 0 0 20px 0; color: var(--ios-text-primary, #000); font-size: 22px; font-weight: 700; border-bottom: none; padding-bottom: 0;">Storitve in Brivci</h2>
+                <h2 style="margin: 0 0 20px 0; color: #2c3e50; font-size: 18px; border-bottom: 1px solid #ddd; padding-bottom: 10px;">Storitve in Brivci</h2>
 
                 <!-- SERVICES SECTION -->
                 <div class="admin-section">
                     <div class="section-title">Storitve in Cene</div>
-                    <p style="font-size: 13px; color: var(--ios-text-secondary, #8E8E93); margin-bottom: 16px;">Upravljaj s storitvami in cenami</p>
+                    <p style="font-size: 12px; color: #666; margin-bottom: 15px;">Upravljaj s storitvami in cenami</p>
                     <div id="servicesContainer"></div>
                     <div class="form-row" style="gap: 10px;">
-                        <button class="save-btn" onclick="addService()" style="background: var(--ios-green, #34C759); flex: 1;">+ Dodaj Storitev</button>
-                        <button class="save-btn" onclick="removeService()" style="background: var(--ios-red, #FF3B30); flex: 1;">- Odstrani Storitev</button>
+                        <button class="save-btn" onclick="addService()" style="background-color: #28a745; flex: 1;">+ Dodaj Storitev</button>
+                        <button class="save-btn" onclick="removeService()" style="background-color: #dc3545; flex: 1;">- Odstrani Storitev</button>
                         <button class="save-btn" onclick="saveServices()" style="flex: 2;">Shrani Storitve</button>
                     </div>
                 </div>
@@ -1041,11 +883,11 @@
                 <!-- BARBERS SECTION -->
                 <div class="admin-section">
                     <div class="section-title">Brivci in Profili</div>
-                    <p style="font-size: 13px; color: var(--ios-text-secondary, #8E8E93); margin-bottom: 16px;">Upravljaj s profili brivcev</p>
+                    <p style="font-size: 12px; color: #666; margin-bottom: 15px;">Upravljaj s profili brivcev</p>
                     <div id="barbersContainer"></div>
                     <div class="form-row" style="gap: 10px;">
-                        <button class="save-btn" onclick="addBarber()" style="background: var(--ios-green, #34C759); flex: 1;">+ Dodaj Brivca</button>
-                        <button class="save-btn" onclick="removeBarber()" style="background: var(--ios-red, #FF3B30); flex: 1;">- Odstrani Brivca</button>
+                        <button class="save-btn" onclick="addBarber()" style="background-color: #28a745; flex: 1;">+ Dodaj Brivca</button>
+                        <button class="save-btn" onclick="removeBarber()" style="background-color: #dc3545; flex: 1;">- Odstrani Brivca</button>
                         <button class="save-btn" onclick="saveBarbers()" style="flex: 2;">Shrani Brivce</button>
                     </div>
                 </div>
@@ -1117,7 +959,7 @@
 
             <!-- ===== TAB 4: PANEL (BUSINESS ANALYTICS) ===== -->
             <div id="panel" class="tab-content">
-                <h2 style="margin: 0 0 20px 0; color: var(--ios-text-primary, #000); font-size: 22px; font-weight: 700; border-bottom: none; padding-bottom: 0;">Poslovni Panel</h2>
+                <h2 style="margin: 0 0 20px 0; color: #2c3e50; font-size: 18px; border-bottom: 1px solid #ddd; padding-bottom: 10px;">Poslovni Panel</h2>
 
                 <!-- DEBUG SEKCIJA -->
                 <div id="debugSection" class="admin-section" style="background: #fff3cd; border: 1px solid #ffc107;">
@@ -1147,11 +989,11 @@
                         
                         <!-- Save Button -->
                         <div style="display: flex; align-items: flex-end;">
-                            <button onclick="saveWorkingHours()" style="width: 100%; padding: 10px; background: var(--ios-green, #34C759); color: white; border: none; border-radius: var(--ios-radius-sm, 8px); font-weight: 600; cursor: pointer; transition: all 0.3s;"><i class="bi bi-save"></i> Spremi Sate</button>
+                            <button onclick="saveWorkingHours()" style="width: 100%; padding: 10px; background: #27ae60; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.3s;"><i class="bi bi-save"></i> Spremi Sate</button>
                         </div>
                     </div>
                     
-                    <div id="workingHoursInfo" style="margin-top: 15px; padding: 12px; background: rgba(52, 199, 89, 0.1); border-radius: var(--ios-radius-sm, 8px); border-left: 4px solid var(--ios-green, #34C759); display: none;">
+                    <div id="workingHoursInfo" style="margin-top: 15px; padding: 12px; background: #e8f5e9; border-radius: 6px; border-left: 4px solid #27ae60; display: none;">
                         <p style="margin: 0; color: #2e7d32; font-size: 13px;">✓ Radni sati postavljeni: <strong id="workingHoursDisplay"></strong></p>
                     </div>
                 </div>
@@ -1162,8 +1004,8 @@
                     <p style="font-size: 13px; color: #7f8c8d; margin-bottom: 18px;">Upravljaj s svojo razpoložljivostjo in časom. Klikni na datum ali dragi, da ustvariš dogodek.</p>
                     
                     <!-- Event Legend -->
-                    <div style="margin-bottom: 20px; padding: 16px; background: var(--ios-bg-secondary, white); border-radius: var(--ios-radius-md, 12px); border-left: 4px solid var(--ios-blue, #007AFF); width: 100%; box-sizing: border-box; box-shadow: var(--ios-shadow-sm, 0 1px 3px rgba(0,0,0,0.08));">
-                        <div style="font-weight: 600; color: var(--ios-text-primary, #000); margin-bottom: 12px; font-size: 15px;">📋 Legenda Dogodkov:</div>
+                    <div style="margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #3498db; width: 100%; box-sizing: border-box;">
+                        <div style="font-weight: 600; color: #2c3e50; margin-bottom: 10px; font-size: 14px;">📋 Legenda Dogodkov:</div>
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 13px;">
                             <div style="display: flex; align-items: center; gap: 8px;"><span style="font-size: 16px;">💼</span><span>Dejlo (Delovni čas)</span></div>
                             <div style="display: flex; align-items: center; gap: 8px;"><span style="font-size: 16px;">☕</span><span>Pauza</span></div>
@@ -1175,18 +1017,13 @@
                         </div>
                     </div>
                     
-                    <!-- FullCalendar Container with iOS-style loading spinner -->
-                    <div id="scheduleCalendar" style="margin: 20px 0; background: var(--ios-bg-secondary, white); border-radius: var(--ios-radius-lg, 16px); padding: 0; box-shadow: var(--ios-shadow-sm, 0 1px 3px rgba(0,0,0,0.08)); display: flex; justify-content: center; align-items: center; flex-direction: column; width: 100%; box-sizing: border-box; color: var(--ios-text-secondary, #8E8E93); font-size: 14px; height: 700px; max-height: 700px; overflow: hidden; overflow-y: auto; overflow-x: clip;">
-                        <div class="ios-loading" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px;">
-                            <div style="width: 44px; height: 44px; border: 4px solid #E5E5EA; border-top-color: #007AFF; border-radius: 50%; animation: iosSpin 0.8s linear infinite;"></div>
-                            <span style="margin-top: 16px; color: #8E8E93; font-size: 15px; font-weight: 500;">Nalagam koledar...</span>
-                        </div>
-                    </div>
+                    <!-- FullCalendar Container (visible but empty until initialized) -->
+                    <div id="scheduleCalendar" style="margin: 20px 0; background: white; border-radius: 8px; padding: 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border: 1px solid #ecf0f1; display: block; width: 100%; box-sizing: border-box; color: #999; font-size: 14px; height: 700px; max-height: 700px; overflow: hidden; overflow-y: auto; overflow-x: clip;">⏳ Nalagam koledar...</div>
                     
-                    <!-- Event Modal with iOS styling -->
-                    <div id="eventModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); z-index: 10000; justify-content: center; align-items: center; flex-direction: column; padding: 20px;">
-                        <div style="background: var(--ios-bg-secondary, white); border-radius: var(--ios-radius-xl, 20px); padding: 28px; width: 100%; max-width: 480px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.25);" class="modal-content">
-                            <h3 style="margin: 0 0 20px 0; color: var(--ios-text-primary, #000); font-size: 22px; font-weight: 600;">📅 Novi Dogodek</h3>
+                    <!-- Event Modal -->
+                    <div id="eventModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 10000; justify-content: center; align-items: center; flex-direction: column; padding: 20px;">
+                        <div style="background: white; border-radius: 12px; padding: 30px; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 40px rgba(0,0,0,0.3);" class="modal-content">
+                            <h3 style="margin: 0 0 20px 0; color: #2c3e50; font-size: 24px;">📅 Novi Dogodek</h3>
                             
                             <form id="eventForm" style="display: flex; flex-direction: column; gap: 15px;">
                                 <!-- Title Input -->
@@ -1223,20 +1060,20 @@
 
                                 <!-- Action Buttons -->
                                 <div style="display: flex; gap: 10px; margin-top: 20px;">
-                                    <button type="submit" style="flex: 1; padding: 12px; background: var(--ios-green, #34C759); color: white; border: none; border-radius: var(--ios-radius-sm, 8px); font-weight: 600; cursor: pointer; font-size: 14px; transition: background 0.2s;">✓ Shrani</button>
-                                    <button type="button" id="eventDeleteBtn" style="flex: 1; padding: 12px; background: var(--ios-red, #FF3B30); color: white; border: none; border-radius: var(--ios-radius-sm, 8px); font-weight: 600; cursor: pointer; font-size: 14px; transition: background 0.2s; display: none;">🗑️ Izbriši</button>
-                                    <button type="button" id="eventCancelBtn" style="flex: 1; padding: 12px; background: var(--ios-text-secondary, #8E8E93); color: white; border: none; border-radius: var(--ios-radius-sm, 8px); font-weight: 600; cursor: pointer; font-size: 14px; transition: background 0.2s;">✕ Prekliči</button>
+                                    <button type="submit" style="flex: 1; padding: 12px; background: #27ae60; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 14px; transition: background 0.2s;">✓ Shrani</button>
+                                    <button type="button" id="eventDeleteBtn" style="flex: 1; padding: 12px; background: #e74c3c; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 14px; transition: background 0.2s; display: none;">🗑️ Izbriši</button>
+                                    <button type="button" id="eventCancelBtn" style="flex: 1; padding: 12px; background: #95a5a6; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 14px; transition: background 0.2s;">✕ Prekliči</button>
                                 </div>
                             </form>
                         </div>
                     </div>
                     
                     <!-- Legend -->
-                    <div style="background: var(--ios-bg-secondary, white); padding: 16px; border-radius: var(--ios-radius-md, 12px); border-left: 4px solid var(--ios-blue, #007AFF); margin-top: 20px; font-size: 12px; box-shadow: var(--ios-shadow-sm, 0 1px 3px rgba(0,0,0,0.08));">
-                        <p style="margin: 0 0 10px 0; font-weight: 600; color: var(--ios-text-primary, #000);">Vrste Dogodkov:</p>
+                    <div style="background: #f8fafb; padding: 15px; border-radius: 6px; border-left: 4px solid #3498db; margin-top: 20px; font-size: 12px;">
+                        <p style="margin: 0 0 10px 0; font-weight: 600; color: #2c3e50;">Vrste Dogodkov:</p>
                         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px;">
-                            <div style="padding: 10px; background: var(--ios-bg-primary, #F2F2F7); border-radius: var(--ios-radius-sm, 8px);">
-                                <span style="display: inline-block; width: 16px; height: 16px; background: var(--ios-green, #34C759); border-radius: 4px; margin-right: 8px; vertical-align: middle;"></span>
+                            <div style="padding: 10px; background: white; border-radius: 4px;">
+                                <span style="display: inline-block; width: 16px; height: 16px; background: #27ae60; border-radius: 2px; margin-right: 8px; vertical-align: middle;"></span>
                                 <strong>💼 Delovni čas</strong> - Redni delovni čas
                             </div>
                             <div style="padding: 10px; background: white; border-radius: 4px;">
@@ -1244,27 +1081,27 @@
                                 <strong>☕ Pavza</strong> - Kratka pavza
                             </div>
                             <div style="padding: 10px; background: white; border-radius: 4px;">
-                                <span style="display: inline-block; width: 16px; height: 16px; background: var(--ios-orange, #FF9500); border-radius: 4px; margin-right: 8px; vertical-align: middle;"></span>
+                                <span style="display: inline-block; width: 16px; height: 16px; background: #e67e22; border-radius: 2px; margin-right: 8px; vertical-align: middle;"></span>
                                 <strong>🍽️ Malica</strong> - Malica
                             </div>
-                            <div style="padding: 10px; background: var(--ios-bg-primary, #F2F2F7); border-radius: var(--ios-radius-sm, 8px);">
-                                <span style="display: inline-block; width: 16px; height: 16px; background: var(--ios-blue, #007AFF); border-radius: 4px; margin-right: 8px; vertical-align: middle;"></span>
+                            <div style="padding: 10px; background: white; border-radius: 4px;">
+                                <span style="display: inline-block; width: 16px; height: 16px; background: #3498db; border-radius: 2px; margin-right: 8px; vertical-align: middle;"></span>
                                 <strong>🏖️ Dopust</strong> - Nedosegljiv
                             </div>
-                            <div style="padding: 10px; background: var(--ios-bg-primary, #F2F2F7); border-radius: var(--ios-radius-sm, 8px);">
-                                <span style="display: inline-block; width: 16px; height: 16px; background: var(--ios-purple, #AF52DE); border-radius: 4px; margin-right: 8px; vertical-align: middle;"></span>
+                            <div style="padding: 10px; background: white; border-radius: 4px;">
+                                <span style="display: inline-block; width: 16px; height: 16px; background: #9b59b6; border-radius: 2px; margin-right: 8px; vertical-align: middle;"></span>
                                 <strong>🏥 Bolniška</strong> - Nedosegljiv
                             </div>
-                            <div style="padding: 10px; background: var(--ios-bg-primary, #F2F2F7); border-radius: var(--ios-radius-sm, 8px);">
-                                <span style="display: inline-block; width: 16px; height: 16px; background: var(--ios-red, #FF3B30); border-radius: 4px; margin-right: 8px; vertical-align: middle;"></span>
+                            <div style="padding: 10px; background: white; border-radius: 4px;">
+                                <span style="display: inline-block; width: 16px; height: 16px; background: #e74c3c; border-radius: 2px; margin-right: 8px; vertical-align: middle;"></span>
                                 <strong>❌ Prost Dan</strong> - Nedosegljiv
                             </div>
                         </div>
                     </div>
 
                     <!-- Instructions -->
-                    <div style="margin-top: 20px; padding: 16px; background: rgba(0, 122, 255, 0.1); border-radius: var(--ios-radius-md, 12px); border-left: 4px solid var(--ios-blue, #007AFF);">
-                        <strong style="color: var(--ios-text-primary, #000);">💡 Kako uporabljati:</strong>
+                    <div style="margin-top: 20px; padding: 15px; background: #e8f4f8; border-radius: 4px; border-left: 4px solid #3498db;">
+                        <strong>💡 Kako uporabljati:</strong>
                         <ul style="margin: 10px 0 0 0; padding-left: 20px;">
                             <li>Klikni na datum, da ustvariš nov dogodek</li>
                             <li>Klikni na dogodek, da ga urediš</li>
@@ -1290,48 +1127,36 @@
                 <div class="admin-section">
                     <div class="section-title">Ključne Metrike</div>
                     
-                    <!-- Key Metrics - iOS Style -->
-                    <div class="dashboard-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; margin-bottom: 20px;">
-                        <div style="background: var(--ios-bg-secondary, white); padding: 20px; border-radius: var(--ios-radius-lg, 16px); box-shadow: var(--ios-shadow-sm, 0 1px 3px rgba(0,0,0,0.08));">
-                            <div style="width: 44px; height: 44px; background: rgba(0, 122, 255, 0.15); border-radius: var(--ios-radius-md, 12px); display: flex; align-items: center; justify-content: center; margin-bottom: 12px;">
-                                <i class="bi bi-calendar-check" style="font-size: 20px; color: var(--ios-blue, #007AFF);"></i>
-                            </div>
-                            <div style="font-size: 28px; font-weight: 700; color: var(--ios-text-primary, #000);" id="totalAppointments">0</div>
-                            <div style="font-size: 13px; color: var(--ios-text-secondary, #8E8E93); margin-top: 4px;">Skupaj Naročil</div>
+                    <!-- Key Metrics -->
+                    <div class="dashboard-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 20px;">
+                        <div style="background: white; border: 1px solid #ddd; padding: 15px; border-radius: 3px; text-align: center;">
+                            <div style="font-size: 28px; font-weight: 700; color: #2c3e50;" id="totalAppointments">0</div>
+                            <div style="font-size: 12px; color: #666; margin-top: 5px;">Skupaj Naročil</div>
                         </div>
-                        <div style="background: var(--ios-bg-secondary, white); padding: 20px; border-radius: var(--ios-radius-lg, 16px); box-shadow: var(--ios-shadow-sm, 0 1px 3px rgba(0,0,0,0.08));">
-                            <div style="width: 44px; height: 44px; background: rgba(52, 199, 89, 0.15); border-radius: var(--ios-radius-md, 12px); display: flex; align-items: center; justify-content: center; margin-bottom: 12px;">
-                                <i class="bi bi-currency-euro" style="font-size: 20px; color: var(--ios-green, #34C759);"></i>
-                            </div>
-                            <div style="font-size: 28px; font-weight: 700; color: var(--ios-text-primary, #000);" id="monthlyRevenue">€0</div>
-                            <div style="font-size: 13px; color: var(--ios-text-secondary, #8E8E93); margin-top: 4px;">Prihodek Ta Mesec</div>
+                        <div style="background: white; border: 1px solid #ddd; padding: 15px; border-radius: 3px; text-align: center;">
+                            <div style="font-size: 28px; font-weight: 700; color: #2c3e50;" id="monthlyRevenue">€0</div>
+                            <div style="font-size: 12px; color: #666; margin-top: 5px;">Prihodek Ta Mesec</div>
                         </div>
-                        <div style="background: var(--ios-bg-secondary, white); padding: 20px; border-radius: var(--ios-radius-lg, 16px); box-shadow: var(--ios-shadow-sm, 0 1px 3px rgba(0,0,0,0.08));">
-                            <div style="width: 44px; height: 44px; background: rgba(255, 149, 0, 0.15); border-radius: var(--ios-radius-md, 12px); display: flex; align-items: center; justify-content: center; margin-bottom: 12px;">
-                                <i class="bi bi-graph-up-arrow" style="font-size: 20px; color: var(--ios-orange, #FF9500);"></i>
-                            </div>
-                            <div style="font-size: 28px; font-weight: 700; color: var(--ios-text-primary, #000);" id="monthlyAppointments">0</div>
-                            <div style="font-size: 13px; color: var(--ios-text-secondary, #8E8E93); margin-top: 4px;">Naročila Ta Mesec</div>
+                        <div style="background: white; border: 1px solid #ddd; padding: 15px; border-radius: 3px; text-align: center;">
+                            <div style="font-size: 28px; font-weight: 700; color: #2c3e50;" id="monthlyAppointments">0</div>
+                            <div style="font-size: 12px; color: #666; margin-top: 5px;">Naročila Ta Mesec</div>
                         </div>
-                        <div style="background: var(--ios-bg-secondary, white); padding: 20px; border-radius: var(--ios-radius-lg, 16px); box-shadow: var(--ios-shadow-sm, 0 1px 3px rgba(0,0,0,0.08));">
-                            <div style="width: 44px; height: 44px; background: rgba(175, 82, 222, 0.15); border-radius: var(--ios-radius-md, 12px); display: flex; align-items: center; justify-content: center; margin-bottom: 12px;">
-                                <i class="bi bi-tags" style="font-size: 20px; color: var(--ios-purple, #AF52DE);"></i>
-                            </div>
-                            <div style="font-size: 28px; font-weight: 700; color: var(--ios-text-primary, #000);" id="averagePrice">€0</div>
-                            <div style="font-size: 13px; color: var(--ios-text-secondary, #8E8E93); margin-top: 4px;">Povprečna Cena</div>
+                        <div style="background: white; border: 1px solid #ddd; padding: 15px; border-radius: 3px; text-align: center;">
+                            <div style="font-size: 28px; font-weight: 700; color: #2c3e50;" id="averagePrice">€0</div>
+                            <div style="font-size: 12px; color: #666; margin-top: 5px;">Povprečna Cena</div>
                         </div>
                     </div>
 
                     <!-- Charts -->
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;" class="dashboard-grid">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;" class="dashboard-grid">
                         <div class="chart-container">
-                            <h3 style="font-size: 15px; font-weight: 600; color: var(--ios-text-primary, #000); margin: 0 0 16px 0;">Storitve Po Priljubljenosti</h3>
+                            <h3 style="font-size: 13px; font-weight: 600; color: #2c3e50; margin: 0 0 15px 0;">Storitve Po Priljubljenosti</h3>
                             <div style="flex: 1; position: relative; min-height: 250px;">
                                 <canvas id="servicesChart" style="display: block; width: 100% !important; height: 100% !important;"></canvas>
                             </div>
                         </div>
                         <div class="chart-container">
-                            <h3 style="font-size: 15px; font-weight: 600; color: var(--ios-text-primary, #000); margin: 0 0 15px 0;">Naročila Po Dneh</h3>
+                            <h3 style="font-size: 13px; font-weight: 600; color: #2c3e50; margin: 0 0 15px 0;">Naročila Po Dneh</h3>
                             <div style="flex: 1; position: relative; min-height: 250px;">
                                 <canvas id="appointmentsChart" style="display: block; width: 100% !important; height: 100% !important;"></canvas>
                             </div>
@@ -1339,20 +1164,20 @@
                     </div>
                 </div>
 
-                <!-- APPOINTMENTS SECTION - iOS Style -->
+                <!-- APPOINTMENTS SECTION -->
                 <div class="admin-section">
                     <div class="section-title">📋 Naročila Termina</div>
-                    <p style="font-size: 14px; color: var(--ios-text-secondary, #8E8E93); margin-bottom: 16px;">Skupaj naročil: <strong style="color: var(--ios-blue, #007AFF); font-size: 18px; font-weight: 700;" id="appointmentCount">0</strong></p>
-                    <div id="appointmentsContainer" style="max-height: 600px; overflow-y: auto; border-radius: var(--ios-radius-md, 12px); background: var(--ios-bg-primary, #F2F2F7); padding: 0;"></div>
+                    <p style="font-size: 13px; color: #7f8c8d; margin-bottom: 15px;">Skupaj naročil: <strong style="color: #2c3e50; font-size: 15px;" id="appointmentCount">0</strong></p>
+                    <div id="appointmentsContainer" style="max-height: 600px; overflow-y: auto; border: 1px solid #ecf0f1; border-radius: 6px; padding: 0;"></div>
                 </div>
 
-                <!-- EARNINGS SECTION - iOS Style -->
+                <!-- EARNINGS SECTION -->
                 <div class="admin-section">
-                    <div class="section-title">💰 Zaslužek in Popusti</div>
+                    <div class="section-title">Zaslužek in Popusti</div>
                     <div class="form-row">
                         <div class="form-group-admin">
                             <label class="form-label-admin">Skupni Zaslužek</label>
-                            <div id="earningsTotal" class="form-input-admin" style="padding: 14px 16px; font-weight: 700; color: var(--ios-green, #34C759); font-size: 20px; background: rgba(52, 199, 89, 0.1); border-radius: var(--ios-radius-md, 12px);">€0.00</div>
+                            <div id="earningsTotal" class="form-input-admin" style="padding:8px; font-weight:bold; color:#DC143C; font-size:18px;">€0.00</div>
                         </div>
                         <div class="form-group-admin">
                             <label class="form-label-admin">Privzeti Popust (%)</label>
@@ -1368,16 +1193,16 @@
                 <!-- CALENDAR SECTION -->
                 <div class="admin-section">
                     <div class="section-title">📅 Koledar Naročil</div>
-                    <div style="background: var(--ios-bg-secondary, white); padding: 16px; border: none; border-radius: var(--ios-radius-lg, 16px); box-shadow: var(--ios-shadow-sm, 0 1px 3px rgba(0,0,0,0.08));">
+                    <div style="background: white; padding: 0px; border: 1px solid #e8ecf1; border-radius: 8px;">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 10px;">
-                            <button class="save-btn" onclick="prevMonth()" style="flex:0.3; padding:12px 16px; background: var(--ios-red, #FF3B30); border-radius: var(--ios-radius-sm, 8px);">← Prejšnji</button>
-                            <h3 id="calendarMonthYear" style="font-size: 18px; font-weight: 700; color: var(--ios-text-primary, #000); margin: 0; text-align: center; flex:1;">Januar 2024</h3>
-                            <button class="save-btn" onclick="nextMonth()" style="flex:0.3; padding:12px 16px; background: var(--ios-green, #34C759); border-radius: var(--ios-radius-sm, 8px);">Naslednji →</button>
+                            <button class="save-btn" onclick="prevMonth()" style="flex:0.3; padding:10px 15px; background-color:#e74c3c;">← Prejšnji</button>
+                            <h3 id="calendarMonthYear" style="font-size: 18px; font-weight: 700; color: #2c3e50; margin: 0; text-align: center; flex:1;">Januar 2024</h3>
+                            <button class="save-btn" onclick="nextMonth()" style="flex:0.3; padding:10px 15px; background-color:#27ae60;">Naslednji →</button>
                         </div>
-                        <div id="calendarGrid" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin-bottom: 20px; background: var(--ios-bg-primary, #F2F2F7); padding: 12px; border-radius: var(--ios-radius-md, 12px);"></div>
-                        <div style="background: var(--ios-bg-primary, #F2F2F7); padding: 16px; border-radius: var(--ios-radius-md, 12px); border: none;">
-                            <p style="font-size: 14px; font-weight: 600; color: var(--ios-text-primary, #000); margin: 0 0 12px 0;">📌 Naročila za izbran dan:</p>
-                            <div id="dayAppointments" style="font-size: 13px; max-height: 250px; overflow-y: auto; color: var(--ios-text-secondary, #8E8E93);">Izberi dan...</div>
+                        <div id="calendarGrid" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin-bottom: 20px; background: #ecf0f1; padding: 12px; border-radius: 6px;"></div>
+                        <div style="background: #f8fafb; padding: 15px; border-radius: 6px; border: 1px solid #ecf0f1;">
+                            <p style="font-size: 13px; font-weight: 600; color: #2c3e50; margin: 0 0 12px 0;">📌 Naročila za izbran dan:</p>
+                            <div id="dayAppointments" style="font-size: 12px; max-height: 250px; overflow-y: auto; color: #555;">Izberi dan...</div>
                         </div>
                     </div>
                 </div>
@@ -1436,7 +1261,7 @@
                                 <input id="newCustNotes" type="text" class="form-input-admin" placeholder="Opombe" style="background: white;">
                             </div>
                         </div>
-                        <button class="save-btn" onclick="addManualCustomer()" style="background: var(--ios-green, #34C759); width: 100%; margin-top: 10px;">✓ Dodaj Stranko</button>
+                        <button class="save-btn" onclick="addManualCustomer()" style="background-color: #27ae60; width: 100%; margin-top: 10px;">✓ Dodaj Stranko</button>
                     </div>
                 </div>
 
@@ -1845,7 +1670,7 @@
                             labels: serviceLabels,
                             datasets: [{
                                 data: serviceData,
-                                backgroundColor: ['#007AFF', '#34C759', '#FF3B30', '#FF9500', '#AF52DE', '#5AC8FA'],
+                                backgroundColor: ['#3498db', '#27ae60', '#e74c3c', '#f39c12', '#9b59b6', '#1abc9c'],
                                 borderColor: '#fff',
                                 borderWidth: 2
                             }]
@@ -1937,7 +1762,7 @@
             renderCalendar();
             
             if (appointments.length === 0) {
-                container.innerHTML = '<div style="padding: 40px 20px; text-align: center; color: var(--ios-text-secondary, #8E8E93);"><i class="bi bi-calendar-x" style="font-size: 48px; opacity: 0.5; display: block; margin-bottom: 12px;"></i>Ni nobenega naročila</div>';
+                container.innerHTML = '<p class="text-gray-500 text-center py-4">Ni nobenega naročila</p>';
                 return;
             }
             
@@ -1947,18 +1772,15 @@
                 const [year, month, day] = appt.date.split('-');
                 const dateStr = `${day}. ${month}. ${year}`;
                 container.innerHTML += `
-                    <div style="margin: 8px; padding: 16px; border-left: 4px solid var(--ios-blue, #007AFF); border-radius: var(--ios-radius-md, 12px); background: var(--ios-bg-secondary, white); transition: all 0.2s; box-shadow: var(--ios-shadow-sm, 0 1px 3px rgba(0,0,0,0.08));">
-                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
-                            <p style="margin: 0; font-weight: 600; color: var(--ios-text-primary, #000); font-size: 16px;">${appt.firstName || 'N/A'} ${appt.surname || appt.lastName || 'N/A'}</p>
-                            <span style="background: rgba(0, 122, 255, 0.15); color: var(--ios-blue, #007AFF); padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600;">€${appt.totalPrice || appt.price || '0'}</span>
-                        </div>
-                        <p style="margin: 0 0 6px 0; font-size: 13px; color: var(--ios-text-secondary, #8E8E93);">${appt.email || '-'} | ${appt.phone || '-'}</p>
-                        <p style="margin: 10px 0 6px 0; font-size: 14px; color: var(--ios-text-primary, #000);"><strong>📅</strong> ${dateStr} ob ${appt.time}</p>
-                        <p style="margin: 6px 0; font-size: 14px; color: var(--ios-text-primary, #000);"><strong>✂️</strong> ${(appt.services || []).join(', ') || appt.service || 'N/A'}</p>
-                        <p style="margin: 6px 0; font-size: 13px; color: var(--ios-text-secondary, #8E8E93);"><strong>⏱️</strong> ${appt.totalDuration || '-'} min</p>
-                        <div style="margin-top: 12px; display: flex; gap: 10px;">
-                            <button onclick="deleteAppointment(${idx})" style="flex: 1; padding: 10px 16px; background: var(--ios-red, #FF3B30); color: white; border: none; border-radius: var(--ios-radius-sm, 8px); font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s;">🗑️ Izbriši</button>
-                            <button onclick="generateInvoice(${idx})" style="flex: 1; padding: 10px 16px; background: var(--ios-blue, #007AFF); color: white; border: none; border-radius: var(--ios-radius-sm, 8px); font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s;">📄 Račun</button>
+                    <div style="margin-bottom: 0; padding: 14px; border-left: 4px solid #3498db; border-bottom: 1px solid #ecf0f1; background: white; transition: all 0.2s;">
+                        <p style="margin: 0 0 6px 0; font-weight: 600; color: #2c3e50; font-size: 13px;"><strong>${appt.firstName || 'N/A'} ${appt.surname || appt.lastName || 'N/A'}</strong></p>
+                        <p style="margin: 0 0 6px 0; font-size: 11px; color: #7f8c8d;">${appt.email || '-'} | ${appt.phone || '-'}</p>
+                        <p style="margin: 6px 0; font-size: 12px; color: #555;"><strong>📅 Termin:</strong> ${dateStr} ob ${appt.time}</p>
+                        <p style="margin: 6px 0; font-size: 12px; color: #555;"><strong>✂️ Storitve:</strong> ${(appt.services || []).join(', ') || appt.service || 'N/A'}</p>
+                        <p style="margin: 6px 0; font-size: 12px; color: #555;"><strong>⏱️ Trajanje:</strong> ${appt.totalDuration || '-'} min | <strong>💰 Cena:</strong> €${appt.totalPrice || appt.price || '0'}</p>
+                        <div style="margin-top: 8px; display: flex; gap: 6px;">
+                            <button onclick="deleteAppointment(${idx})" style="padding: 6px 12px; background: #e74c3c; color: white; border: none; border-radius: 4px; font-size: 11px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#c0392b'" onmouseout="this.style.background='#e74c3c'">🗑️ Izbriši</button>
+                            <button onclick="generateInvoice(${idx})" style="padding: 6px 12px; background: #3498db; color: white; border: none; border-radius: 4px; font-size: 11px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#2980b9'" onmouseout="this.style.background='#3498db'">📄 Račun</button>
                         </div>
                     </div>
                 `;
@@ -2537,6 +2359,18 @@
                 }
             }
         }
+        
+        function saveConfig() {
+            // Save locally
+            localStorage.setItem('site_config_backup', JSON.stringify(SITE_CONFIG));
+
+            // Sync to Firebase REST API (simpler, no module issues)
+            syncToFirebase(SITE_CONFIG);
+            showNotification('✅ Spremembe so bile shranjene in sinhronizirane', 'success');
+
+            // Also sync appointments into schedule (DB-backed)
+            if (typeof syncAppointmentsToSchedule === 'function') syncAppointmentsToSchedule();
+        }
 
         // Sync SITE_CONFIG.appointments into StorageManager schedule
         async function syncAppointmentsToSchedule() {
@@ -2843,7 +2677,7 @@
             dayHeaders.forEach(day => {
                 const header = document.createElement('div');
                 header.textContent = day;
-                header.style.cssText = `font-weight:700; color:var(--ios-text-primary, #000); text-align:center; padding:${headerPadding}; font-size:${headerFontSize}; background:var(--ios-bg-tertiary, #E5E5EA); border-radius:var(--ios-radius-sm, 8px); height:${headerHeight}; display:flex; align-items:center; justify-content:center;`;
+                header.style.cssText = `font-weight:700; color:#2c3e50; text-align:center; padding:${headerPadding}; font-size:${headerFontSize}; background:#ecf0f1; border-radius:4px; height:${headerHeight}; display:flex; align-items:center; justify-content:center;`;
                 grid.appendChild(header);
             });
             
@@ -2856,7 +2690,7 @@
             // Calendar days - MUCH LARGER on mobile for finger-friendly tapping
             const cellPadding = isSmallMobile ? '8px 5px' : isMobile ? '10px 5px' : '12px 4px';
             const cellFontSize = isSmallMobile ? '16px' : isMobile ? '18px' : '13px';
-            const borderRadius = isSmallMobile ? '8px' : isMobile ? '8px' : 'var(--ios-radius-sm, 8px)';
+            const borderRadius = isSmallMobile ? '4px' : isMobile ? '4px' : '6px';
             const borderWidth = isSmallMobile ? '1px' : isMobile ? '1px' : '1.5px';
             const minHeight = isSmallMobile ? '60px' : isMobile ? '70px' : '36px';  // MUCH LARGER
             
@@ -2866,24 +2700,24 @@
                 const appointmentsOnDay = SITE_CONFIG.appointments.filter(appt => appt.date === dateStr);
                 
                 dayCell.textContent = day;
-                dayCell.style.cssText = `padding:${cellPadding}; border:${borderWidth} solid var(--ios-bg-tertiary, #E5E5EA); border-radius:${borderRadius}; text-align:center; cursor:pointer; background:var(--ios-bg-secondary, #fff); font-size:${cellFontSize}; font-weight:600; color:var(--ios-text-primary, #000); transition:all 0.2s; min-height:${minHeight}; display:flex; align-items:center; justify-content:center; user-select:none; -webkit-user-select:none;`;
+                dayCell.style.cssText = `padding:${cellPadding}; border:${borderWidth} solid #ecf0f1; border-radius:${borderRadius}; text-align:center; cursor:pointer; background:#ffffff; font-size:${cellFontSize}; font-weight:600; color:#2c3e50; transition:all 0.2s; min-height:${minHeight}; display:flex; align-items:center; justify-content:center; user-select:none; -webkit-user-select:none;`;
                 
                 if (appointmentsOnDay.length > 0) {
                     const dotSize = isSmallMobile ? '8px' : isMobile ? '10px' : '8px';
-                    dayCell.style.cssText = `padding:${cellPadding}; border:${borderWidth} solid var(--ios-blue, #007AFF); border-radius:${borderRadius}; text-align:center; cursor:pointer; background:linear-gradient(135deg, var(--ios-blue, #007AFF), #0055cc); font-size:${cellFontSize}; font-weight:700; color:#fff; transition:all 0.2s; min-height:${minHeight}; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 8px rgba(0,122,255,0.4); user-select:none; -webkit-user-select:none;`;
+                    dayCell.style.cssText = `padding:${cellPadding}; border:${borderWidth} solid #2980b9; border-radius:${borderRadius}; text-align:center; cursor:pointer; background:linear-gradient(135deg, #3498db, #2980b9); font-size:${cellFontSize}; font-weight:700; color:#fff; transition:all 0.2s; min-height:${minHeight}; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 6px rgba(52,152,219,0.4); user-select:none; -webkit-user-select:none;`;
                     dayCell.innerHTML = `<div style="text-align:center; width:100%;"><div style="line-height:1; font-size:${cellFontSize};">${day}</div><div style="font-size:${dotSize}; margin-top:2px; letter-spacing:-2px; line-height:0.8;">●●●</div></div>`;
                 }
                 
                 dayCell.onmouseover = () => {
                     if (appointmentsOnDay.length === 0 && !isMobile) {
-                        dayCell.style.backgroundColor = 'var(--ios-bg-tertiary, #E5E5EA)';
-                        dayCell.style.borderColor = 'var(--ios-bg-tertiary, #E5E5EA)';
+                        dayCell.style.backgroundColor = '#ecf0f1';
+                        dayCell.style.borderColor = '#bdc3c7';
                     }
                 };
                 dayCell.onmouseout = () => {
                     if (appointmentsOnDay.length === 0) {
-                        dayCell.style.backgroundColor = 'var(--ios-bg-secondary, #fff)';
-                        dayCell.style.borderColor = 'var(--ios-bg-tertiary, #E5E5EA)';
+                        dayCell.style.backgroundColor = '#ffffff';
+                        dayCell.style.borderColor = '#ecf0f1';
                     }
                 };
                 
@@ -2898,16 +2732,16 @@
             const container = document.getElementById('dayAppointments');
             
             if (appts.length === 0) {
-                container.innerHTML = '<span style="color:var(--ios-text-secondary, #8E8E93);">Ni naročil za ta dan</span>';
+                container.innerHTML = '<span style="color:#999;">Ni naročil za ta dan</span>';
             } else {
                 container.innerHTML = appts.map(a => {
                     const firstName = a.firstName || a.name || 'Neznano';
                     const lastName = a.lastName || a.surname || '';
                     return `
-                    <div style="padding:12px; margin-bottom:8px; background:var(--ios-bg-secondary, white); border-radius:var(--ios-radius-sm, 8px); border-left:3px solid var(--ios-blue, #007AFF); font-size:13px;">
-                        <strong style="color:var(--ios-text-primary, #000);">${firstName} ${lastName}</strong> - ${a.service || ''}<br/>
-                        <span style="color:var(--ios-text-secondary, #8E8E93);">Ura: ${a.time}</span><br/>
-                        <span style="color:var(--ios-text-secondary, #8E8E93); font-size:12px;">${a.email || ''}</span>
+                    <div style="padding:8px; border-bottom:1px solid #eee; font-size:11px;">
+                        <strong>${firstName} ${lastName}</strong> - ${a.service || ''}<br/>
+                        <span style="color:#666;">Ura: ${a.time}</span><br/>
+                        <span style="color:#999;">${a.email || ''}</span>
                     </div>
                 `;
                 }).join('');
@@ -3126,13 +2960,13 @@
         // Get color for schedule type
         function getScheduleTypeColor(type) {
             const colors = {
-                'prost_dan': '#FF3B30',
-                'pavza': '#FF9500',
-                'malica': '#FF9500',
-                'dopust': '#007AFF',
-                'bolniska': '#AF52DE'
+                'prost_dan': '#e74c3c',
+                'pavza': '#f39c12',
+                'malica': '#e67e22',
+                'dopust': '#3498db',
+                'bolniska': '#9b59b6'
             };
-            return colors[type] || '#8E8E93';
+            return colors[type] || '#95a5a6';
         }
 
         // Get label for schedule type
@@ -3295,10 +3129,10 @@
 
             const dayName = date.toLocaleDateString('sl-SI', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
             
-            let html = `<div style="margin-bottom: 15px;"><strong style="color: var(--ios-text-primary, #000);">${dayName}</strong></div>`;
+            let html = `<div style="margin-bottom: 15px;"><strong>${dayName}</strong></div>`;
 
             if (entries.length === 0) {
-                html += '<div style="padding: 16px; background: rgba(52, 199, 89, 0.1); border-left: 4px solid var(--ios-green, #34C759); border-radius: var(--ios-radius-sm, 8px); color: var(--ios-green, #34C759);">Nobenih vnosov za ta dan</div>';
+                html += '<div style="padding: 15px; background: #e8f8f5; border-left: 4px solid #27ae60; color: #27ae60;">Nobenih vnosov za ta dan</div>';
             } else {
                 html += '<table style="width: 100%; border-collapse: collapse;">';
                 html += '<tr style="background: #ecf0f1;"><td style="padding: 10px; border: 1px solid #ddd; font-weight: 600;">Ura</td><td style="padding: 10px; border: 1px solid #ddd; font-weight: 600;">Tip</td><td style="padding: 10px; border: 1px solid #ddd; font-weight: 600;">Opombe</td></tr>';
@@ -3340,17 +3174,17 @@
                 const bgColor = getScheduleTypeColor(entry.type);
                 
                 html += `
-                    <div style="padding: 14px 16px; margin-bottom: 8px; background: var(--ios-bg-secondary, white); border-radius: var(--ios-radius-sm, 8px); display: flex; justify-content: space-between; align-items: center; box-shadow: var(--ios-shadow-sm, 0 1px 3px rgba(0,0,0,0.08));">
+                    <div style="padding: 12px 15px; border-bottom: 1px solid #ecf0f1; display: flex; justify-content: space-between; align-items: center;">
                         <div style="flex: 1;">
-                            <div style="display: inline-block; background: ${bgColor}; color: white; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; margin-bottom: 8px;">
+                            <div style="display: inline-block; background: ${bgColor}; color: white; padding: 3px 10px; border-radius: 3px; font-size: 11px; font-weight: 600; margin-bottom: 8px;">
                                 ${getScheduleTypeLabel(entry.type)}
                             </div>
-                            <div style="font-size: 13px; color: var(--ios-text-primary, #000);">
+                            <div style="font-size: 12px; color: #333;">
                                 <strong>${startDate}</strong> (${entry.startTime}:00) - <strong>${endDate}</strong> (${entry.endTime}:00)
                             </div>
-                            ${entry.notes ? `<div style="font-size: 12px; color: var(--ios-text-secondary, #8E8E93); margin-top: 6px;">💬 ${entry.notes}</div>` : ''}
+                            ${entry.notes ? `<div style="font-size: 11px; color: #666; margin-top: 5px;">💬 ${entry.notes}</div>` : ''}
                         </div>
-                        <button onclick="deleteScheduleEntry(${entry.id})" style="background: var(--ios-red, #FF3B30); color: white; border: none; padding: 8px 14px; border-radius: var(--ios-radius-sm, 8px); cursor: pointer; font-size: 13px; font-weight: 600;">Izbriši</button>
+                        <button onclick="deleteScheduleEntry(${entry.id})" style="background: #e74c3c; color: white; border: none; padding: 6px 12px; border-radius: 3px; cursor: pointer; font-size: 12px; font-weight: 600;">Izbriši</button>
                     </div>
                 `;
             });
