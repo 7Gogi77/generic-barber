@@ -574,17 +574,23 @@
            TIMEGRID (WEEK/DAY) - ENABLE VERTICAL SCROLLING
            ============================================ */
         
-        /* Disable scrollbar on the outer view container */
+        /* Disable scrollbar on the outer view container only */
         .fc-timeGridWeek-view,
-        .fc-timeGridDay-view,
-        .fc-timegrid {
+        .fc-timeGridDay-view {
             overflow: hidden !important;
+        }
+
+        /* Allow the scroller harness to contain the scrollable area */
+        #scheduleCalendar.view-timegrid-week .fc-scroller-harness,
+        #scheduleCalendar.view-timegrid-day .fc-scroller-harness {
+            overflow: visible !important;
         }
 
         /* Enable scrolling only on the inner liquid scroller */
         #scheduleCalendar.view-timegrid-week .fc-scroller-liquid-absolute,
         #scheduleCalendar.view-timegrid-day .fc-scroller-liquid-absolute {
             overflow-y: auto !important;
+            overflow-x: hidden !important;
         }
 
         /* Style scrollbars for a cleaner look */
