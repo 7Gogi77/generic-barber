@@ -1457,20 +1457,23 @@
                 }
             }
             
-            console.log('📅 Generated', allSlots.length, 'potential slots');
+            console.log('📅 Generated', allSlots.length, 'potential slots, checking against', BookingState.events.length, 'events');
             
             // Filter out slots that conflict with existing events
             const availableSlots = allSlots.filter(slot => {
                 return !hasConflict(slot.start, slot.end);
             });
             
-            console.log('📅 Available slots after conflict check:', availableSlots.length);
+            console.log('📅 Available slots after conflict check:', availableSlots.length, '(blocked:', allSlots.length - availableSlots.length, ')');
             
             return availableSlots;
         }
 
         // ===== CHECK FOR CONFLICTS =====
         function hasConflict(slotStart, slotEnd) {
+            // Get the date string for this slot to filter relevant events
+            const slotDateStr = getLocalDateStr(slotStart);
+            
             for (const event of BookingState.events) {
                 try {
                     let eventStart, eventEnd;
@@ -1481,7 +1484,6 @@
                     } else if (typeof event.start === 'string') {
                         eventStart = new Date(event.start);
                     } else if (event.startDate && event.startTime) {
-                        // Handle startDate + startTime format
                         const startTimeStr = typeof event.startTime === 'string' ? event.startTime : `${event.startTime}:00`;
                         eventStart = new Date(`${event.startDate}T${startTimeStr}`);
                     } else if (event.startDate) {
@@ -1496,15 +1498,12 @@
                     } else if (typeof event.end === 'string') {
                         eventEnd = new Date(event.end);
                     } else if (event.endDate && event.endTime) {
-                        // Handle endDate + endTime format
                         const endTimeStr = typeof event.endTime === 'string' ? event.endTime : `${event.endTime}:00`;
                         eventEnd = new Date(`${event.endDate}T${endTimeStr}`);
                     } else if (event.endDate) {
-                        // End date only - assume end of day
                         eventEnd = new Date(event.endDate);
                         eventEnd.setHours(23, 59, 59, 999);
                     } else {
-                        // If no end, assume 1 hour duration
                         eventEnd = new Date(eventStart);
                         eventEnd.setHours(eventEnd.getHours() + 1);
                     }
@@ -1516,6 +1515,7 @@
                     
                     // Check for overlap: (slotStart < eventEnd) && (slotEnd > eventStart)
                     if (slotStart < eventEnd && slotEnd > eventStart) {
+                        console.log('🚫 Conflict found:', event.title, eventStart.toISOString(), '-', eventEnd.toISOString(), 'vs slot', slotStart.toISOString());
                         return true; // Conflict found
                     }
                 } catch (err) {
@@ -1728,8 +1728,8 @@
             showLoading(true);
             
             try {
-                // Create appointment object
-                const appointmentId = 'apt_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                // Create appointment object - MINIMAL data for lighter database
+                const appointmentId = 'apt_' + Date.now();
                 
                 const startDate = new Date(BookingState.selectedDate);
                 startDate.setHours(
@@ -1741,26 +1741,26 @@
                 const endDate = new Date(startDate);
                 endDate.setMinutes(endDate.getMinutes() + BookingState.totalDuration);
                 
+                // Build minimal appointment object
                 const appointment = {
                     id: appointmentId,
                     type: 'booking',
                     title: BookingState.customerInfo.name,
                     start: startDate.toISOString(),
                     end: endDate.toISOString(),
-                    recurring: 'once',
                     extendedProps: {
-                        isBooking: true,
                         customer: BookingState.customerInfo.name,
                         email: BookingState.customerInfo.email,
                         phone: BookingState.customerInfo.phone,
                         services: BookingState.selectedServices.map(s => s.name),
-                        price: BookingState.totalPrice,
-                        duration: BookingState.totalDuration,
-                        notes: BookingState.customerInfo.notes,
-                        origin: 'customer',
-                        createdAt: new Date().toISOString()
+                        price: BookingState.totalPrice
                     }
                 };
+                
+                // Only add notes if not empty
+                if (BookingState.customerInfo.notes && BookingState.customerInfo.notes.trim()) {
+                    appointment.extendedProps.notes = BookingState.customerInfo.notes.trim();
+                }
                 
                 // Load current schedule and add appointment
                 let scheduleData = await StorageManager.load('schedule') || { events: [] };

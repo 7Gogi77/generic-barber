@@ -331,33 +331,37 @@ const ScheduleValidation = {
   },
 
   /**
-   * Normalize event data
+   * Normalize event data - MINIMAL storage, derive colors at runtime
    */
   normalizeEvent(event) {
-    const cfg = ScheduleRules.TYPE_CONFIG[event.type] || ScheduleRules.TYPE_CONFIG.booking;
-
-    return {
+    const result = {
       id: event.id || `event_${Date.now()}`,
-      title: event.title || (cfg.icon ? cfg.icon + ' Event' : 'Event'),
+      title: event.title || 'Event',
       type: event.type || 'booking',
       start: event.start,
-      end: event.end,
-      recurring: event.recurring || 'once',
-      daysOfWeek: event.daysOfWeek || [0, 1, 2, 3, 4, 5, 6],
-      color: cfg.color,
-      backgroundColor: cfg.backgroundColor,
-      borderColor: cfg.borderColor,
-      rules: {
-        isBlocking: cfg.isBlocking,
-        isSubtractive: cfg.isSubtractive,
-        conflictPriority: cfg.priority
-      },
-      extendedProps: Object.assign({
-        notes: event.notes || '',
-        createdAt: event.createdAt || Date.now(),
-        lastModified: Date.now()
-      }, event.extendedProps || {})
+      end: event.end
     };
+
+    // Only add extendedProps if there's actual data
+    const props = event.extendedProps || {};
+    const cleanProps = {};
+    
+    // Only include non-empty values
+    if (props.customer) cleanProps.customer = props.customer;
+    if (props.email) cleanProps.email = props.email;
+    if (props.phone) cleanProps.phone = props.phone;
+    if (props.services && props.services.length > 0) cleanProps.services = props.services;
+    if (props.price && props.price > 0) cleanProps.price = props.price;
+    if (props.duration && props.duration > 0) cleanProps.duration = props.duration;
+    if (props.notes && props.notes.trim()) cleanProps.notes = props.notes.trim();
+    if (props.worker) cleanProps.worker = props.worker;
+    if (props.isBooking) cleanProps.isBooking = true;
+    
+    if (Object.keys(cleanProps).length > 0) {
+      result.extendedProps = cleanProps;
+    }
+
+    return result;
   }
 };
 

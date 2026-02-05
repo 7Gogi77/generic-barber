@@ -2973,23 +2973,32 @@
             const start = startTime ? `${startDate}T${startTime}` : `${startDate}T00:00`;
             const end = endTime ? `${endDate}T${endTime}` : `${endDate}T23:59`;
 
-            // Simplified: only customer bookings supported
+            // MINIMAL event payload - only essential fields
             const eventPayload = {
                 title,
                 type,
                 start,
-                end,
-                description,
-                tab: 'customer',
-                isBooking: true,
-                extendedProps: {
-                    customer: title || null,
-                    email: document.getElementById('eventEmail') ? document.getElementById('eventEmail').value : null,
-                    phone: document.getElementById('eventPhone') ? document.getElementById('eventPhone').value : null,
-                    services: Array.isArray(services) ? services : [],
-                    price: price || 0
-                }
+                end
             };
+            
+            // Only add extendedProps with actual data
+            const props = {};
+            if (currentEventTab === 'customer') {
+                props.customer = title || null;
+                const email = document.getElementById('eventEmail')?.value;
+                const phone = document.getElementById('eventPhone')?.value;
+                if (email) props.email = email;
+                if (phone) props.phone = phone;
+                if (Array.isArray(services) && services.length > 0) props.services = services;
+                if (price && price > 0) props.price = price;
+            } else {
+                props.worker = title;
+            }
+            if (description && description.trim()) props.notes = description.trim();
+            
+            if (Object.keys(props).length > 0) {
+                eventPayload.extendedProps = props;
+            }
             // Persist customer info into customer base when creating a booking
             if (currentEventTab === 'customer') {
                 try {
@@ -3021,26 +3030,8 @@
                     }
                 })(eventPayload);
 
-            // Resolve type colors & flags from ScheduleRules (when available), and mark all-day/blocking
+            // Get type config for UI display (colors derived at runtime, not stored)
             const typeCfg = (typeof ScheduleRules !== 'undefined' && ScheduleRules.TYPE_CONFIG && ScheduleRules.TYPE_CONFIG[type]) ? ScheduleRules.TYPE_CONFIG[type] : null;
-            const bgColor = typeCfg?.backgroundColor || 'rgba(52, 152, 219, 0.2)';
-            const brColor = typeCfg?.borderColor || '#3498db';
-            const cls = ['event-type-' + (type || 'booking')];
-            if (typeCfg?.isBlocking) cls.push('event-blocking');
-            const isAllDay = !startTime && !endTime;
-
-            // Ensure saved event records TYPE_CONFIG rules so blocking types render properly in month view
-            try {
-                const idx = scheduleData.events.findIndex(e => e.id === eventId);
-                if (idx !== -1 && typeCfg) {
-                    scheduleData.events[idx].rules = scheduleData.events[idx].rules || {};
-                    scheduleData.events[idx].rules.isBlocking = typeCfg.isBlocking || false;
-                    scheduleData.events[idx].rules.isSubtractive = typeCfg.isSubtractive || false;
-                    scheduleData.events[idx].rules.conflictPriority = typeCfg.priority || 0;
-                    try { localStorage.setItem('schedule', JSON.stringify(scheduleData)); } catch(_){}
-                }
-            } catch (_) {}
-            // For immediate UI show emoji for worker types (customer titles stay as-is)
             const icon = typeCfg?.icon || '';
             const displayTitle = (currentEventTab === 'customer') ? title : (icon ? (icon + ' ' + title) : title);
 
