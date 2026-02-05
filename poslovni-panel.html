@@ -489,14 +489,29 @@
         }
 
         #scheduleCalendar.view-daygrid .fc .fc-daygrid-day-events {
-            overflow: visible !important;
-            height: auto;
+            /* Fill the available vertical space inside the day frame and allow internal scrolling */
+            display: flex !important;
+            flex-direction: column !important;
+            flex: 1 1 auto !important;
+            min-height: 0 !important;
+            box-sizing: border-box !important;
+            overflow-y: auto !important;
+            overflow-x: hidden !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            height: auto !important;
         }
+        /* Ensure day frame, cell and container are flex and allow shrink */
+        #scheduleCalendar.view-daygrid .fc .fc-daygrid-day-frame,
+        #scheduleCalendar.view-daygrid .fc .fc-daygrid-day-cell,
+        #scheduleCalendar.view-daygrid .fc .fc-daygrid-day-container { display: flex !important; flex-direction: column !important; min-height: 0 !important; }
+        #scheduleCalendar.view-daygrid .fc .fc-daygrid-row > div { min-height: 0 !important; }
 
         .fc-daygrid-day-frame {
-            height: 100% !important;
-            max-height: none !important;
-            flex: 1;
+            height: 85px !important;
+            max-height: 85px !important;
+            min-height: 85px !important;
+            overflow: hidden !important;
             display: flex;
             flex-direction: column;
         }

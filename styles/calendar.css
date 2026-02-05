@@ -66,11 +66,30 @@
   min-height: auto !important;
 }
 
-/* Constrain day cells for month view overflow */
+/* Month view: let JS control row/cell heights; use overflow:hidden so cells don't expand */
 #scheduleCalendar.view-daygrid .fc-daygrid-day {
-  overflow: visible !important;
-  max-height: none !important;
-  height: auto !important;
+  overflow: hidden !important;
+}
+
+/* Force table to use fixed layout so cells don't expand with content */
+#scheduleCalendar.view-daygrid .fc .fc-scrollgrid,
+#scheduleCalendar.view-daygrid .fc .fc-scrollgrid-section > td,
+#scheduleCalendar.view-daygrid .fc .fc-daygrid-body > table {
+  table-layout: fixed !important;
+}
+
+/* CRITICAL: Force all day frames to same fixed height to prevent tall cells */
+#scheduleCalendar.view-daygrid .fc-daygrid-day-frame.fc-scrollgrid-sync-inner,
+#scheduleCalendar.view-daygrid .fc-daygrid-day-frame {
+  height: 85px !important;
+  max-height: 85px !important;
+  min-height: 85px !important;
+  overflow: hidden !important;
+}
+
+/* Ensure rows don't grow beyond their set height */
+#scheduleCalendar.view-daygrid .fc .fc-daygrid-body tr {
+  height: 1px !important; /* trick: let JS set actual height on the row element */
 }
 
 #scheduleCalendar.view-daygrid .fc .fc-daygrid-body {
@@ -79,25 +98,18 @@
 }
 
 #scheduleCalendar.view-daygrid .fc-daygrid-day-cell {
-  overflow: visible !important;
-  max-height: none !important;
+  overflow: hidden !important;
+  vertical-align: top !important;
 }
 
-#scheduleCalendar.view-daygrid .fc .fc-daygrid-day-container {
-  overflow: visible !important;
-  max-height: none !important;
-  height: auto !important;
-}
-
+#scheduleCalendar.view-daygrid .fc .fc-daygrid-day-container,
 #scheduleCalendar.view-daygrid .fc-daygrid-day-container {
-  overflow: visible !important;
-  max-height: none !important;
-  height: auto !important;
+  overflow: hidden !important;
 }
 
 #scheduleCalendar.view-daygrid .fc .fc-daygrid-day-events {
-  overflow: visible !important;
-  max-height: none !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
 }
 
 #scheduleCalendar.view-daygrid .fc .fc-daygrid-event {
@@ -335,13 +347,45 @@
 
 /* Ensure month/dayGrid styling is strictly scoped to .view-daygrid */
 #scheduleCalendar.view-daygrid .fc .fc-daygrid-day {
-  overflow: visible !important;
-  max-height: none !important;
-  height: auto !important;
+  overflow: hidden !important;
 }
+
+/* Ensure day frame, cell and container are flex columns and allow children to shrink */
+#scheduleCalendar.view-daygrid .fc .fc-daygrid-day-frame,
+#scheduleCalendar.view-daygrid .fc .fc-daygrid-day-cell,
+#scheduleCalendar.view-daygrid .fc .fc-daygrid-day-container {
+  display: flex !important;
+  flex-direction: column !important;
+  min-height: 0 !important; /* critical for flex children to be able to shrink */
+}
+
 #scheduleCalendar.view-daygrid .fc .fc-daygrid-day-events {
-  overflow: visible !important;
-  max-height: none !important;
+  /* Events container: flex column, scrolls internally, height controlled by JS */
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  box-sizing: border-box !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+/* Ensure direct row columns can shrink if necessary */
+#scheduleCalendar.view-daygrid .fc .fc-daygrid-row > div { min-height: 0 !important; }
+/* Remove any bottom gap from the "+n more" and events */
+#scheduleCalendar.view-daygrid .fc .fc-daygrid-day-more {
+  margin-bottom: 0 !important;
+  padding-bottom: 0 !important;
+}
+#scheduleCalendar.view-daygrid .fc .fc-daygrid-day-more a {
+  display: inline-block;
+  margin-bottom: 0 !important;
+}
+#scheduleCalendar.view-daygrid .fc .fc-daygrid-event {
+  margin-bottom: 4px !important;
+  padding-bottom: 0 !important;
 } 
 /* Ensure the timeGrid scrollable section allows vertical scrolling when content exceeds available height (week/day only) */
 #scheduleCalendar.view-timegrid-week .fc .fc-timegrid .fc-scrollgrid-section-body,

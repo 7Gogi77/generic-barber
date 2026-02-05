@@ -1071,11 +1071,39 @@ const CalendarEngine = {
                       row.style.maxHeight = perRowH + 'px';
                       row.style.overflow = 'hidden';
 
+                      // Also set height on all <td> elements in the row to prevent table cell expansion
+                      row.querySelectorAll('td').forEach(td => {
+                        td.style.height = perRowH + 'px';
+                        td.style.maxHeight = perRowH + 'px';
+                        td.style.overflow = 'hidden';
+                        td.style.verticalAlign = 'top';
+
+                        // CRITICAL: Override FullCalendar's fc-scrollgrid-sync-inner inline height
+                        const syncInner = td.querySelector('.fc-scrollgrid-sync-inner');
+                        if (syncInner) {
+                          syncInner.style.height = '100%';
+                          syncInner.style.maxHeight = perRowH + 'px';
+                          syncInner.style.minHeight = '0';
+                          syncInner.style.overflow = 'hidden';
+                        }
+                      });
+
                       // Ensure inner day cells fill the row but cap their internal event area to avoid overflow changing the row height
                       const cells = row.querySelectorAll('.fc-daygrid-day-cell');
                       cells.forEach(cell => {
-                        cell.style.height = '100%';
+                        cell.style.height = perRowH + 'px';
+                        cell.style.maxHeight = perRowH + 'px';
                         cell.style.minHeight = '0';
+                        cell.style.overflow = 'hidden';
+
+                        // Also target the day-frame inside the cell
+                        const dayFrame = cell.querySelector('.fc-daygrid-day-frame');
+                        if (dayFrame) {
+                          dayFrame.style.height = '100%';
+                          dayFrame.style.maxHeight = perRowH + 'px';
+                          dayFrame.style.minHeight = '0';
+                          dayFrame.style.overflow = 'hidden';
+                        }
 
                         const eventsContainer = cell.querySelector('.fc-daygrid-day-events');
                         if (eventsContainer) {
@@ -1089,9 +1117,20 @@ const CalendarEngine = {
                             const availableForEvents = Math.max(0, cellInnerH - headerH);
                             // Leave a small safety gap to avoid touching edges; ensure a minimum of 48px
                             const maxEventsH = Math.max(48, availableForEvents - 4);
+                            // Set explicit height so the events area fills the cell and any extra content scrolls internally
                             eventsContainer.style.maxHeight = maxEventsH + 'px';
+                            eventsContainer.style.height = maxEventsH + 'px';
+                            eventsContainer.style.minHeight = '0';
+                            eventsContainer.style.display = 'flex';
+                            eventsContainer.style.flexDirection = 'column';
                             eventsContainer.style.overflowY = 'auto';
                             eventsContainer.style.boxSizing = 'border-box';
+                            eventsContainer.style.paddingBottom = '0';
+                            eventsContainer.style.gap = '4px';
+
+                            // Normalize the "+n more" element spacing if present
+                            const moreEl = cell.querySelector('.fc-daygrid-day-more');
+                            if (moreEl) { moreEl.style.marginBottom = '0'; moreEl.style.paddingBottom = '0'; }
                           } catch (_) {}
                         }
                       });
@@ -1196,7 +1235,27 @@ const CalendarEngine = {
                     row.style.minHeight = '';
                     row.style.maxHeight = '';
                     row.style.overflow = '';
-                    row.querySelectorAll('.fc-daygrid-day-cell').forEach(cell => { cell.style.height = ''; cell.style.minHeight = ''; });
+                    row.querySelectorAll('.fc-daygrid-day-cell').forEach(cell => {
+                      cell.style.height = '';
+                      cell.style.minHeight = '';
+
+                      // Clear any temporary per-cell events sizing applied earlier
+                      const eventsContainer = cell.querySelector('.fc-daygrid-day-events');
+                      if (eventsContainer) {
+                        eventsContainer.style.height = '';
+                        eventsContainer.style.maxHeight = '';
+                        eventsContainer.style.overflowY = '';
+                        eventsContainer.style.display = '';
+                        eventsContainer.style.flex = '';
+                        eventsContainer.style.minHeight = '';
+                        eventsContainer.style.boxSizing = '';
+                        eventsContainer.style.paddingBottom = '';
+                        eventsContainer.style.gap = '';
+                      }
+
+                      const moreEl = cell.querySelector('.fc-daygrid-day-more');
+                      if (moreEl) { moreEl.style.marginBottom = ''; moreEl.style.paddingBottom = ''; }
+                    });
                   });
                   console.log(`✅ Daygrid mount: cleared forced row sizing (${rows.length} rows)`);
                 } catch (e) { /* ignore */ }

@@ -603,7 +603,6 @@ section {
     scrollbar-color: var(--color-primary) var(--color-dark);
     scrollbar-width: thin;
 }
-}
 
 ::-webkit-scrollbar-thumb:hover {
     background: var(--text-gold);
