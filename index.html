@@ -40,6 +40,45 @@
             --transition-fast: 0.15s ease;
             --transition-normal: 0.3s ease;
             --transition-slow: 0.5s ease;
+            /* Extended theme variables */
+            --button-color: #007AFF;
+            --button-text-color: #FFFFFF;
+            --nav-text-color: #8E8E93;
+            --nav-hover-color: #007AFF;
+            --footer-bg-color: #0A0A0A;
+            --footer-text-color: #636366;
+            --gradient-start: #007AFF;
+            --gradient-end: #5AC8FA;
+            --subtitle-color: #007AFF;
+            --scrollbar-track: #1C1C1E;
+            --scrollbar-thumb: #007AFF;
+        }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: var(--scrollbar-track);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--scrollbar-thumb);
+            border-radius: 4px;
+            transition: background 0.3s ease;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: color-mix(in srgb, var(--scrollbar-thumb) 80%, white);
+        }
+        
+        /* Firefox scrollbar */
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
         }
         
         * {
@@ -125,7 +164,7 @@
             font-weight: 600;
             letter-spacing: 0.2em;
             text-transform: uppercase;
-            color: var(--accent);
+            color: var(--subtitle-color);
         }
         
         /* ============================================
@@ -193,7 +232,7 @@
         #nav-links-container a {
             font-size: 0.8rem;
             font-weight: 500;
-            color: var(--text-secondary);
+            color: var(--nav-text-color);
             text-decoration: none;
             letter-spacing: 0.05em;
             text-transform: uppercase;
@@ -208,16 +247,16 @@
             left: 0;
             width: 0;
             height: 2px;
-            background: var(--accent);
+            background: var(--nav-hover-color);
             transition: width var(--transition-normal);
         }
         
-        #nav-links-container a:hover { color: var(--text-primary); }
+        #nav-links-container a:hover { color: var(--nav-hover-color); }
         #nav-links-container a:hover::after { width: 100%; }
         
         #nav-book-btn {
-            background: var(--accent);
-            color: white;
+            background: var(--button-color);
+            color: var(--button-text-color);
             padding: 12px 24px;
             border-radius: var(--radius-sm);
             font-size: 0.75rem;
@@ -633,7 +672,7 @@
            CTA SECTION
            ============================================ */
         .cta-section {
-            background: linear-gradient(135deg, var(--accent) 0%, color-mix(in srgb, var(--accent) 70%, #000) 100%);
+            background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
             text-align: center;
             padding: 80px 0;
         }
@@ -682,7 +721,7 @@
            FOOTER
            ============================================ */
         footer {
-            background: var(--bg-secondary);
+            background: var(--footer-bg-color);
             padding: 60px 0 40px;
             border-top: 1px solid var(--border-color);
         }
@@ -708,7 +747,7 @@
         }
         
         .footer-links a {
-            color: var(--text-secondary);
+            color: var(--footer-text-color);
             text-decoration: none;
             font-size: 0.85rem;
             transition: color var(--transition-fast);
@@ -719,7 +758,7 @@
         #footer-copy {
             width: 100%;
             text-align: center;
-            color: var(--text-tertiary);
+            color: var(--footer-text-color);
             font-size: 0.8rem;
             letter-spacing: 0.05em;
             margin-top: 32px;
@@ -905,7 +944,7 @@
         }
         
         function applyThemeColors() {
-            const t = SITE_CONFIG.theme;
+            const t = SITE_CONFIG.theme || {};
             const root = document.documentElement;
             
             // Map config theme to CSS variables
@@ -919,12 +958,37 @@
             };
             root.style.setProperty('--accent-rgb', hex2rgb(primary));
             root.style.setProperty('--accent-light', `${primary}15`);
+            
+            // Background colors
             root.style.setProperty('--bg-primary', t.dark || '#0A0A0A');
             root.style.setProperty('--bg-secondary', t.card || '#141414');
+            
+            // Text colors
             root.style.setProperty('--text-primary', t.textPrimary || '#FFFFFF');
             root.style.setProperty('--text-secondary', t.textSecondary || '#8E8E93');
+            
+            // Gradient colors
             root.style.setProperty('--gradient-start', t.gradientStart || primary);
             root.style.setProperty('--gradient-end', t.gradientEnd || '#5AC8FA');
+            
+            // Button colors
+            root.style.setProperty('--button-color', t.buttonColor || primary);
+            root.style.setProperty('--button-text-color', t.buttonTextColor || '#FFFFFF');
+            
+            // Navigation colors
+            root.style.setProperty('--nav-text-color', t.navTextColor || '#8E8E93');
+            root.style.setProperty('--nav-hover-color', t.navHoverColor || primary);
+            
+            // Footer colors
+            root.style.setProperty('--footer-bg-color', t.footerBgColor || '#0A0A0A');
+            root.style.setProperty('--footer-text-color', t.footerTextColor || '#636366');
+            
+            // Subtitle (hero-sub) color - uses primary accent
+            root.style.setProperty('--subtitle-color', t.primary || primary);
+            
+            // Scrollbar colors - uses config values or primary accent
+            root.style.setProperty('--scrollbar-track', t.scrollbarTrack || t.dark || '#1C1C1E');
+            root.style.setProperty('--scrollbar-thumb', t.scrollbarThumb || primary);
         }
         
         async function loadFromFirebase() {

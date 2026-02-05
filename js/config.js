@@ -49,6 +49,22 @@ const SITE_CONFIG = {
         borderLight: "rgba(255,255,255,0.1)",
         borderGold: "rgba(0,122,255,0.3)",
         
+        // Button Colors
+        buttonColor: "#007AFF",       // Button background
+        buttonTextColor: "#FFFFFF",   // Button text
+        
+        // Navigation Colors
+        navTextColor: "#8E8E93",      // Nav link text
+        navHoverColor: "#007AFF",     // Nav link hover/underline
+        
+        // Footer Colors
+        footerBgColor: "#0A0A0A",     // Footer background
+        footerTextColor: "#636366",   // Footer text
+        
+        // Scrollbar Colors
+        scrollbarThumb: "#007AFF",    // Scrollbar thumb color
+        scrollbarTrack: "#1C1C1E",    // Scrollbar track color
+        
         // Functional Colors
         success: "#4ADE80",           // Success messages
         error: "#F87171",             // Error messages

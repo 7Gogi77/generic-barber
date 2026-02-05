@@ -879,6 +879,29 @@
                     <button class="save-btn" onclick="saveNavFooterColors()">Shrani Nastavitve Noge</button>
                 </div>
 
+                <!-- SCROLLBAR COLORS SECTION -->
+                <div class="admin-section">
+                    <div class="section-title">Drsnik (Scrollbar)</div>
+                    <p style="font-size: 12px; color: #666; margin-bottom: 15px;">Barve za drsnik na strani</p>
+                    <div class="form-row">
+                        <div class="form-group-admin">
+                            <label class="form-label-admin">Barva Drsnika</label>
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                <input id="scrollbar-thumb" type="color" class="form-input-admin" style="flex: 0.3; height: 40px; cursor: pointer;">
+                                <input id="scrollbar-thumb-text" type="text" class="form-input-admin" placeholder="#007AFF" style="flex: 0.7;">
+                            </div>
+                        </div>
+                        <div class="form-group-admin">
+                            <label class="form-label-admin">Barva Ozadja Drsnika</label>
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                <input id="scrollbar-track" type="color" class="form-input-admin" style="flex: 0.3; height: 40px; cursor: pointer;">
+                                <input id="scrollbar-track-text" type="text" class="form-input-admin" placeholder="#1C1C1E" style="flex: 0.7;">
+                            </div>
+                        </div>
+                    </div>
+                    <button class="save-btn" onclick="saveScrollbarColors()">Shrani Drsnik</button>
+                </div>
+
             </div> <!-- END videz tab -->
 
             <!-- ===== TAB 2: VSEBINA (CONTENT) ===== -->
@@ -1658,6 +1681,12 @@
                 document.getElementById('footer-bg-color-text').value = SITE_CONFIG.theme.footerBgColor || '#0A0A0A';
                 document.getElementById('footer-text-color').value = SITE_CONFIG.theme.footerTextColor || '#636366';
                 document.getElementById('footer-text-color-text').value = SITE_CONFIG.theme.footerTextColor || '#636366';
+
+                // Scrollbar Colors
+                document.getElementById('scrollbar-thumb').value = SITE_CONFIG.theme.scrollbarThumb || SITE_CONFIG.theme.primary || '#007AFF';
+                document.getElementById('scrollbar-thumb-text').value = SITE_CONFIG.theme.scrollbarThumb || SITE_CONFIG.theme.primary || '#007AFF';
+                document.getElementById('scrollbar-track').value = SITE_CONFIG.theme.scrollbarTrack || '#1C1C1E';
+                document.getElementById('scrollbar-track-text').value = SITE_CONFIG.theme.scrollbarTrack || '#1C1C1E';
 
                 // Sync color pickers with text inputs
                 syncColorInputs();
@@ -2453,6 +2482,26 @@
             showNotification('Barve navigacije in noge so bile shranjene!', 'success');
         }
 
+        // Save scrollbar colors
+        function saveScrollbarColors() {
+            const scrollbarThumb = document.getElementById('scrollbar-thumb-text').value || document.getElementById('scrollbar-thumb').value;
+            const scrollbarTrack = document.getElementById('scrollbar-track-text').value || document.getElementById('scrollbar-track').value;
+
+            // Ensure theme object exists
+            if (!SITE_CONFIG.theme) SITE_CONFIG.theme = {};
+
+            // Update config
+            SITE_CONFIG.theme.scrollbarThumb = scrollbarThumb;
+            SITE_CONFIG.theme.scrollbarTrack = scrollbarTrack;
+
+            // Apply colors to page immediately
+            applyThemeToPage();
+
+            // Save config
+            saveConfig();
+            showNotification('Barve drsnika so bile shranjene!', 'success');
+        }
+
         // Apply theme colors to the page
         function applyThemeToPage() {
             const t = SITE_CONFIG.theme;
@@ -2471,6 +2520,8 @@
             root.style.setProperty('--footer-bg-color', t.footerBgColor || '#0A0A0A');
             root.style.setProperty('--footer-text-color', t.footerTextColor || '#636366');
             root.style.setProperty('--text-gold', t.primary || '#007AFF');
+            root.style.setProperty('--scrollbar-thumb', t.scrollbarThumb || t.primary || '#007AFF');
+            root.style.setProperty('--scrollbar-track', t.scrollbarTrack || t.dark || '#1C1C1E');
         }
 
         function showNotification(message, type) {
@@ -2619,6 +2670,19 @@
                 SITE_CONFIG.theme.footerTextColor = val;
                 document.getElementById('footer-text-color').value = val;
                 document.getElementById('footer-text-color-text').value = val;
+            }
+            // Scrollbar colors
+            if (e.target.id === 'scrollbar-thumb' || e.target.id === 'scrollbar-thumb-text') {
+                const val = document.getElementById('scrollbar-thumb-text').value || document.getElementById('scrollbar-thumb').value;
+                SITE_CONFIG.theme.scrollbarThumb = val;
+                document.getElementById('scrollbar-thumb').value = val;
+                document.getElementById('scrollbar-thumb-text').value = val;
+            }
+            if (e.target.id === 'scrollbar-track' || e.target.id === 'scrollbar-track-text') {
+                const val = document.getElementById('scrollbar-track-text').value || document.getElementById('scrollbar-track').value;
+                SITE_CONFIG.theme.scrollbarTrack = val;
+                document.getElementById('scrollbar-track').value = val;
+                document.getElementById('scrollbar-track-text').value = val;
             }
             // Apply theme and save config whenever any of these fields change
             applyThemeToPage();
