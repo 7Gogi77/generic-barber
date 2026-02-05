@@ -148,8 +148,24 @@ const SITE_CONFIG = {
             start: 9,    // 9 AM
             end: 19      // 7 PM
         },
-        daysClosed: [0], // 0 = Sunday
-        slotDuration: 15 // 15 minute slots
+        daysClosed: [0], // 0 = Sunday (days where shop is closed)
+        slotDuration: 15, // 15 minute slots
+        // Working days: true = open, false/missing = closed
+        // 0 = Sunday, 1 = Monday, 2 = Tuesday, etc.
+        workingDays: {
+            1: true,  // Monday
+            2: true,  // Tuesday
+            3: true,  // Wednesday
+            4: true,  // Thursday
+            5: true,  // Friday
+            6: false, // Saturday (closed by default)
+            0: false  // Sunday (closed by default)
+        },
+        // Per-day custom hours (optional override)
+        hours: {
+            // Example: Saturday could have shorter hours
+            // 6: { start: 10, end: 14 }
+        }
     },
     
     // Booking Page Content (rezervacija.html)

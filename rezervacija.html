@@ -769,8 +769,14 @@
                     <p>Zeleni datumi imajo proste termine</p>
                     <!-- Business Hours Info -->
                     <div class="business-hours-info" id="businessHoursInfo">
-                        <span class="icon">🕐</span>
-                        <span>Delovni čas: <span id="businessHoursText">9:00 - 19:00</span></span>
+                        <div style="display: flex; align-items: center; gap: 6px;">
+                            <span class="icon">🕐</span>
+                            <span>Delovni čas: <span id="businessHoursText">9:00 - 19:00</span></span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 6px; margin-top: 4px;">
+                            <span class="icon">📅</span>
+                            <span>Delovni dnevi: <span id="workingDaysInfo">Pon - Pet</span></span>
+                        </div>
                     </div>
                 </div>
                 <div class="card-body">
@@ -1104,10 +1110,43 @@
         // ===== UPDATE BUSINESS HOURS DISPLAY =====
         function updateBusinessHoursDisplay() {
             const businessHours = window.SITE_CONFIG?.booking?.businessHours || { start: 9, end: 19 };
+            const workingDays = window.SITE_CONFIG?.booking?.workingDays || {};
+            const daysClosed = window.SITE_CONFIG?.booking?.daysClosed || [0];
+            const hoursPerDay = window.SITE_CONFIG?.booking?.hours || {};
+            
             const hoursText = document.getElementById('businessHoursText');
             if (hoursText) {
                 hoursText.textContent = `${businessHours.start}:00 - ${businessHours.end}:00`;
             }
+            
+            // Update working days info if element exists
+            const workingDaysInfo = document.getElementById('workingDaysInfo');
+            if (workingDaysInfo) {
+                const dayNames = ['Ned', 'Pon', 'Tor', 'Sre', 'Čet', 'Pet', 'Sob'];
+                const openDays = [];
+                for (let i = 0; i < 7; i++) {
+                    if (workingDays[i] || !daysClosed.includes(i)) {
+                        openDays.push(dayNames[i]);
+                    }
+                }
+                workingDaysInfo.textContent = openDays.join(', ') || 'Pon - Pet';
+            }
+        }
+        
+        // ===== GET BUSINESS HOURS FOR SPECIFIC DAY =====
+        function getBusinessHoursForDay(dayOfWeek) {
+            const defaultHours = window.SITE_CONFIG?.booking?.businessHours || { start: 9, end: 19 };
+            const hoursPerDay = window.SITE_CONFIG?.booking?.hours || {};
+            
+            // Check if there are custom hours for this day
+            if (hoursPerDay[dayOfWeek]) {
+                return {
+                    start: hoursPerDay[dayOfWeek].start ?? defaultHours.start,
+                    end: hoursPerDay[dayOfWeek].end ?? defaultHours.end
+                };
+            }
+            
+            return defaultHours;
         }
 
         // ===== LOADING =====
@@ -1333,7 +1372,15 @@
         // ===== CHECK IF DATE IS CLOSED =====
         function isDateClosed(date) {
             const dayOfWeek = date.getDay(); // 0 = Sunday
+            const workingDays = window.SITE_CONFIG?.booking?.workingDays || {};
             const daysClosed = window.SITE_CONFIG?.booking?.daysClosed || [0];
+            
+            // If workingDays is defined, use it (day is closed if NOT in workingDays)
+            if (Object.keys(workingDays).length > 0) {
+                return !workingDays[dayOfWeek];
+            }
+            
+            // Fallback to daysClosed array
             return daysClosed.includes(dayOfWeek);
         }
 
@@ -1347,11 +1394,14 @@
         function getAvailableSlotsForDate(date) {
             // Use local date string (not UTC) to avoid timezone issues
             const dateStr = getLocalDateStr(date);
-            const businessHours = window.SITE_CONFIG?.booking?.businessHours || { start: 9, end: 19 };
+            const dayOfWeek = date.getDay();
+            
+            // Get business hours for this specific day
+            const businessHours = getBusinessHoursForDay(dayOfWeek);
             const slotDuration = window.SITE_CONFIG?.booking?.slotDuration || 15;
             const serviceDuration = BookingState.totalDuration || 30;
             
-            console.log('📅 Generating slots for:', dateStr, 'Business hours:', businessHours.start, '-', businessHours.end, 'Service:', serviceDuration, 'min');
+            console.log('📅 Generating slots for:', dateStr, '(day:', dayOfWeek, ') Business hours:', businessHours.start, '-', businessHours.end, 'Service:', serviceDuration, 'min');
             
             // Calculate the latest possible start time
             // Appointment must END before or at closing time
@@ -1509,7 +1559,8 @@
             
             // Get available slots
             const slots = getAvailableSlotsForDate(date);
-            const businessHours = window.SITE_CONFIG?.booking?.businessHours || { start: 9, end: 19 };
+            const dayOfWeek = date.getDay();
+            const businessHours = getBusinessHoursForDay(dayOfWeek);
             const totalWorkMinutes = (businessHours.end - businessHours.start) * 60;
             const serviceDuration = BookingState.totalDuration || 30;
             
