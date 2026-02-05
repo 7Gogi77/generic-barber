@@ -62,85 +62,6 @@
   width: 14.28% !important;
 }
 
-#scheduleCalendar.view-daygrid .fc .fc-daygrid-day-frame {
-  min-height: auto !important;
-}
-
-/* Month view: let JS control row/cell heights; use overflow:hidden so cells don't expand */
-#scheduleCalendar.view-daygrid .fc-daygrid-day {
-  overflow: hidden !important;
-}
-
-/* Force table to use fixed layout so cells don't expand with content */
-#scheduleCalendar.view-daygrid .fc .fc-scrollgrid,
-#scheduleCalendar.view-daygrid .fc .fc-scrollgrid-section > td,
-#scheduleCalendar.view-daygrid .fc .fc-daygrid-body > table {
-  table-layout: fixed !important;
-}
-
-/* CRITICAL: Force all day frames to same fixed height to prevent tall cells */
-#scheduleCalendar.view-daygrid .fc-daygrid-day-frame.fc-scrollgrid-sync-inner,
-#scheduleCalendar.view-daygrid .fc-daygrid-day-frame {
-  height: 85px !important;
-  max-height: 85px !important;
-  min-height: 85px !important;
-  overflow: hidden !important;
-}
-
-/* Ensure rows don't grow beyond their set height */
-#scheduleCalendar.view-daygrid .fc .fc-daygrid-body tr {
-  height: 1px !important; /* trick: let JS set actual height on the row element */
-}
-
-#scheduleCalendar.view-daygrid .fc .fc-daygrid-body {
-  overflow-y: auto !important;
-  -webkit-overflow-scrolling: touch;
-}
-
-#scheduleCalendar.view-daygrid .fc-daygrid-day-cell {
-  overflow: hidden !important;
-  vertical-align: top !important;
-}
-
-#scheduleCalendar.view-daygrid .fc .fc-daygrid-day-container,
-#scheduleCalendar.view-daygrid .fc-daygrid-day-container {
-  overflow: hidden !important;
-}
-
-#scheduleCalendar.view-daygrid .fc .fc-daygrid-day-events {
-  overflow-y: auto !important;
-  overflow-x: hidden !important;
-}
-
-#scheduleCalendar.view-daygrid .fc .fc-daygrid-event {
-  min-height: auto !important;
-  max-height: none !important;
-  line-height: normal !important;
-  font-size: 12px !important;
-  padding: 2px 4px !important;
-  white-space: normal !important;
-}
-
-#scheduleCalendar.view-daygrid .fc .fc-daygrid-event {
-  min-height: 18px !important;
-  max-height: 18px !important;
-  line-height: 18px !important;
-  font-size: 11px !important;
-  padding: 0px 2px !important;
-  margin: 0px !important;
-  overflow: hidden !important;
-}
-
-/* Show +more link for overflow (scoped to month view) */
-#scheduleCalendar.view-daygrid .fc .fc-daygrid-day-more {
-  font-size: 12px !important;
-  cursor: pointer;
-}
-
-#scheduleCalendar.view-daygrid .fc .fc-daygrid-day-more a {
-  color: #3498db;
-}
-
 /* ============================================
    FULLCALENDAR OVERRIDES
    ============================================ */
@@ -168,11 +89,6 @@
 #scheduleCalendar .fc .fc-button-primary:disabled {
   background-color: #95a5a6;
   border-color: #7f8c8d;
-}
-
-#scheduleCalendar.view-daygrid .fc .fc-daygrid-day-number {
-  padding: 8px;
-  font-weight: 600;
 }
 
 #scheduleCalendar.view-daygrid .fc .fc-daygrid-day {

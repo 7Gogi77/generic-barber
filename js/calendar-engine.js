@@ -721,15 +721,17 @@ const CalendarEngine = {
           }
         },
         headerToolbar: {
-          left: 'prev,next today diag scrollTop scrollBottom scrollUp scrollDown',
+          left: 'prev,next today',
           center: 'title',
           right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
         },
         locale: 'sl',
         firstDay: 1,
         nowIndicator: true,
-        dayMaxEvents: 3,
+        dayMaxEvents: true, // Auto-calculate based on cell height, show +more link
         moreLinkClick: 'popover',
+        // Prioritize multi-day events (longer duration first), then by start time
+        eventOrder: '-duration,start',
         // Business hours (visual only)
         businessHours: {
           daysOfWeek: [1,2,3,4,5],
@@ -755,10 +757,19 @@ const CalendarEngine = {
         height: calcHeight,
         contentHeight: 'auto',
 
-        // Load events
+        // Load events - always fetch fresh from storage to avoid duplicates
         events: async (info, successCallback, failureCallback) => {
           try {
-            const events = await CalendarEngine.generateCalendarEvents(scheduleData);
+            // Load fresh schedule data from storage each time
+            let freshScheduleData = scheduleData;
+            if (typeof StorageManager !== 'undefined' && StorageManager.load) {
+              try {
+                freshScheduleData = await StorageManager.load('schedule');
+              } catch (e) {
+                console.warn('⚠ Could not load fresh schedule, using initial data');
+              }
+            }
+            const events = await CalendarEngine.generateCalendarEvents(freshScheduleData);
             successCallback(events);
           } catch (err) { failureCallback(err); }
         },
@@ -1013,133 +1024,7 @@ const CalendarEngine = {
           // After view renders, limit timed events to 3 per day
           setTimeout(() => {
             if (arg.view.type === 'dayGridMonth') {
-              console.log('🔍 Limiting events to 3 per day...');
-              
-              // Get all day cell containers
-              const dayCells = document.querySelectorAll('.fc-daygrid-day-cell');
-              console.log('Found', dayCells.length, 'day cells');
-              
-              dayCells.forEach((dayCell, index) => {
-                const eventsContainer = dayCell.querySelector('.fc-daygrid-day-events');
-                if (eventsContainer) {
-                  const allEventEls = Array.from(eventsContainer.querySelectorAll('.fc-daygrid-event'));
-                  
-                  if (allEventEls.length > 0) {
-                    const dateEl = dayCell.querySelector('.fc-daygrid-day-number');
-                    const dayNum = dateEl ? dateEl.textContent : 'unknown';
-                    console.log(`%c📅 FEB ${dayNum}: Found ${allEventEls.length} events`, 'color: blue; font-weight: bold');
-                    
-                    let timedCount = 0;
-                    allEventEls.forEach((el, i) => {
-                      const text = el.textContent;
-                      const hasTime = /\d{2}:\d{2}/.test(text);
-                      
-                      if (hasTime) {
-                        timedCount++;
-                        if (timedCount > 3) {
-                          el.style.display = 'none';
-                          console.log(`%c  ❌ HIDDEN: "${text.substring(0, 40)}" (timed event #${timedCount})`, 'color: red');
-                        } else {
-                          console.log(`%c  ✅ KEPT: "${text.substring(0, 40)}" (timed event #${timedCount})`, 'color: green');
-                        }
-                      } else {
-                        console.log(`%c  ✅ KEPT: "${text.substring(0, 40)}" (all-day event)`, 'color: green');
-                      }
-                    });
-                  }
-                }
-              });
-              
-        // Enforce equal pixel heights for month rows to prevent single tall cells when multiple events are present
-              const daygridBody = document.querySelector('.fc-daygrid-body');
-              if (daygridBody) {
-                try {
-                  // Allow vertical scrolling inside the month grid (if rows exceed available height)
-                  daygridBody.style.overflowY = 'auto';
-                  daygridBody.style.webkitOverflowScrolling = 'touch';
-
-                  // Compute equal heights for each month row so day cells cannot grow arbitrarily tall
-                  const rows = Array.from(daygridBody.querySelectorAll('.fc-daygrid-row'));
-                  if (rows.length > 0) {
-                    // Determine the available height inside the daygrid body. If zero, fallback to container height minus toolbar/header.
-                    const availBodyH = daygridBody.clientHeight && daygridBody.clientHeight > 40 ? daygridBody.clientHeight : Math.max(300, containerElement.clientHeight - 120);
-                    const perRowH = Math.floor(availBodyH / rows.length);
-
-                    rows.forEach((row) => {
-                      row.style.height = perRowH + 'px';
-                      row.style.minHeight = perRowH + 'px';
-                      row.style.maxHeight = perRowH + 'px';
-                      row.style.overflow = 'hidden';
-
-                      // Also set height on all <td> elements in the row to prevent table cell expansion
-                      row.querySelectorAll('td').forEach(td => {
-                        td.style.height = perRowH + 'px';
-                        td.style.maxHeight = perRowH + 'px';
-                        td.style.overflow = 'hidden';
-                        td.style.verticalAlign = 'top';
-
-                        // CRITICAL: Override FullCalendar's fc-scrollgrid-sync-inner inline height
-                        const syncInner = td.querySelector('.fc-scrollgrid-sync-inner');
-                        if (syncInner) {
-                          syncInner.style.height = '100%';
-                          syncInner.style.maxHeight = perRowH + 'px';
-                          syncInner.style.minHeight = '0';
-                          syncInner.style.overflow = 'hidden';
-                        }
-                      });
-
-                      // Ensure inner day cells fill the row but cap their internal event area to avoid overflow changing the row height
-                      const cells = row.querySelectorAll('.fc-daygrid-day-cell');
-                      cells.forEach(cell => {
-                        cell.style.height = perRowH + 'px';
-                        cell.style.maxHeight = perRowH + 'px';
-                        cell.style.minHeight = '0';
-                        cell.style.overflow = 'hidden';
-
-                        // Also target the day-frame inside the cell
-                        const dayFrame = cell.querySelector('.fc-daygrid-day-frame');
-                        if (dayFrame) {
-                          dayFrame.style.height = '100%';
-                          dayFrame.style.maxHeight = perRowH + 'px';
-                          dayFrame.style.minHeight = '0';
-                          dayFrame.style.overflow = 'hidden';
-                        }
-
-                        const eventsContainer = cell.querySelector('.fc-daygrid-day-events');
-                        if (eventsContainer) {
-                          // Limit events container to the remaining area inside the cell (leave space for day number/header)
-                          const dayNumber = cell.querySelector('.fc-daygrid-day-number');
-                          const headerH = dayNumber ? Math.ceil(dayNumber.getBoundingClientRect().height) : 20;
-                          try {
-                            // Compute available inner height from the actual cell size and paddings (more robust than a magic constant)
-                            const cellStyle = window.getComputedStyle(cell);
-                            const cellInnerH = Math.max(0, cell.clientHeight - parseFloat(cellStyle.paddingTop || 0) - parseFloat(cellStyle.paddingBottom || 0));
-                            const availableForEvents = Math.max(0, cellInnerH - headerH);
-                            // Leave a small safety gap to avoid touching edges; ensure a minimum of 48px
-                            const maxEventsH = Math.max(48, availableForEvents - 4);
-                            // Set explicit height so the events area fills the cell and any extra content scrolls internally
-                            eventsContainer.style.maxHeight = maxEventsH + 'px';
-                            eventsContainer.style.height = maxEventsH + 'px';
-                            eventsContainer.style.minHeight = '0';
-                            eventsContainer.style.display = 'flex';
-                            eventsContainer.style.flexDirection = 'column';
-                            eventsContainer.style.overflowY = 'auto';
-                            eventsContainer.style.boxSizing = 'border-box';
-                            eventsContainer.style.paddingBottom = '0';
-                            eventsContainer.style.gap = '4px';
-
-                            // Normalize the "+n more" element spacing if present
-                            const moreEl = cell.querySelector('.fc-daygrid-day-more');
-                            if (moreEl) { moreEl.style.marginBottom = '0'; moreEl.style.paddingBottom = '0'; }
-                          } catch (_) {}
-                        }
-                      });
-                    });
-
-                    console.log('🔧 Month rows forced to equal heights:', rows.length, 'perRowH=' + perRowH + 'px');
-                  }
-                } catch (e) { console.warn('⚠ Failed to enforce month row heights', e); }
-              }
+              console.log('� Month view rendered - using FullCalendar dayMaxEvents:true for auto height');
             }
             
             // For timeGridWeek only, ensure timegrid and scroll bodies are sized (skip Day to avoid fallbacks there)
@@ -1966,14 +1851,10 @@ function debugLog(msg) {
 async function loadAppointmentsToCalendarNow() {
   debugLog('🔄 Loading bookings from StorageManager schedule');
   try {
-    const schedule = await StorageManager.load('schedule');
-    debugLog(`✓ Schedule loaded, events: ${schedule.events ? schedule.events.length : 0}`);
-
     if (window.calendar) {
-      const newEvents = await CalendarEngine.generateCalendarEvents(schedule);
-      window.calendar.removeAllEvents();
-      window.calendar.addEventSource(newEvents);
-      debugLog(`✅ Calendar refreshed with ${newEvents.length} events from schedule`);
+      // Simply refetch events - the events callback will load fresh data
+      window.calendar.refetchEvents();
+      debugLog(`✅ Calendar events refetched`);
     }
   } catch (error) {
     debugLog(`❌ loadAppointmentsToCalendarNow error: ${error.message}`);
