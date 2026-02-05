@@ -560,170 +560,20 @@ const CalendarEngine = {
       const timeGridSlotMax = '24:00:00';
       const initialScrollTime = options.scrollTime || (window.SITE_CONFIG && window.SITE_CONFIG.booking && window.SITE_CONFIG.booking.scrollTime) || '12:00:00';
 
-      // Small helper to scroll current view by px (positive -> down)
-      const scrollCurrentView = (directive) => {
-        try {
-          // Try to find the most appropriate scrollable container under the calendar
-          const candidates = Array.from(containerElement.querySelectorAll('*'));
-
-          const isScrollable = (el) => {
-            try {
-              const cs = window.getComputedStyle(el);
-              return (cs.overflowY === 'auto' || cs.overflowY === 'scroll' || cs.overflow === 'auto' || cs.overflow === 'scroll') && el.scrollHeight > el.clientHeight + 2;
-            } catch (_) { return false; }
-          };
-
-          // Find the first visible scrollable candidate in priority order (timegrid then daygrid then any)
-          const timeScroll = containerElement.querySelector('.fc-timegrid .fc-scrollgrid-section-body');
-          const daygridBody = containerElement.querySelector('.fc-daygrid-body');
-
-          let targetEl = null;
-          if (timeScroll && isScrollable(timeScroll)) targetEl = timeScroll;
-          else if (daygridBody && isScrollable(daygridBody)) targetEl = daygridBody;
-          else targetEl = candidates.find(isScrollable) || null;
-
-          if (!targetEl) {
-            console.log('scrollCurrentView: no scrollable element found under calendar');
-            return;
-          }
-
-          // Support 'top'/'bottom' directives and numeric deltas
-          if (directive === 'top') { targetEl.scrollTop = 0; return; }
-          if (directive === 'bottom') { targetEl.scrollTop = targetEl.scrollHeight - targetEl.clientHeight; return; }
-
-          const px = Number(directive) || 0;
-          targetEl.scrollTop = Math.max(0, Math.min(targetEl.scrollHeight - targetEl.clientHeight, targetEl.scrollTop + px));
-          console.log('scrollCurrentView: scrolled', { target: targetEl.className, scrollTop: targetEl.scrollTop, clientHeight: targetEl.clientHeight, scrollHeight: targetEl.scrollHeight });
-        } catch (e) { console.warn('scrollCurrentView failed', e); }
-      };
-
-      // Keyboard shortcuts for scrolling in active view
-      const keyboardScrollHandler = (e) => {
-        // PageUp/PageDown/Home/End
-        if (e.key === 'PageDown') { e.preventDefault(); scrollCurrentView(300); }
-        if (e.key === 'PageUp') { e.preventDefault(); scrollCurrentView(-300); }
-        if (e.key === 'Home') { e.preventDefault(); scrollCurrentView('top'); }
-        if (e.key === 'End') { e.preventDefault(); scrollCurrentView('bottom'); }
-      };
-      window.addEventListener('keydown', keyboardScrollHandler);
-
-      // Diagnostic helper to print sizes and computed styles for calendar scroll debugging
-      const runScrollDiagnostics = () => {
-        const out = [];
-        try {
-          out.push('🔎 Scroll diagnostics start');
-
-          const safeGet = (fn, fallback) => { try { return fn(); } catch (e) { return fallback; } };
-
-          const container = safeGet(() => containerElement, null);
-          const timegrid = safeGet(() => container && container.querySelector('.fc-timegrid'), null);
-
-          out.push(` - container present? ${!!container} - id=${container?.id || ''}`);
-
-          // Basic elements
-          const nodes = {
-            parent: safeGet(() => container && container.parentElement, null),
-            viewHarness: safeGet(() => container && container.querySelector('.fc-view-harness'), null),
-            timegrid: timegrid,
-            timeSlots: safeGet(() => (timegrid ? Array.from(timegrid.querySelectorAll('.fc-timegrid-slot')) : []), []),
-            scrollBodies: safeGet(() => (container ? Array.from(container.querySelectorAll('.fc-scrollgrid-section-body')) : []), [])
-          };
-
-          Object.entries(nodes).forEach(([k, el]) => {
-            if (Array.isArray(el)) {
-              out.push(` - ${k}: length=${el.length}`);
-              return;
-            }
-            if (!el) { out.push(` - ${k}: <missing>`); return; }
-            const cs = safeGet(() => window.getComputedStyle(el), {});
-            out.push(` - ${k}: tag=${el.tagName} class="${el.className}" id="${el.id || ''}" clientH=${el.clientHeight} scrollH=${el.scrollHeight} overflowY=${cs.overflowY} position=${cs.position}`);
-
-            // Walk up ancestor chain for this element to find blocking styles
-            try {
-              let anc = el;
-              const ancList = [];
-              for (let i = 0; i < 6 && anc; i++) {
-                const cs2 = window.getComputedStyle(anc);
-                ancList.push(`${anc.tagName}.${anc.className || ''} id=${anc.id || ''} pos=${cs2.position} overflowY=${cs2.overflowY} h=${anc.clientHeight} scrollH=${anc.scrollHeight}`);
-                anc = anc.parentElement;
-              }
-              out.push(`   ancestors: ${ancList.join(' | ')}`);
-            } catch (_) { /* ignore */ }
-          });
-
-          // If there are zero slots, report slot duration settings
-          if (nodes.timeSlots && nodes.timeSlots.length === 0) {
-            out.push(' - WARNING: no .fc-timegrid-slot elements found.');
-            out.push(` - slotMinTime: ${slotMinTimeVal}, slotMaxTime: ${slotMaxTimeVal}, slotDuration: ${slotDurationStr}, scrollTime: ${initialScrollTime}`);
-          } else {
-            out.push(` - slots count: ${nodes.timeSlots.length}`);
-            // sample slot geometry
-            const s0 = nodes.timeSlots[0];
-            const r = s0.getBoundingClientRect();
-            out.push(` - sample slot rect: top=${r.top.toFixed(1)} h=${r.height.toFixed(1)}`);
-          }
-
-          // Find any descendant manually scrollable elements
-          const all = safeGet(() => Array.from(container.querySelectorAll('*')), []);
-          const scrollables = all.filter(el => {
-            try { const cs = window.getComputedStyle(el); return (cs.overflowY === 'auto' || cs.overflowY === 'scroll') && el.scrollHeight > el.clientHeight + 2; } catch (_) { return false; }
-          });
-
-          if (scrollables.length === 0) out.push(' - No descendant scrollable elements found');
-          else {
-            out.push(' - descendant scrollables (first 8):');
-            scrollables.slice(0, 8).forEach((s, idx) => { const cs = safeGet(() => window.getComputedStyle(s), {}); out.push(`   ${idx}. el <${s.tagName}> .${s.className} id=${s.id} clientH=${s.clientHeight} scrollH=${s.scrollHeight} overflowY=${cs.overflowY} position=${cs.position}`); });
-          }
-
-          out.push('🔎 Scroll diagnostics end');
-
-          // Output to console and debug panel
-          out.forEach(l => console.log(l));
-          const debugPanel = document.getElementById('debugPanel');
-          const debugOutput = document.getElementById('debugOutput');
-          if (debugOutput) {
-            debugOutput.innerHTML = '';
-            out.forEach(l => { debugOutput.innerHTML += l.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '<br>'; });
-            if (debugPanel) debugPanel.style.display = 'block';
-            alert('Diagnostics written to visible debug panel. Check the panel at bottom-right.');
-          } else {
-            alert('Diagnostics written to console. Please paste logs here.');
-          }
-        } catch (err) {
-          try { console.warn('runScrollDiagnostics failed', err); } catch (_) {}
-          try { const debugPanel = document.getElementById('debugPanel'); if (debugPanel) { debugPanel.style.display = 'block'; const debugOutput = document.getElementById('debugOutput'); if (debugOutput) debugOutput.innerText = 'Diagnostics failed: ' + (err && err.message ? err.message : String(err)); } } catch (_) {}
-          alert('Diagnostics failed - check debug panel or console for details');
-        }
-      };
-
       const calendar = new FullCalendar.Calendar(containerElement, {
         initialView: options.initialView || 'dayGridMonth',
-        customButtons: {
-          scrollUp: {
-            text: '↑',
-            click: () => { scrollCurrentView(-200); }
-          },
-          scrollDown: {
-            text: '↓',
-            click: () => { scrollCurrentView(200); }
-          },
-          scrollTop: {
-            text: 'Top',
-            click: () => { scrollCurrentView('top'); }
-          },
-          scrollBottom: {
-            text: 'Bottom',
-            click: () => { scrollCurrentView('bottom'); }
-          },
-          diag: {
-            text: 'Diag',
-            click: () => { runScrollDiagnostics(); }
-          }
-        },
         headerToolbar: {
           left: 'prev,next today',
           center: 'title',
           right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
+        },
+        // Slovenian button text
+        buttonText: {
+          today: 'Danes',
+          month: 'Mesec',
+          week: 'Teden',
+          day: 'Dan',
+          list: 'Seznam'
         },
         locale: 'sl',
         firstDay: 1,
