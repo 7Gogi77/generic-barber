@@ -571,59 +571,143 @@
         }
 
         /* ============================================
-           TIMEGRID (WEEK/DAY) - ENABLE VERTICAL SCROLLING
+           TIMEGRID (WEEK/DAY) - DISABLE ALL SCROLLBARS
            ============================================ */
         
-        /* Disable scrollbar on the outer view container */
+        /* Disable scrollbar on all calendar scroll containers */
         #scheduleCalendar .fc-timeGridWeek-view,
         #scheduleCalendar .fc-timeGridDay-view,
-        #scheduleCalendar .fc-timegrid {
-            overflow: hidden !important;
-        }
-        
-        /* Disable scrollbar on generic .fc-scroller */
-        #scheduleCalendar .fc-scroller {
-            overflow: hidden !important;
-        }
-        
-        /* ENABLE scrollbar ONLY on .fc-scroller-liquid-absolute */
+        #scheduleCalendar .fc-timegrid,
+        #scheduleCalendar .fc-scroller,
         #scheduleCalendar .fc-scroller.fc-scroller-liquid-absolute {
-            overflow-y: scroll !important;
-            overflow-x: hidden !important;
+            overflow: hidden !important;
+            scrollbar-width: none !important;
+            -ms-overflow-style: none !important;
         }
         
-        /* Style scrollbars - Webkit (Chrome, Safari, Edge) */
+        /* Hide webkit scrollbars */
+        #scheduleCalendar .fc-scroller::-webkit-scrollbar,
         #scheduleCalendar .fc-scroller.fc-scroller-liquid-absolute::-webkit-scrollbar {
-            width: 12px !important;
-            height: 12px !important;
-            display: block !important;
-        }
-
-        #scheduleCalendar .fc-scroller.fc-scroller-liquid-absolute::-webkit-scrollbar-track {
-            background: #E5E5EA;
-            border-radius: 6px;
-        }
-
-        #scheduleCalendar .fc-scroller.fc-scroller-liquid-absolute::-webkit-scrollbar-thumb {
-            background: #8E8E93;
-            border-radius: 6px;
-            border: 2px solid #E5E5EA;
-            min-height: 40px;
-        }
-
-        #scheduleCalendar .fc-scroller.fc-scroller-liquid-absolute::-webkit-scrollbar-thumb:hover {
-            background: #636366;
-        }
-
-        /* Firefox scrollbar styling */
-        #scheduleCalendar .fc-scroller.fc-scroller-liquid-absolute {
-            scrollbar-width: auto !important;
-            scrollbar-color: #8E8E93 #E5E5EA !important;
+            display: none !important;
+            width: 0 !important;
+            height: 0 !important;
         }
         
         /* Ensure timegrid body doesn't clip */
         #scheduleCalendar .fc-timegrid-body {
             overflow: visible !important;
+        }
+
+        /* ============================================
+           MONTH VIEW - RESPONSIVE CELL SIZING
+           ============================================ */
+        
+        /* Make month view fill available space without scrolling */
+        #scheduleCalendar .fc-dayGridMonth-view {
+            height: 100% !important;
+            overflow: hidden !important;
+        }
+        
+        #scheduleCalendar .fc-dayGridMonth-view .fc-scrollgrid {
+            height: 100% !important;
+        }
+        
+        #scheduleCalendar .fc-dayGridMonth-view .fc-scrollgrid-section-body {
+            height: 100% !important;
+        }
+        
+        #scheduleCalendar .fc-dayGridMonth-view .fc-daygrid-body {
+            height: 100% !important;
+        }
+        
+        /* Make cells stretch to fill available height */
+        #scheduleCalendar .fc-dayGridMonth-view .fc-scrollgrid-sync-table {
+            height: 100% !important;
+        }
+        
+        /* Day cells - responsive sizing based on viewport */
+        #scheduleCalendar .fc-daygrid-day {
+            min-height: 0 !important;
+        }
+        
+        #scheduleCalendar .fc-daygrid-day-frame {
+            min-height: 60px !important;
+            height: 100% !important;
+        }
+        
+        /* Large screens (desktop monitors) */
+        @media (min-width: 1400px) {
+            #scheduleCalendar .fc-daygrid-day-frame {
+                min-height: 120px !important;
+            }
+            #scheduleCalendar .fc-daygrid-day-number {
+                font-size: 16px !important;
+                padding: 10px !important;
+            }
+            #scheduleCalendar .fc-event {
+                font-size: 13px !important;
+                padding: 4px 6px !important;
+            }
+        }
+        
+        /* Medium screens (small desktop / large laptop) */
+        @media (min-width: 1200px) and (max-width: 1399px) {
+            #scheduleCalendar .fc-daygrid-day-frame {
+                min-height: 100px !important;
+            }
+            #scheduleCalendar .fc-daygrid-day-number {
+                font-size: 14px !important;
+                padding: 8px !important;
+            }
+            #scheduleCalendar .fc-event {
+                font-size: 12px !important;
+                padding: 3px 5px !important;
+            }
+        }
+        
+        /* Laptop screens */
+        @media (min-width: 992px) and (max-width: 1199px) {
+            #scheduleCalendar .fc-daygrid-day-frame {
+                min-height: 80px !important;
+            }
+            #scheduleCalendar .fc-daygrid-day-number {
+                font-size: 13px !important;
+                padding: 6px !important;
+            }
+            #scheduleCalendar .fc-event {
+                font-size: 11px !important;
+                padding: 2px 4px !important;
+            }
+        }
+        
+        /* Small laptop / tablet landscape */
+        @media (min-width: 768px) and (max-width: 991px) {
+            #scheduleCalendar .fc-daygrid-day-frame {
+                min-height: 65px !important;
+            }
+            #scheduleCalendar .fc-daygrid-day-number {
+                font-size: 12px !important;
+                padding: 4px !important;
+            }
+            #scheduleCalendar .fc-event {
+                font-size: 10px !important;
+                padding: 2px 3px !important;
+            }
+        }
+        
+        /* Tablet portrait and below */
+        @media (max-width: 767px) {
+            #scheduleCalendar .fc-daygrid-day-frame {
+                min-height: 50px !important;
+            }
+            #scheduleCalendar .fc-daygrid-day-number {
+                font-size: 11px !important;
+                padding: 3px !important;
+            }
+            #scheduleCalendar .fc-event {
+                font-size: 9px !important;
+                padding: 1px 2px !important;
+            }
         }
 
         /* TimeGrid styling */
