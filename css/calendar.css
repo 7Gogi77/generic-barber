@@ -265,9 +265,7 @@
   overflow: visible;
 }
 
-#scheduleCalendar .fc-scroller {
-  overflow: visible;
-}
+/* Note: .fc-scroller overflow is controlled in poslovni-panel.html for timegrid views */
 
 #scheduleCalendar .fc-daygrid-day-frame {
   overflow: visible;
