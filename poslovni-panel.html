@@ -574,47 +574,49 @@
            TIMEGRID (WEEK/DAY) - ENABLE VERTICAL SCROLLING
            ============================================ */
         
-        /* Target the scrollgrid-section-liquid (contains the time slots) */
-        #scheduleCalendar .fc-timegrid .fc-scrollgrid-section-liquid {
-            overflow: visible !important;
+        /* Disable scrollbar on the outer view container */
+        #scheduleCalendar .fc-timeGridWeek-view,
+        #scheduleCalendar .fc-timeGridDay-view,
+        #scheduleCalendar .fc-timegrid {
+            overflow: hidden !important;
         }
         
-        /* The scroller-harness contains the actual scrollable div */
-        #scheduleCalendar .fc-timegrid .fc-scroller-harness {
-            overflow: visible !important;
+        /* Disable scrollbar on generic .fc-scroller */
+        #scheduleCalendar .fc-scroller {
+            overflow: hidden !important;
         }
         
-        /* THIS IS THE KEY: .fc-scroller is the actual scrollable container */
-        #scheduleCalendar .fc-timegrid .fc-scroller {
+        /* ENABLE scrollbar ONLY on .fc-scroller-liquid-absolute */
+        #scheduleCalendar .fc-scroller.fc-scroller-liquid-absolute {
             overflow-y: scroll !important;
             overflow-x: hidden !important;
         }
         
         /* Style scrollbars - Webkit (Chrome, Safari, Edge) */
-        #scheduleCalendar .fc-timegrid .fc-scroller::-webkit-scrollbar {
+        #scheduleCalendar .fc-scroller.fc-scroller-liquid-absolute::-webkit-scrollbar {
             width: 12px !important;
             height: 12px !important;
             display: block !important;
         }
 
-        #scheduleCalendar .fc-timegrid .fc-scroller::-webkit-scrollbar-track {
+        #scheduleCalendar .fc-scroller.fc-scroller-liquid-absolute::-webkit-scrollbar-track {
             background: #E5E5EA;
             border-radius: 6px;
         }
 
-        #scheduleCalendar .fc-timegrid .fc-scroller::-webkit-scrollbar-thumb {
+        #scheduleCalendar .fc-scroller.fc-scroller-liquid-absolute::-webkit-scrollbar-thumb {
             background: #8E8E93;
             border-radius: 6px;
             border: 2px solid #E5E5EA;
             min-height: 40px;
         }
 
-        #scheduleCalendar .fc-timegrid .fc-scroller::-webkit-scrollbar-thumb:hover {
+        #scheduleCalendar .fc-scroller.fc-scroller-liquid-absolute::-webkit-scrollbar-thumb:hover {
             background: #636366;
         }
 
         /* Firefox scrollbar styling */
-        #scheduleCalendar .fc-timegrid .fc-scroller {
+        #scheduleCalendar .fc-scroller.fc-scroller-liquid-absolute {
             scrollbar-width: auto !important;
             scrollbar-color: #8E8E93 #E5E5EA !important;
         }
