@@ -605,40 +605,57 @@
         /* Make month view fill available space without scrolling */
         #scheduleCalendar .fc-dayGridMonth-view {
             height: 100% !important;
+            max-height: 100% !important;
             overflow: hidden !important;
         }
         
         #scheduleCalendar .fc-dayGridMonth-view .fc-scrollgrid {
             height: 100% !important;
+            max-height: 100% !important;
+        }
+        
+        #scheduleCalendar .fc-dayGridMonth-view .fc-scroller,
+        #scheduleCalendar .fc-dayGridMonth-view .fc-scroller-harness,
+        #scheduleCalendar .fc-dayGridMonth-view .fc-scroller-liquid-absolute {
+            overflow: hidden !important;
+            height: 100% !important;
+            position: relative !important;
         }
         
         #scheduleCalendar .fc-dayGridMonth-view .fc-scrollgrid-section-body {
-            height: 100% !important;
+            height: auto !important;
         }
         
         #scheduleCalendar .fc-dayGridMonth-view .fc-daygrid-body {
-            height: 100% !important;
+            height: auto !important;
         }
         
-        /* Make cells stretch to fill available height */
+        /* Make cells stretch to fill available height using flexbox */
         #scheduleCalendar .fc-dayGridMonth-view .fc-scrollgrid-sync-table {
-            height: 100% !important;
+            height: auto !important;
         }
         
-        /* Day cells - responsive sizing based on viewport */
+        /* Day cells - use viewport-based heights */
         #scheduleCalendar .fc-daygrid-day {
             min-height: 0 !important;
+            height: auto !important;
         }
         
+        /* Calculate row height based on viewport - 6 rows in a month view */
+        /* Subtract header (~140px for toolbar + weekday headers) and divide remaining space */
         #scheduleCalendar .fc-daygrid-day-frame {
-            min-height: 60px !important;
-            height: 100% !important;
+            min-height: calc((100vh - 220px) / 6) !important;
+            max-height: calc((100vh - 220px) / 6) !important;
+            height: calc((100vh - 220px) / 6) !important;
+            overflow: hidden !important;
         }
         
-        /* Large screens (desktop monitors) */
-        @media (min-width: 1400px) {
+        /* Large screens (desktop monitors) - allow more space */
+        @media (min-height: 900px) {
             #scheduleCalendar .fc-daygrid-day-frame {
-                min-height: 120px !important;
+                min-height: calc((100vh - 200px) / 6) !important;
+                max-height: calc((100vh - 200px) / 6) !important;
+                height: calc((100vh - 200px) / 6) !important;
             }
             #scheduleCalendar .fc-daygrid-day-number {
                 font-size: 16px !important;
@@ -650,25 +667,12 @@
             }
         }
         
-        /* Medium screens (small desktop / large laptop) */
-        @media (min-width: 1200px) and (max-width: 1399px) {
+        /* Medium height screens (typical laptop) */
+        @media (min-height: 700px) and (max-height: 899px) {
             #scheduleCalendar .fc-daygrid-day-frame {
-                min-height: 100px !important;
-            }
-            #scheduleCalendar .fc-daygrid-day-number {
-                font-size: 14px !important;
-                padding: 8px !important;
-            }
-            #scheduleCalendar .fc-event {
-                font-size: 12px !important;
-                padding: 3px 5px !important;
-            }
-        }
-        
-        /* Laptop screens */
-        @media (min-width: 992px) and (max-width: 1199px) {
-            #scheduleCalendar .fc-daygrid-day-frame {
-                min-height: 80px !important;
+                min-height: calc((100vh - 180px) / 6) !important;
+                max-height: calc((100vh - 180px) / 6) !important;
+                height: calc((100vh - 180px) / 6) !important;
             }
             #scheduleCalendar .fc-daygrid-day-number {
                 font-size: 13px !important;
@@ -680,11 +684,32 @@
             }
         }
         
-        /* Small laptop / tablet landscape */
-        @media (min-width: 768px) and (max-width: 991px) {
+        /* Small height screens (small laptops) */
+        @media (max-height: 699px) {
             #scheduleCalendar .fc-daygrid-day-frame {
-                min-height: 65px !important;
+                min-height: calc((100vh - 160px) / 6) !important;
+                max-height: calc((100vh - 160px) / 6) !important;
+                height: calc((100vh - 160px) / 6) !important;
             }
+            #scheduleCalendar .fc-daygrid-day-number {
+                font-size: 11px !important;
+                padding: 4px !important;
+            }
+            #scheduleCalendar .fc-event {
+                font-size: 10px !important;
+                padding: 1px 3px !important;
+            }
+            #scheduleCalendar .fc-toolbar-title {
+                font-size: 16px !important;
+            }
+            #scheduleCalendar .fc-button {
+                padding: 4px 8px !important;
+                font-size: 12px !important;
+            }
+        }
+        
+        /* Width-based adjustments for text sizing */
+        @media (max-width: 991px) {
             #scheduleCalendar .fc-daygrid-day-number {
                 font-size: 12px !important;
                 padding: 4px !important;
@@ -695,11 +720,7 @@
             }
         }
         
-        /* Tablet portrait and below */
         @media (max-width: 767px) {
-            #scheduleCalendar .fc-daygrid-day-frame {
-                min-height: 50px !important;
-            }
             #scheduleCalendar .fc-daygrid-day-number {
                 font-size: 11px !important;
                 padding: 3px !important;
