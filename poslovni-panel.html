@@ -574,59 +574,49 @@
            TIMEGRID (WEEK/DAY) - ENABLE VERTICAL SCROLLING
            ============================================ */
         
-        /* The scrollgrid-section-body td contains the scrollable area */
-        #scheduleCalendar .fc-timegrid .fc-scrollgrid-section-body > td {
-            position: relative !important;
-        }
-        
-        /* Target the div wrapper inside the td that should scroll */
-        #scheduleCalendar .fc-timegrid .fc-scrollgrid-section-body > td > div {
+        /* Target the scrollgrid-section-liquid for visible scrollbar */
+        #scheduleCalendar .fc-scrollgrid-section-liquid {
             overflow-y: auto !important;
             overflow-x: hidden !important;
-            max-height: calc(100vh - 180px) !important;
-            position: relative !important;
         }
         
-        /* Alternative: target by FullCalendar's scroller class */
-        #scheduleCalendar .fc-timegrid .fc-scroller-harness {
-            overflow: visible !important;
-        }
-        
-        #scheduleCalendar .fc-timegrid .fc-scroller-harness > .fc-scroller {
-            overflow-y: auto !important;
+        /* Ensure the scroller inside has visible scrollbar */
+        #scheduleCalendar .fc-scrollgrid-section-liquid .fc-scroller {
+            overflow-y: scroll !important;
             overflow-x: hidden !important;
-            max-height: calc(100vh - 180px) !important;
+        }
+        
+        /* Style scrollbars for the liquid section */
+        #scheduleCalendar .fc-scrollgrid-section-liquid::-webkit-scrollbar,
+        #scheduleCalendar .fc-scrollgrid-section-liquid .fc-scroller::-webkit-scrollbar {
+            width: 10px !important;
+            height: 10px !important;
+            display: block !important;
         }
 
-        /* Style scrollbars for a cleaner look */
-        #scheduleCalendar .fc-timegrid .fc-scrollgrid-section-body > td > div::-webkit-scrollbar,
-        #scheduleCalendar .fc-timegrid .fc-scroller::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-
-        #scheduleCalendar .fc-timegrid .fc-scrollgrid-section-body > td > div::-webkit-scrollbar-track,
-        #scheduleCalendar .fc-timegrid .fc-scroller::-webkit-scrollbar-track {
+        #scheduleCalendar .fc-scrollgrid-section-liquid::-webkit-scrollbar-track,
+        #scheduleCalendar .fc-scrollgrid-section-liquid .fc-scroller::-webkit-scrollbar-track {
             background: var(--ios-bg-tertiary);
-            border-radius: 4px;
+            border-radius: 5px;
         }
 
-        #scheduleCalendar .fc-timegrid .fc-scrollgrid-section-body > td > div::-webkit-scrollbar-thumb,
-        #scheduleCalendar .fc-timegrid .fc-scroller::-webkit-scrollbar-thumb {
-            background: var(--ios-text-tertiary);
-            border-radius: 4px;
-        }
-
-        #scheduleCalendar .fc-timegrid .fc-scrollgrid-section-body > td > div::-webkit-scrollbar-thumb:hover,
-        #scheduleCalendar .fc-timegrid .fc-scroller::-webkit-scrollbar-thumb:hover {
+        #scheduleCalendar .fc-scrollgrid-section-liquid::-webkit-scrollbar-thumb,
+        #scheduleCalendar .fc-scrollgrid-section-liquid .fc-scroller::-webkit-scrollbar-thumb {
             background: var(--ios-text-secondary);
+            border-radius: 5px;
+            min-height: 40px;
         }
 
-        /* Firefox scrollbar styling */
-        #scheduleCalendar .fc-timegrid .fc-scrollgrid-section-body > td > div,
-        #scheduleCalendar .fc-timegrid .fc-scroller {
-            scrollbar-width: thin;
-            scrollbar-color: var(--ios-text-tertiary) var(--ios-bg-tertiary);
+        #scheduleCalendar .fc-scrollgrid-section-liquid::-webkit-scrollbar-thumb:hover,
+        #scheduleCalendar .fc-scrollgrid-section-liquid .fc-scroller::-webkit-scrollbar-thumb:hover {
+            background: var(--ios-text-primary);
+        }
+
+        /* Firefox scrollbar styling - make it visible */
+        #scheduleCalendar .fc-scrollgrid-section-liquid,
+        #scheduleCalendar .fc-scrollgrid-section-liquid .fc-scroller {
+            scrollbar-width: auto !important;
+            scrollbar-color: var(--ios-text-secondary) var(--ios-bg-tertiary) !important;
         }
         
         /* Ensure parent containers allow overflow */
