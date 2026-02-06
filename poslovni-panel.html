@@ -574,49 +574,44 @@
            TIMEGRID (WEEK/DAY) - ENABLE VERTICAL SCROLLING
            ============================================ */
         
-        /* Force scrolling on the scroller element in timegrid views */
-        #scheduleCalendar .fc-scroller {
-            overflow: auto !important;
+        /* Target the timegrid-cols container for scrolling */
+        #scheduleCalendar .fc-timegrid-cols {
+            overflow-y: auto !important;
+            overflow-x: hidden !important;
+            max-height: calc(100vh - 200px) !important;
         }
         
-        /* Ensure the timegrid body section can scroll */
+        /* Ensure parent containers don't clip the scrollbar */
         #scheduleCalendar .fc-timegrid-body {
             overflow: visible !important;
         }
         
-        /* Make sure the scrollgrid section body allows scrolling */
-        #scheduleCalendar .fc-scrollgrid-section-body > td {
+        #scheduleCalendar .fc-scroller {
             overflow: visible !important;
-        }
-        
-        /* The actual scrollable container in FullCalendar 6 */
-        #scheduleCalendar .fc-scrollgrid-section-body .fc-scroller {
-            overflow-y: auto !important;
-            overflow-x: hidden !important;
         }
 
         /* Style scrollbars for a cleaner look */
-        #scheduleCalendar .fc-scroller::-webkit-scrollbar {
+        #scheduleCalendar .fc-timegrid-cols::-webkit-scrollbar {
             width: 8px;
             height: 8px;
         }
 
-        #scheduleCalendar .fc-scroller::-webkit-scrollbar-track {
+        #scheduleCalendar .fc-timegrid-cols::-webkit-scrollbar-track {
             background: var(--ios-bg-tertiary);
             border-radius: 4px;
         }
 
-        #scheduleCalendar .fc-scroller::-webkit-scrollbar-thumb {
+        #scheduleCalendar .fc-timegrid-cols::-webkit-scrollbar-thumb {
             background: var(--ios-text-tertiary);
             border-radius: 4px;
         }
 
-        #scheduleCalendar .fc-scroller::-webkit-scrollbar-thumb:hover {
+        #scheduleCalendar .fc-timegrid-cols::-webkit-scrollbar-thumb:hover {
             background: var(--ios-text-secondary);
         }
 
         /* Firefox scrollbar styling */
-        #scheduleCalendar .fc-scroller {
+        #scheduleCalendar .fc-timegrid-cols {
             scrollbar-width: thin;
             scrollbar-color: var(--ios-text-tertiary) var(--ios-bg-tertiary);
         }
