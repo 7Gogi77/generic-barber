@@ -602,16 +602,38 @@
            MONTH VIEW - RESPONSIVE CELL SIZING
            ============================================ */
         
-        /* Make month view fill available space without scrolling */
+        /* Ensure full height chain from container to cells */
         #scheduleCalendar .fc-dayGridMonth-view {
             height: 100% !important;
-            max-height: 100% !important;
+            min-height: 100% !important;
             overflow: hidden !important;
+            display: flex !important;
+            flex-direction: column !important;
         }
         
         #scheduleCalendar .fc-dayGridMonth-view .fc-scrollgrid {
             height: 100% !important;
-            max-height: 100% !important;
+            min-height: 100% !important;
+            flex: 1 !important;
+            display: flex !important;
+            flex-direction: column !important;
+        }
+        
+        #scheduleCalendar .fc-dayGridMonth-view .fc-scrollgrid > tbody {
+            flex: 1 !important;
+            display: flex !important;
+            flex-direction: column !important;
+        }
+        
+        #scheduleCalendar .fc-dayGridMonth-view .fc-scrollgrid-section-body {
+            flex: 1 !important;
+            display: flex !important;
+        }
+        
+        #scheduleCalendar .fc-dayGridMonth-view .fc-scrollgrid-section-body > td {
+            height: 100% !important;
+            display: flex !important;
+            flex: 1 !important;
         }
         
         #scheduleCalendar .fc-dayGridMonth-view .fc-scroller,
@@ -619,61 +641,67 @@
         #scheduleCalendar .fc-dayGridMonth-view .fc-scroller-liquid-absolute {
             overflow: hidden !important;
             height: 100% !important;
-            position: relative !important;
-        }
-        
-        #scheduleCalendar .fc-dayGridMonth-view .fc-scrollgrid-section-body {
-            height: auto !important;
+            min-height: 100% !important;
+            flex: 1 !important;
+            display: flex !important;
+            flex-direction: column !important;
         }
         
         #scheduleCalendar .fc-dayGridMonth-view .fc-daygrid-body {
-            height: auto !important;
+            height: 100% !important;
+            min-height: 100% !important;
+            flex: 1 !important;
+            display: flex !important;
+            flex-direction: column !important;
         }
         
-        /* Make cells stretch to fill available height using flexbox */
+        /* Make the sync table fill available height */
         #scheduleCalendar .fc-dayGridMonth-view .fc-scrollgrid-sync-table {
             height: 100% !important;
+            min-height: 100% !important;
+            flex: 1 !important;
         }
         
         /* Make table rows fill the height equally */
-        #scheduleCalendar .fc-dayGridMonth-view .fc-scrollgrid-sync-table tbody {
+        #scheduleCalendar .fc-dayGridMonth-view .fc-scrollgrid-sync-table > tbody {
             display: flex !important;
             flex-direction: column !important;
             height: 100% !important;
+            min-height: 100% !important;
         }
         
-        #scheduleCalendar .fc-dayGridMonth-view .fc-scrollgrid-sync-table tbody tr {
-            flex: 1 !important;
+        #scheduleCalendar .fc-dayGridMonth-view .fc-scrollgrid-sync-table > tbody > tr {
+            flex: 1 1 0 !important;
             display: flex !important;
+            min-height: 0 !important;
         }
         
-        #scheduleCalendar .fc-dayGridMonth-view .fc-scrollgrid-sync-table tbody tr td {
-            flex: 1 !important;
+        #scheduleCalendar .fc-dayGridMonth-view .fc-scrollgrid-sync-table > tbody > tr > td {
+            flex: 1 1 0 !important;
             display: flex !important;
+            min-width: 0 !important;
         }
         
         /* Day cells - fill available space */
         #scheduleCalendar .fc-daygrid-day {
-            min-height: 0 !important;
             height: 100% !important;
+            min-height: 50px !important;
             flex: 1 !important;
+            display: flex !important;
+            flex-direction: column !important;
         }
         
         #scheduleCalendar .fc-daygrid-day-frame {
-            min-height: 50px !important;
             height: 100% !important;
+            min-height: 50px !important;
             flex: 1 !important;
+            display: flex !important;
+            flex-direction: column !important;
             overflow: hidden !important;
         }
         
-        /* Ensure the scrollgrid body section gets proper height */
-        #scheduleCalendar .fc-dayGridMonth-view .fc-scrollgrid-section-body > td {
-            height: 100% !important;
-            padding: 0 !important;
-        }
-        
-        /* Events container */
-        #scheduleCalendar .fc-dayGridMonth-view .fc-daygrid-day-events {
+        #scheduleCalendar .fc-daygrid-day-events {
+            flex: 1 !important;
             overflow: hidden !important;
         }
         
