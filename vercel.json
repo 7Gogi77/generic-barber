@@ -1,3 +1,10 @@
 {
-  "outputDirectory": "."
+  "headers": [
+    {
+      "source": "/poslovni-panel.html",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-store, no-cache, must-revalidate" }
+      ]
+    }
+  ]
 }
