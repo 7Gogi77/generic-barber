@@ -900,7 +900,11 @@ const CalendarEngine = {
                   if (fcRoot) { fcRoot.style.height = avail + 'px'; fcRoot.style.minHeight = avail + 'px'; fcRoot.style.overflow = 'visible'; }
                   if (viewHarness) { viewHarness.style.height = avail + 'px'; viewHarness.style.minHeight = avail + 'px'; }
                   if (timegrid) { timegrid.style.height = avail + 'px'; timegrid.style.minHeight = avail + 'px'; timegrid.style.overflowX = 'hidden'; timegrid.style.overflowY = 'auto'; }
-                  if (scrollBodies && scrollBodies.length) { scrollBodies.forEach(b => { b.style.height = avail + 'px'; b.style.minHeight = avail + 'px'; b.style.overflowX = 'hidden'; b.style.overflowY = 'auto'; }); }
+                  if (scrollBodies && scrollBodies.length) { scrollBodies.forEach(b => { b.style.height = avail + 'px'; b.style.minHeight = avail + 'px'; b.style.maxHeight = avail + 'px'; b.style.overflowX = 'hidden'; b.style.overflowY = 'auto'; }); }
+                  
+                  // Also target the fc-scroller elements inside timegrid
+                  const scrollers = containerElement.querySelectorAll('.fc-timegrid .fc-scroller');
+                  if (scrollers && scrollers.length) { scrollers.forEach(s => { s.style.maxHeight = avail + 'px'; s.style.overflowY = 'auto'; s.style.overflowX = 'hidden'; }); }
 
                   if (calendar && typeof calendar.updateSize === 'function') calendar.updateSize();
 
@@ -1132,7 +1136,11 @@ const CalendarEngine = {
               if (fcRoot) { fcRoot.style.height = avail + 'px'; fcRoot.style.minHeight = avail + 'px'; fcRoot.style.overflow = 'visible'; }
               if (viewHarness) { viewHarness.style.height = avail + 'px'; viewHarness.style.minHeight = avail + 'px'; }
               if (timegrid) { timegrid.style.height = avail + 'px'; timegrid.style.minHeight = avail + 'px'; timegrid.style.overflowX = 'hidden'; timegrid.style.overflowY = 'auto'; }
-              if (scrollBodies && scrollBodies.length) { scrollBodies.forEach(b => { b.style.height = avail + 'px'; b.style.minHeight = avail + 'px'; b.style.overflowX = 'hidden'; b.style.overflowY = 'auto'; }); }
+              if (scrollBodies && scrollBodies.length) { scrollBodies.forEach(b => { b.style.height = avail + 'px'; b.style.minHeight = avail + 'px'; b.style.maxHeight = avail + 'px'; b.style.overflowX = 'hidden'; b.style.overflowY = 'auto'; }); }
+              
+              // Also target the fc-scroller elements inside timegrid
+              const scrollers = containerElement.querySelectorAll('.fc-timegrid .fc-scroller');
+              if (scrollers && scrollers.length) { scrollers.forEach(s => { s.style.maxHeight = avail + 'px'; s.style.overflowY = 'auto'; s.style.overflowX = 'hidden'; }); }
 
               // Also set calendar options so FullCalendar knows the explicit height
               try { if (calendar && typeof calendar.setOption === 'function') { calendar.setOption('height', avail); calendar.setOption('contentHeight', 'parent'); } } catch (err) { /* ignore */ }

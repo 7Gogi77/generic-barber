@@ -574,46 +574,64 @@
            TIMEGRID (WEEK/DAY) - ENABLE VERTICAL SCROLLING
            ============================================ */
         
-        /* Target the timegrid-cols container for scrolling */
-        #scheduleCalendar .fc-timegrid-cols {
+        /* The scrollgrid-section-body td contains the scrollable area */
+        #scheduleCalendar .fc-timegrid .fc-scrollgrid-section-body > td {
+            position: relative !important;
+        }
+        
+        /* Target the div wrapper inside the td that should scroll */
+        #scheduleCalendar .fc-timegrid .fc-scrollgrid-section-body > td > div {
             overflow-y: auto !important;
             overflow-x: hidden !important;
-            max-height: calc(100vh - 200px) !important;
+            max-height: calc(100vh - 180px) !important;
+            position: relative !important;
         }
         
-        /* Ensure parent containers don't clip the scrollbar */
-        #scheduleCalendar .fc-timegrid-body {
+        /* Alternative: target by FullCalendar's scroller class */
+        #scheduleCalendar .fc-timegrid .fc-scroller-harness {
             overflow: visible !important;
         }
         
-        #scheduleCalendar .fc-scroller {
-            overflow: visible !important;
+        #scheduleCalendar .fc-timegrid .fc-scroller-harness > .fc-scroller {
+            overflow-y: auto !important;
+            overflow-x: hidden !important;
+            max-height: calc(100vh - 180px) !important;
         }
 
         /* Style scrollbars for a cleaner look */
-        #scheduleCalendar .fc-timegrid-cols::-webkit-scrollbar {
+        #scheduleCalendar .fc-timegrid .fc-scrollgrid-section-body > td > div::-webkit-scrollbar,
+        #scheduleCalendar .fc-timegrid .fc-scroller::-webkit-scrollbar {
             width: 8px;
             height: 8px;
         }
 
-        #scheduleCalendar .fc-timegrid-cols::-webkit-scrollbar-track {
+        #scheduleCalendar .fc-timegrid .fc-scrollgrid-section-body > td > div::-webkit-scrollbar-track,
+        #scheduleCalendar .fc-timegrid .fc-scroller::-webkit-scrollbar-track {
             background: var(--ios-bg-tertiary);
             border-radius: 4px;
         }
 
-        #scheduleCalendar .fc-timegrid-cols::-webkit-scrollbar-thumb {
+        #scheduleCalendar .fc-timegrid .fc-scrollgrid-section-body > td > div::-webkit-scrollbar-thumb,
+        #scheduleCalendar .fc-timegrid .fc-scroller::-webkit-scrollbar-thumb {
             background: var(--ios-text-tertiary);
             border-radius: 4px;
         }
 
-        #scheduleCalendar .fc-timegrid-cols::-webkit-scrollbar-thumb:hover {
+        #scheduleCalendar .fc-timegrid .fc-scrollgrid-section-body > td > div::-webkit-scrollbar-thumb:hover,
+        #scheduleCalendar .fc-timegrid .fc-scroller::-webkit-scrollbar-thumb:hover {
             background: var(--ios-text-secondary);
         }
 
         /* Firefox scrollbar styling */
-        #scheduleCalendar .fc-timegrid-cols {
+        #scheduleCalendar .fc-timegrid .fc-scrollgrid-section-body > td > div,
+        #scheduleCalendar .fc-timegrid .fc-scroller {
             scrollbar-width: thin;
             scrollbar-color: var(--ios-text-tertiary) var(--ios-bg-tertiary);
+        }
+        
+        /* Ensure parent containers allow overflow */
+        #scheduleCalendar .fc-timegrid-body {
+            overflow: visible !important;
         }
 
         /* TimeGrid styling */
