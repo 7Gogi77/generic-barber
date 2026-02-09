@@ -1428,6 +1428,37 @@
     </style>
 </head>
 <body>
+<!-- Recovery script: unregister old Service Workers and clear caches then reload once -->
+<script>
+  (async function(){
+    try {
+      // Unregister all service workers for this origin
+      if (navigator.serviceWorker) {
+        const regs = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(regs.map(r => r.unregister()));
+        console.log('Recovery: unregistered service workers', regs.length);
+      }
+
+      // Delete CacheStorage caches
+      if (typeof caches !== 'undefined' && caches.keys) {
+        const keys = await caches.keys();
+        await Promise.all(keys.map(k => caches.delete(k)));
+        console.log('Recovery: cleared caches', keys);
+      }
+
+      // Clear specific localStorage keys that may contain stale schedule/appointments
+      try { localStorage.removeItem('schedule'); localStorage.removeItem('appointments'); console.log('Recovery: cleared storage keys'); } catch (e) {}
+
+      // Notify server-side we attempted recovery (optional)
+      console.log('Recovery: attempting page reload to fetch fresh assets');
+
+      // Attempt one forced reload (bypass cache)
+      window.location.reload(true);
+    } catch (err) {
+      console.warn('Recovery script failed', err);
+    }
+  })();
+</script>
     <!-- SIDEBAR NAVIGATION -->
     <div class="sidebar" id="sidebar">
         <button class="sidebar-toggle" id="sidebarToggle" title="Toggle menu">
