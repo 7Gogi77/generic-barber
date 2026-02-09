@@ -7,6 +7,7 @@ import './js/schedule-model.js';
 import './js/storage-manager.js';
 import './js/calendar-engine.js';
 import './js/admin.js';
+import './js/sw-recovery.js';
 
 // Export nothing; modules run on import
 console.log('Main bundle loaded');
