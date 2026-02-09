@@ -2,10 +2,8 @@
   "builds": [
     { "src": "**/*", "use": "@vercel/static" }
   ],
-  "routes": [
-    { "src": "/poslovni-panel.html", "dest": "/poslovni-panel.3f8a1c.html" },
-    { "handle": "filesystem" },
-    { "src": "/(.*)", "dest": "/$1" }
+  "rewrites": [
+    { "source": "/poslovni-panel.html", "destination": "/poslovni-panel.3f8a1c.html" }
   ],
   "headers": [
     {
