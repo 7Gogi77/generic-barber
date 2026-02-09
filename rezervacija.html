@@ -7,6 +7,34 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+    (function(){
+        try {
+            // Avoid running repeatedly
+            if (!('serviceWorker' in navigator) || localStorage.getItem('sw_recovery_done')) return;
+
+            // Unregister any service workers and clear caches to recover from broken SW states
+            navigator.serviceWorker.getRegistrations().then(async (regs) => {
+                await Promise.all(regs.map(async (r) => {
+                    try { await r.unregister(); } catch (e) { /* ignore */ }
+                }));
+
+                if (window.caches && caches.keys) {
+                    try {
+                        const keys = await caches.keys();
+                        await Promise.all(keys.map(k => caches.delete(k)));
+                    } catch(e) { /* ignore */ }
+                }
+
+                try { localStorage.removeItem('schedule'); } catch(e){}
+                try { localStorage.setItem('sw_recovery_done', '1'); } catch(e){}
+
+                // Give the browser a moment, then reload to pick up fresh assets
+                setTimeout(() => { try { location.reload(); } catch(_){} }, 250);
+            }).catch(() => {});
+        } catch (err) { /* silent */ }
+    })();
+    </script>
     <style>
         /* ===== iOS DESIGN SYSTEM ===== */
         :root {
