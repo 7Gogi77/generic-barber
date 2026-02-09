@@ -1,10 +1,24 @@
 {
-  "headers": [
+  "framework": "vite",
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "rewrites": [
     {
       "source": "/poslovni-panel.html",
-      "destination": "/poslovni-panel.3f8a1c.html",
+      "destination": "/poslovni-panel.3f8a1c.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/poslovni-panel.3f8a1c.html",
       "headers": [
         { "key": "Cache-Control", "value": "no-store, no-cache, must-revalidate" }
+      ]
+    },
+    {
+      "source": "/assets/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
       ]
     }
   ]
