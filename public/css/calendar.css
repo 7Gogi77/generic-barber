@@ -1,0 +1,52 @@
+/* FullCalendar Custom Styling - Minimal overrides to preserve structure */
+
+/* Allow FullCalendar CSS to load from CDN first, then apply selective overrides */
+#scheduleCalendar {
+  font-family: inherit;
+  background: white;
+  border: 1px solid #ecf0f1;
+  border-radius: 8px;
+}
+
+/* Container setup */
+#scheduleCalendar .fc {
+  border: 1px solid #ecf0f1;
+  border-radius: 8px;
+}
+
+#scheduleCalendar .fc-header-toolbar {
+  padding: 12px;
+  background: #f8fafb;
+  border-bottom: 1px solid #ecf0f1;
+}
+
+#scheduleCalendar .fc-toolbar-title {
+  font-size: 1.75em;
+  color: #2c3e50;
+  font-weight: 600;
+}
+
+#scheduleCalendar .fc-button-primary {
+  background-color: #3498db !important;
+  border-color: #2980b9 !important;
+  color: white !important;
+}
+
+#scheduleCalendar .fc-button-primary:hover {
+  background-color: #2980b9 !important;
+}
+
+#scheduleCalendar .fc-button-primary:not(:disabled).fc-button-active {
+  background-color: #2471a3 !important;
+  border-color: #1f618d !important;
+}
+
+/* Day cells */
+#scheduleCalendar .fc-daygrid-day {
+  border-color: #ecf0f1;
+  background: white !important;
+}
+
+#scheduleCalendar .fc-daygrid-day:hover {
+  background: #f0f8ff !important;
+}... (truncated)
