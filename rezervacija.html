@@ -1391,7 +1391,7 @@
             if (isDisabled) btn.classList.add('disabled');
             
             if (date && !isDisabled && !isOtherMonth) {
-                btn.addEventListener('click', () => selectDate(date));
+                btn.addEventListener('click', () => selectDate(date, btn));
             }
             
             return btn;
@@ -1554,7 +1554,7 @@
         }
 
         // ===== SELECT DATE =====
-        function selectDate(date) {
+        function selectDate(date, button) {
             BookingState.selectedDate = date;
             BookingState.selectedTime = null;
             
@@ -1562,7 +1562,9 @@
             document.querySelectorAll('.calendar-day').forEach(btn => {
                 btn.classList.remove('selected');
             });
-            event.target.classList.add('selected');
+            if (button) {
+                button.classList.add('selected');
+            }
             
             // Show time slots
             renderTimeSlots(date);
@@ -1642,20 +1644,22 @@
                     <div class="slot-time">${slot.timeStr}</div>
                     <div class="slot-end" style="font-size: 10px; color: var(--ios-text-tertiary); margin-top: 2px;">→ ${endTimeStr}</div>
                 `;
-                btn.addEventListener('click', () => selectTimeSlot(slot));
+                btn.addEventListener('click', () => selectTimeSlot(slot, btn));
                 grid.appendChild(btn);
             });
         }
 
         // ===== SELECT TIME SLOT =====
-        function selectTimeSlot(slot) {
+        function selectTimeSlot(slot, button) {
             BookingState.selectedTime = slot;
             
             // Update UI
             document.querySelectorAll('.time-slot').forEach(btn => {
                 btn.classList.remove('selected');
             });
-            event.target.classList.add('selected');
+            if (button) {
+                button.classList.add('selected');
+            }
             
             // Enable next button
             document.getElementById('toStep3Btn').disabled = false;
