@@ -1,10 +1,4 @@
 {
-  "rewrites": [
-    {
-      "source": "/poslovni-panel.html",
-      "destination": "/poslovni-panel.3f8a1c.html"
-    }
-  ],
   "headers": [
     {
       "source": "/poslovni-panel.html",
