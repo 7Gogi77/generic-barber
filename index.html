@@ -11,6 +11,7 @@
     <script>window.SITE_CONFIG = window.SITE_CONFIG || {};</script>
     <script src="js/admin.js"></script>
     <script>window.AdminManager = window.AdminManager || {};</script>
+    <script type="module" src="js/firebase-config.js"></script>
     <script>
         const FORMSPREE_ENDPOINT = "https://formspree.io/f/meegkorn";
     </script>
@@ -996,19 +997,31 @@
         
         async function loadFromFirebase() {
             try {
+                if (window.CloudSync && typeof window.CloudSync.loadFromCloud === 'function') {
+                    const sdkLoaded = await window.CloudSync.loadFromCloud();
+                    if (sdkLoaded) {
+                        return true;
+                    }
+                }
+
                 const dbUrl = 'https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app/site_config.json';
-                const response = await fetch(dbUrl);
+                const response = await fetch(dbUrl, { cache: 'no-store' });
                 if (response.ok) {
                     const cloudConfig = await response.json();
                     if (cloudConfig) {
                         Object.assign(SITE_CONFIG, cloudConfig);
                         localStorage.setItem('site_config_backup', JSON.stringify(SITE_CONFIG));
-                        console.log('✅ Loaded config from Firebase');
+                        console.log('✅ Loaded config from Firebase (REST)');
                         return true;
                     }
+                } else {
+                    console.warn(`⚠️ Firebase REST fetch failed: ${response.status} ${response.statusText}`);
                 }
             } catch (error) {
-                console.log('⚠️ Firebase unavailable, using local config');
+                console.log('⚠️ Firebase unavailable, using local config', error);
+                if (error && error.message) {
+                    console.warn('Firebase error detail:', error.message);
+                }
             }
             return false;
         }

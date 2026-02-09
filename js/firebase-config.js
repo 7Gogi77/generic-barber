@@ -36,6 +36,8 @@ window.CloudSync = {
         onValue(connectedRef, (snapshot) => {
             this.isConnected = snapshot.val() === true;
             console.log('🔗 Firebase Connected:', this.isConnected);
+        }, (error) => {
+            console.error('❌ Firebase connection error:', error);
         });
         
         // Listen for remote config changes
@@ -64,6 +66,9 @@ window.CloudSync = {
                     initSite();
                 }
             }
+        }, (error) => {
+            console.error('❌ Firebase config listener error:', error);
+            console.warn('Check Firebase Realtime Database rules for read access.');
         });
     },
     
