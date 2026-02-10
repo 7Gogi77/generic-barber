@@ -1078,6 +1078,25 @@
             <!-- ===== TAB 2: VSEBINA (CONTENT) ===== -->
             <div id="vsebina" class="tab-content">
                 <h2 style="margin: 0 0 20px 0; color: var(--ios-text-primary, #000); font-size: 22px; font-weight: 700; border-bottom: none; padding-bottom: 0;">Vsebina in Tekst</h2>
+
+                <!-- TEMPLATE PRESETS -->
+                <div class="admin-section">
+                    <div class="section-title">🎨 Predloge (Template)</div>
+                    <p style="font-size: 13px; color: var(--ios-text-secondary, #8E8E93); margin-bottom: 12px;">Izberi predlogo in hitro nastavi vsebino. To bo prepisalo trenutno vsebino.</p>
+                    <div class="form-row">
+                        <div class="form-group-admin">
+                            <label class="form-label-admin">Izberi predlogo</label>
+                            <select id="templateSelect" class="form-input-admin">
+                                <option value="barber">Barber Shop</option>
+                                <option value="cardetailing">Car Detailing</option>
+                                <option value="beautysalon">Beauty Salon</option>
+                            </select>
+                        </div>
+                        <div class="form-group-admin" style="display:flex; align-items:flex-end;">
+                            <button class="save-btn" onclick="applyTemplateFromUI()">Uporabi predlogo</button>
+                        </div>
+                    </div>
+                </div>
                 
                 <!-- SHOP NAME SECTION -->
                 <div class="admin-section">
@@ -1916,6 +1935,193 @@
                 console.error('SaveAll failed', err);
                 alert('Prišlo je do napake pri shranjevanju. Preverite konzolo.');
             }
+        }
+
+        // Template presets
+        const TEMPLATE_PRESETS = {
+            barber: {
+                shopName: 'Gentlemen’s Barber',
+                hero: {
+                    subtitle: 'TRADICIJA & STIL',
+                    title: 'Klasičen barber salon',
+                    buttonText: 'Oglej si storitve',
+                    backgroundImage: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?q=80&w=2000'
+                },
+                ourStory: {
+                    sectionTitle: 'Naša zgodba',
+                    title: 'Natančnost in tradicija',
+                    text: 'Sodobne tehnike v kombinaciji s klasičnim pristopom. Vsak obisk je izkušnja.',
+                    image: 'https://images.unsplash.com/photo-1532710093739-9470acff878f?q=80&w=1200'
+                },
+                servicesSection: {
+                    title: 'Storitve',
+                    items: [
+                        { name: 'Klasična frizura', price: '€25', desc: '30 min • Natančen rez', duration: 30 },
+                        { name: 'Fade & Styling', price: '€30', desc: '45 min • Moderno', duration: 45 },
+                        { name: 'Britje z brisačo', price: '€22', desc: '25 min • Tradicionalno', duration: 25 },
+                        { name: 'Paket Gentleman', price: '€45', desc: '60 min • Frizura + britje', duration: 60 }
+                    ]
+                },
+                barbersSection: {
+                    title: 'Naši brivci',
+                    list: [
+                        { name: 'Marko Novak', role: 'Master Barber', img: 'https://images.unsplash.com/photo-1519345182560-3f2917c472ef?q=80&w=1000' },
+                        { name: 'Luka Šter', role: 'Beard Expert', img: 'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?q=80&w=1000' },
+                        { name: 'Tilen Kralj', role: 'Senior Stylist', img: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1000' }
+                    ]
+                },
+                gallery: [
+                    'https://images.unsplash.com/photo-1585747860715-2ba37e788b70?q=80&w=1000',
+                    'https://images.unsplash.com/photo-1621605815971-fbc98d665033?q=80&w=1000',
+                    'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?q=80&w=1000'
+                ],
+                testimonial: {
+                    quote: 'Najboljša izkušnja v mestu. Vrnem se zagotovo!',
+                    author: 'Tomaž P.'
+                },
+                ctaSection: {
+                    title: 'Pripravljeni na spremembo?',
+                    text: 'Rezervirajte termin danes in doživite vrhunsko storitev.',
+                    buttonText: 'Rezerviraj zdaj'
+                },
+                booking: {
+                    title: 'Naročilo termina',
+                    heading: 'Rezervirajte termin',
+                    buttonText: 'Potrdi termin',
+                    placeholderName: 'Ime',
+                    placeholderEmail: 'E-pošta',
+                    placeholderPhone: 'Telefon'
+                }
+            },
+            cardetailing: {
+                shopName: 'Auto Detail Studio',
+                hero: {
+                    subtitle: 'PODROBNOSTI SO VSE',
+                    title: 'Premium Car Detailing',
+                    buttonText: 'Rezerviraj termin',
+                    backgroundImage: 'https://images.unsplash.com/photo-1493238792000-8113da705763?q=80&w=2000'
+                },
+                ourStory: {
+                    sectionTitle: 'O nas',
+                    title: 'Skrb za vsak detajl',
+                    text: 'Profesionalno čiščenje, poliranje in zaščita. Vaše vozilo zasije kot novo.',
+                    image: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?q=80&w=1200'
+                },
+                servicesSection: {
+                    title: 'Paketne storitve',
+                    items: [
+                        { name: 'Notranje čiščenje', price: '€60', desc: '90 min • Globinsko', duration: 90 },
+                        { name: 'Zunanje poliranje', price: '€120', desc: '150 min • Visok sijaj', duration: 150 },
+                        { name: 'Keramična zaščita', price: '€280', desc: '4h • Dolgotrajno', duration: 240 },
+                        { name: 'Komplet Detail', price: '€190', desc: '3h • Notranje + zunanje', duration: 180 }
+                    ]
+                },
+                barbersSection: {
+                    title: 'Naša ekipa',
+                    list: [
+                        { name: 'Andrej Kovač', role: 'Detailing specialist', img: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=1000' },
+                        { name: 'Nika Zupan', role: 'Paint correction', img: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=1000' }
+                    ]
+                },
+                gallery: [
+                    'https://images.unsplash.com/photo-1503376780353-7e6692767b70?q=80&w=1000',
+                    'https://images.unsplash.com/photo-1503736334956-4c8f8e92946d?q=80&w=1000',
+                    'https://images.unsplash.com/photo-1493238792000-8113da705763?q=80&w=1000'
+                ],
+                testimonial: {
+                    quote: 'Avto je po obdelavi izgledal bolje kot ob nakupu.',
+                    author: 'Miha K.'
+                },
+                ctaSection: {
+                    title: 'Naj bo vaš avto kot nov',
+                    text: 'Izberite paket in rezervirajte termin.',
+                    buttonText: 'Rezerviraj zdaj'
+                },
+                booking: {
+                    title: 'Rezervacija',
+                    heading: 'Rezervirajte termin',
+                    buttonText: 'Potrdi termin',
+                    placeholderName: 'Ime',
+                    placeholderEmail: 'E-pošta',
+                    placeholderPhone: 'Telefon'
+                }
+            },
+            beautysalon: {
+                shopName: 'Beauty & Glow',
+                hero: {
+                    subtitle: 'NEGA • LEPOTA • SIJAJ',
+                    title: 'Beauty Salon',
+                    buttonText: 'Rezerviraj nego',
+                    backgroundImage: 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?q=80&w=2000'
+                },
+                ourStory: {
+                    sectionTitle: 'O nas',
+                    title: 'Vaš čas za razvajanje',
+                    text: 'Nudimo vrhunske tretmaje, ki poudarijo vašo naravno lepoto.',
+                    image: 'https://images.unsplash.com/photo-1500917293891-ef795e70e1f6?q=80&w=1200'
+                },
+                servicesSection: {
+                    title: 'Storitve',
+                    items: [
+                        { name: 'Nega obraza', price: '€55', desc: '60 min • Globinska', duration: 60 },
+                        { name: 'Manikura', price: '€25', desc: '30 min • Klasična', duration: 30 },
+                        { name: 'Pedikura', price: '€35', desc: '45 min • SPA', duration: 45 },
+                        { name: 'Masaža', price: '€50', desc: '60 min • Sproščujoča', duration: 60 }
+                    ]
+                },
+                barbersSection: {
+                    title: 'Naša ekipa',
+                    list: [
+                        { name: 'Sara M.', role: 'Kozmetičarka', img: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?q=80&w=1000' },
+                        { name: 'Ana L.', role: 'Nega in masaže', img: 'https://images.unsplash.com/photo-1544723795-3fb6469f5b39?q=80&w=1000' }
+                    ]
+                },
+                gallery: [
+                    'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?q=80&w=1000',
+                    'https://images.unsplash.com/photo-1500917293891-ef795e70e1f6?q=80&w=1000',
+                    'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?q=80&w=1000'
+                ],
+                testimonial: {
+                    quote: 'Čudovita izkušnja in popolna nega. Priporočam!',
+                    author: 'Nina R.'
+                },
+                ctaSection: {
+                    title: 'Rezervirajte svoj tretma',
+                    text: 'Sprostite se in prepustite nego strokovnjakom.',
+                    buttonText: 'Rezerviraj termin'
+                },
+                booking: {
+                    title: 'Rezervacija',
+                    heading: 'Rezervirajte termin',
+                    buttonText: 'Potrdi termin',
+                    placeholderName: 'Ime',
+                    placeholderEmail: 'E-pošta',
+                    placeholderPhone: 'Telefon'
+                }
+            }
+        };
+
+        function applyTemplateFromUI() {
+            const select = document.getElementById('templateSelect');
+            const key = select ? select.value : 'barber';
+            const preset = TEMPLATE_PRESETS[key];
+            if (!preset) return;
+            const ok = confirm('To bo prepisalo trenutno vsebino (naslovi, storitve, galerija, itd.). Nadaljujem?');
+            if (!ok) return;
+
+            SITE_CONFIG.shopName = preset.shopName;
+            SITE_CONFIG.hero = { ...SITE_CONFIG.hero, ...preset.hero };
+            SITE_CONFIG.ourStory = { ...SITE_CONFIG.ourStory, ...preset.ourStory };
+            SITE_CONFIG.servicesSection = { ...SITE_CONFIG.servicesSection, ...preset.servicesSection };
+            SITE_CONFIG.barbersSection = { ...SITE_CONFIG.barbersSection, ...preset.barbersSection };
+            SITE_CONFIG.gallery = preset.gallery.slice();
+            SITE_CONFIG.testimonial = { ...preset.testimonial };
+            SITE_CONFIG.ctaSection = { ...SITE_CONFIG.ctaSection, ...preset.ctaSection };
+            SITE_CONFIG.booking = { ...SITE_CONFIG.booking, ...preset.booking };
+
+            saveConfig();
+            loadAdminForms();
+            showNotification('Predloga uporabljena', 'success');
         }
 
         // Load forms with current data
