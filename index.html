@@ -29,6 +29,8 @@
             --text-primary: #FFFFFF;
             --text-secondary: #8E8E93;
             --text-tertiary: #636366;
+            --text-on-hero: #FFFFFF;
+            --text-on-light: #0A0A0A;
             --border-color: rgba(255, 255, 255, 0.08);
             --border-hover: rgba(255, 255, 255, 0.15);
             --glass-bg: rgba(28, 28, 30, 0.85);
@@ -46,6 +48,8 @@
             --button-color: #007AFF;
             --button-text-color: #FFFFFF;
             --nav-text-color: #8E8E93;
+            --nav-text-color-top: #FFFFFF;
+            --nav-text-color-scrolled: #8E8E93;
             --nav-hover-color: #007AFF;
             --footer-bg-color: #0A0A0A;
             --footer-text-color: #636366;
@@ -227,13 +231,17 @@
         .nav-logo img { max-height: 40px; width: auto; }
         
         #nav-links-container {
-            display: flex;
+            color: var(--nav-text-color-top);
             align-items: center;
             gap: 32px;
         }
         
         #nav-links-container a {
             font-size: 0.8rem;
+
+        #main-nav.scrolled #nav-links-container a {
+            color: var(--nav-text-color-scrolled);
+        }
             font-weight: 500;
             color: var(--nav-text-color);
             text-decoration: none;
@@ -339,6 +347,7 @@
             text-align: center;
             padding: 0 24px;
             max-width: 900px;
+            color: var(--text-on-hero);
         }
         
         .hero-content .subtitle {
@@ -360,9 +369,9 @@
             align-items: center;
             gap: 12px;
             padding: 16px 32px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            border: 1px solid color-mix(in srgb, var(--text-on-hero) 25%, transparent);
             border-radius: var(--radius-sm);
-            color: var(--text-primary);
+            color: var(--text-on-hero);
             text-decoration: none;
             font-size: 0.85rem;
             font-weight: 500;
@@ -764,7 +773,7 @@
             align-items: center;
             gap: 10px;
             background: white;
-            color: var(--bg-primary);
+            color: var(--text-on-light);
             padding: 16px 32px;
             border-radius: var(--radius-sm);
             font-weight: 600;
@@ -1041,16 +1050,41 @@
                 const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
                 return result ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}` : '0, 122, 255';
             };
+            const hexToRgbObj = (hex) => {
+                const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+                return result
+                    ? { r: parseInt(result[1], 16), g: parseInt(result[2], 16), b: parseInt(result[3], 16) }
+                    : { r: 0, g: 0, b: 0 };
+            };
+            const luminance = (hex) => {
+                const { r, g, b } = hexToRgbObj(hex);
+                const srgb = [r, g, b].map(v => v / 255).map(v => (v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4)));
+                return 0.2126 * srgb[0] + 0.7152 * srgb[1] + 0.0722 * srgb[2];
+            };
+            const isLight = (hex) => luminance(hex) > 0.6;
             root.style.setProperty('--accent-rgb', hex2rgb(primary));
             root.style.setProperty('--accent-light', `${primary}15`);
             
             // Background colors
-            root.style.setProperty('--bg-primary', t.dark || '#0A0A0A');
-            root.style.setProperty('--bg-secondary', t.card || '#141414');
+            const bgPrimary = t.dark || '#0A0A0A';
+            const bgSecondary = t.card || '#141414';
+            const lightTheme = isLight(bgPrimary);
+            root.style.setProperty('--bg-primary', bgPrimary);
+            root.style.setProperty('--bg-secondary', bgSecondary);
+            root.style.setProperty('--bg-tertiary', lightTheme ? '#F2F2F7' : '#1C1C1E');
             
             // Text colors
-            root.style.setProperty('--text-primary', t.textPrimary || '#FFFFFF');
-            root.style.setProperty('--text-secondary', t.textSecondary || '#8E8E93');
+            const textPrimary = t.textPrimary || (lightTheme ? '#1C1C1E' : '#FFFFFF');
+            const textSecondary = t.textSecondary || (lightTheme ? '#6E6E73' : '#8E8E93');
+            const textTertiary = t.textTertiary || (lightTheme ? '#8E8E93' : '#636366');
+            root.style.setProperty('--text-primary', textPrimary);
+            root.style.setProperty('--text-secondary', textSecondary);
+            root.style.setProperty('--text-tertiary', textTertiary);
+            root.style.setProperty('--text-on-hero', t.textOnHero || '#FFFFFF');
+            root.style.setProperty('--text-on-light', t.textOnLight || (lightTheme ? '#1C1C1E' : '#0A0A0A'));
+            root.style.setProperty('--border-color', lightTheme ? 'rgba(0, 0, 0, 0.08)' : 'rgba(255, 255, 255, 0.08)');
+            root.style.setProperty('--border-hover', lightTheme ? 'rgba(0, 0, 0, 0.12)' : 'rgba(255, 255, 255, 0.15)');
+            root.style.setProperty('--glass-bg', lightTheme ? 'rgba(255, 255, 255, 0.85)' : 'rgba(28, 28, 30, 0.85)');
             
             // Gradient colors
             root.style.setProperty('--gradient-start', t.gradientStart || primary);
@@ -1061,7 +1095,11 @@
             root.style.setProperty('--button-text-color', t.buttonTextColor || '#FFFFFF');
             
             // Navigation colors
+            const navTop = t.navTextColorTop || t.navTextColor || (lightTheme ? '#FFFFFF' : '#8E8E93');
+            const navScrolled = t.navTextColorScrolled || t.navTextColor || (lightTheme ? '#1C1C1E' : '#8E8E93');
             root.style.setProperty('--nav-text-color', t.navTextColor || '#8E8E93');
+            root.style.setProperty('--nav-text-color-top', navTop);
+            root.style.setProperty('--nav-text-color-scrolled', navScrolled);
             root.style.setProperty('--nav-hover-color', t.navHoverColor || primary);
             
             // Footer colors
@@ -1071,9 +1109,14 @@
             // Subtitle (hero-sub) color - uses primary accent
             root.style.setProperty('--subtitle-color', t.primary || primary);
             root.style.setProperty('--color-primary', t.primary || primary);
+            root.style.setProperty('--color-dark', bgPrimary);
+            root.style.setProperty('--color-card', bgSecondary);
+            root.style.setProperty('--text-gold', t.primary || primary);
+            root.style.setProperty('--text-primary', textPrimary);
+            root.style.setProperty('--text-secondary', textSecondary);
             
             // Scrollbar colors - uses config values or primary accent
-            root.style.setProperty('--scrollbar-track', t.scrollbarTrack || t.dark || '#1C1C1E');
+            root.style.setProperty('--scrollbar-track', t.scrollbarTrack || (lightTheme ? '#F2F2F7' : (t.dark || '#1C1C1E')));
             root.style.setProperty('--scrollbar-thumb', t.scrollbarThumb || primary);
         }
         
