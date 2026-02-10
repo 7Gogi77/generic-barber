@@ -757,27 +757,19 @@ const CalendarEngine = {
               }
             } catch (fbErr) { /* ignore fallback failures */ }
 
-            // Mobile-only: render a single emoji indicator for each event
+            // Mobile-only: render a single emoji indicator for each event (replace content)
             try {
               const isMobile = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(max-width: 480px)').matches;
               if (isMobile && info.el) {
+                const type = info.event.extendedProps?.type || info.event.type || null;
+                const typeCfg = (typeof ScheduleRules !== 'undefined' && ScheduleRules.TYPE_CONFIG && type) ? ScheduleRules.TYPE_CONFIG[type] : null;
+                const isBooking = info.event.extendedProps?.isBooking || info.event.extendedProps?.tab === 'customer' || info.event.extendedProps?.customer || info.event.type === 'booking';
+                let emoji = typeCfg && typeCfg.icon ? typeCfg.icon : null;
+                if (!emoji && isBooking) emoji = '👤';
+                if (!emoji) emoji = '📌';
+
+                info.el.innerHTML = `<span class="mobile-event-emoji" aria-label="${emoji}" title="${emoji}">${emoji}</span>`;
                 info.el.classList.add('mobile-emoji-only');
-                const existing = info.el.querySelector('.mobile-event-emoji');
-                if (!existing) {
-                  const type = info.event.extendedProps?.type || info.event.type || null;
-                  const typeCfg = (typeof ScheduleRules !== 'undefined' && ScheduleRules.TYPE_CONFIG && type) ? ScheduleRules.TYPE_CONFIG[type] : null;
-                  const isBooking = info.event.extendedProps?.isBooking || info.event.extendedProps?.tab === 'customer' || info.event.extendedProps?.customer || info.event.type === 'booking';
-                  let emoji = typeCfg && typeCfg.icon ? typeCfg.icon : null;
-                  if (!emoji && isBooking) emoji = '👤';
-                  if (!emoji) emoji = '📌';
-
-                  const badge = document.createElement('span');
-                  badge.className = 'mobile-event-emoji';
-                  badge.textContent = emoji;
-
-                  const target = info.el.querySelector('.fc-event-main') || info.el.querySelector('.fc-event-title-container') || info.el;
-                  target.appendChild(badge);
-                }
               }
             } catch (_) { /* ignore */ }
 

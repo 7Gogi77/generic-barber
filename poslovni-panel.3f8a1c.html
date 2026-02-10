@@ -1164,6 +1164,8 @@
 
             #scheduleCalendar {
                 border-radius: var(--ios-radius-md);
+                margin-top: 0;
+                height: calc(100vh - 96px);
             }
 
             /* Hide sidebar completely, show hamburger only */
@@ -1209,7 +1211,7 @@
             .main-content {
                 margin-left: 0;
                 width: 100%;
-                padding-top: 56px;
+                padding-top: 48px;
             }
 
             .sidebar.expanded ~ .main-content {
@@ -1227,6 +1229,10 @@
                 gap: 6px;
             }
 
+            .fc .fc-toolbar-chunk:last-child {
+                justify-content: center;
+            }
+
             .fc .fc-button {
                 padding: 8px 12px !important;
                 font-size: 12px !important;
@@ -1235,6 +1241,15 @@
 
             .fc .fc-button-group .fc-button {
                 padding: 8px 10px !important;
+            }
+
+            .fc .fc-button-group {
+                flex-wrap: wrap;
+                gap: 6px;
+            }
+
+            .fc .fc-button-group .fc-button {
+                min-width: 72px;
             }
 
             .fc .fc-toolbar-title {
@@ -1279,6 +1294,9 @@
                 padding: 2px 4px !important;
                 line-height: 1.2 !important;
                 border-radius: 4px !important;
+                display: flex;
+                align-items: center;
+                justify-content: center;
             }
 
             /* Mobile: ensure event bars size correctly and show emoji-only */
@@ -1302,6 +1320,8 @@
             .fc .fc-daygrid-event .fc-event-time,
             .fc .fc-timegrid-event .fc-event-title,
             .fc .fc-timegrid-event .fc-event-time,
+            .fc .fc-event-title-container,
+            .fc .fc-event-main-frame,
             .fc .fc-list-event-title,
             .fc .fc-list-event-time {
                 display: none !important;
