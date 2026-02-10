@@ -7,7 +7,7 @@
 - [x] `js/storage-manager.js` - KV/localStorage abstraction (190 lines)
 - [x] `js/calendar-engine.js` - FullCalendar integration (350 lines)
 - [x] `api/schedule.js` - Vercel API endpoint (240 lines)
-- [x] `styles/calendar.css` - FullCalendar styling (380 lines)
+-- [x] `css/calendar.css` - FullCalendar styling (merged)
 - [x] `vercel.json` - Deployment config
 - [x] `package.json` - Dependencies
 

@@ -62,7 +62,7 @@ In both `index.html` and `admin-panel.html`, add before closing `</body>`:
 <script src="/js/calendar-engine.js"></script>
 
 <!-- Calendar CSS -->
-<link rel="stylesheet" href="/styles/calendar.css">
+<link rel="stylesheet" href="/css/calendar.css">
 
 <!-- Initialize Calendar -->
 <script>
