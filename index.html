@@ -724,6 +724,134 @@
             margin: 0 auto;
         }
 
+        /* ============================================
+           CONTACT SECTION
+           ============================================ */
+        .contact-section {
+            padding: 80px 0;
+            background: var(--bg-primary);
+        }
+
+        .contact-header {
+            text-align: center;
+            margin-bottom: 36px;
+        }
+
+        .contact-header h2 { color: var(--accent); }
+
+        .contact-subtitle {
+            color: var(--text-secondary);
+            margin-top: 10px;
+        }
+
+        .contact-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .contact-card {
+            padding: 20px 22px;
+        }
+
+        .contact-label {
+            font-size: 0.75rem;
+            color: var(--text-tertiary);
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            margin-bottom: 8px;
+        }
+
+        .contact-value {
+            color: var(--text-primary);
+            font-size: 1rem;
+            font-weight: 500;
+            word-break: break-word;
+        }
+
+        /* ============================================
+           GOOGLE REVIEWS
+           ============================================ */
+        .reviews-section {
+            padding: 80px 0;
+            background: var(--bg-secondary);
+        }
+
+        .reviews-header {
+            text-align: center;
+            margin-bottom: 36px;
+        }
+
+        .reviews-header h2 { color: var(--accent); }
+
+        .reviews-subtitle {
+            color: var(--text-secondary);
+            margin-top: 10px;
+        }
+
+        .reviews-summary {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 12px;
+            margin-top: 16px;
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .reviews-summary span {
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .reviews-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 16px;
+            max-width: 1000px;
+            margin: 20px auto 0;
+        }
+
+        .review-card {
+            padding: 18px 20px;
+        }
+
+        .review-stars {
+            color: var(--accent);
+            font-size: 0.9rem;
+            letter-spacing: 0.1em;
+            margin-bottom: 10px;
+        }
+
+        .review-text {
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            line-height: 1.6;
+            margin-bottom: 12px;
+        }
+
+        .review-author {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        .reviews-cta {
+            text-align: center;
+            margin-top: 24px;
+        }
+
+        .reviews-cta a {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .reviews-cta a:hover { text-decoration: underline; }
+
         .bh-row {
             display: grid;
             grid-template-columns: minmax(140px, 220px) 1fr;
@@ -996,6 +1124,48 @@
                     <div class="bh-cell bh-head" id="businessHoursLabel">Delovni čas</div>
                 </div>
                 <div id="businessHoursTableBody"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="section reveal contact-section">
+        <div class="container">
+            <div class="contact-header">
+                <h2 class="display-md" id="contact-title">Kontakt</h2>
+                <p class="contact-subtitle" id="contact-subtitle">Pišite ali nas pokličite za termin.</p>
+            </div>
+            <div class="contact-grid">
+                <div class="contact-card glass-card">
+                    <div class="contact-label">Naslov</div>
+                    <div class="contact-value" id="contact-address">—</div>
+                </div>
+                <div class="contact-card glass-card">
+                    <div class="contact-label">Telefon</div>
+                    <div class="contact-value" id="contact-phone">—</div>
+                </div>
+                <div class="contact-card glass-card">
+                    <div class="contact-label">E‑pošta</div>
+                    <div class="contact-value" id="contact-email">—</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Google Reviews -->
+    <section id="reviews" class="section reveal reviews-section">
+        <div class="container">
+            <div class="reviews-header">
+                <h2 class="display-md" id="reviews-title">Google ocene</h2>
+                <p class="reviews-subtitle" id="reviews-subtitle">Preveri mnenja naših strank.</p>
+                <div class="reviews-summary">
+                    <strong id="reviews-rating">5.0</strong>
+                    <span id="reviews-count">(120 ocen)</span>
+                </div>
+            </div>
+            <div id="reviews-grid" class="reviews-grid"></div>
+            <div class="reviews-cta">
+                <a id="reviews-link" href="#" target="_blank" rel="noopener">Poglej vse Google ocene</a>
             </div>
         </div>
     </section>
@@ -1289,6 +1459,52 @@
                 document.getElementById('cta-title').innerText = SITE_CONFIG.ctaSection.title || 'Pripravljeni na Spremembo?';
                 document.getElementById('cta-text').innerText = SITE_CONFIG.ctaSection.text || 'Rezervirajte svoj termin danes in doživite našo profesionalno storitev.';
                 document.getElementById('cta-button-text').innerText = SITE_CONFIG.ctaSection.buttonText || 'Rezerviraj Zdaj';
+            }
+
+            // Contact Section
+            const contact = SITE_CONFIG.contactSection || {};
+            const owner = SITE_CONFIG.ownerContact || {};
+            const contactTitleEl = document.getElementById('contact-title');
+            const contactSubtitleEl = document.getElementById('contact-subtitle');
+            const contactAddressEl = document.getElementById('contact-address');
+            const contactPhoneEl = document.getElementById('contact-phone');
+            const contactEmailEl = document.getElementById('contact-email');
+            if (contactTitleEl) contactTitleEl.innerText = contact.title || 'Kontakt';
+            if (contactSubtitleEl) contactSubtitleEl.innerText = contact.subtitle || 'Pišite ali nas pokličite za termin.';
+            if (contactAddressEl) contactAddressEl.innerText = contact.address || '—';
+            if (contactPhoneEl) contactPhoneEl.innerText = contact.phone || owner.phone || '—';
+            if (contactEmailEl) contactEmailEl.innerText = contact.email || owner.email || '—';
+
+            // Google Reviews
+            const reviews = SITE_CONFIG.googleReviews || {};
+            const reviewsTitle = document.getElementById('reviews-title');
+            const reviewsSubtitle = document.getElementById('reviews-subtitle');
+            const reviewsRating = document.getElementById('reviews-rating');
+            const reviewsCount = document.getElementById('reviews-count');
+            const reviewsLink = document.getElementById('reviews-link');
+            const reviewsGrid = document.getElementById('reviews-grid');
+            if (reviewsTitle) reviewsTitle.innerText = reviews.title || 'Google ocene';
+            if (reviewsSubtitle) reviewsSubtitle.innerText = reviews.subtitle || 'Preveri mnenja naših strank.';
+            if (reviewsRating) reviewsRating.innerText = reviews.rating || '5.0';
+            if (reviewsCount) reviewsCount.innerText = reviews.countText || '(120 ocen)';
+            if (reviewsLink) {
+                reviewsLink.href = reviews.link || '#';
+                reviewsLink.style.display = reviews.link ? 'inline' : 'none';
+            }
+            if (reviewsGrid) {
+                const list = Array.isArray(reviews.items) ? reviews.items : [];
+                reviewsGrid.innerHTML = '';
+                list.forEach(r => {
+                    const card = document.createElement('div');
+                    card.className = 'review-card glass-card';
+                    const stars = '★★★★★'.slice(0, Math.max(1, Math.min(5, r.stars || 5)));
+                    card.innerHTML = `
+                        <div class="review-stars">${stars}</div>
+                        <div class="review-text">${r.text || ''}</div>
+                        <div class="review-author">${r.author || ''}</div>
+                    `;
+                    reviewsGrid.appendChild(card);
+                });
             }
 
             // Business hours section

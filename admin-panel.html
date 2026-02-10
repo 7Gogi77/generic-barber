@@ -1239,6 +1239,94 @@
                     <button class="save-btn" onclick="saveCtaSection()">Shrani CTA</button>
                 </div>
 
+                <!-- CONTACT SECTION -->
+                <div class="admin-section">
+                    <div class="section-title"><i class="bi bi-telephone"></i> Kontakt</div>
+                    <p style="font-size: 12px; color: #666; margin-bottom: 15px;">Podatki za kontakt na domači strani</p>
+                    <div class="form-row">
+                        <div class="form-group-admin">
+                            <label class="form-label-admin">Naslov Sekcije</label>
+                            <input id="contactTitle" type="text" class="form-input-admin" placeholder="Kontakt">
+                        </div>
+                        <div class="form-group-admin">
+                            <label class="form-label-admin">Podnaslov</label>
+                            <input id="contactSubtitle" type="text" class="form-input-admin" placeholder="Pišite ali nas pokličite za termin.">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group-admin">
+                            <label class="form-label-admin">Naslov / Lokacija</label>
+                            <input id="contactAddress" type="text" class="form-input-admin" placeholder="Ulica 1, Ljubljana">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group-admin">
+                            <label class="form-label-admin">Telefon</label>
+                            <input id="contactPhone" type="text" class="form-input-admin" placeholder="+386 40 000 000">
+                        </div>
+                        <div class="form-group-admin">
+                            <label class="form-label-admin">E‑pošta</label>
+                            <input id="contactEmail" type="text" class="form-input-admin" placeholder="info@podjetje.si">
+                        </div>
+                    </div>
+                    <button class="save-btn" onclick="saveContactSection()">Shrani Kontakt</button>
+                </div>
+
+                <!-- GOOGLE REVIEWS SECTION -->
+                <div class="admin-section">
+                    <div class="section-title"><i class="bi bi-star-fill"></i> Google Ocene</div>
+                    <p style="font-size: 12px; color: #666; margin-bottom: 15px;">Uredi prikaz Google ocen na strani</p>
+                    <div class="form-row">
+                        <div class="form-group-admin">
+                            <label class="form-label-admin">Naslov</label>
+                            <input id="reviewsTitle" type="text" class="form-input-admin" placeholder="Google ocene">
+                        </div>
+                        <div class="form-group-admin">
+                            <label class="form-label-admin">Podnaslov</label>
+                            <input id="reviewsSubtitle" type="text" class="form-input-admin" placeholder="Preveri mnenja naših strank.">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group-admin">
+                            <label class="form-label-admin">Ocena (npr. 4.9)</label>
+                            <input id="reviewsRating" type="text" class="form-input-admin" placeholder="5.0">
+                        </div>
+                        <div class="form-group-admin">
+                            <label class="form-label-admin">Število ocen (npr. 120 ocen)</label>
+                            <input id="reviewsCount" type="text" class="form-input-admin" placeholder="(120 ocen)">
+                        </div>
+                    </div>
+                    <div class="form-row full">
+                        <div class="form-group-admin">
+                            <label class="form-label-admin">Povezava do Google ocen</label>
+                            <input id="reviewsLink" type="text" class="form-input-admin" placeholder="https://g.page/r/...">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group-admin">
+                            <label class="form-label-admin">Ocena #1 (ime / tekst / zvezdice)</label>
+                            <input id="review1Author" type="text" class="form-input-admin" placeholder="Ana K.">
+                            <input id="review1Text" type="text" class="form-input-admin" placeholder="Odlična storitev!" style="margin-top:8px;">
+                            <input id="review1Stars" type="number" min="1" max="5" class="form-input-admin" placeholder="5" style="margin-top:8px;">
+                        </div>
+                        <div class="form-group-admin">
+                            <label class="form-label-admin">Ocena #2 (ime / tekst / zvezdice)</label>
+                            <input id="review2Author" type="text" class="form-input-admin" placeholder="Marko P.">
+                            <input id="review2Text" type="text" class="form-input-admin" placeholder="Vse top!" style="margin-top:8px;">
+                            <input id="review2Stars" type="number" min="1" max="5" class="form-input-admin" placeholder="5" style="margin-top:8px;">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group-admin">
+                            <label class="form-label-admin">Ocena #3 (ime / tekst / zvezdice)</label>
+                            <input id="review3Author" type="text" class="form-input-admin" placeholder="Sara M.">
+                            <input id="review3Text" type="text" class="form-input-admin" placeholder="Priporočam!" style="margin-top:8px;">
+                            <input id="review3Stars" type="number" min="1" max="5" class="form-input-admin" placeholder="5" style="margin-top:8px;">
+                        </div>
+                    </div>
+                    <button class="save-btn" onclick="saveReviewsSection()">Shrani Google Ocene</button>
+                </div>
+
                 <!-- FOOTER SECTION -->
                 <div class="admin-section">
                     <div class="section-title"><i class="bi bi-layout-text-sidebar"></i> Noga Strani (Footer)</div>
@@ -1948,6 +2036,8 @@
                 if (typeof saveBookingPageContent === 'function') saveBookingPageContent();
                 if (typeof saveBooking === 'function') saveBooking();
                 if (typeof saveSiteConfig === 'function') saveSiteConfig();
+                if (typeof saveContactSection === 'function') saveContactSection();
+                if (typeof saveReviewsSection === 'function') saveReviewsSection();
                 // Provide immediate feedback
                 const el = document.getElementById('adminQuickStart');
                 if (el) {
@@ -1972,6 +2062,25 @@
                     { name: 'Galerija', link: '#gallery' }
                 ],
                 galleryTitle: 'Galerija',
+                contactSection: {
+                    title: 'Kontakt',
+                    subtitle: 'Pišite ali nas pokličite za termin.',
+                    address: 'Stara ulica 10, Ljubljana',
+                    phone: '+386 40 111 222',
+                    email: 'info@barber.si'
+                },
+                googleReviews: {
+                    title: 'Google ocene',
+                    subtitle: 'Preveri mnenja naših strank.',
+                    rating: '5.0',
+                    countText: '(120 ocen)',
+                    link: '',
+                    items: [
+                        { author: 'Ana K.', text: 'Odlična storitev in vzdušje.', stars: 5 },
+                        { author: 'Marko P.', text: 'Vrhunska ekipa, priporočam!', stars: 5 },
+                        { author: 'Sara M.', text: 'Super izkušnja, pridem spet.', stars: 5 }
+                    ]
+                },
                 theme: {
                     primary: '#CDAA54',
                     gradientStart: '#CDAA54',
@@ -2052,6 +2161,25 @@
                     { name: 'Galerija', link: '#gallery' }
                 ],
                 galleryTitle: 'Galerija',
+                contactSection: {
+                    title: 'Kontakt',
+                    subtitle: 'Za rezervacijo nas kontaktirajte.',
+                    address: 'Industrijska 5, Maribor',
+                    phone: '+386 40 222 333',
+                    email: 'info@detailing.si'
+                },
+                googleReviews: {
+                    title: 'Google ocene',
+                    subtitle: 'Preveri mnenja naših strank.',
+                    rating: '4.9',
+                    countText: '(87 ocen)',
+                    link: '',
+                    items: [
+                        { author: 'Tilen V.', text: 'Avto izgleda kot nov.', stars: 5 },
+                        { author: 'Nina Z.', text: 'Profesionalno in hitro.', stars: 5 },
+                        { author: 'Rok S.', text: 'Odlična kakovost storitve.', stars: 5 }
+                    ]
+                },
                 theme: {
                     primary: '#1E88E5',
                     gradientStart: '#1E88E5',
@@ -2131,6 +2259,25 @@
                     { name: 'Galerija', link: '#gallery' }
                 ],
                 galleryTitle: 'Galerija',
+                contactSection: {
+                    title: 'Kontakt',
+                    subtitle: 'Rezervacije in vprašanja – pišite ali pokličite.',
+                    address: 'Trg lepote 3, Celje',
+                    phone: '+386 40 333 444',
+                    email: 'hello@beauty.si'
+                },
+                googleReviews: {
+                    title: 'Google ocene',
+                    subtitle: 'Preveri mnenja naših strank.',
+                    rating: '5.0',
+                    countText: '(64 ocen)',
+                    link: '',
+                    items: [
+                        { author: 'Lana B.', text: 'Čudovit salon in storitev.', stars: 5 },
+                        { author: 'Tina K.', text: 'Top nega, priporočam!', stars: 5 },
+                        { author: 'Maja P.', text: 'Zelo prijazno osebje.', stars: 5 }
+                    ]
+                },
                 theme: {
                     primary: '#E91E63',
                     dark: '#FFFFFF',
@@ -2219,6 +2366,15 @@
             if (preset.galleryTitle) {
                 SITE_CONFIG.galleryTitle = preset.galleryTitle;
             }
+            if (preset.contactSection) {
+                SITE_CONFIG.contactSection = { ...preset.contactSection };
+                if (!SITE_CONFIG.ownerContact) SITE_CONFIG.ownerContact = {};
+                if (preset.contactSection.email) SITE_CONFIG.ownerContact.email = preset.contactSection.email;
+                if (preset.contactSection.phone) SITE_CONFIG.ownerContact.phone = preset.contactSection.phone;
+            }
+            if (preset.googleReviews) {
+                SITE_CONFIG.googleReviews = { ...preset.googleReviews, items: (preset.googleReviews.items || []).map(i => ({ ...i })) };
+            }
             SITE_CONFIG.hero = { ...SITE_CONFIG.hero, ...preset.hero };
             SITE_CONFIG.ourStory = { ...SITE_CONFIG.ourStory, ...preset.ourStory };
             SITE_CONFIG.servicesSection = { ...SITE_CONFIG.servicesSection, ...preset.servicesSection };
@@ -2276,6 +2432,35 @@
                 document.getElementById('ctaText').value = SITE_CONFIG.ctaSection.text || '';
                 document.getElementById('ctaButtonText').value = SITE_CONFIG.ctaSection.buttonText || 'Rezerviraj Zdaj';
             }
+
+            // Contact Section
+            const cs = SITE_CONFIG.contactSection || {};
+            document.getElementById('contactTitle').value = cs.title || 'Kontakt';
+            document.getElementById('contactSubtitle').value = cs.subtitle || 'Pišite ali nas pokličite za termin.';
+            document.getElementById('contactAddress').value = cs.address || '';
+            document.getElementById('contactPhone').value = cs.phone || SITE_CONFIG.ownerContact?.phone || '';
+            document.getElementById('contactEmail').value = cs.email || SITE_CONFIG.ownerContact?.email || '';
+
+            // Google Reviews
+            const gr = SITE_CONFIG.googleReviews || {};
+            document.getElementById('reviewsTitle').value = gr.title || 'Google ocene';
+            document.getElementById('reviewsSubtitle').value = gr.subtitle || 'Preveri mnenja naših strank.';
+            document.getElementById('reviewsRating').value = gr.rating || '5.0';
+            document.getElementById('reviewsCount').value = gr.countText || '(120 ocen)';
+            document.getElementById('reviewsLink').value = gr.link || '';
+            const items = Array.isArray(gr.items) ? gr.items : [];
+            const r1 = items[0] || {};
+            const r2 = items[1] || {};
+            const r3 = items[2] || {};
+            document.getElementById('review1Author').value = r1.author || '';
+            document.getElementById('review1Text').value = r1.text || '';
+            document.getElementById('review1Stars').value = r1.stars || '';
+            document.getElementById('review2Author').value = r2.author || '';
+            document.getElementById('review2Text').value = r2.text || '';
+            document.getElementById('review2Stars').value = r2.stars || '';
+            document.getElementById('review3Author').value = r3.author || '';
+            document.getElementById('review3Text').value = r3.text || '';
+            document.getElementById('review3Stars').value = r3.stars || '';
 
             // Footer Copy
             document.getElementById('footerCopyText').value = SITE_CONFIG.footerCopy || 'Vse pravice pridržane.';
@@ -3078,6 +3263,59 @@
             showNotification('CTA sekcija shranjena!', 'success');
         }
 
+        // Save contact section
+        function saveContactSection() {
+            if (!SITE_CONFIG.contactSection) SITE_CONFIG.contactSection = {};
+            if (!SITE_CONFIG.ownerContact) SITE_CONFIG.ownerContact = {};
+
+            SITE_CONFIG.contactSection.title = document.getElementById('contactTitle').value || 'Kontakt';
+            SITE_CONFIG.contactSection.subtitle = document.getElementById('contactSubtitle').value || 'Pišite ali nas pokličite za termin.';
+            SITE_CONFIG.contactSection.address = document.getElementById('contactAddress').value || '';
+            SITE_CONFIG.contactSection.phone = document.getElementById('contactPhone').value || '';
+            SITE_CONFIG.contactSection.email = document.getElementById('contactEmail').value || '';
+
+            // Sync owner contact
+            SITE_CONFIG.ownerContact.phone = SITE_CONFIG.contactSection.phone;
+            SITE_CONFIG.ownerContact.email = SITE_CONFIG.contactSection.email;
+
+            saveConfig();
+            showNotification('Kontakt shranjen!', 'success');
+        }
+
+        // Save Google reviews
+        function saveReviewsSection() {
+            if (!SITE_CONFIG.googleReviews) SITE_CONFIG.googleReviews = {};
+            SITE_CONFIG.googleReviews.title = document.getElementById('reviewsTitle').value || 'Google ocene';
+            SITE_CONFIG.googleReviews.subtitle = document.getElementById('reviewsSubtitle').value || 'Preveri mnenja naših strank.';
+            SITE_CONFIG.googleReviews.rating = document.getElementById('reviewsRating').value || '5.0';
+            SITE_CONFIG.googleReviews.countText = document.getElementById('reviewsCount').value || '(120 ocen)';
+            SITE_CONFIG.googleReviews.link = document.getElementById('reviewsLink').value || '';
+
+            const items = [];
+            const r1 = {
+                author: document.getElementById('review1Author').value || '',
+                text: document.getElementById('review1Text').value || '',
+                stars: parseInt(document.getElementById('review1Stars').value, 10) || 5
+            };
+            const r2 = {
+                author: document.getElementById('review2Author').value || '',
+                text: document.getElementById('review2Text').value || '',
+                stars: parseInt(document.getElementById('review2Stars').value, 10) || 5
+            };
+            const r3 = {
+                author: document.getElementById('review3Author').value || '',
+                text: document.getElementById('review3Text').value || '',
+                stars: parseInt(document.getElementById('review3Stars').value, 10) || 5
+            };
+            [r1, r2, r3].forEach(r => {
+                if (r.author || r.text) items.push(r);
+            });
+            SITE_CONFIG.googleReviews.items = items;
+
+            saveConfig();
+            showNotification('Google ocene shranjene!', 'success');
+        }
+
         // Save footer copy
         function saveFooterCopy() {
             SITE_CONFIG.footerCopy = document.getElementById('footerCopyText').value || 'Vse pravice pridržane.';
@@ -3464,6 +3702,50 @@
             if (e.target.id === 'testimonialAuthor') {
                 if (!SITE_CONFIG.testimonial) SITE_CONFIG.testimonial = {};
                 SITE_CONFIG.testimonial.author = e.target.value;
+            }
+            if (e.target.id === 'contactTitle') {
+                if (!SITE_CONFIG.contactSection) SITE_CONFIG.contactSection = {};
+                SITE_CONFIG.contactSection.title = e.target.value;
+            }
+            if (e.target.id === 'contactSubtitle') {
+                if (!SITE_CONFIG.contactSection) SITE_CONFIG.contactSection = {};
+                SITE_CONFIG.contactSection.subtitle = e.target.value;
+            }
+            if (e.target.id === 'contactAddress') {
+                if (!SITE_CONFIG.contactSection) SITE_CONFIG.contactSection = {};
+                SITE_CONFIG.contactSection.address = e.target.value;
+            }
+            if (e.target.id === 'contactPhone') {
+                if (!SITE_CONFIG.contactSection) SITE_CONFIG.contactSection = {};
+                if (!SITE_CONFIG.ownerContact) SITE_CONFIG.ownerContact = {};
+                SITE_CONFIG.contactSection.phone = e.target.value;
+                SITE_CONFIG.ownerContact.phone = e.target.value;
+            }
+            if (e.target.id === 'contactEmail') {
+                if (!SITE_CONFIG.contactSection) SITE_CONFIG.contactSection = {};
+                if (!SITE_CONFIG.ownerContact) SITE_CONFIG.ownerContact = {};
+                SITE_CONFIG.contactSection.email = e.target.value;
+                SITE_CONFIG.ownerContact.email = e.target.value;
+            }
+            if (e.target.id === 'reviewsTitle') {
+                if (!SITE_CONFIG.googleReviews) SITE_CONFIG.googleReviews = {};
+                SITE_CONFIG.googleReviews.title = e.target.value;
+            }
+            if (e.target.id === 'reviewsSubtitle') {
+                if (!SITE_CONFIG.googleReviews) SITE_CONFIG.googleReviews = {};
+                SITE_CONFIG.googleReviews.subtitle = e.target.value;
+            }
+            if (e.target.id === 'reviewsRating') {
+                if (!SITE_CONFIG.googleReviews) SITE_CONFIG.googleReviews = {};
+                SITE_CONFIG.googleReviews.rating = e.target.value;
+            }
+            if (e.target.id === 'reviewsCount') {
+                if (!SITE_CONFIG.googleReviews) SITE_CONFIG.googleReviews = {};
+                SITE_CONFIG.googleReviews.countText = e.target.value;
+            }
+            if (e.target.id === 'reviewsLink') {
+                if (!SITE_CONFIG.googleReviews) SITE_CONFIG.googleReviews = {};
+                SITE_CONFIG.googleReviews.link = e.target.value;
             }
             if (e.target.id === 'navButtonText') SITE_CONFIG.navButtonText = e.target.value;
             if (e.target.id === 'businessStart') {
