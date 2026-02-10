@@ -1126,6 +1126,27 @@
                 <div class="admin-section">
                     <div class="section-title">⏰ Delovni Čas in Delovni Dnevi</div>
                     <p style="font-size: 13px; color: #7f8c8d; margin-bottom: 18px;">Nastavi svoje delovne dneve in ure</p>
+
+                    <div class="form-row">
+                        <div class="form-group-admin">
+                            <label class="form-label-admin">Naslov (Index)</label>
+                            <input id="homeHoursTitle" type="text" class="form-input-admin" placeholder="Delovni Čas in Delovni Dnevi">
+                        </div>
+                        <div class="form-group-admin">
+                            <label class="form-label-admin">Podnaslov (Index)</label>
+                            <input id="homeHoursSubtitle" type="text" class="form-input-admin" placeholder="Nastavi svoje delovne dneve in ure">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group-admin">
+                            <label class="form-label-admin">Oznaka (Delovni čas)</label>
+                            <input id="homeHoursLabel" type="text" class="form-input-admin" placeholder="Delovni čas">
+                        </div>
+                        <div class="form-group-admin">
+                            <label class="form-label-admin">Oznaka (Delovni dnevi)</label>
+                            <input id="homeDaysLabel" type="text" class="form-input-admin" placeholder="Delovni dnevi">
+                        </div>
+                    </div>
                     
                     <!-- Working Days Selection -->
                     <div style="margin-bottom: 22px;">
@@ -1778,6 +1799,12 @@
             document.getElementById('ownerEmail').value = (SITE_CONFIG.ownerContact?.email) || '';
             document.getElementById('ownerPhone').value = (SITE_CONFIG.ownerContact?.phone) || '';
 
+            const bh = SITE_CONFIG.businessHoursSection || {};
+            document.getElementById('homeHoursTitle').value = bh.title || 'Delovni Čas in Delovni Dnevi';
+            document.getElementById('homeHoursSubtitle').value = bh.subtitle || 'Nastavi svoje delovne dneve in ure';
+            document.getElementById('homeHoursLabel').value = bh.hoursLabel || 'Delovni čas';
+            document.getElementById('homeDaysLabel').value = bh.daysLabel || 'Delovni dnevi';
+
             // Booking Page Content (rezervacija.html)
             const bp = SITE_CONFIG.bookingPage || {};
             document.getElementById('bookingPageTitle').value = bp.pageTitle || 'Rezervacija termina';
@@ -2253,11 +2280,16 @@
             // Ensure nested objects exist
             if (!SITE_CONFIG.booking.businessHours) SITE_CONFIG.booking.businessHours = {};
             if (!SITE_CONFIG.ownerContact) SITE_CONFIG.ownerContact = {};
+            if (!SITE_CONFIG.businessHoursSection) SITE_CONFIG.businessHoursSection = {};
             
             SITE_CONFIG.booking.businessHours.start = parseInt(document.getElementById('businessStart').value) || 9;
             SITE_CONFIG.booking.businessHours.end = parseInt(document.getElementById('businessEnd').value) || 19;
             SITE_CONFIG.ownerContact.email = document.getElementById('ownerEmail').value;
             SITE_CONFIG.ownerContact.phone = document.getElementById('ownerPhone').value;
+            SITE_CONFIG.businessHoursSection.title = document.getElementById('homeHoursTitle').value || 'Delovni Čas in Delovni Dnevi';
+            SITE_CONFIG.businessHoursSection.subtitle = document.getElementById('homeHoursSubtitle').value || 'Nastavi svoje delovne dneve in ure';
+            SITE_CONFIG.businessHoursSection.hoursLabel = document.getElementById('homeHoursLabel').value || 'Delovni čas';
+            SITE_CONFIG.businessHoursSection.daysLabel = document.getElementById('homeDaysLabel').value || 'Delovni dnevi';
             saveConfig();
         }
 

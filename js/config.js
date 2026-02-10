@@ -230,6 +230,12 @@ const SITE_CONFIG = {
     
     // Appointments storage (managed by admin)
     appointments: [],
+    businessHoursSection: {
+        title: "Delovni Čas in Delovni Dnevi",
+        subtitle: "Nastavi svoje delovne dneve in ure",
+        hoursLabel: "Delovni čas",
+        daysLabel: "Delovni dnevi"
+    },
     ownerContact: {
         email: "spidergogi9@gmail.com",
         phone: "+386 1 000 0000"

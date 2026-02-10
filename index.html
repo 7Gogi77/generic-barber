@@ -890,6 +890,26 @@
         </div>
     </section>
 
+    <!-- Business Hours Section -->
+    <section id="business-hours" class="section reveal business-hours-section">
+        <div class="container">
+            <div class="business-hours-header">
+                <h2 class="display-md" id="businessHoursTitle">Delovni Čas in Delovni Dnevi</h2>
+                <p id="businessHoursSubtitle">Nastavi svoje delovne dneve in ure</p>
+            </div>
+            <div class="business-hours-grid">
+                <div class="business-hours-item">
+                    <span class="bh-label" id="businessHoursLabel">Delovni čas</span>
+                    <span class="bh-value" id="businessHoursValue">9:00 - 19:00</span>
+                </div>
+                <div class="business-hours-item">
+                    <span class="bh-label" id="workingDaysLabel">Delovni dnevi</span>
+                    <span class="bh-value" id="workingDaysValue">Pon - Pet</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- CTA Section -->
     <section class="cta-section reveal">
         <div class="container">
@@ -1137,6 +1157,39 @@
                 document.getElementById('cta-text').innerText = SITE_CONFIG.ctaSection.text || 'Rezervirajte svoj termin danes in doživite našo profesionalno storitev.';
                 document.getElementById('cta-button-text').innerText = SITE_CONFIG.ctaSection.buttonText || 'Rezerviraj Zdaj';
             }
+
+            // Business hours section
+            const hoursSection = SITE_CONFIG.businessHoursSection || {};
+            const hoursTitle = hoursSection.title || 'Delovni Čas in Delovni Dnevi';
+            const hoursSubtitle = hoursSection.subtitle || 'Nastavi svoje delovne dneve in ure';
+            const hoursLabel = hoursSection.hoursLabel || 'Delovni čas';
+            const daysLabel = hoursSection.daysLabel || 'Delovni dnevi';
+            const businessHours = SITE_CONFIG.booking?.businessHours || { start: 9, end: 19 };
+            const workingDays = SITE_CONFIG.booking?.workingDays || {};
+            const daysClosed = SITE_CONFIG.booking?.daysClosed || [0];
+            const dayNames = ['Ned', 'Pon', 'Tor', 'Sre', 'Čet', 'Pet', 'Sob'];
+            const openDays = [];
+            for (let i = 0; i < 7; i++) {
+                if (workingDays[i] || !daysClosed.includes(i)) {
+                    openDays.push(dayNames[i]);
+                }
+            }
+            const hoursValue = `${businessHours.start}:00 - ${businessHours.end}:00`;
+            const daysValue = openDays.join(', ') || 'Pon - Pet';
+
+            const hoursTitleEl = document.getElementById('businessHoursTitle');
+            const hoursSubtitleEl = document.getElementById('businessHoursSubtitle');
+            const hoursLabelEl = document.getElementById('businessHoursLabel');
+            const daysLabelEl = document.getElementById('workingDaysLabel');
+            const hoursValueEl = document.getElementById('businessHoursValue');
+            const daysValueEl = document.getElementById('workingDaysValue');
+
+            if (hoursTitleEl) hoursTitleEl.innerText = hoursTitle;
+            if (hoursSubtitleEl) hoursSubtitleEl.innerText = hoursSubtitle;
+            if (hoursLabelEl) hoursLabelEl.innerText = hoursLabel;
+            if (daysLabelEl) daysLabelEl.innerText = daysLabel;
+            if (hoursValueEl) hoursValueEl.innerText = hoursValue;
+            if (daysValueEl) daysValueEl.innerText = daysValue;
         }
         
         async function initSite() {

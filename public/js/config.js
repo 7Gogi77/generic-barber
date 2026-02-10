@@ -55,5 +55,11 @@ const SITE_CONFIG = {
     booking: { title: "Naročilo Termina", heading: "Request Appointment", buttonText: "Potrdi Termin", placeholderName: "Ime", placeholderEmail: "E-pošta", placeholderPhone: "Telefonska Številka", businessHours: { start: 9, end: 19 }, daysClosed: [0], slotDuration: 15, workingDays: { 1: true, 2: true, 3: true, 4: true, 5: true, 6: false, 0: false }, hours: {} },
     admin: { username: "admin", password: "admin123", maxAttempts: 3, lockoutDuration: 60000, enabled: true },
     appointments: [],
+    businessHoursSection: {
+        title: "Delovni Čas in Delovni Dnevi",
+        subtitle: "Nastavi svoje delovne dneve in ure",
+        hoursLabel: "Delovni čas",
+        daysLabel: "Delovni dnevi"
+    },
     ownerContact: { email: "spidergogi9@gmail.com", phone: "+386 1 000 0000" }
 };
