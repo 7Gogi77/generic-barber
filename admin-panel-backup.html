@@ -1291,28 +1291,34 @@
             event.target.classList.add('active');
         }
 
-        // Default admin credentials
-        const ADMIN_NAME = "admin";
-        const ADMIN_PASSWORD = "admin123";
-
-        // Load configuration from localStorage (defined later with schedule loading)
-
+        // Server-side authentication only
         // Handle login
-        function handleLogin(e) {
+        async function handleLogin(e) {
             e.preventDefault();
-            const name = document.getElementById('adminName').value;
+            const nameInput = document.getElementById('adminName');
+            const name = nameInput ? nameInput.value : 'admin';
             const password = document.getElementById('adminPassword').value;
             const errorEl = document.getElementById('loginError');
 
-            if (name === ADMIN_NAME && password === ADMIN_PASSWORD) {
-                sessionStorage.setItem('admin_logged_in', 'true');
-                document.getElementById('loginScreen').style.display = 'none';
-                document.getElementById('adminPanel').classList.add('active');
-                loadAdminForms();
-                errorEl.style.display = 'none';
-            } else {
-                errorEl.textContent = 'Napačno uporabniško ime ali geslo';
-                errorEl.style.display = 'block';
+            try {
+                const res = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: name, password })
+                });
+                const data = await res.json();
+                if (res.ok && data.token) {
+                    sessionStorage.setItem('admin_token', data.token);
+                    sessionStorage.setItem('admin_authenticated', 'true');
+                    document.getElementById('loginScreen').style.display = 'none';
+                    document.getElementById('adminPanel').classList.add('active');
+                    if (typeof loadAdminForms === 'function') loadAdminForms();
+                    if (errorEl) errorEl.style.display = 'none';
+                } else {
+                    if (errorEl) { errorEl.textContent = data.message || 'Napačno uporabniško ime ali geslo'; errorEl.style.display = 'block'; }
+                }
+            } catch (err) {
+                if (errorEl) { errorEl.textContent = 'Network error'; errorEl.style.display = 'block'; }
             }
         }
 

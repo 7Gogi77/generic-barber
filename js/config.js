@@ -216,7 +216,7 @@ const SITE_CONFIG = {
     admin: {
         // Admin login credentials (change these immediately in production!)
         username: "admin",
-        password: "admin123",
+        // password removed: admin credentials must be validated server-side via /api/login
         
         // Security: Maximum failed login attempts before lockout
         maxAttempts: 3,
