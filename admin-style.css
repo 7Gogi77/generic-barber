@@ -361,6 +361,33 @@ body:has(.admin-wrapper.active) {
     color: var(--ios-text-tertiary);
 }
 
+/* Mobile: ensure calendar doesn't flush to the very bottom of the viewport
+   and respect safe-area insets. This overrides any aggressive 100dvh rules. */
+@media (max-width: 600px) {
+    .content-area,
+    .main-content,
+    .admin-container,
+    .admin-wrapper {
+        box-sizing: border-box;
+        padding-bottom: calc(20px + env(safe-area-inset-bottom));
+    }
+
+    #scheduleCalendar {
+        height: auto !important;
+        max-height: calc(100vh - 120px) !important;
+        margin-bottom: 14px !important;
+        min-height: 220px !important;
+    }
+
+    /* Ensure FullCalendar internal scrollers don't force extra height */
+    #scheduleCalendar .fc-scroller,
+    #scheduleCalendar .fc-scroller-harness,
+    #scheduleCalendar .fc-scroller-liquid,
+    #scheduleCalendar .fc-scroller-liquid-absolute {
+        max-height: none !important;
+    }
+}
+
 textarea.form-input-admin {
     resize: vertical;
     min-height: 100px;
