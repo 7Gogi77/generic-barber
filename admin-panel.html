@@ -242,33 +242,141 @@
             .tab-content { padding: 16px; }
         }
 
-        /* Left sidebar layout for non-technical users on wider screens */
-        @media (min-width: 900px) {
-            .admin-tabs {
-                position: fixed !important;
-                left: 16px;
-                top: 120px;
-                width: 220px;
-                height: calc(100vh - 160px);
-                flex-direction: column;
-                gap: 8px;
-                padding: 12px;
-                overflow-y: auto;
-            }
+        /* ===== iOS SIDEBAR NAVIGATION (same style as poslovni-panel) ===== */
+        body {
+            display: flex;
+            min-height: 100vh;
+            overflow: hidden;
+        }
 
-            .tab-btn {
-                justify-content: flex-start;
-                padding: 12px 14px;
-                text-align: left;
-                width: 100%;
-                display: flex;
-                align-items: center;
-                gap: 10px;
-            }
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 72px;
+            background: linear-gradient(180deg, #1C1C1E 0%, #2C2C2E 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 16px 0;
+            transition: all 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            z-index: 1000;
+            overflow-y: auto;
+            border-right: 1px solid rgba(255, 255, 255, 0.06);
+        }
 
-            .admin-container {
-                margin-left: 260px;
-            }
+        .sidebar.expanded {
+            width: 260px;
+            background: rgba(28, 28, 30, 0.95);
+        }
+
+        .sidebar-toggle {
+            width: 44px;
+            height: 44px;
+            border: none;
+            background: rgba(255, 255, 255, 0.08);
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: var(--ios-radius-md);
+            transition: all 0.2s ease;
+            margin-bottom: 24px;
+        }
+
+        .sidebar-toggle:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: scale(1.05);
+        }
+
+        .nav-icon {
+            width: 44px;
+            height: 44px;
+            border: none;
+            background: transparent;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: var(--ios-radius-md);
+            transition: all 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            margin-bottom: 8px;
+            position: relative;
+            text-decoration: none;
+            flex-shrink: 0;
+        }
+
+        .nav-icon:hover {
+            background: rgba(0, 122, 255, 0.15);
+            color: var(--ios-blue);
+            transform: translateY(-2px);
+        }
+
+        .nav-icon.active {
+            background: var(--ios-blue);
+            color: white;
+            box-shadow: 0 4px 12px rgba(0, 122, 255, 0.4);
+        }
+
+        .nav-label {
+            display: none;
+            color: rgba(255, 255, 255, 0.85);
+            padding-left: 14px;
+            font-size: 15px;
+            font-weight: 500;
+            white-space: nowrap;
+            pointer-events: none;
+            letter-spacing: -0.2px;
+        }
+
+        .sidebar.expanded .nav-item {
+            justify-content: flex-start;
+            padding: 6px 16px;
+        }
+
+        .sidebar.expanded .nav-label {
+            display: inline-block;
+            pointer-events: auto;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            padding: 0 14px;
+            margin-bottom: 4px;
+        }
+
+        .nav-item:hover .nav-icon:not(.active) {
+            background: rgba(0, 122, 255, 0.12);
+            color: var(--ios-blue);
+        }
+
+        .main-content {
+            flex: 1;
+            margin-left: 72px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transition: margin-left 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            width: calc(100% - 72px);
+            height: 100vh;
+            background: var(--ios-bg-primary);
+        }
+
+        .sidebar.expanded ~ .main-content {
+            margin-left: 260px;
+            width: calc(100% - 260px);
+        }
+
+        .main-content .admin-container {
+            height: 100%;
+            overflow-y: auto;
         }
 
         @media (max-width: 1024px) {
@@ -717,7 +825,59 @@
 
     <!-- ADMIN PANEL -->
     <div id="adminPanel" class="admin-wrapper">
-        <div class="admin-container">
+        <!-- SIDEBAR NAVIGATION (same style as poslovni-panel) -->
+        <div class="sidebar" id="adminSidebar">
+            <button class="sidebar-toggle" id="adminSidebarToggle" title="Toggle menu">
+                <i class="bi bi-list"></i>
+            </button>
+
+            <div class="nav-item">
+                <button class="nav-icon" title="Urnik" aria-label="Urnik" onclick="switchTab(event, 'panel')">
+                    <i class="bi bi-calendar3"></i>
+                </button>
+                <span class="nav-label">Urnik</span>
+            </div>
+
+            <div class="nav-item">
+                <button class="nav-icon active" title="Videz" aria-label="Videz" onclick="switchTab(event, 'videz')">
+                    <i class="bi bi-palette"></i>
+                </button>
+                <span class="nav-label">Videz</span>
+            </div>
+
+            <div class="nav-item">
+                <button class="nav-icon" title="Vsebina" aria-label="Vsebina" onclick="switchTab(event, 'vsebina')">
+                    <i class="bi bi-pencil-square"></i>
+                </button>
+                <span class="nav-label">Vsebina</span>
+            </div>
+
+            <div class="nav-item">
+                <button class="nav-icon" title="Storitve" aria-label="Storitve" onclick="switchTab(event, 'storitve')">
+                    <i class="bi bi-briefcase"></i>
+                </button>
+                <span class="nav-label">Storitve</span>
+            </div>
+
+            <div style="flex:1;"></div>
+
+            <div class="nav-item">
+                <button class="nav-icon" title="Poslovni Panel" aria-label="Poslovni Panel" onclick="window.location.href='poslovni-panel.html'">
+                    <i class="bi bi-bar-chart"></i>
+                </button>
+                <span class="nav-label">Poslovni Panel</span>
+            </div>
+
+            <div class="nav-item">
+                <button class="nav-icon" title="Nazaj" aria-label="Nazaj" onclick="window.location.href='index.html'">
+                    <i class="bi bi-house"></i>
+                </button>
+                <span class="nav-label">Nazaj</span>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="admin-container">
             <div class="admin-header">
                 <h1>Administracijska Plošča</h1>
                 <div style="display:flex; gap:10px; align-items:center;">
@@ -726,14 +886,6 @@
                     <button class="logout-btn" onclick="handleLogout()">Odjava</button>
                 </div>
                 <div id="adminQuickStart" style="margin-top:10px;color:#d1d5db;font-size:13px">Koraki: 1) Če prvič, ustvarite geslo spodaj → 2) Prijavite se → 3) Uredite vsebine → 4) Kliknite 'Shrani vse'</div>
-            </div>
-
-            <!-- TAB NAVIGATION -->
-            <div class="admin-tabs">
-                <button class="tab-btn active" onclick="switchTab(event, 'videz')"><i class="bi bi-palette"></i> Videz Spletne Strani</button>
-                <button class="tab-btn" onclick="switchTab(event, 'vsebina')"><i class="bi bi-pencil-square"></i> Vsebina in Tekst</button>
-                <button class="tab-btn" onclick="switchTab(event, 'storitve')"><i class="bi bi-briefcase"></i> Storitve in Brivci</button>
-                <button class="tab-btn" onclick="window.location.href='poslovni-panel.html'"><i class="bi bi-bar-chart"></i> Poslovni Panel</button>
             </div>
 
             <!-- ===== TAB 1: VIDEZ (APPEARANCE) ===== -->
@@ -968,15 +1120,12 @@
                     </div>
                     <div class="form-row full">
                         <div class="form-group-admin">
-                            <label class="form-label-admin">Slika Naslovnice (URL ali Datoteka)</label>
+                            <label class="form-label-admin">Slika Naslovnice (datoteka)</label>
                             <div style="display: flex; gap: 10px; margin-bottom: 10px;">
                                 <input id="heroImageInput" type="file" accept="image/*" class="form-input-admin" placeholder="Izberi sliko...">
                                 <button class="save-btn" onclick="uploadHeroImage()" style="background-color:#0066cc;">Naloži Sliko</button>
                             </div>
-                            <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-                                <input id="heroImageUrl" type="text" class="form-input-admin" placeholder="Vnesi URL slike" style="flex:1;">
-                                <button class="save-btn" onclick="saveHeroImageUrl()" style="background-color:#0066cc;">Shrani URL</button>
-                            </div>
+                            <input id="heroImageUrl" type="text" class="form-input-admin" style="display:none;">
                             <img id="heroImagePreview" src="" alt="Hero preview" style="max-width:100%; max-height:200px; margin-top:10px; display:none; object-fit:contain; border:1px solid #ddd; padding:5px;">
                         </div>
                     </div>
@@ -1003,8 +1152,13 @@
                     </div>
                     <div class="form-row full">
                         <div class="form-group-admin">
-                            <label class="form-label-admin">Story Slika (URL)</label>
-                            <input id="storyImage" type="text" class="form-input-admin">
+                            <label class="form-label-admin">Story Slika (datoteka)</label>
+                            <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                                <input id="storyImageInput" type="file" accept="image/*" class="form-input-admin" placeholder="Izberi sliko...">
+                                <button class="save-btn" onclick="uploadStoryImage()" style="background-color:#0066cc;">Naloži Sliko</button>
+                            </div>
+                            <input id="storyImage" type="text" class="form-input-admin" style="display:none;">
+                            <img id="storyImagePreview" src="" alt="Story preview" style="max-width:100%; max-height:200px; margin-top:10px; display:none; object-fit:contain; border:1px solid #ddd; padding:5px;">
                         </div>
                     </div>
                 </div>
@@ -1160,17 +1314,6 @@
                     <button class="save-btn" onclick="saveBookingPageContent()">Shrani Vsebino Strani</button>
                 </div>
 
-                <!-- NAVIGATION LINKS SECTION -->
-                <div class="admin-section">
-                    <div class="section-title"><i class="bi bi-list-ul"></i> Navigacijske Povezave</div>
-                    <p style="font-size: 12px; color: #666; margin-bottom: 15px;">Upravljaj povezave v navigaciji in nogi strani</p>
-                    <div id="navLinksContainer"></div>
-                    <button class="save-btn" style="background: #28a745; margin-top: 10px;" onclick="addNavLink()">
-                        <i class="bi bi-plus-circle"></i> Dodaj Povezavo
-                    </button>
-                    <button class="save-btn" onclick="saveNavLinks()" style="margin-top: 10px;">Shrani Povezave</button>
-                </div>
-
                 <!-- SECTION TITLES -->
                 <div class="admin-section">
                     <div class="section-title"><i class="bi bi-pin-angle"></i> Naslovi Razdelkov</div>
@@ -1206,10 +1349,6 @@
                         <div class="upload-text">Klikni za prenos slike</div>
                         <div class="upload-hint">ali vleci slike sem</div>
                         <input id="imageInput" type="file" class="upload-input" accept="image/*" multiple>
-                    </div>
-                    <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-                        <input id="galleryUrlInput" type="text" class="form-input-admin" placeholder="Vnesi URL slike" style="flex:1;">
-                        <button class="save-btn" onclick="addGalleryFromUrl()" style="background-color:#0066cc;">Dodaj s URL</button>
                     </div>
                     <div class="image-gallery" id="imageGallery"></div>
                     <button class="save-btn" onclick="saveGallery()">Shrani Galerijo</button>
@@ -1661,26 +1800,41 @@
 
             </div> <!-- END panel tab -->
 
+        </div> <!-- END admin-container -->
+    </div> <!-- END main-content -->
+    </div> <!-- END adminPanel -->
+
     <script>
-        // Tab switching function
+        // Tab switching function (sidebar navigation)
         function switchTab(event, tabName) {
             event.preventDefault();
-            
+
             // Hide all tabs
             const tabs = document.querySelectorAll('.tab-content');
             tabs.forEach(tab => tab.classList.remove('active'));
-            
-            // Remove active from all buttons
-            const buttons = document.querySelectorAll('.tab-btn');
+
+            // Remove active from all sidebar icons
+            const buttons = document.querySelectorAll('.nav-icon');
             buttons.forEach(btn => btn.classList.remove('active'));
-            
+
             // Show selected tab and activate button
             const selectedTab = document.getElementById(tabName);
             if (selectedTab) {
                 selectedTab.classList.add('active');
             }
-            event.target.classList.add('active');
+            if (event.currentTarget) {
+                event.currentTarget.classList.add('active');
+            }
         }
+
+        // Sidebar toggle (match poslovni-panel UX)
+        document.addEventListener('DOMContentLoaded', () => {
+            const sidebar = document.getElementById('adminSidebar');
+            const toggle = document.getElementById('adminSidebarToggle');
+            if (toggle && sidebar) {
+                toggle.addEventListener('click', () => sidebar.classList.toggle('expanded'));
+            }
+        });
 
         // Simple, user-friendly local password (for non-technical users)
         // Note: This stores a password hash in localStorage to avoid hard-coding
@@ -1781,13 +1935,25 @@
             document.getElementById('heroSubtitle').value = SITE_CONFIG.hero.subtitle;
             document.getElementById('heroTitle').value = SITE_CONFIG.hero.title;
             document.getElementById('heroButton').value = SITE_CONFIG.hero.buttonText;
-            document.getElementById('heroImageUrl').value = SITE_CONFIG.hero.backgroundImage || '';
+            const heroUrlEl = document.getElementById('heroImageUrl');
+            if (heroUrlEl) heroUrlEl.value = SITE_CONFIG.hero.backgroundImage || '';
+            const heroPreview = document.getElementById('heroImagePreview');
+            if (heroPreview && SITE_CONFIG.hero.backgroundImage) {
+                heroPreview.src = SITE_CONFIG.hero.backgroundImage;
+                heroPreview.style.display = 'block';
+            }
 
             // Story/About
             document.getElementById('storyTitle').value = SITE_CONFIG.ourStory.title || '';
             document.getElementById('storySectionLabel').value = SITE_CONFIG.ourStory.sectionTitle || '';
             document.getElementById('storyText').value = SITE_CONFIG.ourStory.text || '';
-            document.getElementById('storyImage').value = SITE_CONFIG.ourStory.image || '';
+            const storyImageEl = document.getElementById('storyImage');
+            if (storyImageEl) storyImageEl.value = SITE_CONFIG.ourStory.image || '';
+            const storyPreview = document.getElementById('storyImagePreview');
+            if (storyPreview && SITE_CONFIG.ourStory.image) {
+                storyPreview.src = SITE_CONFIG.ourStory.image;
+                storyPreview.style.display = 'block';
+            }
 
             // Testimonial
             document.getElementById('testimonialQuote').value = SITE_CONFIG.testimonial?.quote || '';
@@ -1980,11 +2146,6 @@
                                 <label class="form-label-admin" style="font-size:11px; margin-bottom:5px;">Slika brivca (datoteka):</label>
                                 <input type="file" accept="image/*" class="form-input-admin barber-img-input-${idx}" placeholder="Izberi sliko" style="margin-bottom:5px;">
                                 <button class="save-btn" onclick="uploadBarberImage(${idx})" style="font-size:11px; padding:5px 10px; background-color:#0066cc;">Naloži</button>
-                            </div>
-                            <div style="flex:1;">
-                                <label class="form-label-admin" style="font-size:11px; margin-bottom:5px;">ali vnesi URL:</label>
-                                <input type="text" class="form-input-admin barber-img-url-${idx}" value="" placeholder="URL slike" style="margin-bottom:5px;">
-                                <button class="save-btn" onclick="saveBarberImageUrl(${idx})" style="font-size:11px; padding:5px 10px; background-color:#0066cc;">Shrani URL</button>
                             </div>
                             <img class="barber-img-preview-${idx}" src="${barber.img}" alt="Barber preview" style="max-height:80px; max-width:100px; object-fit:contain; display:${barber.img && barber.img !== 'https://via.placeholder.com/300' ? 'block' : 'none'}; margin:5px; border:1px solid #ddd; padding:3px;">
                         </div>
@@ -3061,12 +3222,38 @@
             const reader = new FileReader();
             reader.onload = function(e) {
                 SITE_CONFIG.hero.backgroundImage = e.target.result;
-                document.getElementById('heroImageUrl').value = e.target.result;
+                const heroUrlEl = document.getElementById('heroImageUrl');
+                if (heroUrlEl) heroUrlEl.value = e.target.result;
                 const preview = document.getElementById('heroImagePreview');
                 preview.src = e.target.result;
                 preview.style.display = 'block';
                 saveConfig();
                 showNotification('Naslovnica slika naložena in shranjena', 'success');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Upload Story Image
+        function uploadStoryImage() {
+            const fileInput = document.getElementById('storyImageInput');
+            const file = fileInput ? fileInput.files[0] : null;
+            if (!file) {
+                showNotification('Izberi sliko za nalaganje', 'error');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                SITE_CONFIG.ourStory.image = e.target.result;
+                const storyUrlEl = document.getElementById('storyImage');
+                if (storyUrlEl) storyUrlEl.value = e.target.result;
+                const preview = document.getElementById('storyImagePreview');
+                if (preview) {
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                }
+                saveConfig();
+                showNotification('Story slika naložena in shranjena', 'success');
             };
             reader.readAsDataURL(file);
         }
@@ -4038,11 +4225,10 @@
           
           // Switch to the panel tab to show the calendar
 
-          const panelBtn = Array.from(document.querySelectorAll('.tab-btn')).find(btn => btn.textContent.includes('Poslovni Panel'));
-          if (panelBtn) {
-            panelBtn.click();
-
-          }
+                    const panelBtn = document.querySelector('.nav-icon[aria-label="Urnik"]');
+                    if (panelBtn) {
+                        panelBtn.click();
+                    }
           
           // Check if calendar DOM exists
           setTimeout(() => {
@@ -4104,27 +4290,19 @@
       
       function setupTabListener() {
         // Find and attach listener to "Poslovni Panel" tab button
-        const tabButtons = document.querySelectorAll('.tab-btn');
+                const tabButtons = document.querySelectorAll('.nav-icon');
 
-        
-        tabButtons.forEach((btn, idx) => {
-          console.log(`Tab ${idx}: "${btn.textContent}"`);
-          if (btn.textContent.includes('Poslovni Panel')) {
-
-            btn.addEventListener('click', () => {
-
-              console.log('Tab click detected, calendarInitialized:', calendarInitialized);
-              if (!calendarInitialized) {
-
-                calendarInitialized = true;
-                initializeAdminSchedule();
-              } else {
-
-              }
-            });
-
-          }
-        });
+                tabButtons.forEach((btn, idx) => {
+                    const label = btn.getAttribute('aria-label') || '';
+                    if (label === 'Urnik') {
+                        btn.addEventListener('click', () => {
+                            if (!calendarInitialized) {
+                                calendarInitialized = true;
+                                initializeAdminSchedule();
+                            }
+                        });
+                    }
+                });
         
         // If no tabs found, try to initialize anyway after delay
         if (tabButtons.length === 0) {
