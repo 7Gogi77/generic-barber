@@ -383,6 +383,11 @@
             animation-delay: 0.6s;
             opacity: 0;
         }
+
+        #hero-btn,
+        #hero-btn span {
+            color: var(--text-on-hero);
+        }
         
         .hero-cta:hover {
             background: var(--accent);
@@ -1106,8 +1111,8 @@
             root.style.setProperty('--button-text-color', t.buttonTextColor || '#FFFFFF');
             
             // Navigation colors
-            const navTop = t.navTextColorTop || t.navTextColor || (lightTheme ? '#FFFFFF' : '#8E8E93');
-            const navScrolled = t.navTextColorScrolled || t.navTextColor || (lightTheme ? '#1C1C1E' : '#8E8E93');
+            const navTop = t.navTextColorTop || (lightTheme ? '#FFFFFF' : (t.textPrimary || '#FFFFFF'));
+            const navScrolled = t.navTextColorScrolled || (lightTheme ? '#1C1C1E' : textSecondary);
             root.style.setProperty('--nav-text-color', t.navTextColor || '#8E8E93');
             root.style.setProperty('--nav-text-color-top', navTop);
             root.style.setProperty('--nav-text-color-scrolled', navScrolled);
