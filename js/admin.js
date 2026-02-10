@@ -25,20 +25,41 @@ const AdminManager = {
      * SECURITY: Initialize admin session from storage
      * Validates session integrity on page load
      */
-    init() {
+    async init() {
         const sessionAuth = sessionStorage.getItem('admin_authenticated');
         const sessionTime = sessionStorage.getItem('admin_session_time');
+        const token = sessionStorage.getItem('admin_token');
         
-        if (sessionAuth === 'true' && sessionTime) {
-            // Verify session is recent (within 1 hour)
-            const sessionAge = Date.now() - parseInt(sessionTime);
-            if (sessionAge < 3600000) { // 1 hour
-                this.isAuthenticated = true;
-                this.renderAdminPanel();
-            } else {
-                // Session expired
-                sessionStorage.clear();
-                this.isAuthenticated = false;
+        if (sessionAuth === 'true' && sessionTime && token) {
+            // Verify token with server if possible
+            try {
+                const resp = await fetch('/api/validate', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ token })
+                });
+                if (resp.ok) {
+                    const js = await resp.json();
+                    if (js && js.valid) {
+                        this.isAuthenticated = true;
+                        this.renderAdminPanel();
+                    } else {
+                        sessionStorage.clear();
+                        this.isAuthenticated = false;
+                    }
+                } else {
+                    sessionStorage.clear();
+                    this.isAuthenticated = false;
+                }
+            } catch (e) {
+                // Network issue — fall back to time check
+                const sessionAge = Date.now() - parseInt(sessionTime);
+                if (sessionAge < 3600000) {
+                    this.isAuthenticated = true;
+                    this.renderAdminPanel();
+                } else {
+                    sessionStorage.clear();
+                    this.isAuthenticated = false;
+                }
             }
         }
         
@@ -86,41 +107,44 @@ const AdminManager = {
             }
         }
         
-        // Hash the provided password and compare with stored hash
-        const passwordHash = await this.hashPassword(password);
-        const storedHash = SITE_CONFIG.admin.passwordHash;
-        
-        if (passwordHash === storedHash) {
-            // Successful authentication
-            this.loginAttempts = 0;
-            this.isAuthenticated = true;
-            
-            // SECURITY: Store auth state in sessionStorage (not localStorage)
-            // Clears when browser tab/window closes
-            sessionStorage.setItem('admin_authenticated', 'true');
-            sessionStorage.setItem('admin_session_time', Date.now().toString());
-            
-            this.showNotification('Login successful', 'success');
-            return true;
-        } else {
-            // Failed authentication
-            this.loginAttempts++;
-            this.lastFailedAttempt = Date.now();
-            
-            if (this.loginAttempts >= SITE_CONFIG.admin.maxAttempts) {
-                this.isLockedOut = true;
-                this.showNotification(
-                    `Too many failed attempts. Account locked for 60 seconds.`,
-                    'error'
-                );
+        // Use server-side login when available (Vercel env vars)
+        const usernameInput = document.getElementById('admin-username');
+        const username = usernameInput ? usernameInput.value : (SITE_CONFIG.admin && SITE_CONFIG.admin.username) || 'admin';
+
+        try {
+            const resp = await fetch('/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            });
+
+            if (resp.ok) {
+                const data = await resp.json();
+                const token = data.token;
+                // Successful authentication
+                this.loginAttempts = 0;
+                this.isAuthenticated = true;
+                sessionStorage.setItem('admin_authenticated', 'true');
+                sessionStorage.setItem('admin_session_time', Date.now().toString());
+                sessionStorage.setItem('admin_token', token);
+                this.showNotification('Login successful', 'success');
+                return true;
+            } else {
+                // Failed authentication
+                this.loginAttempts++;
+                this.lastFailedAttempt = Date.now();
+                if (this.loginAttempts >= SITE_CONFIG.admin.maxAttempts) {
+                    this.isLockedOut = true;
+                    this.showNotification(`Too many failed attempts. Account locked for ${Math.ceil(SITE_CONFIG.admin.lockoutDuration/1000)} seconds.`, 'error');
+                    return false;
+                }
+                const attemptsRemaining = SITE_CONFIG.admin.maxAttempts - this.loginAttempts;
+                this.showNotification(`Invalid credentials. ${attemptsRemaining} attempts remaining.`, 'error');
                 return false;
             }
-            
-            const attemptsRemaining = SITE_CONFIG.admin.maxAttempts - this.loginAttempts;
-            this.showNotification(
-                `Invalid password. ${attemptsRemaining} attempts remaining.`,
-                'error'
-            );
+        } catch (e) {
+            console.error('Login request failed', e);
+            this.showNotification('Login failed (network)', 'error');
             return false;
         }
     },
