@@ -242,6 +242,35 @@
             .tab-content { padding: 16px; }
         }
 
+        /* Left sidebar layout for non-technical users on wider screens */
+        @media (min-width: 900px) {
+            .admin-tabs {
+                position: fixed !important;
+                left: 16px;
+                top: 120px;
+                width: 220px;
+                height: calc(100vh - 160px);
+                flex-direction: column;
+                gap: 8px;
+                padding: 12px;
+                overflow-y: auto;
+            }
+
+            .tab-btn {
+                justify-content: flex-start;
+                padding: 12px 14px;
+                text-align: left;
+                width: 100%;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+
+            .admin-container {
+                margin-left: 260px;
+            }
+        }
+
         @media (max-width: 1024px) {
             .form-row { grid-template-columns: 1fr; }
             .tab-content { padding: 14px; }
