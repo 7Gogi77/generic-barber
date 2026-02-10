@@ -101,12 +101,24 @@
         
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: var(--bg-primary);
+            background:
+                radial-gradient(1200px 600px at 15% 5%, color-mix(in srgb, var(--accent) 12%, transparent) 0%, transparent 60%),
+                radial-gradient(900px 500px at 85% 10%, color-mix(in srgb, var(--gradient-end) 10%, transparent) 0%, transparent 60%),
+                var(--bg-primary);
             color: var(--text-primary);
             line-height: 1.6;
             overflow-x: hidden;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
+        }
+
+        .glass-card {
+            background: color-mix(in srgb, var(--bg-secondary) 85%, transparent);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-sm);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
         }
         
         /* Custom cursor - desktop only */
@@ -469,8 +481,9 @@
             width: 100%;
             height: auto;
             border-radius: var(--radius-lg);
-            filter: grayscale(30%);
+            filter: grayscale(10%);
             transition: all var(--transition-slow);
+            box-shadow: var(--shadow-md);
         }
         
         .about-image:hover img {
@@ -520,7 +533,11 @@
            TESTIMONIAL SECTION
            ============================================ */
         .testimonial-section {
-            background: var(--bg-secondary);
+            background: color-mix(in srgb, var(--bg-secondary) 80%, transparent);
+            border-top: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             text-align: center;
         }
         
@@ -573,14 +590,17 @@
             display: flex;
             justify-content: space-between;
             align-items: flex-end;
-            padding: 24px 0;
-            border-bottom: 1px solid var(--border-color);
+            padding: 22px 24px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            background: color-mix(in srgb, var(--bg-secondary) 85%, transparent);
             transition: all var(--transition-fast);
         }
         
         .service-item:hover {
-            border-color: var(--accent);
-            padding-left: 16px;
+            border-color: color-mix(in srgb, var(--accent) 60%, var(--border-color));
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-md);
         }
         
         .service-info h4 {
@@ -621,6 +641,11 @@
         .team-member {
             text-align: center;
             transition: transform var(--transition-normal);
+            padding: 24px;
+            border-radius: var(--radius-md);
+            background: color-mix(in srgb, var(--bg-secondary) 85%, transparent);
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-sm);
         }
         
         .team-member:hover { transform: translateY(-8px); }
@@ -636,8 +661,9 @@
             width: 100%;
             aspect-ratio: 3/4;
             object-fit: cover;
-            filter: grayscale(50%);
+            filter: grayscale(10%);
             transition: all var(--transition-slow);
+            box-shadow: var(--shadow-sm);
         }
         
         .team-member:hover .team-member-image img {
@@ -683,9 +709,10 @@
             width: 100%;
             height: auto;
             border-radius: var(--radius-md);
-            filter: grayscale(30%);
+            filter: grayscale(10%);
             transition: all var(--transition-normal);
             cursor: pointer;
+            box-shadow: var(--shadow-sm);
         }
         
         #gallery-list img:hover {
@@ -715,7 +742,7 @@
             border: 1px solid var(--border-color);
             border-radius: var(--radius-md);
             overflow: hidden;
-            background: var(--bg-primary);
+            background: color-mix(in srgb, var(--bg-primary) 90%, transparent);
             box-shadow: var(--shadow-sm);
         }
 
