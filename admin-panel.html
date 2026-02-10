@@ -3646,7 +3646,7 @@
         // Check authentication
         window.addEventListener('load', () => {
             loadConfig();
-            if (sessionStorage.getItem('admin_logged_in') === 'true') {
+            if (sessionStorage.getItem('admin_token')) {
                 document.getElementById('loginScreen').style.display = 'none';
                 document.getElementById('adminPanel').classList.add('active');
                 loadAdminForms();
