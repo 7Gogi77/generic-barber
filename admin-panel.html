@@ -3482,6 +3482,12 @@
                 SITE_CONFIG.theme.primary = val;
                 document.getElementById('theme-primary').value = val;
                 document.getElementById('theme-primary-text').value = val;
+                // Keep scrollbar thumb synced to primary color
+                SITE_CONFIG.theme.scrollbarThumb = val;
+                const sbPicker = document.getElementById('scrollbar-thumb');
+                const sbText = document.getElementById('scrollbar-thumb-text');
+                if (sbPicker) sbPicker.value = val;
+                if (sbText) sbText.value = val;
             }
             if (e.target.id === 'theme-dark' || e.target.id === 'theme-dark-text') {
                 const val = document.getElementById('theme-dark-text').value || document.getElementById('theme-dark').value;

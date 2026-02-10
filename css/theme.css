@@ -57,7 +57,7 @@ body {
     color: var(--text-primary);
     font-family: var(--font-sans);
     overflow-x: hidden;
-    cursor: none;
+    cursor: auto;
 }
 
 /* ============================================
