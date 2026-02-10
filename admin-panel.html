@@ -832,13 +832,6 @@
             </button>
 
             <div class="nav-item">
-                <button class="nav-icon" title="Urnik" aria-label="Urnik" onclick="switchTab(event, 'panel')">
-                    <i class="bi bi-calendar3"></i>
-                </button>
-                <span class="nav-label">Urnik</span>
-            </div>
-
-            <div class="nav-item">
                 <button class="nav-icon active" title="Videz" aria-label="Videz" onclick="switchTab(event, 'videz')">
                     <i class="bi bi-palette"></i>
                 </button>
@@ -1470,7 +1463,7 @@
             </div> <!-- END storitve tab -->
 
             <!-- ===== TAB 4: PANEL (BUSINESS ANALYTICS) ===== -->
-            <div id="panel" class="tab-content">
+            <div id="panel" class="tab-content" data-enabled="false" style="display:none;">
                 <h2 style="margin: 0 0 20px 0; color: var(--ios-text-primary, #000); font-size: 22px; font-weight: 700; border-bottom: none; padding-bottom: 0;">Poslovni Panel</h2>
 
                 <!-- DEBUG SEKCIJA -->
@@ -3672,9 +3665,15 @@
 
             // load defaults
             document.getElementById('discountDefault') && (document.getElementById('discountDefault').value = SITE_CONFIG.defaultDiscount || 0);
-            refreshBusinessPanel();
-            renderCalendar();
-            initAdminSchedule();
+
+            // Only initialize business panel when enabled
+            const panelTab = document.getElementById('panel');
+            const panelEnabled = panelTab && panelTab.getAttribute('data-enabled') !== 'false';
+            if (panelEnabled) {
+                refreshBusinessPanel();
+                renderCalendar();
+                initAdminSchedule();
+            }
         });
 
         // ========================================
