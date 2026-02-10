@@ -2275,7 +2275,10 @@
         
         // Save booking settings
         function saveBooking() {
-            SITE_CONFIG.booking.title = document.getElementById('bookingTitle').value;
+            const bookingTitleInput = document.getElementById('bookingTitle');
+            if (bookingTitleInput) {
+                SITE_CONFIG.booking.title = bookingTitleInput.value;
+            }
             
             // Ensure nested objects exist
             if (!SITE_CONFIG.booking.businessHours) SITE_CONFIG.booking.businessHours = {};
