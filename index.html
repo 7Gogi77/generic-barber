@@ -121,31 +121,7 @@
             -webkit-backdrop-filter: blur(14px);
         }
         
-        /* Custom cursor - desktop only */
-        #cursor {
-            display: none;
-        }
-        
-        @media (hover: hover) and (min-width: 769px) {
-            body { cursor: none; }
-            #cursor {
-                display: block;
-                position: fixed;
-                width: 24px;
-                height: 24px;
-                border: 2px solid var(--accent);
-                border-radius: 50%;
-                pointer-events: none;
-                z-index: 9999;
-                transform: translate(-50%, -50%);
-                transition: transform 0.1s ease, border-color 0.2s ease, opacity 0.2s ease;
-                mix-blend-mode: difference;
-            }
-            #cursor.hover {
-                transform: translate(-50%, -50%) scale(1.5);
-                border-color: var(--text-primary);
-            }
-        }
+        /* Custom cursor removed */
         
         /* ============================================
            TYPOGRAPHY
@@ -744,6 +720,8 @@
             overflow: hidden;
             background: color-mix(in srgb, var(--bg-primary) 90%, transparent);
             box-shadow: var(--shadow-sm);
+            max-width: 720px;
+            margin: 0 auto;
         }
 
         .bh-row {
@@ -921,9 +899,6 @@
     </style>
 </head>
 <body>
-    <!-- Custom Cursor -->
-    <div id="cursor"></div>
-
     <!-- Navigation -->
     <nav id="main-nav">
         <a href="#home" class="nav-logo" id="logo-text"></a>
