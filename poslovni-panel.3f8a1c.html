@@ -1160,12 +1160,14 @@
         @media (max-width: 480px) {
             .content-area {
                 padding: 8px;
+                padding-bottom: 20px;
             }
 
             #scheduleCalendar {
                 border-radius: var(--ios-radius-md);
                 margin-top: 0;
-                height: calc(100vh - 96px);
+                height: calc(100dvh - 96px);
+                min-height: calc(100dvh - 96px);
             }
 
             /* Hide sidebar completely, show hamburger only */
