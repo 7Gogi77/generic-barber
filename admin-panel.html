@@ -1037,6 +1037,102 @@
                     <button class="save-btn" onclick="saveFooterCopy()">Shrani Nogo</button>
                 </div>
 
+                <!-- BOOKING PAGE CONTENT SECTION -->
+                <div class="admin-section">
+                    <div class="section-title">📝 Vsebina Rezervacijske Strani</div>
+                    <p style="font-size: 13px; color: var(--ios-text-secondary, #8E8E93); margin-bottom: 16px;">Uredi besedila na rezervacija.html strani</p>
+                    
+                    <div class="form-row">
+                        <div class="form-group-admin">
+                            <label class="form-label-admin">Naslov Strani (Header)</label>
+                            <input id="bookingPageTitle" type="text" class="form-input-admin" placeholder="Rezervacija termina">
+                        </div>
+                        <div class="form-group-admin">
+                            <label class="form-label-admin">Podnaslov</label>
+                            <input id="bookingPageSubtitle" type="text" class="form-input-admin" placeholder="Izberite storitev in termin">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group-admin">
+                            <label class="form-label-admin">Korak 1: Naslov</label>
+                            <input id="bookingStep1Title" type="text" class="form-input-admin" placeholder="1. Izberite storitev">
+                        </div>
+                        <div class="form-group-admin">
+                            <label class="form-label-admin">Korak 1: Opis</label>
+                            <input id="bookingStep1Desc" type="text" class="form-input-admin" placeholder="Izberite eno ali več storitev">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group-admin">
+                            <label class="form-label-admin">Korak 2: Naslov</label>
+                            <input id="bookingStep2Title" type="text" class="form-input-admin" placeholder="2. Izberite datum">
+                        </div>
+                        <div class="form-group-admin">
+                            <label class="form-label-admin">Korak 2: Opis</label>
+                            <input id="bookingStep2Desc" type="text" class="form-input-admin" placeholder="Zeleni datumi imajo proste termine">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group-admin">
+                            <label class="form-label-admin">Korak 3: Naslov</label>
+                            <input id="bookingStep3Title" type="text" class="form-input-admin" placeholder="3. Vaši podatki">
+                        </div>
+                        <div class="form-group-admin">
+                            <label class="form-label-admin">Korak 3: Opis</label>
+                            <input id="bookingStep3Desc" type="text" class="form-input-admin" placeholder="Vnesite kontaktne podatke">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group-admin">
+                            <label class="form-label-admin">Korak 4: Naslov</label>
+                            <input id="bookingStep4Title" type="text" class="form-input-admin" placeholder="4. Potrditev">
+                        </div>
+                        <div class="form-group-admin">
+                            <label class="form-label-admin">Korak 4: Opis</label>
+                            <input id="bookingStep4Desc" type="text" class="form-input-admin" placeholder="Preverite podatke in potrdite">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group-admin">
+                            <label class="form-label-admin">Uspešna Rezervacija: Naslov</label>
+                            <input id="bookingSuccessTitle" type="text" class="form-input-admin" placeholder="Rezervacija uspešna!">
+                        </div>
+                        <div class="form-group-admin">
+                            <label class="form-label-admin">Uspešna Rezervacija: Sporočilo</label>
+                            <input id="bookingSuccessMessage" type="text" class="form-input-admin" placeholder="Vaš termin je bil uspešno rezerviran.">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group-admin">
+                            <label class="form-label-admin">Gumb "Naprej"</label>
+                            <input id="bookingBtnNext" type="text" class="form-input-admin" placeholder="Naprej">
+                        </div>
+                        <div class="form-group-admin">
+                            <label class="form-label-admin">Gumb "Nazaj"</label>
+                            <input id="bookingBtnBack" type="text" class="form-input-admin" placeholder="Nazaj">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group-admin">
+                            <label class="form-label-admin">Gumb "Potrdi Rezervacijo"</label>
+                            <input id="bookingBtnConfirm" type="text" class="form-input-admin" placeholder="Potrdi rezervacijo">
+                        </div>
+                        <div class="form-group-admin">
+                            <label class="form-label-admin">Gumb "Nova Rezervacija"</label>
+                            <input id="bookingBtnNew" type="text" class="form-input-admin" placeholder="Nova rezervacija">
+                        </div>
+                    </div>
+                    
+                    <button class="save-btn" onclick="saveBookingPageContent()">Shrani Vsebino Strani</button>
+                </div>
+
                 <!-- NAVIGATION LINKS SECTION -->
                 <div class="admin-section">
                     <div class="section-title"><i class="bi bi-list-ul"></i> Navigacijske Povezave</div>
@@ -1204,102 +1300,6 @@
                         </div>
                     </div>
                     <button class="save-btn" onclick="saveBooking()">Shrani Nastavitve</button>
-                </div>
-
-                <!-- BOOKING PAGE CONTENT SECTION -->
-                <div class="admin-section">
-                    <div class="section-title">📝 Vsebina Rezervacijske Strani</div>
-                    <p style="font-size: 13px; color: var(--ios-text-secondary, #8E8E93); margin-bottom: 16px;">Uredi besedila na rezervacija.html strani</p>
-                    
-                    <div class="form-row">
-                        <div class="form-group-admin">
-                            <label class="form-label-admin">Naslov Strani (Header)</label>
-                            <input id="bookingPageTitle" type="text" class="form-input-admin" placeholder="Rezervacija termina">
-                        </div>
-                        <div class="form-group-admin">
-                            <label class="form-label-admin">Podnaslov</label>
-                            <input id="bookingPageSubtitle" type="text" class="form-input-admin" placeholder="Izberite storitev in termin">
-                        </div>
-                    </div>
-                    
-                    <div class="form-row">
-                        <div class="form-group-admin">
-                            <label class="form-label-admin">Korak 1: Naslov</label>
-                            <input id="bookingStep1Title" type="text" class="form-input-admin" placeholder="1. Izberite storitev">
-                        </div>
-                        <div class="form-group-admin">
-                            <label class="form-label-admin">Korak 1: Opis</label>
-                            <input id="bookingStep1Desc" type="text" class="form-input-admin" placeholder="Izberite eno ali več storitev">
-                        </div>
-                    </div>
-                    
-                    <div class="form-row">
-                        <div class="form-group-admin">
-                            <label class="form-label-admin">Korak 2: Naslov</label>
-                            <input id="bookingStep2Title" type="text" class="form-input-admin" placeholder="2. Izberite datum">
-                        </div>
-                        <div class="form-group-admin">
-                            <label class="form-label-admin">Korak 2: Opis</label>
-                            <input id="bookingStep2Desc" type="text" class="form-input-admin" placeholder="Zeleni datumi imajo proste termine">
-                        </div>
-                    </div>
-                    
-                    <div class="form-row">
-                        <div class="form-group-admin">
-                            <label class="form-label-admin">Korak 3: Naslov</label>
-                            <input id="bookingStep3Title" type="text" class="form-input-admin" placeholder="3. Vaši podatki">
-                        </div>
-                        <div class="form-group-admin">
-                            <label class="form-label-admin">Korak 3: Opis</label>
-                            <input id="bookingStep3Desc" type="text" class="form-input-admin" placeholder="Vnesite kontaktne podatke">
-                        </div>
-                    </div>
-                    
-                    <div class="form-row">
-                        <div class="form-group-admin">
-                            <label class="form-label-admin">Korak 4: Naslov</label>
-                            <input id="bookingStep4Title" type="text" class="form-input-admin" placeholder="4. Potrditev">
-                        </div>
-                        <div class="form-group-admin">
-                            <label class="form-label-admin">Korak 4: Opis</label>
-                            <input id="bookingStep4Desc" type="text" class="form-input-admin" placeholder="Preverite podatke in potrdite">
-                        </div>
-                    </div>
-                    
-                    <div class="form-row">
-                        <div class="form-group-admin">
-                            <label class="form-label-admin">Uspešna Rezervacija: Naslov</label>
-                            <input id="bookingSuccessTitle" type="text" class="form-input-admin" placeholder="Rezervacija uspešna!">
-                        </div>
-                        <div class="form-group-admin">
-                            <label class="form-label-admin">Uspešna Rezervacija: Sporočilo</label>
-                            <input id="bookingSuccessMessage" type="text" class="form-input-admin" placeholder="Vaš termin je bil uspešno rezerviran.">
-                        </div>
-                    </div>
-                    
-                    <div class="form-row">
-                        <div class="form-group-admin">
-                            <label class="form-label-admin">Gumb "Naprej"</label>
-                            <input id="bookingBtnNext" type="text" class="form-input-admin" placeholder="Naprej">
-                        </div>
-                        <div class="form-group-admin">
-                            <label class="form-label-admin">Gumb "Nazaj"</label>
-                            <input id="bookingBtnBack" type="text" class="form-input-admin" placeholder="Nazaj">
-                        </div>
-                    </div>
-                    
-                    <div class="form-row">
-                        <div class="form-group-admin">
-                            <label class="form-label-admin">Gumb "Potrdi Rezervacijo"</label>
-                            <input id="bookingBtnConfirm" type="text" class="form-input-admin" placeholder="Potrdi rezervacijo">
-                        </div>
-                        <div class="form-group-admin">
-                            <label class="form-label-admin">Gumb "Nova Rezervacija"</label>
-                            <input id="bookingBtnNew" type="text" class="form-input-admin" placeholder="Nova rezervacija">
-                        </div>
-                    </div>
-                    
-                    <button class="save-btn" onclick="saveBookingPageContent()">Shrani Vsebino Strani</button>
                 </div>
 
             </div> <!-- END storitve tab -->
