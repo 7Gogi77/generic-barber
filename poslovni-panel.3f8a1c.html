@@ -1279,6 +1279,42 @@
                 border-radius: 4px !important;
             }
 
+            /* Mobile: ensure event bars size correctly and show emoji-only */
+            .fc .fc-timegrid-event {
+                min-height: 24px !important;
+            }
+
+            .fc .fc-timegrid-event .fc-event-main {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                height: 100%;
+                overflow: hidden;
+            }
+
+            .fc .fc-daygrid-event {
+                min-height: 18px !important;
+            }
+
+            .fc .fc-daygrid-event .fc-event-title,
+            .fc .fc-daygrid-event .fc-event-time,
+            .fc .fc-timegrid-event .fc-event-title,
+            .fc .fc-timegrid-event .fc-event-time,
+            .fc .fc-list-event-title,
+            .fc .fc-list-event-time {
+                display: none !important;
+            }
+
+            .fc .mobile-event-emoji {
+                display: inline-flex !important;
+                align-items: center;
+                justify-content: center;
+                width: 100%;
+                height: 100%;
+                font-size: 14px;
+                line-height: 1;
+            }
+
             .fc-daygrid-more-link {
                 font-size: 10px !important;
                 padding: 2px 4px !important;
@@ -1372,6 +1408,10 @@
 
             .fc-event {
                 font-size: 8px !important;
+            }
+
+            .fc .mobile-event-emoji {
+                font-size: 12px;
             }
         }
 
