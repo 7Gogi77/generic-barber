@@ -670,6 +670,67 @@
             filter: grayscale(0%);
             transform: scale(1.02);
         }
+
+        /* ============================================
+           BUSINESS HOURS SECTION
+           ============================================ */
+        .business-hours-section {
+            padding: 80px 0;
+            background: var(--bg-secondary);
+        }
+
+        .business-hours-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .business-hours-header p {
+            color: var(--text-secondary);
+            margin-top: 10px;
+        }
+
+        .business-hours-table {
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            background: var(--bg-primary);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .bh-row {
+            display: grid;
+            grid-template-columns: minmax(140px, 220px) 1fr;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .bh-row:last-child {
+            border-bottom: none;
+        }
+
+        .bh-cell {
+            padding: 16px 18px;
+            color: var(--text-primary);
+            font-size: 1rem;
+        }
+
+        .bh-head {
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            font-size: 0.85rem;
+            border-right: 1px solid var(--border-color);
+        }
+
+        @media (max-width: 768px) {
+            .bh-row {
+                grid-template-columns: 1fr;
+            }
+            .bh-head {
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+            }
+        }
         
         /* ============================================
            CTA SECTION
@@ -897,14 +958,14 @@
                 <h2 class="display-md" id="businessHoursTitle">Delovni Čas in Delovni Dnevi</h2>
                 <p id="businessHoursSubtitle">Nastavi svoje delovne dneve in ure</p>
             </div>
-            <div class="business-hours-grid">
-                <div class="business-hours-item">
-                    <span class="bh-label" id="businessHoursLabel">Delovni čas</span>
-                    <span class="bh-value" id="businessHoursValue">9:00 - 19:00</span>
+            <div class="business-hours-table">
+                <div class="bh-row">
+                    <div class="bh-cell bh-head" id="businessHoursLabel">Delovni čas</div>
+                    <div class="bh-cell" id="businessHoursValue">9:00 - 19:00</div>
                 </div>
-                <div class="business-hours-item">
-                    <span class="bh-label" id="workingDaysLabel">Delovni dnevi</span>
-                    <span class="bh-value" id="workingDaysValue">Pon - Pet</span>
+                <div class="bh-row">
+                    <div class="bh-cell bh-head" id="workingDaysLabel">Delovni dnevi</div>
+                    <div class="bh-cell" id="workingDaysValue">Pon - Pet</div>
                 </div>
             </div>
         </div>
