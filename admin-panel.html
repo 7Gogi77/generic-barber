@@ -920,6 +920,21 @@
                     </div>
                 </div>
 
+                <!-- QUICK COLOR PRESETS -->
+                <div class="admin-section">
+                    <div class="section-title">Hitre Barvne Teme</div>
+                    <p style="font-size: 12px; color: #666; margin-bottom: 12px;">En klik nastavi celotno barvno shemo. Pozneje lahko ročno prilagodite.</p>
+                    <div style="display:flex; flex-wrap: wrap; gap: 10px;">
+                        <button class="save-btn" onclick="applyThemePreset('beauty-pink')" style="background:#E91E63;">Beauty (bela/roza)</button>
+                        <button class="save-btn" onclick="applyThemePreset('clean-white')" style="background:#111;">Clean White</button>
+                        <button class="save-btn" onclick="applyThemePreset('dark-elegant')" style="background:#1f1f1f;">Dark Elegant</button>
+                    </div>
+                    <div style="margin-top: 12px; display:flex; flex-wrap: wrap; gap: 10px; align-items:center;">
+                        <button class="save-btn" onclick="applyPrimaryToTheme()" style="background:#6c757d;">Uskladi z glavno barvo</button>
+                        <span style="font-size: 12px; color:#666;">Uporabi trenutno primarno barvo na gumbe, navigacijo in gradient.</span>
+                    </div>
+                </div>
+
                 <!-- COLORS SECTION -->
                 <div class="admin-section">
                     <div class="section-title">Barvna Shema</div>
@@ -1082,7 +1097,7 @@
                 <!-- TEMPLATE PRESETS -->
                 <div class="admin-section">
                     <div class="section-title">🎨 Predloge (Template)</div>
-                    <p style="font-size: 13px; color: var(--ios-text-secondary, #8E8E93); margin-bottom: 12px;">Izberi predlogo in hitro nastavi vsebino. Barve ostanejo enake.</p>
+                    <p style="font-size: 13px; color: var(--ios-text-secondary, #8E8E93); margin-bottom: 12px;">Izberi predlogo in hitro nastavi vsebino. Predloga lahko nastavi tudi barve.</p>
                     <div class="form-row">
                         <div class="form-group-admin">
                             <label class="form-label-admin">Izberi predlogo</label>
@@ -3094,6 +3109,128 @@
             // Save config
             saveConfig();
             showNotification('Barve so bile shranjene!', 'success');
+        }
+
+        // Helper: set theme inputs and apply
+        function setThemeInputs(theme) {
+            const pairs = [
+                ['theme-primary', 'theme-primary-text', theme.primary],
+                ['theme-dark', 'theme-dark-text', theme.dark],
+                ['theme-card', 'theme-card-text', theme.card],
+                ['theme-gradient-start', 'theme-gradient-start-text', theme.gradientStart],
+                ['theme-gradient-end', 'theme-gradient-end-text', theme.gradientEnd],
+                ['text-primary', 'text-primary-text', theme.textPrimary],
+                ['text-secondary', 'text-secondary-text', theme.textSecondary],
+                ['button-color', 'button-color-text', theme.buttonColor],
+                ['button-text-color', 'button-text-color-text', theme.buttonTextColor],
+                ['nav-text-color', 'nav-text-color-text', theme.navTextColor],
+                ['nav-hover-color', 'nav-hover-color-text', theme.navHoverColor],
+                ['footer-bg-color', 'footer-bg-color-text', theme.footerBgColor],
+                ['footer-text-color', 'footer-text-color-text', theme.footerTextColor],
+                ['scrollbar-thumb', 'scrollbar-thumb-text', theme.scrollbarThumb],
+                ['scrollbar-track', 'scrollbar-track-text', theme.scrollbarTrack]
+            ];
+
+            pairs.forEach(([pickerId, textId, value]) => {
+                if (!value) return;
+                const picker = document.getElementById(pickerId);
+                const text = document.getElementById(textId);
+                if (picker) picker.value = value;
+                if (text) text.value = value;
+            });
+
+            if (!SITE_CONFIG.theme) SITE_CONFIG.theme = {};
+            Object.assign(SITE_CONFIG.theme, theme);
+            applyThemeToPage();
+            saveConfig();
+        }
+
+        // Helper: lighten a hex color
+        function lightenColor(hex, amount) {
+            const h = hex.replace('#', '');
+            if (h.length !== 6) return hex;
+            const num = parseInt(h, 16);
+            const r = Math.min(255, Math.max(0, (num >> 16) + amount));
+            const g = Math.min(255, Math.max(0, ((num >> 8) & 0x00FF) + amount));
+            const b = Math.min(255, Math.max(0, (num & 0x0000FF) + amount));
+            return '#' + [r, g, b].map(v => v.toString(16).padStart(2, '0')).join('');
+        }
+
+        // Quick theme presets
+        function applyThemePreset(key) {
+            const presets = {
+                'beauty-pink': {
+                    primary: '#E91E63',
+                    dark: '#1C1C1E',
+                    card: '#FFFFFF',
+                    gradientStart: '#F8BBD0',
+                    gradientEnd: '#E91E63',
+                    textPrimary: '#1C1C1E',
+                    textSecondary: '#6E6E73',
+                    buttonColor: '#E91E63',
+                    buttonTextColor: '#FFFFFF',
+                    navTextColor: '#6E6E73',
+                    navHoverColor: '#E91E63',
+                    footerBgColor: '#2B0A1A',
+                    footerTextColor: '#F8BBD0',
+                    scrollbarThumb: '#E91E63',
+                    scrollbarTrack: '#F2F2F7'
+                },
+                'clean-white': {
+                    primary: '#111111',
+                    dark: '#111111',
+                    card: '#FFFFFF',
+                    gradientStart: '#FFFFFF',
+                    gradientEnd: '#F2F2F7',
+                    textPrimary: '#111111',
+                    textSecondary: '#6E6E73',
+                    buttonColor: '#111111',
+                    buttonTextColor: '#FFFFFF',
+                    navTextColor: '#6E6E73',
+                    navHoverColor: '#111111',
+                    footerBgColor: '#0A0A0A',
+                    footerTextColor: '#D1D1D6',
+                    scrollbarThumb: '#111111',
+                    scrollbarTrack: '#F2F2F7'
+                },
+                'dark-elegant': {
+                    primary: '#8E8E93',
+                    dark: '#0A0A0A',
+                    card: '#141414',
+                    gradientStart: '#1C1C1E',
+                    gradientEnd: '#0A0A0A',
+                    textPrimary: '#FFFFFF',
+                    textSecondary: '#8E8E93',
+                    buttonColor: '#8E8E93',
+                    buttonTextColor: '#0A0A0A',
+                    navTextColor: '#8E8E93',
+                    navHoverColor: '#FFFFFF',
+                    footerBgColor: '#0A0A0A',
+                    footerTextColor: '#8E8E93',
+                    scrollbarThumb: '#8E8E93',
+                    scrollbarTrack: '#1C1C1E'
+                }
+            };
+
+            if (!presets[key]) return;
+            setThemeInputs(presets[key]);
+            showNotification('Barvna tema uporabljena', 'success');
+        }
+
+        // Apply current primary to other related colors
+        function applyPrimaryToTheme() {
+            const primary = (document.getElementById('theme-primary-text').value || document.getElementById('theme-primary').value || '#E91E63');
+            const lighter = lightenColor(primary, 60);
+            const theme = {
+                primary: primary,
+                gradientStart: lighter,
+                gradientEnd: primary,
+                buttonColor: primary,
+                navHoverColor: primary,
+                scrollbarThumb: primary
+            };
+            setThemeInputs(theme);
+            showNotification('Usklajeno z glavno barvo', 'success');
         }
 
         // Save text and UI colors
