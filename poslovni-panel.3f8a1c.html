@@ -1689,6 +1689,10 @@
                     <strong>Cena:</strong>
                     <p id="bookingPrice" style="margin: 5px 0;">-</p>
                 </div>
+                <div style="margin-bottom: 15px;">
+                    <strong>Opombe:</strong>
+                    <p id="bookingNotes" style="margin: 5px 0; white-space: pre-wrap;">-</p>
+                </div>
                 <div style="margin-top: 20px; display:flex; gap:10px;">
                     <button type="button" id="bookingEditBtn" class="btn btn-primary" style="flex:1;">Uredi</button>
                     <button type="button" id="bookingDeleteBtn" class="btn btn-danger" style="flex:1;">Izbriši</button>
@@ -2865,6 +2869,8 @@
             document.getElementById('bookingDuration').textContent = `${booking.duration || 0} minut`;
             document.getElementById('bookingServices').textContent = booking.services ? booking.services.join(', ') : 'N/A';
             document.getElementById('bookingPrice').textContent = `${booking.price || 0}€`;
+            const notesText = (booking.notes || booking.note || '').toString().trim();
+            document.getElementById('bookingNotes').textContent = notesText ? notesText : '—';
             
             const modal = document.getElementById('bookingDetailsModal');
             // attach delete handler
