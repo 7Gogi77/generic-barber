@@ -1508,13 +1508,13 @@
 
                 <!-- BUSINESS HOURS SECTION -->
                 <div class="admin-section">
-                    <div class="section-title">⏰ Delovni Čas in Delovni Dnevi</div>
+                    <div class="section-title">⏰ Urnik dela</div>
                     <p style="font-size: 13px; color: #7f8c8d; margin-bottom: 18px;">Nastavi svoje delovne dneve in ure</p>
 
                     <div class="form-row">
                         <div class="form-group-admin">
                             <label class="form-label-admin">Naslov (Index)</label>
-                            <input id="homeHoursTitle" type="text" class="form-input-admin" placeholder="Delovni Čas in Delovni Dnevi">
+                            <input id="homeHoursTitle" type="text" class="form-input-admin" placeholder="Urnik dela">
                         </div>
                         <div class="form-group-admin">
                             <label class="form-label-admin">Podnaslov (Index)</label>
@@ -2554,7 +2554,7 @@
             document.getElementById('ownerPhone').value = (SITE_CONFIG.ownerContact?.phone) || '';
 
             const bh = SITE_CONFIG.businessHoursSection || {};
-            document.getElementById('homeHoursTitle').value = bh.title || 'Delovni Čas in Delovni Dnevi';
+            document.getElementById('homeHoursTitle').value = bh.title || 'Urnik dela';
             document.getElementById('homeHoursSubtitle').value = bh.subtitle || 'Nastavi svoje delovne dneve in ure';
             document.getElementById('homeHoursLabel').value = bh.hoursLabel || 'Delovni čas';
             document.getElementById('homeDaysLabel').value = bh.daysLabel || 'Delovni dnevi';
@@ -3038,7 +3038,7 @@
             SITE_CONFIG.booking.businessHours.end = parseInt(document.getElementById('businessEnd').value) || 19;
             SITE_CONFIG.ownerContact.email = document.getElementById('ownerEmail').value;
             SITE_CONFIG.ownerContact.phone = document.getElementById('ownerPhone').value;
-            SITE_CONFIG.businessHoursSection.title = document.getElementById('homeHoursTitle').value || 'Delovni Čas in Delovni Dnevi';
+            SITE_CONFIG.businessHoursSection.title = document.getElementById('homeHoursTitle').value || 'Urnik dela';
             SITE_CONFIG.businessHoursSection.subtitle = document.getElementById('homeHoursSubtitle').value || 'Nastavi svoje delovne dneve in ure';
             SITE_CONFIG.businessHoursSection.hoursLabel = document.getElementById('homeHoursLabel').value || 'Delovni čas';
             SITE_CONFIG.businessHoursSection.daysLabel = document.getElementById('homeDaysLabel').value || 'Delovni dnevi';
