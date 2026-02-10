@@ -691,6 +691,24 @@ const CalendarEngine = {
             console.log('📋 Skipping - not in admin context (no eventModal found)');
           }
         },
+
+        eventContent: (arg) => {
+          try {
+            const isMobile = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(max-width: 480px)').matches;
+            if (!isMobile) return undefined;
+
+            const type = arg.event.extendedProps?.type || arg.event.type || null;
+            const typeCfg = (typeof ScheduleRules !== 'undefined' && ScheduleRules.TYPE_CONFIG && type) ? ScheduleRules.TYPE_CONFIG[type] : null;
+            const isBooking = arg.event.extendedProps?.isBooking || arg.event.extendedProps?.tab === 'customer' || arg.event.extendedProps?.customer || arg.event.type === 'booking';
+            let emoji = typeCfg && typeCfg.icon ? typeCfg.icon : null;
+            if (!emoji && isBooking) emoji = '👤';
+            if (!emoji) emoji = '📌';
+
+            return { html: `<span class="mobile-event-emoji" aria-label="${emoji}" title="${emoji}">${emoji}</span>` };
+          } catch (_) {
+            return undefined;
+          }
+        },
         
         eventDidMount: (info) => {
           try {
@@ -743,6 +761,7 @@ const CalendarEngine = {
             try {
               const isMobile = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(max-width: 480px)').matches;
               if (isMobile && info.el) {
+                info.el.classList.add('mobile-emoji-only');
                 const existing = info.el.querySelector('.mobile-event-emoji');
                 if (!existing) {
                   const type = info.event.extendedProps?.type || info.event.type || null;
