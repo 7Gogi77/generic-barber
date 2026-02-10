@@ -703,6 +703,10 @@
             border-bottom: 1px solid var(--border-color);
         }
 
+        .bh-row:nth-child(even) .bh-cell {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
         .bh-row:last-child {
             border-bottom: none;
         }
@@ -959,14 +963,11 @@
                 <p id="businessHoursSubtitle">Nastavi svoje delovne dneve in ure</p>
             </div>
             <div class="business-hours-table">
-                <div class="bh-row">
-                    <div class="bh-cell bh-head" id="businessHoursLabel">Delovni čas</div>
-                    <div class="bh-cell" id="businessHoursValue">9:00 - 19:00</div>
-                </div>
-                <div class="bh-row">
+                <div class="bh-row bh-header">
                     <div class="bh-cell bh-head" id="workingDaysLabel">Delovni dnevi</div>
-                    <div class="bh-cell" id="workingDaysValue">Pon - Pet</div>
+                    <div class="bh-cell bh-head" id="businessHoursLabel">Delovni čas</div>
                 </div>
+                <div id="businessHoursTableBody"></div>
             </div>
         </div>
     </section>
@@ -1228,29 +1229,50 @@
             const businessHours = SITE_CONFIG.booking?.businessHours || { start: 9, end: 19 };
             const workingDays = SITE_CONFIG.booking?.workingDays || {};
             const daysClosed = SITE_CONFIG.booking?.daysClosed || [0];
-            const dayNames = ['Ned', 'Pon', 'Tor', 'Sre', 'Čet', 'Pet', 'Sob'];
-            const openDays = [];
-            for (let i = 0; i < 7; i++) {
-                if (workingDays[i] || !daysClosed.includes(i)) {
-                    openDays.push(dayNames[i]);
-                }
-            }
-            const hoursValue = `${businessHours.start}:00 - ${businessHours.end}:00`;
-            const daysValue = openDays.join(', ') || 'Pon - Pet';
+            const perDayHours = SITE_CONFIG.booking?.hours || {};
+            const dayNamesFull = ['Nedelja', 'Ponedeljek', 'Torek', 'Sreda', 'Četrtek', 'Petek', 'Sobota'];
 
             const hoursTitleEl = document.getElementById('businessHoursTitle');
             const hoursSubtitleEl = document.getElementById('businessHoursSubtitle');
             const hoursLabelEl = document.getElementById('businessHoursLabel');
             const daysLabelEl = document.getElementById('workingDaysLabel');
-            const hoursValueEl = document.getElementById('businessHoursValue');
-            const daysValueEl = document.getElementById('workingDaysValue');
+            const tableBody = document.getElementById('businessHoursTableBody');
 
             if (hoursTitleEl) hoursTitleEl.innerText = hoursTitle;
             if (hoursSubtitleEl) hoursSubtitleEl.innerText = hoursSubtitle;
             if (hoursLabelEl) hoursLabelEl.innerText = hoursLabel;
             if (daysLabelEl) daysLabelEl.innerText = daysLabel;
-            if (hoursValueEl) hoursValueEl.innerText = hoursValue;
-            if (daysValueEl) daysValueEl.innerText = daysValue;
+
+            if (tableBody) {
+                tableBody.innerHTML = '';
+                for (let i = 1; i <= 6; i++) {
+                    const isWorking = workingDays[i] || !daysClosed.includes(i);
+                    const dayHours = perDayHours[i] || {};
+                    const start = (dayHours.start ?? businessHours.start) ?? 9;
+                    const end = (dayHours.end ?? businessHours.end) ?? 19;
+                    const timeText = isWorking ? `${start}:00 - ${end}:00` : 'Zaprto';
+                    const row = document.createElement('div');
+                    row.className = 'bh-row';
+                    row.innerHTML = `
+                        <div class="bh-cell">${dayNamesFull[i]}</div>
+                        <div class="bh-cell">${timeText}</div>
+                    `;
+                    tableBody.appendChild(row);
+                }
+                const sundayIndex = 0;
+                const isSundayWorking = workingDays[sundayIndex] || !daysClosed.includes(sundayIndex);
+                const sundayHours = perDayHours[sundayIndex] || {};
+                const sundayStart = (sundayHours.start ?? businessHours.start) ?? 9;
+                const sundayEnd = (sundayHours.end ?? businessHours.end) ?? 19;
+                const sundayText = isSundayWorking ? `${sundayStart}:00 - ${sundayEnd}:00` : 'Zaprto';
+                const sundayRow = document.createElement('div');
+                sundayRow.className = 'bh-row';
+                sundayRow.innerHTML = `
+                    <div class="bh-cell">${dayNamesFull[sundayIndex]}</div>
+                    <div class="bh-cell">${sundayText}</div>
+                `;
+                tableBody.appendChild(sundayRow);
+            }
         }
         
         async function initSite() {
