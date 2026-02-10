@@ -231,7 +231,7 @@ const SITE_CONFIG = {
     // Appointments storage (managed by admin)
     appointments: [],
     businessHoursSection: {
-        title: "Delovni Čas in Delovni Dnevi",
+        title: "Urnik dela", // Title for the business hours section (editable in admin)
         subtitle: "Nastavi svoje delovne dneve in ure",
         hoursLabel: "Delovni čas",
         daysLabel: "Delovni dnevi"

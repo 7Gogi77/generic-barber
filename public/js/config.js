@@ -56,7 +56,7 @@ const SITE_CONFIG = {
     admin: { username: "admin", password: "admin123", maxAttempts: 3, lockoutDuration: 60000, enabled: true },
     appointments: [],
     businessHoursSection: {
-        title: "Delovni Čas in Delovni Dnevi",
+        title: "Urnik dela", // Title for the business hours section (editable in admin)
         subtitle: "Nastavi svoje delovne dneve in ure",
         hoursLabel: "Delovni čas",
         daysLabel: "Delovni dnevi"
