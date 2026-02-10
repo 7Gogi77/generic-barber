@@ -1082,8 +1082,13 @@
             root.style.setProperty('--accent-light', `${primary}15`);
             
             // Background colors
-            const bgPrimary = t.dark || '#0A0A0A';
-            const bgSecondary = t.card || '#141414';
+            const mode = t.mode || '';
+            const bgPrimary = mode === 'light'
+                ? '#FFFFFF'
+                : (mode === 'dark' ? '#0A0A0A' : (t.dark || '#0A0A0A'));
+            const bgSecondary = mode === 'light'
+                ? '#F2F2F7'
+                : (mode === 'dark' ? '#141414' : (t.card || '#141414'));
             const lightTheme = isLight(bgPrimary);
             root.style.setProperty('--bg-primary', bgPrimary);
             root.style.setProperty('--bg-secondary', bgSecondary);

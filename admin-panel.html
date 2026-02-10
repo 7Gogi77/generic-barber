@@ -920,23 +920,31 @@
                     </div>
                 </div>
 
-                <!-- QUICK COLOR PRESETS -->
+                <!-- SIMPLE THEME SETTINGS -->
                 <div class="admin-section">
-                    <div class="section-title">Hitre Barvne Teme</div>
-                    <p style="font-size: 12px; color: #666; margin-bottom: 12px;">En klik nastavi celotno barvno shemo. Pozneje lahko ročno prilagodite.</p>
-                    <div style="display:flex; flex-wrap: wrap; gap: 10px;">
-                        <button class="save-btn" onclick="applyThemePreset('beauty-pink')" style="background:#E91E63;">Beauty (bela/roza)</button>
-                        <button class="save-btn" onclick="applyThemePreset('clean-white')" style="background:#111;">Clean White</button>
-                        <button class="save-btn" onclick="applyThemePreset('dark-elegant')" style="background:#1f1f1f;">Dark Elegant</button>
+                    <div class="section-title">Tema (preprosto)</div>
+                    <p style="font-size: 12px; color: #666; margin-bottom: 12px;">Izberi svetlo/temno temo in glavno barvo. Ostale barve se nastavijo samodejno.</p>
+                    <div class="form-row">
+                        <div class="form-group-admin">
+                            <label class="form-label-admin">Tema</label>
+                            <select id="themeMode" class="form-input-admin">
+                                <option value="dark">Temna</option>
+                                <option value="light">Svetla</option>
+                            </select>
+                        </div>
+                        <div class="form-group-admin">
+                            <label class="form-label-admin">Glavna Barva</label>
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                <input id="theme-primary" type="color" class="form-input-admin" style="flex: 0.3; height: 40px; cursor: pointer;">
+                                <input id="theme-primary-text" type="text" class="form-input-admin" placeholder="#E91E63" style="flex: 0.7;">
+                            </div>
+                        </div>
                     </div>
-                    <div style="margin-top: 12px; display:flex; flex-wrap: wrap; gap: 10px; align-items:center;">
-                        <button class="save-btn" onclick="applyPrimaryToTheme()" style="background:#6c757d;">Uskladi z glavno barvo</button>
-                        <span style="font-size: 12px; color:#666;">Uporabi trenutno primarno barvo na gumbe, navigacijo in gradient.</span>
-                    </div>
+                    <button class="save-btn" onclick="saveTheme()">Shrani temo</button>
                 </div>
 
                 <!-- COLORS SECTION -->
-                <div class="admin-section">
+                <div class="admin-section" style="display:none;">
                     <div class="section-title">Barvna Shema</div>
                     <p style="font-size: 12px; color: #666; margin-bottom: 15px;">Glavne barve za temo spletne strani</p>
                     <div class="form-row">
@@ -984,7 +992,7 @@
                 </div>
 
                 <!-- TEXT COLORS SECTION -->
-                <div class="admin-section">
+                <div class="admin-section" style="display:none;">
                     <div class="section-title">Barve Besedila</div>
                     <div class="form-row">
                         <div class="form-group-admin">
@@ -1006,7 +1014,7 @@
                 </div>
 
                 <!-- BUTTON & NAV COLORS SECTION -->
-                <div class="admin-section">
+                <div class="admin-section" style="display:none;">
                     <div class="section-title">Gumbi in Navigacija</div>
                     <div class="form-row">
                         <div class="form-group-admin">
@@ -1044,7 +1052,7 @@
                 </div>
 
                 <!-- FOOTER COLORS SECTION -->
-                <div class="admin-section">
+                <div class="admin-section" style="display:none;">
                     <div class="section-title">Noga Spletne Strani</div>
                     <div class="form-row">
                         <div class="form-group-admin">
@@ -1066,7 +1074,7 @@
                 </div>
 
                 <!-- SCROLLBAR COLORS SECTION -->
-                <div class="admin-section">
+                <div class="admin-section" style="display:none;">
                     <div class="section-title">Drsnik (Scrollbar)</div>
                     <p style="font-size: 12px; color: #666; margin-bottom: 15px;">Barve za drsnik na strani</p>
                     <div class="form-row">
@@ -2283,6 +2291,12 @@
 
             // Colors
             if (SITE_CONFIG.theme) {
+                const modeEl = document.getElementById('themeMode');
+                if (modeEl) {
+                    const mode = SITE_CONFIG.theme.mode
+                        || (SITE_CONFIG.theme.dark === '#FFFFFF' ? 'light' : 'dark');
+                    modeEl.value = mode;
+                }
                 document.getElementById('theme-primary').value = SITE_CONFIG.theme.primary || '#007AFF';
                 document.getElementById('theme-primary-text').value = SITE_CONFIG.theme.primary || '#007AFF';
                 document.getElementById('theme-dark').value = SITE_CONFIG.theme.dark || '#0A0A0A';
@@ -3129,20 +3143,49 @@
         function saveTheme() {
             // Get values from color inputs or text inputs
             const primaryColor = document.getElementById('theme-primary-text').value || document.getElementById('theme-primary').value;
-            const darkColor = document.getElementById('theme-dark-text').value || document.getElementById('theme-dark').value;
-            const cardColor = document.getElementById('theme-card-text').value || document.getElementById('theme-card').value;
-            const gradientStart = document.getElementById('theme-gradient-start-text').value || document.getElementById('theme-gradient-start').value;
-            const gradientEnd = document.getElementById('theme-gradient-end-text').value || document.getElementById('theme-gradient-end').value;
+            const modeEl = document.getElementById('themeMode');
+            const mode = modeEl ? modeEl.value : 'dark';
+            const gradientStart = lightenColor(primaryColor, 60);
+            const gradientEnd = primaryColor;
 
             // Ensure theme object exists
             if (!SITE_CONFIG.theme) SITE_CONFIG.theme = {};
 
             // Update config
             SITE_CONFIG.theme.primary = primaryColor;
-            SITE_CONFIG.theme.dark = darkColor;
-            SITE_CONFIG.theme.card = cardColor;
+            SITE_CONFIG.theme.mode = mode;
             SITE_CONFIG.theme.gradientStart = gradientStart;
             SITE_CONFIG.theme.gradientEnd = gradientEnd;
+            SITE_CONFIG.theme.buttonColor = primaryColor;
+            SITE_CONFIG.theme.navHoverColor = primaryColor;
+            SITE_CONFIG.theme.scrollbarThumb = primaryColor;
+            SITE_CONFIG.theme.textOnHero = '#FFFFFF';
+
+            if (mode === 'light') {
+                SITE_CONFIG.theme.dark = '#FFFFFF';
+                SITE_CONFIG.theme.card = '#F2F2F7';
+                SITE_CONFIG.theme.textPrimary = '#1C1C1E';
+                SITE_CONFIG.theme.textSecondary = '#6E6E73';
+                SITE_CONFIG.theme.navTextColor = '#6E6E73';
+                SITE_CONFIG.theme.navTextColorTop = '#FFFFFF';
+                SITE_CONFIG.theme.navTextColorScrolled = '#1C1C1E';
+                SITE_CONFIG.theme.footerBgColor = '#1C1C1E';
+                SITE_CONFIG.theme.footerTextColor = '#F2F2F7';
+                SITE_CONFIG.theme.buttonTextColor = '#FFFFFF';
+                SITE_CONFIG.theme.scrollbarTrack = '#F2F2F7';
+            } else {
+                SITE_CONFIG.theme.dark = '#0A0A0A';
+                SITE_CONFIG.theme.card = '#141414';
+                SITE_CONFIG.theme.textPrimary = '#FFFFFF';
+                SITE_CONFIG.theme.textSecondary = '#8E8E93';
+                SITE_CONFIG.theme.navTextColor = '#8E8E93';
+                SITE_CONFIG.theme.navTextColorTop = '#FFFFFF';
+                SITE_CONFIG.theme.navTextColorScrolled = '#8E8E93';
+                SITE_CONFIG.theme.footerBgColor = '#0A0A0A';
+                SITE_CONFIG.theme.footerTextColor = '#8E8E93';
+                SITE_CONFIG.theme.buttonTextColor = '#FFFFFF';
+                SITE_CONFIG.theme.scrollbarTrack = '#1C1C1E';
+            }
 
             // Apply colors to page immediately
             applyThemeToPage();
