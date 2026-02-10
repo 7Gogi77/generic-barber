@@ -1082,7 +1082,7 @@
                 <!-- TEMPLATE PRESETS -->
                 <div class="admin-section">
                     <div class="section-title">🎨 Predloge (Template)</div>
-                    <p style="font-size: 13px; color: var(--ios-text-secondary, #8E8E93); margin-bottom: 12px;">Izberi predlogo in hitro nastavi vsebino. To bo prepisalo trenutno vsebino.</p>
+                    <p style="font-size: 13px; color: var(--ios-text-secondary, #8E8E93); margin-bottom: 12px;">Izberi predlogo in hitro nastavi vsebino. Barve ostanejo enake.</p>
                     <div class="form-row">
                         <div class="form-group-admin">
                             <label class="form-label-admin">Izberi predlogo</label>
@@ -1330,7 +1330,7 @@
                     <div class="section-title"><i class="bi bi-pin-angle"></i> Naslovi Razdelkov</div>
                     <div class="form-row">
                         <div class="form-group-admin">
-                            <label class="form-label-admin">Naslov Brivcev ("The Craftsmen")</label>
+                            <label class="form-label-admin">Naslov Ekipe ("The Craftsmen")</label>
                             <input id="barbersSectionTitle" type="text" class="form-input-admin" placeholder="The Craftsmen">
                         </div>
                         <div class="form-group-admin">
@@ -1369,7 +1369,7 @@
 
             <!-- ===== TAB 3: STORITVE (SERVICES & BARBERS) ===== -->
             <div id="storitve" class="tab-content">
-                <h2 style="margin: 0 0 20px 0; color: var(--ios-text-primary, #000); font-size: 22px; font-weight: 700; border-bottom: none; padding-bottom: 0;">Storitve in Brivci</h2>
+                <h2 style="margin: 0 0 20px 0; color: var(--ios-text-primary, #000); font-size: 22px; font-weight: 700; border-bottom: none; padding-bottom: 0;">Storitve in Ekipa</h2>
 
                 <!-- SERVICES SECTION -->
                 <div class="admin-section">
@@ -1385,13 +1385,13 @@
 
                 <!-- BARBERS SECTION -->
                 <div class="admin-section">
-                    <div class="section-title">Brivci in Profili</div>
-                    <p style="font-size: 13px; color: var(--ios-text-secondary, #8E8E93); margin-bottom: 16px;">Upravljaj s profili brivcev</p>
+                    <div class="section-title">Ekipa in Profili</div>
+                    <p style="font-size: 13px; color: var(--ios-text-secondary, #8E8E93); margin-bottom: 16px;">Upravljaj s profili ekipe</p>
                     <div id="barbersContainer"></div>
                     <div class="form-row" style="gap: 10px;">
-                        <button class="save-btn" onclick="addBarber()" style="background: var(--ios-green, #34C759); flex: 1;">+ Dodaj Brivca</button>
-                        <button class="save-btn" onclick="removeBarber()" style="background: var(--ios-red, #FF3B30); flex: 1;">- Odstrani Brivca</button>
-                        <button class="save-btn" onclick="saveBarbers()" style="flex: 2;">Shrani Brivce</button>
+                        <button class="save-btn" onclick="addBarber()" style="background: var(--ios-green, #34C759); flex: 1;">+ Dodaj Člana</button>
+                        <button class="save-btn" onclick="removeBarber()" style="background: var(--ios-red, #FF3B30); flex: 1;">- Odstrani Člana</button>
+                        <button class="save-btn" onclick="saveBarbers()" style="flex: 2;">Shrani Ekipo</button>
                     </div>
                 </div>
 
@@ -1780,9 +1780,9 @@
                                 </select>
                             </div>
                             <div class="form-group-admin">
-                                <label class="form-label-admin">Brivec</label>
+                                    <label class="form-label-admin">Član ekipe</label>
                                 <select id="newCustBarber" class="form-input-admin" style="background: white;">
-                                    <option value="">Izberi Brivca</option>
+                                        <option value="">Izberi člana</option>
                                 </select>
                             </div>
                         </div>
@@ -1941,6 +1941,19 @@
         const TEMPLATE_PRESETS = {
             barber: {
                 shopName: 'Gentlemen’s Barber',
+                theme: {
+                    primary: '#CDAA54',
+                    gradientStart: '#CDAA54',
+                    gradientEnd: '#8C6B2B',
+                    textPrimary: '#FFFFFF',
+                    textSecondary: '#C7C7CC',
+                    buttonColor: '#CDAA54',
+                    buttonTextColor: '#0A0A0A',
+                    navTextColor: '#C7C7CC',
+                    navHoverColor: '#CDAA54',
+                    footerBgColor: '#0A0A0A',
+                    footerTextColor: '#8E8E93'
+                },
                 hero: {
                     subtitle: 'TRADICIJA & STIL',
                     title: 'Klasičen barber salon',
@@ -1963,7 +1976,7 @@
                     ]
                 },
                 barbersSection: {
-                    title: 'Naši brivci',
+                    title: 'Naša ekipa',
                     list: [
                         { name: 'Marko Novak', role: 'Master Barber', img: 'https://images.unsplash.com/photo-1519345182560-3f2917c472ef?q=80&w=1000' },
                         { name: 'Luka Šter', role: 'Beard Expert', img: 'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?q=80&w=1000' },
@@ -1995,6 +2008,19 @@
             },
             cardetailing: {
                 shopName: 'Auto Detail Studio',
+                theme: {
+                    primary: '#1E88E5',
+                    gradientStart: '#1E88E5',
+                    gradientEnd: '#0D47A1',
+                    textPrimary: '#FFFFFF',
+                    textSecondary: '#B0BEC5',
+                    buttonColor: '#1E88E5',
+                    buttonTextColor: '#FFFFFF',
+                    navTextColor: '#B0BEC5',
+                    navHoverColor: '#1E88E5',
+                    footerBgColor: '#0A0A0A',
+                    footerTextColor: '#8E8E93'
+                },
                 hero: {
                     subtitle: 'PODROBNOSTI SO VSE',
                     title: 'Premium Car Detailing',
@@ -2048,6 +2074,19 @@
             },
             beautysalon: {
                 shopName: 'Beauty & Glow',
+                theme: {
+                    primary: '#E91E63',
+                    gradientStart: '#F06292',
+                    gradientEnd: '#E91E63',
+                    textPrimary: '#FFFFFF',
+                    textSecondary: '#F8BBD0',
+                    buttonColor: '#E91E63',
+                    buttonTextColor: '#FFFFFF',
+                    navTextColor: '#F8BBD0',
+                    navHoverColor: '#E91E63',
+                    footerBgColor: '#2B0A1A',
+                    footerTextColor: '#F8BBD0'
+                },
                 hero: {
                     subtitle: 'NEGA • LEPOTA • SIJAJ',
                     title: 'Beauty Salon',
@@ -2106,7 +2145,7 @@
             const key = select ? select.value : 'barber';
             const preset = TEMPLATE_PRESETS[key];
             if (!preset) return;
-            const ok = confirm('To bo prepisalo trenutno vsebino (naslovi, storitve, galerija, itd.). Nadaljujem?');
+            const ok = confirm('To bo prepisalo trenutno vsebino in barve (naslovi, storitve, galerija, itd.). Nadaljujem?');
             if (!ok) return;
 
             SITE_CONFIG.shopName = preset.shopName;
@@ -2118,6 +2157,10 @@
             SITE_CONFIG.testimonial = { ...preset.testimonial };
             SITE_CONFIG.ctaSection = { ...SITE_CONFIG.ctaSection, ...preset.ctaSection };
             SITE_CONFIG.booking = { ...SITE_CONFIG.booking, ...preset.booking };
+            if (preset.theme) {
+                SITE_CONFIG.theme = { ...SITE_CONFIG.theme, ...preset.theme };
+                applyThemeToPage();
+            }
 
             saveConfig();
             loadAdminForms();
@@ -2336,12 +2379,12 @@
                 container.innerHTML += `
                     <div class="service-item">
                         <div class="form-row">
-                            <input type="text" class="form-input-admin barber-name-${idx}" value="${barber.name}" placeholder="Ime brivca">
+                            <input type="text" class="form-input-admin barber-name-${idx}" value="${barber.name}" placeholder="Ime člana">
                             <input type="text" class="form-input-admin barber-role-${idx}" value="${barber.role}" placeholder="Vloga">
                         </div>
                         <div class="form-row full">
                             <div style="flex:1;">
-                                <label class="form-label-admin" style="font-size:11px; margin-bottom:5px;">Slika brivca (datoteka):</label>
+                                <label class="form-label-admin" style="font-size:11px; margin-bottom:5px;">Slika člana (datoteka):</label>
                                 <input type="file" accept="image/*" class="form-input-admin barber-img-input-${idx}" placeholder="Izberi sliko" style="margin-bottom:5px;">
                                 <button class="save-btn" onclick="uploadBarberImage(${idx})" style="font-size:11px; padding:5px 10px; background-color:#0066cc;">Naloži</button>
                             </div>
@@ -2393,12 +2436,12 @@
         // Add new barber
         function addBarber() {
             SITE_CONFIG.barbersSection.list.push({
-                name: 'Nov Brivec',
-                role: 'Brivec',
+                name: 'Nov član',
+                role: 'Strokovnjak',
                 img: 'https://via.placeholder.com/300'
             });
             loadBarbers();
-            showNotification('Brivec dodan', 'success');
+            showNotification('Član ekipe dodan', 'success');
         }
 
         // Remove last barber
@@ -2406,9 +2449,9 @@
             if (SITE_CONFIG.barbersSection.list.length > 1) {
                 SITE_CONFIG.barbersSection.list.pop();
                 loadBarbers();
-                showNotification('Brivec odstranjen', 'success');
+                showNotification('Član ekipe odstranjen', 'success');
             } else {
-                showNotification('Morali ste imeti vsaj enega brivca', 'error');
+                showNotification('Morali ste imeti vsaj enega člana ekipe', 'error');
             }
         }
 
@@ -3461,7 +3504,7 @@
             const fileInput = document.querySelector('.barber-img-input-' + idx);
             const file = fileInput.files[0];
             if (!file) {
-                showNotification('Izberi sliko za brivca', 'error');
+                showNotification('Izberi sliko za člana ekipe', 'error');
                 return;
             }
             
@@ -3473,7 +3516,7 @@
                 preview.src = e.target.result;
                 preview.style.display = 'block';
                 saveConfig();
-                showNotification(`Slika brivca "${SITE_CONFIG.barbersSection.list[idx].name}" naložena in shranjena`, 'success');
+                showNotification(`Slika člana ekipe "${SITE_CONFIG.barbersSection.list[idx].name}" naložena in shranjena`, 'success');
             };
             reader.readAsDataURL(file);
         }
@@ -3497,7 +3540,7 @@
         function saveBarberImageUrl(idx) {
             const url = document.querySelector('.barber-img-url-' + idx).value.trim();
             if (!url) {
-                showNotification('Vnesi URL slike za brivca', 'error');
+                showNotification('Vnesi URL slike za člana ekipe', 'error');
                 return;
             }
             SITE_CONFIG.barbersSection.list[idx].img = url;
@@ -3506,7 +3549,7 @@
             preview.src = url;
             preview.style.display = 'block';
             saveConfig();
-            showNotification(`URL slike brivca "${SITE_CONFIG.barbersSection.list[idx].name}" shranjen`, 'success');
+            showNotification(`URL slike člana ekipe "${SITE_CONFIG.barbersSection.list[idx].name}" shranjen`, 'success');
         }
 
         // Add gallery image from URL
@@ -3810,7 +3853,7 @@
                 email,
                 phone,
                 service,
-                barber: barber || 'Izbran brivec',
+                barber: barber || 'Izbran član',
                 date,
                 time,
                 price,
