@@ -678,11 +678,7 @@
         
         <form class="login-form" onsubmit="handleLogin(event)">
             <div class="form-group">
-                <label class="form-label">Uporabniško Ime</label>
-                <input id="adminName" type="text" class="form-input" placeholder="Vnesi ime" required>
-            </div>
-            <div class="form-group">
-                <label class="form-label">Geslo</label>
+                <label class="form-label">Geslo (če prvič, vnesite novo geslo)</label>
                 <input id="adminPassword" type="password" class="form-input" placeholder="Vnesi geslo" required>
             </div>
             <button type="submit" class="login-btn">Prijava</button>
@@ -695,10 +691,12 @@
         <div class="admin-container">
             <div class="admin-header">
                 <h1>Administracijska Plošča</h1>
-                <div style="display:flex; gap:10px;">
+                <div style="display:flex; gap:10px; align-items:center;">
+                    <button id="saveAllBtn" class="save-btn" title="Shrani vse nastavitve" onclick="saveAll()">Shrani vse</button>
                     <button class="logout-btn" onclick="window.location.href='index.html'">Nazaj na Stran</button>
                     <button class="logout-btn" onclick="handleLogout()">Odjava</button>
                 </div>
+                <div id="adminQuickStart" style="margin-top:10px;color:#d1d5db;font-size:13px">Koraki: 1) Če prvič, ustvarite geslo spodaj → 2) Prijavite se → 3) Uredite vsebine → 4) Kliknite 'Shrani vse'</div>
             </div>
 
             <!-- TAB NAVIGATION -->
@@ -1655,35 +1653,94 @@
             event.target.classList.add('active');
         }
 
-        // Default admin credentials
-        const ADMIN_NAME = "admin";
-        const ADMIN_PASSWORD = "admin123";
+        // Simple, user-friendly local password (for non-technical users)
+        // Note: This stores a password hash in localStorage to avoid hard-coding
+        // a password in the HTML. It's convenient but not a replacement for
+        // server-side authentication. See README for secure setup.
 
-        // Load configuration from localStorage (defined later with schedule loading)
+        async function hashPassword(password) {
+            const enc = new TextEncoder();
+            const data = enc.encode(password);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
 
-        // Handle login
-        function handleLogin(e) {
+        function getStoredPasswordHash() {
+            return localStorage.getItem('admin_password_hash');
+        }
+
+        async function setStoredPassword(password) {
+            const h = await hashPassword(password);
+            localStorage.setItem('admin_password_hash', h);
+        }
+
+        async function verifyPassword(password) {
+            const stored = getStoredPasswordHash();
+            if (!stored) return false;
+            const h = await hashPassword(password);
+            return h === stored;
+        }
+
+        // Handle login: if no password exists, create one (first-time setup)
+        async function handleLogin(e) {
             e.preventDefault();
-            const name = document.getElementById('adminName').value;
             const password = document.getElementById('adminPassword').value;
             const errorEl = document.getElementById('loginError');
+            const stored = getStoredPasswordHash();
 
-            if (name === ADMIN_NAME && password === ADMIN_PASSWORD) {
+            if (!password) {
+                errorEl.textContent = 'Prosimo vnesite geslo.';
+                errorEl.style.display = 'block';
+                return;
+            }
+
+            if (!stored) {
+                // First-time: create password
+                await setStoredPassword(password);
+                sessionStorage.setItem('admin_logged_in', 'true');
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('adminPanel').classList.add('active');
+                loadAdminForms();
+                errorEl.style.display = 'none';
+                alert('Geslo ustvarjeno. Prosimo ga shranite varno.');
+                return;
+            }
+
+            if (await verifyPassword(password)) {
                 sessionStorage.setItem('admin_logged_in', 'true');
                 document.getElementById('loginScreen').style.display = 'none';
                 document.getElementById('adminPanel').classList.add('active');
                 loadAdminForms();
                 errorEl.style.display = 'none';
             } else {
-                errorEl.textContent = 'Napačno uporabniško ime ali geslo';
+                errorEl.textContent = 'Napačno geslo';
                 errorEl.style.display = 'block';
             }
         }
 
-        // Handle logout
+        // Logout clears session only
         function handleLogout() {
             sessionStorage.removeItem('admin_logged_in');
             location.reload();
+        }
+
+        // Save all helper for non-technical users — calls known save functions if present
+        function saveAll() {
+            try {
+                if (typeof saveBookingPageContent === 'function') saveBookingPageContent();
+                if (typeof saveBooking === 'function') saveBooking();
+                if (typeof saveSiteConfig === 'function') saveSiteConfig();
+                // Provide immediate feedback
+                const el = document.getElementById('adminQuickStart');
+                if (el) {
+                    el.textContent = 'Shranjeno — preverite konzolo za napake, če obstajajo.';
+                    setTimeout(() => { el.textContent = 'Koraki: 1) Če prvič, ustvarite geslo spodaj → 2) Prijavite se → 3) Uredite vsebine → 4) Kliknite "Shrani vse"'; }, 3000);
+                }
+            } catch (err) {
+                console.error('SaveAll failed', err);
+                alert('Prišlo je do napake pri shranjevanju. Preverite konzolo.');
+            }
         }
 
         // Load forms with current data
