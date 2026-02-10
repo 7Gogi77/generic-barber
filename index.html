@@ -231,6 +231,7 @@
         .nav-logo img { max-height: 40px; width: auto; }
         
         #nav-links-container {
+            display: flex;
             color: var(--nav-text-color-top);
             align-items: center;
             gap: 32px;
@@ -238,17 +239,17 @@
         
         #nav-links-container a {
             font-size: 0.8rem;
-
-        #main-nav.scrolled #nav-links-container a {
-            color: var(--nav-text-color-scrolled);
-        }
             font-weight: 500;
-            color: var(--nav-text-color);
+            color: var(--nav-text-color-top);
             text-decoration: none;
             letter-spacing: 0.05em;
             text-transform: uppercase;
             transition: color var(--transition-fast);
             position: relative;
+        }
+
+        #main-nav.scrolled #nav-links-container a {
+            color: var(--nav-text-color-scrolled);
         }
         
         #nav-links-container a::after {
@@ -659,6 +660,13 @@
             background: var(--bg-primary);
             padding: 80px 0;
         }
+
+        .gallery-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .gallery-header h2 { color: var(--accent); }
         
         #gallery-list {
             display: grid;
@@ -815,7 +823,7 @@
             font-family: 'Playfair Display', serif;
             font-size: 1.25rem;
             font-weight: 600;
-            color: var(--text-primary);
+            color: var(--footer-text-color);
         }
         
         .footer-links {
@@ -960,6 +968,9 @@
     <!-- Gallery Section -->
     <section id="gallery" class="reveal">
         <div class="container">
+            <div class="gallery-header">
+                <h2 class="display-md" id="gallery-title">Galerija</h2>
+            </div>
             <div id="gallery-list"></div>
         </div>
     </section>
@@ -1234,6 +1245,10 @@
             });
             
             // Gallery
+            const galleryTitle = document.getElementById('gallery-title');
+            if (galleryTitle) {
+                galleryTitle.innerText = SITE_CONFIG.galleryTitle || 'Galerija';
+            }
             const galleryList = document.getElementById('gallery-list');
             galleryList.innerHTML = '';
             SITE_CONFIG.gallery.forEach(img => {

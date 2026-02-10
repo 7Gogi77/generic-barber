@@ -1956,6 +1956,14 @@
         const TEMPLATE_PRESETS = {
             barber: {
                 shopName: 'Gentlemen’s Barber',
+                navLinks: [
+                    { name: 'Domov', link: '#home' },
+                    { name: 'O nas', link: '#about' },
+                    { name: 'Storitve', link: '#services' },
+                    { name: 'Ekipa', link: '#barbers' },
+                    { name: 'Galerija', link: '#gallery' }
+                ],
+                galleryTitle: 'Galerija',
                 theme: {
                     primary: '#CDAA54',
                     gradientStart: '#CDAA54',
@@ -1965,9 +1973,12 @@
                     buttonColor: '#CDAA54',
                     buttonTextColor: '#0A0A0A',
                     navTextColor: '#C7C7CC',
+                    navTextColorTop: '#FFFFFF',
+                    navTextColorScrolled: '#C7C7CC',
                     navHoverColor: '#CDAA54',
                     footerBgColor: '#0A0A0A',
-                    footerTextColor: '#8E8E93'
+                    footerTextColor: '#8E8E93',
+                    textOnHero: '#FFFFFF'
                 },
                 hero: {
                     subtitle: 'TRADICIJA & STIL',
@@ -2023,6 +2034,14 @@
             },
             cardetailing: {
                 shopName: 'Auto Detail Studio',
+                navLinks: [
+                    { name: 'Domov', link: '#home' },
+                    { name: 'O nas', link: '#about' },
+                    { name: 'Storitve', link: '#services' },
+                    { name: 'Ekipa', link: '#barbers' },
+                    { name: 'Galerija', link: '#gallery' }
+                ],
+                galleryTitle: 'Galerija',
                 theme: {
                     primary: '#1E88E5',
                     gradientStart: '#1E88E5',
@@ -2032,9 +2051,12 @@
                     buttonColor: '#1E88E5',
                     buttonTextColor: '#FFFFFF',
                     navTextColor: '#B0BEC5',
+                    navTextColorTop: '#FFFFFF',
+                    navTextColorScrolled: '#B0BEC5',
                     navHoverColor: '#1E88E5',
                     footerBgColor: '#0A0A0A',
-                    footerTextColor: '#8E8E93'
+                    footerTextColor: '#8E8E93',
+                    textOnHero: '#FFFFFF'
                 },
                 hero: {
                     subtitle: 'PODROBNOSTI SO VSE',
@@ -2089,6 +2111,14 @@
             },
             beautysalon: {
                 shopName: 'Beauty & Glow',
+                navLinks: [
+                    { name: 'Domov', link: '#home' },
+                    { name: 'O nas', link: '#about' },
+                    { name: 'Storitve', link: '#services' },
+                    { name: 'Ekipa', link: '#barbers' },
+                    { name: 'Galerija', link: '#gallery' }
+                ],
+                galleryTitle: 'Galerija',
                 theme: {
                     primary: '#E91E63',
                     dark: '#FFFFFF',
@@ -2100,9 +2130,12 @@
                     buttonColor: '#E91E63',
                     buttonTextColor: '#FFFFFF',
                     navTextColor: '#6E6E73',
+                    navTextColorTop: '#FFFFFF',
+                    navTextColorScrolled: '#1C1C1E',
                     navHoverColor: '#E91E63',
                     footerBgColor: '#2B0A1A',
-                    footerTextColor: '#F8BBD0'
+                    footerTextColor: '#F8BBD0',
+                    textOnHero: '#FFFFFF'
                 },
                 hero: {
                     subtitle: 'NEGA • LEPOTA • SIJAJ',
@@ -2166,6 +2199,12 @@
             if (!ok) return;
 
             SITE_CONFIG.shopName = preset.shopName;
+            if (preset.navLinks) {
+                SITE_CONFIG.navLinks = preset.navLinks.map(l => ({ ...l }));
+            }
+            if (preset.galleryTitle) {
+                SITE_CONFIG.galleryTitle = preset.galleryTitle;
+            }
             SITE_CONFIG.hero = { ...SITE_CONFIG.hero, ...preset.hero };
             SITE_CONFIG.ourStory = { ...SITE_CONFIG.ourStory, ...preset.ourStory };
             SITE_CONFIG.servicesSection = { ...SITE_CONFIG.servicesSection, ...preset.servicesSection };
@@ -3172,11 +3211,14 @@
                     buttonColor: '#E91E63',
                     buttonTextColor: '#FFFFFF',
                     navTextColor: '#6E6E73',
+                    navTextColorTop: '#FFFFFF',
+                    navTextColorScrolled: '#1C1C1E',
                     navHoverColor: '#E91E63',
                     footerBgColor: '#2B0A1A',
                     footerTextColor: '#F8BBD0',
                     scrollbarThumb: '#E91E63',
-                    scrollbarTrack: '#F2F2F7'
+                    scrollbarTrack: '#F2F2F7',
+                    textOnHero: '#FFFFFF'
                 },
                 'clean-white': {
                     primary: '#111111',
