@@ -1903,14 +1903,21 @@
             if (!checkboxContainer || !priceInput) return;
             const checked = Array.from(checkboxContainer.querySelectorAll('input[type=checkbox]:checked')).map(i => i.value);
             let total = 0;
+            const parsePrice = (value) => {
+                if (value == null) return 0;
+                if (typeof value === 'number') return value;
+                const cleaned = String(value).replace(/[^0-9.,-]/g, '').replace(',', '.');
+                const parsed = Number(cleaned);
+                return Number.isFinite(parsed) ? parsed : 0;
+            };
             if (window.SITE_CONFIG && window.SITE_CONFIG.servicesSection && Array.isArray(window.SITE_CONFIG.servicesSection.items)) {
                 checked.forEach(name => {
                     const svc = window.SITE_CONFIG.servicesSection.items.find(s => s.name === name);
-                    if (svc && typeof svc.price === 'number') total += svc.price;
-                    else if (svc && svc.price) total += Number(svc.price) || 0;
+                    if (svc) total += parsePrice(svc.price);
                 });
             }
-            priceInput.value = total + '€';
+            const currency = (window.SITE_CONFIG && window.SITE_CONFIG.currency) ? window.SITE_CONFIG.currency : '€';
+            priceInput.value = total + currency;
             return total;
         }
       </script>
@@ -3200,6 +3207,8 @@
                         phone,
                         services,
                         price,
+                        isBooking: tab === 'customer',
+                        tab,
                         // mark local origin so merge can preserve these events
                         origin: 'local'
                     }
@@ -4087,7 +4096,11 @@
                 calendar.on('eventClick', (info) => {
                     debugLog('Event clicked: ' + info.event.title);
 
-                    const isBooking = info.event.extendedProps?.isBooking || (info.event.id && String(info.event.id).startsWith('apt_'));
+                    const isBooking = info.event.extendedProps?.isBooking
+                        || info.event.extendedProps?.tab === 'customer'
+                        || info.event.extendedProps?.customer
+                        || info.event.isBooking
+                        || (info.event.id && String(info.event.id).startsWith('apt_'));
                     if (isBooking) {
                         debugLog('📋 Opening booking details modal');
                         openBookingDetailsModal(info.event);
