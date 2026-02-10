@@ -1958,75 +1958,56 @@
             }
         });
 
-        // Simple, user-friendly local password (for non-technical users)
-        // Note: This stores a password hash in localStorage to avoid hard-coding
-        // a password in the HTML. It's convenient but not a replacement for
-        // server-side authentication. See README for secure setup.
-
-        async function hashPassword(password) {
-            const enc = new TextEncoder();
-            const data = enc.encode(password);
-            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-            const hashArray = Array.from(new Uint8Array(hashBuffer));
-            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-        }
-
-        function getStoredPasswordHash() {
-            return localStorage.getItem('admin_password_hash');
-        }
-
-        async function setStoredPassword(password) {
-            const h = await hashPassword(password);
-            localStorage.setItem('admin_password_hash', h);
-        }
-
-        async function verifyPassword(password) {
-            const stored = getStoredPasswordHash();
-            if (!stored) return false;
-            const h = await hashPassword(password);
-            return h === stored;
-        }
-
-        // Handle login: if no password exists, create one (first-time setup)
+        // Server-validated admin login
+        // Replaces insecure client-side password/hash fallback.
         async function handleLogin(e) {
             e.preventDefault();
-            const password = document.getElementById('adminPassword').value;
+            const password = document.getElementById('adminPassword') ? document.getElementById('adminPassword').value : '';
             const errorEl = document.getElementById('loginError');
-            const stored = getStoredPasswordHash();
 
             if (!password) {
-                errorEl.textContent = 'Prosimo vnesite geslo.';
-                errorEl.style.display = 'block';
+                if (errorEl) {
+                    errorEl.textContent = 'Prosimo vnesite geslo.';
+                    errorEl.style.display = 'block';
+                }
                 return;
             }
 
-            if (!stored) {
-                // First-time: create password
-                await setStoredPassword(password);
-                sessionStorage.setItem('admin_logged_in', 'true');
-                document.getElementById('loginScreen').style.display = 'none';
-                document.getElementById('adminPanel').classList.add('active');
-                loadAdminForms();
-                errorEl.style.display = 'none';
-                alert('Geslo ustvarjeno. Prosimo ga shranite varno.');
-                return;
-            }
+            try {
+                const res = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: 'admin', password })
+                });
 
-            if (await verifyPassword(password)) {
-                sessionStorage.setItem('admin_logged_in', 'true');
-                document.getElementById('loginScreen').style.display = 'none';
-                document.getElementById('adminPanel').classList.add('active');
-                loadAdminForms();
-                errorEl.style.display = 'none';
-            } else {
-                errorEl.textContent = 'Napačno geslo';
-                errorEl.style.display = 'block';
+                if (!res.ok) throw new Error('Unauthorized');
+                const data = await res.json();
+                if (data && data.token) {
+                    sessionStorage.setItem('admin_token', data.token);
+                    const loginScreen = document.getElementById('loginScreen');
+                    if (loginScreen) loginScreen.style.display = 'none';
+                    const panel = document.getElementById('adminPanel');
+                    if (panel) panel.classList.add('active');
+                    if (typeof loadAdminForms === 'function') loadAdminForms();
+                    if (errorEl) errorEl.style.display = 'none';
+                } else {
+                    if (errorEl) {
+                        errorEl.textContent = 'Napačno geslo';
+                        errorEl.style.display = 'block';
+                    }
+                }
+            } catch (err) {
+                if (errorEl) {
+                    errorEl.textContent = 'Napaka pri prijavi';
+                    errorEl.style.display = 'block';
+                }
+                console.error('Login error', err);
             }
         }
 
-        // Logout clears session only
+        // Logout clears stored admin token and reloads
         function handleLogout() {
-            sessionStorage.removeItem('admin_logged_in');
+            sessionStorage.removeItem('admin_token');
             location.reload();
         }
 

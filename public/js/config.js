@@ -53,7 +53,7 @@ const SITE_CONFIG = {
     ctaSection: { title: "Pripravljeni na Spremembo?", text: "Rezervirajte svoj termin danes in doživite našo profesionalno storitev.", buttonText: "Rezerviraj Zdaj" },
     footerCopy: "Vse pravice pridržane.",
     booking: { title: "Naročilo Termina", heading: "Request Appointment", buttonText: "Potrdi Termin", placeholderName: "Ime", placeholderEmail: "E-pošta", placeholderPhone: "Telefonska Številka", businessHours: { start: 9, end: 19 }, daysClosed: [0], slotDuration: 15, workingDays: { 1: true, 2: true, 3: true, 4: true, 5: true, 6: false, 0: false }, hours: {} },
-    admin: { username: "admin", password: "admin123", maxAttempts: 3, lockoutDuration: 60000, enabled: true },
+    admin: { username: "admin", maxAttempts: 3, lockoutDuration: 60000, enabled: true },
     appointments: [],
     businessHoursSection: {
         title: "Urnik dela", // Title for the business hours section (editable in admin)
