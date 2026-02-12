@@ -10,7 +10,8 @@ export default defineConfig({
       input: {
         main: resolve(__dirname, 'index.html'),
         admin: resolve(__dirname, 'admin-panel.html'),
-        poslovni: resolve(__dirname, 'poslovni-panel.3f8a1c.html')
+        poslovni: resolve(__dirname, 'poslovni-panel.3f8a1c.html'),
+        rezervacija: resolve(__dirname, 'rezervacija.html')
       }
     }
   }
