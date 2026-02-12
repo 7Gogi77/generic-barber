@@ -86,9 +86,18 @@ const AdminManager = {
             }
         }
         
+        if (window.ADMIN_ENV_ERROR && !window.ADMIN_ENV) {
+            this.showNotification(
+                'Admin environment guard not configured. Check ADMIN_* env vars.',
+                'error'
+            );
+            return false;
+        }
+
+        const credentials = await this.getAdminCredentials();
         // Hash the provided password and compare with stored hash
         const passwordHash = await this.hashPassword(password);
-        const storedHash = SITE_CONFIG.admin.passwordHash;
+        const storedHash = credentials?.passwordHash || SITE_CONFIG.admin.passwordHash;
         
         if (passwordHash === storedHash) {
             // Successful authentication
@@ -123,6 +132,23 @@ const AdminManager = {
             );
             return false;
         }
+    },
+
+    async getAdminCredentials() {
+        if (window.ADMIN_ENV) {
+            return window.ADMIN_ENV;
+        }
+
+        if (window.ADMIN_ENV_PROMISE) {
+            try {
+                const env = await window.ADMIN_ENV_PROMISE;
+                return env;
+            } catch (error) {
+                console.warn('Admin environment fetch failed', error);
+            }
+        }
+
+        return SITE_CONFIG.admin;
     },
     
     /**
