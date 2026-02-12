@@ -1989,6 +1989,32 @@
     <script src="/js/calendar-engine.js?v=2"></script>
 
     <script>
+        // Access guard: redirect if admin session is missing
+        (function guardBusinessPanelAccess() {
+            try {
+                const token = sessionStorage.getItem('admin_token');
+                if (!token) {
+                    window.location.href = 'admin-panel.html';
+                }
+            } catch (_) {
+                window.location.href = 'admin-panel.html';
+            }
+        })();
+
+        // Safe debug logger used throughout the calendar code
+        function debugLog(message, meta) {
+            if (!window.DEBUG_LOGS) return;
+            try {
+                if (typeof meta !== 'undefined') {
+                    console.log(message, meta);
+                } else {
+                    console.log(message);
+                }
+            } catch (_) {
+                // ignore logging errors
+            }
+        }
+
         // ===== GLOBAL DELETION TRACKING SYSTEM =====
         // Track deleted event IDs persistently across page reloads
         let deletedEventIds = new Set();
