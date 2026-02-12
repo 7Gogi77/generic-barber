@@ -4,9 +4,6 @@
   "private": true,
   "type": "module",
     "scripts": {
-      "generate-admin-env": "node scripts/generate-admin-env.cjs",
-      "prebuild": "npm run generate-admin-env",
-      "predev": "npm run generate-admin-env",
       "dev": "vite",
       "build": "node ./node_modules/vite/bin/vite.js build",
       "preview": "vite preview"
