@@ -8,11 +8,24 @@ function getSha256(value = '') {
   return crypto.createHash('sha256').update(value, 'utf8').digest('hex');
 }
 
-export default function handler(req, res) {
+function sendJson(res, status, payload) {
+  res.setHeader('Content-Type', 'application/json');
+  res.setHeader('Cache-Control', 'no-store, max-age=0');
+  res.statusCode = status;
+  res.end(JSON.stringify(payload));
+}
+
+function adminHandler(req, res) {
+  if (req.method !== 'GET') {
+    sendJson(res, 405, { error: 'Method not allowed' });
+    return;
+  }
+
   const { ADMIN_USERNAME, ADMIN_PASSWORD, ADMIN_SECRET } = process.env;
 
   if (!ADMIN_USERNAME || !ADMIN_PASSWORD || !ADMIN_SECRET) {
-    return res.status(403).json({ error: 'Admin environment not configured' });
+    sendJson(res, 403, { error: 'Admin environment not configured' });
+    return;
   }
 
   const payload = {
@@ -21,11 +34,8 @@ export default function handler(req, res) {
     secret: ADMIN_SECRET
   };
 
-  res.setHeader('Content-Type', 'application/json');
-  res.setHeader('Cache-Control', 'no-store, max-age=0');
-  res.status(200).json(payload);
+  sendJson(res, 200, payload);
 }
 
-export const config = {
-  maxDuration: 5
-};
+module.exports = adminHandler;
+module.exports.config = { maxDuration: 5 };
