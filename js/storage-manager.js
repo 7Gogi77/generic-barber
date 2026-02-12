@@ -1,27 +1,13 @@
 /**
- * Storage Manager - Abstraction layer with API sync
- * Uses /api/schedule (schedule.js) with localStorage fallback
+ * Storage Manager - Abstraction layer with Firebase sync
+ * Always syncs to Firebase for reliable cross-device access
  */
 
 const StorageManager = {
   /**
-   * Schedule API endpoint
+   * Firebase Database URL
    */
-  apiUrl: '/api/schedule',
-
-  /**
-   * Resolve schedule key (override via window.SCHEDULE_KEY or localStorage)
-   */
-  _getKey(defaultKey) {
-    try {
-      if (typeof window !== 'undefined' && window.SCHEDULE_KEY) return String(window.SCHEDULE_KEY);
-      const stored = localStorage.getItem('schedule_key');
-      if (stored) return stored;
-    } catch (_) {
-      // ignore
-    }
-    return defaultKey || 'default';
-  },
+  firebaseUrl: 'https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app',
 
   /**
    * Save schedule data
@@ -29,7 +15,6 @@ const StorageManager = {
    * @param {ScheduleState} data - Data to save
    */
   async save(key, data) {
-    const scheduleKey = this._getKey(key);
     // Add metadata
     data.metadata = data.metadata || {};
     data.metadata.lastModified = Date.now();
@@ -37,27 +22,28 @@ const StorageManager = {
 
     // Always save to localStorage first (fast, reliable)
     try {
-      localStorage.setItem(scheduleKey, JSON.stringify(data));
-      console.log('✓ Saved to localStorage:', scheduleKey);
+      localStorage.setItem(key, JSON.stringify(data));
+      console.log('✓ Saved to localStorage:', key);
     } catch (lsError) {
       console.warn('⚠ localStorage save failed:', lsError);
     }
 
-    // Sync to schedule API (schedule.js)
+    // Always sync to Firebase (works everywhere)
     try {
-      const response = await fetch(this.apiUrl, {
-        method: 'POST',
+      const response = await fetch(`${this.firebaseUrl}/${key}.json`, {
+        method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ key: scheduleKey, data })
+        body: JSON.stringify(data)
       });
 
       if (response.ok) {
-        console.log('✓ Saved to API:', scheduleKey);
-        return { ok: true, method: 'api' };
+        console.log('✓ Saved to Firebase:', key);
+        return { ok: true, method: 'firebase' };
+      } else {
+        throw new Error('Firebase save failed');
       }
-      throw new Error('API save failed');
-    } catch (apiError) {
-      console.warn('⚠ API save failed:', apiError);
+    } catch (fbError) {
+      console.warn('⚠ Firebase save failed:', fbError);
       // localStorage already saved, so return ok
       return { ok: true, method: 'localStorage' };
     }
@@ -68,31 +54,30 @@ const StorageManager = {
    * @param {string} key - Storage key
    */
   async load(key) {
-    const scheduleKey = this._getKey(key);
-    // Try API first (single source of truth)
+    // Try Firebase first (single source of truth)
     try {
-      const response = await fetch(`${this.apiUrl}?key=${encodeURIComponent(scheduleKey)}`);
+      const response = await fetch(`${this.firebaseUrl}/${key}.json`);
       
       if (response.ok) {
         const data = await response.json();
         
         if (data && data.events) {
-          console.log('✓ Loaded from API:', scheduleKey, '- Events:', data.events.length);
+          console.log('✓ Loaded from Firebase:', key, '- Events:', data.events.length);
           // Update localStorage cache
-          localStorage.setItem(scheduleKey, JSON.stringify(data));
+          localStorage.setItem(key, JSON.stringify(data));
           return data;
         }
       }
-    } catch (apiError) {
-      console.warn('⚠ API load failed, trying localStorage:', apiError);
+    } catch (fbError) {
+      console.warn('⚠ Firebase load failed, trying localStorage:', fbError);
     }
 
     // Fallback to localStorage
     try {
-      const item = localStorage.getItem(scheduleKey);
+      const item = localStorage.getItem(key);
       if (item) {
         const data = JSON.parse(item);
-        console.log('✓ Loaded from localStorage:', scheduleKey);
+        console.log('✓ Loaded from localStorage:', key);
         return data;
       }
     } catch (lsError) {
@@ -108,23 +93,20 @@ const StorageManager = {
    * Delete schedule data
    */
   async delete(key) {
-    const scheduleKey = this._getKey(key);
-    // Delete from API
+    // Delete from Firebase
     try {
-      await fetch(this.apiUrl, {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ key: scheduleKey })
+      await fetch(`${this.firebaseUrl}/${key}.json`, {
+        method: 'DELETE'
       });
-      console.log('✓ Deleted from API:', scheduleKey);
+      console.log('✓ Deleted from Firebase:', key);
     } catch (e) {
-      console.warn('⚠ API delete failed:', e);
+      console.warn('⚠ Firebase delete failed:', e);
     }
 
     // Delete from localStorage
     try {
-      localStorage.removeItem(scheduleKey);
-      console.log('✓ Deleted from localStorage:', scheduleKey);
+      localStorage.removeItem(key);
+      console.log('✓ Deleted from localStorage:', key);
     } catch (e) {
       console.warn('⚠ localStorage delete failed:', e);
     }
