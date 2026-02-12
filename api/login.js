@@ -26,7 +26,7 @@ function readRequestBody(req) {
   });
 }
 
-export default async function handler(req, res) {
+async function loginHandler(req, res) {
   if (req.method !== 'POST') {
     sendJson(res, 405, { error: 'Method not allowed' });
     return;
@@ -66,4 +66,5 @@ export default async function handler(req, res) {
   sendJson(res, 200, { token });
 }
 
-export const config = { maxDuration: 5 };
+module.exports = loginHandler;
+module.exports.config = { maxDuration: 5 };
