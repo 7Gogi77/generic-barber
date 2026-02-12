@@ -363,7 +363,7 @@ const CalendarEngine = {
     this.currentScheduleData = scheduleData || { events: [] };
 
     const calendar = new FullCalendar.Calendar(container, {
-      initialView: 'timeGridWeek',
+      initialView: 'dayGridMonth',
       height: '100%',
       nowIndicator: true,
       slotMinTime: '06:00:00',
@@ -376,7 +376,7 @@ const CalendarEngine = {
       headerToolbar: {
         left: 'prev,next today',
         center: 'title',
-        right: 'timeGridWeek,timeGridDay,dayGridMonth,listWeek'
+        right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
       },
       slotDuration: '00:30:00',
       slotLabelInterval: '01:00',
