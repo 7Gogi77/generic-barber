@@ -891,7 +891,30 @@
             root.style.setProperty('--accent-border', `${primary}4D`);
         }
 
-        // Handle login (server-side)
+        async function hashPassword(password) {
+            const encoder = new TextEncoder();
+            const data = encoder.encode(password);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+            return Array.from(new Uint8Array(hashBuffer))
+                .map(b => b.toString(16).padStart(2, '0'))
+                .join('');
+        }
+
+        async function getAdminCredentials() {
+            if (window.ADMIN_ENV) {
+                return window.ADMIN_ENV;
+            }
+            if (window.ADMIN_ENV_PROMISE) {
+                try {
+                    return await window.ADMIN_ENV_PROMISE;
+                } catch (error) {
+                    console.warn('Admin environment fetch failed', error);
+                }
+            }
+            return null;
+        }
+
+        // Handle login (build-time env)
         async function handleLogin(e) {
             e.preventDefault();
             const nameInput = document.getElementById('adminName');
@@ -899,26 +922,46 @@
             const password = document.getElementById('adminPassword').value;
             const errorEl = document.getElementById('loginError');
 
-            try {
-                const res = await fetch('/api/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username: name, password })
-                });
-                const data = await res.json();
-                if (res.ok && data.token) {
-                    sessionStorage.setItem('admin_token', data.token);
-                    sessionStorage.setItem('admin_authenticated', 'true');
-                    document.getElementById('loginScreen').style.display = 'none';
-                    document.getElementById('adminPanel').classList.add('active');
-                    if (typeof loadAdminForms === 'function') loadAdminForms();
-                    applyThemeColors();
-                    if (errorEl) errorEl.style.display = 'none';
-                } else {
-                    if (errorEl) { errorEl.textContent = data.message || 'Napačno uporabniško ime ali geslo'; errorEl.style.display = 'block'; }
+            const credentials = await getAdminCredentials();
+            if (!credentials || !credentials.passwordHash) {
+                if (errorEl) {
+                    errorEl.textContent = 'Admin okolje ni nastavljeno.';
+                    errorEl.style.display = 'block';
                 }
+                return;
+            }
+
+            if (credentials.username && name !== credentials.username) {
+                if (errorEl) {
+                    errorEl.textContent = 'Napačno uporabniško ime ali geslo';
+                    errorEl.style.display = 'block';
+                }
+                return;
+            }
+
+            try {
+                const passwordHash = await hashPassword(password);
+                if (passwordHash !== credentials.passwordHash) {
+                    if (errorEl) {
+                        errorEl.textContent = 'Napačno uporabniško ime ali geslo';
+                        errorEl.style.display = 'block';
+                    }
+                    return;
+                }
+
+                sessionStorage.setItem('admin_token', `local-${Date.now()}`);
+                sessionStorage.setItem('admin_authenticated', 'true');
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('adminPanel').classList.add('active');
+                if (typeof loadAdminForms === 'function') loadAdminForms();
+                applyThemeColors();
+                if (errorEl) errorEl.style.display = 'none';
             } catch (err) {
-                if (errorEl) { errorEl.textContent = 'Network error'; errorEl.style.display = 'block'; }
+                if (errorEl) {
+                    errorEl.textContent = 'Network error';
+                    errorEl.style.display = 'block';
+                }
+                console.error('Login error', err);
             }
         }
 
