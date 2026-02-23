@@ -1657,8 +1657,8 @@
     <div class="main-content">
         <div class="content-area">
             <!-- Refresh Button -->
-            <button id="refreshCalendarBtn" onclick="forceRefreshCalendar()" style="position: fixed; top: 20px; right: 20px; z-index: 1000; background: var(--ios-blue); color: white; border: none; padding: 10px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 500; box-shadow: 0 4px 12px rgba(0,122,255,0.3); display: flex; align-items: center; gap: 6px; transition: all 0.2s;" title="Osveži podatke iz baze">
-                <i class="bi bi-arrow-clockwise"></i>
+            <button id="refreshCalendarBtn" onclick="forceRefreshCalendar()" style="position: fixed; bottom: 24px; right: 24px; z-index: 1000; background: var(--ios-blue); color: white; border: none; padding: 12px 18px; border-radius: 50px; cursor: pointer; font-size: 13px; font-weight: 500; box-shadow: 0 4px 16px rgba(0,122,255,0.4); display: flex; align-items: center; gap: 8px; transition: all 0.3s;" title="Osveži podatke iz baze">
+                <i class="bi bi-arrow-clockwise" style="font-size: 16px;"></i>
                 <span>Osveži</span>
             </button>
             <div id="scheduleCalendar">
@@ -2995,11 +2995,11 @@ ${manualEarningsData.map(m => `- ${m.description}: ${m.amount}€ (${new Date(m.
                 to { transform: rotate(360deg); }
             }
             #refreshCalendarBtn:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 6px 16px rgba(0,122,255,0.4);
+                transform: translateY(-4px);
+                box-shadow: 0 8px 20px rgba(0,122,255,0.5);
             }
             #refreshCalendarBtn:active {
-                transform: translateY(0);
+                transform: translateY(-2px);
             }
         `;
         document.head.appendChild(style);
@@ -4517,9 +4517,9 @@ ${manualEarningsData.map(m => `- ${m.description}: ${m.amount}€ (${new Date(m.
                 debugLog('🔧 Loading schedule data...');
                 container.innerHTML = '<div class="calendar-loading"><div class="calendar-spinner"></div><span>Nalagam podatke...</span></div>';
                 
-                // Load schedule data using StorageManager - FORCE refresh from Firebase to avoid cache issues
-                scheduleData = await StorageManager.load('schedule', true);
-                debugLog(`✅ Schedule data loaded from Firebase (${scheduleData.events ? scheduleData.events.length : 0} events)`);
+                // Load schedule data using StorageManager (tries Firebase first, falls back to localStorage)
+                scheduleData = await StorageManager.load('schedule');
+                debugLog(`✅ Schedule data loaded (${scheduleData.events ? scheduleData.events.length : 0} events)`);
                 
                 // CRITICAL: Filter out any deleted events right after loading
                 if (scheduleData.events && Array.isArray(scheduleData.events)) {
