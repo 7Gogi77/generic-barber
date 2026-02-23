@@ -580,8 +580,30 @@ const CalendarEngine = {
         nowIndicator: true,
         dayMaxEvents: true, // Auto-calculate based on cell height, show +more link
         moreLinkClick: 'popover',
-        // Prioritize multi-day events (longer duration first), then by start time
-        eventOrder: '-duration,start',
+        // Prioritize multi-day events first, then by start time
+        eventOrder: function(a, b) {
+          // Calculate if events span multiple days
+          const aStart = new Date(a.start);
+          const aEnd = new Date(a.end || a.start);
+          const bStart = new Date(b.start);
+          const bEnd = new Date(b.end || b.start);
+          
+          const aMultiDay = Math.abs(aEnd - aStart) > (24 * 60 * 60 * 1000);
+          const bMultiDay = Math.abs(bEnd - bStart) > (24 * 60 * 60 * 1000);
+          
+          // Multi-day events come first
+          if (aMultiDay && !bMultiDay) return -1;
+          if (!aMultiDay && bMultiDay) return 1;
+          
+          // If both multi-day or both single-day, sort by start time
+          if (aStart < bStart) return -1;
+          if (aStart > bStart) return 1;
+          
+          // If same start time, sort by duration (longer first)
+          const aDuration = aEnd - aStart;
+          const bDuration = bEnd - bStart;
+          return bDuration - aDuration;
+        },
         // Business hours (visual only)
         businessHours: {
           daysOfWeek: [1,2,3,4,5],

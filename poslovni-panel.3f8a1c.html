@@ -1656,11 +1656,6 @@
 
     <div class="main-content">
         <div class="content-area">
-            <!-- Refresh Button -->
-            <button id="refreshCalendarBtn" onclick="forceRefreshCalendar()" style="position: fixed; bottom: 24px; right: 24px; z-index: 1000; background: var(--ios-blue); color: white; border: none; padding: 12px 18px; border-radius: 50px; cursor: pointer; font-size: 13px; font-weight: 500; box-shadow: 0 4px 16px rgba(0,122,255,0.4); display: flex; align-items: center; gap: 8px; transition: all 0.3s;" title="Osveži podatke iz baze">
-                <i class="bi bi-arrow-clockwise" style="font-size: 16px;"></i>
-                <span>Osveži</span>
-            </button>
             <div id="scheduleCalendar">
                 <div class="calendar-loading">
                     <div class="calendar-spinner"></div>
@@ -2942,104 +2937,6 @@ ${manualEarningsData.map(m => `- ${m.description}: ${m.amount}€ (${new Date(m.
             a.click();
             URL.revokeObjectURL(url);
         }
-
-        // ===== FORCE REFRESH CALENDAR FROM DATABASE =====
-        async function forceRefreshCalendar() {
-            const btn = document.getElementById('refreshCalendarBtn');
-            if (!btn) return;
-
-            // Show loading state
-            const originalHTML = btn.innerHTML;
-            btn.innerHTML = '<i class="bi bi-arrow-clockwise" style="animation: spin 1s linear infinite;"></i><span>Osvežujem...</span>';
-            btn.disabled = true;
-            btn.style.opacity = '0.6';
-
-            try {
-                console.log('🔄 Force refreshing calendar from Firebase...');
-                
-                // Get current event count for comparison
-                const oldCount = (scheduleData && scheduleData.events) ? scheduleData.events.length : 0;
-                console.log(`📊 Current events in memory: ${oldCount}`);
-                
-                // Force load from Firebase with cache-busting
-                const newData = await StorageManager.load('schedule', true);
-                
-                // Validate we got data
-                if (!newData || !Array.isArray(newData.events)) {
-                    console.error('❌ Invalid data received from refresh');
-                    throw new Error('Neveljavni podatki iz baze');
-                }
-
-                const newCount = newData.events.length;
-                console.log(`📊 Events after refresh: ${newCount}`);
-                
-                // Update scheduleData
-                scheduleData = newData;
-                
-                // Filter deleted events
-                if (Array.isArray(scheduleData.events)) {
-                    const beforeFilter = scheduleData.events.length;
-                    scheduleData.events = filterDeletedEvents(scheduleData.events);
-                    const afterFilter = scheduleData.events.length;
-                    if (beforeFilter !== afterFilter) {
-                        console.log(`🔍 Filtered ${beforeFilter - afterFilter} deleted events`);
-                    }
-                }
-
-                console.log(`✅ Final event count: ${scheduleData.events ? scheduleData.events.length : 0}`);
-
-                // Reload calendar
-                if (window.calendar && typeof window.calendar.refetchEvents === 'function') {
-                    await window.calendar.refetchEvents();
-                    console.log('✅ Calendar refreshed successfully');
-                    
-                    // Show success feedback
-                    btn.style.background = 'var(--ios-green)';
-                    btn.innerHTML = '<i class="bi bi-check-circle" style="font-size: 16px;"></i><span>Uspešno!</span>';
-                    setTimeout(() => {
-                        btn.style.background = 'var(--ios-blue)';
-                        btn.innerHTML = originalHTML;
-                    }, 2000);
-                } else {
-                    console.warn('⚠ Calendar refetch not available');
-                    // Manually reload page as fallback
-                    btn.innerHTML = '<i class="bi bi-check-circle" style="font-size: 16px;"></i><span>Ponovno nalagam...</span>';
-                    setTimeout(() => window.location.reload(), 1000);
-                }
-            } catch (error) {
-                console.error('❌ Failed to refresh calendar:', error);
-                btn.style.background = 'var(--ios-red)';
-                btn.innerHTML = '<i class="bi bi-x-circle" style="font-size: 16px;"></i><span>Napaka!</span>';
-                setTimeout(() => {
-                    btn.style.background = 'var(--ios-blue)';
-                    btn.innerHTML = originalHTML;
-                }, 2000);
-                alert('Napaka pri osvežitvi podatkov: ' + (error.message || 'Neznana napaka'));
-            } finally {
-                // Restore button state if not already done
-                setTimeout(() => {
-                    btn.disabled = false;
-                    btn.style.opacity = '1';
-                }, 100);
-            }
-        }
-
-        // Add CSS for refresh button spin animation
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes spin {
-                from { transform: rotate(0deg); }
-                to { transform: rotate(360deg); }
-            }
-            #refreshCalendarBtn:hover {
-                transform: translateY(-4px);
-                box-shadow: 0 8px 20px rgba(0,122,255,0.5);
-            }
-            #refreshCalendarBtn:active {
-                transform: translateY(-2px);
-            }
-        `;
-        document.head.appendChild(style);
 
         // ===== CUSTOMER BASE HELPERS =====
         // Persist customer contact details locally and to site_config/customers in Firebase
