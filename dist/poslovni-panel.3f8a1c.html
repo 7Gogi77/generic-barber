@@ -461,6 +461,20 @@
             border-radius: 6px;
             box-shadow: 0 1px 3px rgba(0, 122, 255, 0.3);
             transition: all 0.2s ease;
+            margin-bottom: 2px !important;
+            display: block !important;
+            position: relative !important;
+        }
+
+        /* Ensure events are properly stacked without overlap */
+        #scheduleCalendar.view-daygrid .fc-daygrid-event-harness {
+            margin-bottom: 2px !important;
+        }
+
+        #scheduleCalendar.view-daygrid .fc-daygrid-day-events {
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 2px !important;
         }
 
         #scheduleCalendar.view-daygrid .fc .fc-event:hover {
