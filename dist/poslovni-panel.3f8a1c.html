@@ -430,12 +430,15 @@
             background: rgba(0, 122, 255, 0.05) !important;
         }
 
-        /* iOS-Style Day Numbers - Consistent height for alignment */
+        /* iOS-Style Day Numbers - Consistent height for perfect alignment */
         #scheduleCalendar.view-daygrid .fc .fc-daygrid-day-top {
-            min-height: 36px;
+            height: 40px !important;
+            min-height: 40px !important;
+            max-height: 40px !important;
             display: flex;
-            align-items: flex-start;
-            padding: 4px;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
         }
 
         #scheduleCalendar.view-daygrid .fc .fc-daygrid-day-number {
@@ -458,6 +461,14 @@
             padding: 0;
         }
 
+        /* Ensure events start at exact same position in all day cells */
+        #scheduleCalendar.view-daygrid .fc-daygrid-day-events {
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 2px !important;
+            padding-top: 4px !important;
+        }
+
         /* iOS-Style Events */
         #scheduleCalendar.view-daygrid .fc .fc-event {
             background: linear-gradient(135deg, var(--ios-blue) 0%, #5856D6 100%);
@@ -477,12 +488,6 @@
         /* Ensure events are properly stacked without overlap */
         #scheduleCalendar.view-daygrid .fc-daygrid-event-harness {
             margin-bottom: 2px !important;
-        }
-
-        #scheduleCalendar.view-daygrid .fc-daygrid-day-events {
-            display: flex !important;
-            flex-direction: column !important;
-            gap: 2px !important;
         }
 
         #scheduleCalendar.view-daygrid .fc .fc-event:hover {
