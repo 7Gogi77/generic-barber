@@ -1339,8 +1339,8 @@
                 if (response.ok) {
                     const cloudConfig = await response.json();
                     if (cloudConfig) {
-                        // Completely replace SITE_CONFIG instead of merging
-                        window.SITE_CONFIG = cloudConfig;
+                        Object.assign(SITE_CONFIG, cloudConfig);
+                        window.SITE_CONFIG = SITE_CONFIG;
                         localStorage.setItem('site_config_backup', JSON.stringify(SITE_CONFIG));
                         console.log('✅ Loaded config from Firebase (REST)');
                         return true;
