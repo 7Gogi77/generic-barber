@@ -1586,7 +1586,7 @@
         // ============================================
         const cursor = document.getElementById('cursor');
         
-        if (window.matchMedia('(hover: hover)').matches && window.innerWidth > 768) {
+        if (cursor && window.matchMedia('(hover: hover)').matches && window.innerWidth > 768) {
             document.addEventListener('mousemove', e => {
                 cursor.style.left = e.clientX + 'px';
                 cursor.style.top = e.clientY + 'px';
