@@ -1656,6 +1656,11 @@
 
     <div class="main-content">
         <div class="content-area">
+            <!-- Refresh Button -->
+            <button id="refreshCalendarBtn" onclick="forceRefreshCalendar()" style="position: fixed; top: 20px; right: 20px; z-index: 1000; background: var(--ios-blue); color: white; border: none; padding: 10px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 500; box-shadow: 0 4px 12px rgba(0,122,255,0.3); display: flex; align-items: center; gap: 6px; transition: all 0.2s;" title="Osveži podatke iz baze">
+                <i class="bi bi-arrow-clockwise"></i>
+                <span>Osveži</span>
+            </button>
             <div id="scheduleCalendar">
                 <div class="calendar-loading">
                     <div class="calendar-spinner"></div>
@@ -2937,6 +2942,67 @@ ${manualEarningsData.map(m => `- ${m.description}: ${m.amount}€ (${new Date(m.
             a.click();
             URL.revokeObjectURL(url);
         }
+
+        // ===== FORCE REFRESH CALENDAR FROM DATABASE =====
+        async function forceRefreshCalendar() {
+            const btn = document.getElementById('refreshCalendarBtn');
+            if (!btn) return;
+
+            // Show loading state
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<i class="bi bi-arrow-clockwise" style="animation: spin 1s linear infinite;"></i><span>Osvežujem...</span>';
+            btn.disabled = true;
+            btn.style.opacity = '0.6';
+
+            try {
+                console.log('🔄 Force refreshing calendar from Firebase...');
+                
+                // Force load from Firebase with cache-busting
+                scheduleData = await StorageManager.load('schedule', true);
+                
+                // Filter deleted events
+                if (scheduleData && Array.isArray(scheduleData.events)) {
+                    scheduleData.events = filterDeletedEvents(scheduleData.events);
+                }
+
+                // Reload calendar
+                if (window.calendar && typeof window.calendar.refetchEvents === 'function') {
+                    await window.calendar.refetchEvents();
+                    console.log('✅ Calendar refreshed successfully');
+                    
+                    // Show success feedback
+                    btn.style.background = 'var(--ios-green)';
+                    setTimeout(() => {
+                        btn.style.background = 'var(--ios-blue)';
+                    }, 1500);
+                }
+            } catch (error) {
+                console.error('❌ Failed to refresh calendar:', error);
+                alert('Napaka pri osvežitvi podatkov. Poskusite ponovno.');
+            } finally {
+                // Restore button
+                btn.innerHTML = originalHTML;
+                btn.disabled = false;
+                btn.style.opacity = '1';
+            }
+        }
+
+        // Add CSS for refresh button spin animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes spin {
+                from { transform: rotate(0deg); }
+                to { transform: rotate(360deg); }
+            }
+            #refreshCalendarBtn:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 6px 16px rgba(0,122,255,0.4);
+            }
+            #refreshCalendarBtn:active {
+                transform: translateY(0);
+            }
+        `;
+        document.head.appendChild(style);
 
         // ===== CUSTOMER BASE HELPERS =====
         // Persist customer contact details locally and to site_config/customers in Firebase
@@ -4451,9 +4517,9 @@ ${manualEarningsData.map(m => `- ${m.description}: ${m.amount}€ (${new Date(m.
                 debugLog('🔧 Loading schedule data...');
                 container.innerHTML = '<div class="calendar-loading"><div class="calendar-spinner"></div><span>Nalagam podatke...</span></div>';
                 
-                // Load schedule data using StorageManager (which handles defaults)
-                scheduleData = await StorageManager.load('schedule');
-                debugLog(`✅ Schedule data loaded (${scheduleData.events ? scheduleData.events.length : 0} events)`);
+                // Load schedule data using StorageManager - FORCE refresh from Firebase to avoid cache issues
+                scheduleData = await StorageManager.load('schedule', true);
+                debugLog(`✅ Schedule data loaded from Firebase (${scheduleData.events ? scheduleData.events.length : 0} events)`);
                 
                 // CRITICAL: Filter out any deleted events right after loading
                 if (scheduleData.events && Array.isArray(scheduleData.events)) {

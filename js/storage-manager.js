@@ -52,11 +52,23 @@ const StorageManager = {
   /**
    * Load schedule data
    * @param {string} key - Storage key
+   * @param {boolean} forceRefresh - Force reload from Firebase, bypassing cache
    */
-  async load(key) {
-    // Try Firebase first (single source of truth)
+  async load(key, forceRefresh = false) {
+    // Clear localStorage if forcing refresh
+    if (forceRefresh) {
+      console.log('🔄 Force refresh: clearing localStorage cache');
+      try {
+        localStorage.removeItem(key);
+      } catch (e) {
+        console.warn('⚠ Failed to clear localStorage:', e);
+      }
+    }
+
+    // Try Firebase first (single source of truth) with cache-busting
     try {
-      const response = await fetch(`${this.firebaseUrl}/${key}.json`);
+      const cacheBuster = forceRefresh ? `?t=${Date.now()}` : '';
+      const response = await fetch(`${this.firebaseUrl}/${key}.json${cacheBuster}`);
       
       if (response.ok) {
         const data = await response.json();
@@ -72,16 +84,18 @@ const StorageManager = {
       console.warn('⚠ Firebase load failed, trying localStorage:', fbError);
     }
 
-    // Fallback to localStorage
-    try {
-      const item = localStorage.getItem(key);
-      if (item) {
-        const data = JSON.parse(item);
-        console.log('✓ Loaded from localStorage:', key);
-        return data;
+    // Fallback to localStorage (only if not forcing refresh)
+    if (!forceRefresh) {
+      try {
+        const item = localStorage.getItem(key);
+        if (item) {
+          const data = JSON.parse(item);
+          console.log('✓ Loaded from localStorage:', key);
+          return data;
+        }
+      } catch (lsError) {
+        console.warn('⚠ localStorage load failed:', lsError);
       }
-    } catch (lsError) {
-      console.warn('⚠ localStorage load failed:', lsError);
     }
 
     // Return default schedule
