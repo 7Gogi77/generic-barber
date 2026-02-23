@@ -398,59 +398,1422 @@ const CalendarEngine = {
    * Limit events shown per day in month view
    */
   limitEventsPerDay(maxEvents) {
-    this.maxEventsPerDay = maxEvents;
+    try {
+      console.log(`🔍 limitEventsPerDay called with maxEvents=${maxEvents}`);
+      
+      // Get all event elements
+      const allEvents = Array.from(document.querySelectorAll('.fc-daygrid-event'));
+      console.log(`📍 Found ${allEvents.length} total event elements`);
+      
+      if (allEvents.length === 0) {
+        console.log('⚠️ No events found');
+        return;
+      }
+      
+      // Group events by their parent day cell (use data-date where possible)
+      const eventsByDay = new Map();
+      
+      allEvents.forEach((eventEl, idx) => {
+        try {
+          // Find the parent day cell (which contains all events for that day)
+          let parent = eventEl.parentElement;
+          
+          // Go up until we find a day cell container
+          while (parent && parent.classList && !parent.classList.contains('fc-daygrid-day-cell')) {
+            parent = parent.parentElement;
+          }
+          
+          if (!parent) {
+            parent = eventEl.parentElement; // fallback
+          }
+          
+          // Prefer the explicit `data-date` attribute if present, fall back to index
+          const key = parent ? (parent.getAttribute('data-date') || parent.getAttribute('data-datekey') || String(idx)) : String(idx);
+          
+          if (!eventsByDay.has(key)) {
+            eventsByDay.set(key, []);
+          }
+          eventsByDay.get(key).push(eventEl);
+        } catch (e) {
+          console.warn(`⚠️ Error processing event ${idx}:`, e);
+        }
+      });
+      
+      console.log(`📊 Grouped into ${eventsByDay.size} days`);
+      
+      // Process each day
+      eventsByDay.forEach((dayEvents, dayKey) => {
+        if (dayEvents.length > maxEvents) {
+          console.log(`   Day: ${dayEvents.length} events → hiding ${dayEvents.length - maxEvents}`);
+          
+          // Hide events beyond max
+          for (let i = maxEvents; i < dayEvents.length; i++) {
+            // Use setProperty so '!important' is honored when needed
+            try {
+              dayEvents[i].style.setProperty('display', 'none', 'important');
+              dayEvents[i].style.setProperty('visibility', 'hidden', 'important');
+            } catch (_) {
+              // Fallback for older browsers
+              dayEvents[i].style.display = 'none';
+              dayEvents[i].style.visibility = 'hidden';
+            }
+          }
+          
+          // Add or update "more" link (avoid adding duplicates)
+          const hiddenCount = dayEvents.length - maxEvents;
+          const lastVisible = dayEvents[maxEvents - 1];
+          let moreDiv = (lastVisible && lastVisible.parentElement) ? lastVisible.parentElement.querySelector('.fc-daygrid-day-more') : null;
+          if (!moreDiv) {
+            moreDiv = document.createElement('div');
+            moreDiv.className = 'fc-daygrid-day-more';
+            moreDiv.style.cssText = 'padding: 2px 4px; font-size: 11px; color: #3498db; font-weight: 600;';
+            if (lastVisible && lastVisible.parentElement) {
+              lastVisible.parentElement.appendChild(moreDiv);
+            }
+          }
+          if (moreDiv) {
+            moreDiv.textContent = `+${hiddenCount} više`;
+          }
+        }
+      });
+      
+    } catch (error) {
+      console.error('❌ Error in limitEventsPerDay:', error);
+    }
+  },
+
+  initializeCalendar(containerElement, scheduleData, options = {}) {
+    // Check if FullCalendar is available
+    if (typeof FullCalendar === 'undefined') {
+      console.error('❌ FullCalendar library not loaded');
+      containerElement.innerHTML = '<p style="color: #e74c3c; padding: 20px;">Calendar library failed to load. Please check your internet connection and refresh the page.</p>';
+      return null;
+    }
+
+    console.log('📅 Initializing FullCalendar...');
+    console.log('📅 Container element:', containerElement);
+    console.log('📅 Schedule data:', scheduleData);
+
+    // Store for later reference
+    this.currentScheduleData = scheduleData;
+
+    try {
+      // Clear container first
+      containerElement.innerHTML = '';
+      
+      // Get actual available width
+      const parentWidth = containerElement.parentElement?.offsetWidth || window.innerWidth;
+      console.log('Parent width:', parentWidth);
+      
+      // Calculate responsive height based on screen size - use a pixel height so timeGrid has space
+      const topOffset = 140; // header + toolbars + margins
+      const viewportH = window.innerHeight || document.documentElement.clientHeight || 800;
+      const calcHeight = Math.max(520, viewportH - topOffset);
+
+      // Store on window object so it can be accessed in other functions
+      window._calendarHeight = calcHeight;
+      window._minCalendarHeight = 520;
+
+      console.log('Using calendar pixel height:', calcHeight);
+
+      // Set container dimensions - give it a fixed height in px so FullCalendar can render timeGrid
+      containerElement.style.padding = '0';
+      containerElement.style.margin = '0';
+      containerElement.style.boxSizing = 'border-box';
+      containerElement.style.display = 'block';
+      containerElement.style.width = '100%';
+      containerElement.style.maxWidth = '100%';
+      containerElement.style.minWidth = '100%';
+      containerElement.style.minHeight = `${window._minCalendarHeight}px`;
+      containerElement.style.height = `${calcHeight}px`;
+      containerElement.style.overflow = 'visible';
+
+      console.log('Container after style:', {
+        width: containerElement.style.width,
+        height: containerElement.style.height,
+        offsetWidth: containerElement.offsetWidth,
+        offsetHeight: containerElement.offsetHeight
+      });
+
+      // Ensure parent can hold the height and width
+      if (containerElement.parentElement) {
+        containerElement.parentElement.style.overflow = 'visible';
+        containerElement.parentElement.style.width = '100%';
+        containerElement.parentElement.style.minWidth = '100%';
+        containerElement.parentElement.style.maxWidth = '100%';
+        // Keep parent's height flexible but allow it to size to its contents
+        containerElement.parentElement.style.display = 'block';
+      }
+
+      // Allow container to fill available space
+      containerElement.style.flex = '0 0 auto';
+      containerElement.style.width = '100%';
+      containerElement.style.overflow = 'auto';
+
+      // Compute slot duration from SITE_CONFIG if present
+      const slotMinutes = (window.SITE_CONFIG && window.SITE_CONFIG.booking && window.SITE_CONFIG.booking.slotDuration) ? window.SITE_CONFIG.booking.slotDuration : 15;
+      const slotDurationStr = `00:${('0' + slotMinutes).slice(-2)}:00`;
+
+      // Compute commonly used slot min/max strings and allow timeGrid views to show the full day (scrollable)
+      const slotMinTimeVal = (window.SITE_CONFIG && window.SITE_CONFIG.booking && window.SITE_CONFIG.booking.businessHours) ? (('0' + window.SITE_CONFIG.booking.businessHours.start).slice(-2) + ':00:00') : '06:00:00';
+      const slotMaxTimeVal = (window.SITE_CONFIG && window.SITE_CONFIG.booking && window.SITE_CONFIG.booking.businessHours) ? (('0' + window.SITE_CONFIG.booking.businessHours.end).slice(-2) + ':00:00') : '22:00:00';
+      const timeGridSlotMax = '24:00:00';
+      const initialScrollTime = options.scrollTime || (window.SITE_CONFIG && window.SITE_CONFIG.booking && window.SITE_CONFIG.booking.scrollTime) || '12:00:00';
+
+      const calendar = new FullCalendar.Calendar(containerElement, {
+        initialView: options.initialView || 'dayGridMonth',
+        headerToolbar: {
+          left: 'prev,next today',
+          center: 'title',
+          right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
+        },
+        // Slovenian button text
+        buttonText: {
+          today: 'Danes',
+          month: 'Mesec',
+          week: 'Teden',
+          day: 'Dan',
+          list: 'Seznam'
+        },
+        locale: 'sl',
+        firstDay: 1,
+        nowIndicator: true,
+        dayMaxEvents: true, // Auto-calculate based on cell height, show +more link
+        moreLinkClick: 'popover',
+        // Prioritize multi-day events (longer duration first), then by start time
+        eventOrder: '-duration,start',
+        // Business hours (visual only)
+        businessHours: {
+          daysOfWeek: [1,2,3,4,5],
+          startTime: (window.SITE_CONFIG && window.SITE_CONFIG.booking && window.SITE_CONFIG.booking.businessHours) ? (('0' + window.SITE_CONFIG.booking.businessHours.start).slice(-2) + ':00') : '09:00',
+          endTime: (window.SITE_CONFIG && window.SITE_CONFIG.booking && window.SITE_CONFIG.booking.businessHours) ? (('0' + window.SITE_CONFIG.booking.businessHours.end).slice(-2) + ':00') : '17:00'
+        },
+        // TimeGrid options (defaults apply globally, views override to show full day)
+        slotMinTime: slotMinTimeVal,
+        slotMaxTime: slotMaxTimeVal,
+        slotDuration: slotDurationStr,
+        slotLabelInterval: { hours: 1 },
+        slotLabelFormat: { hour: '2-digit', minute: '2-digit', hour12: false },
+        // Hide the all-day slot so week/day views don't show a separate all-day row
+        allDaySlot: false,
+        views: {
+          dayGridMonth: { type: 'dayGridMonth' },
+          // Force full 24-hour rendering for timeGrid week/day views
+          timeGridWeek: { type: 'timeGrid', slotMinTime: '00:00:00', slotMaxTime: '24:00:00' },
+          timeGridDay: { type: 'timeGrid', slotMinTime: '00:00:00', slotMaxTime: '24:00:00' }
+        },
+        // Initial vertical scroll position in timeGrid views
+        scrollTime: initialScrollTime,
+        height: calcHeight,
+        // Remove contentHeight: 'auto' to enable scrolling in timegrid views
+
+        // Load events - always fetch fresh from storage to avoid duplicates
+        events: async (info, successCallback, failureCallback) => {
+          try {
+            // Load fresh schedule data from storage each time
+            let freshScheduleData = scheduleData;
+            if (typeof StorageManager !== 'undefined' && StorageManager.load) {
+              try {
+                freshScheduleData = await StorageManager.load('schedule');
+              } catch (e) {
+                console.warn('⚠ Could not load fresh schedule, using initial data');
+              }
+            }
+            const events = await CalendarEngine.generateCalendarEvents(freshScheduleData);
+            successCallback(events);
+          } catch (err) { failureCallback(err); }
+        },
+
+        // Basic sizing hooks so FullCalendar can recompute after view changes
+
+
+
+        // Interactions
+        selectable: true,
+        selectOverlap: true,
+        editable: true,
+        eventDurationEditable: true,
+
+        // Event handling - NOTE: These are overridden by poslovni-panel.html
+        // Only used in admin-panel.html - check if modal exists before calling
+        select: (selectInfo) => {
+          console.log('📅 Date selected:', selectInfo.startStr, '→', selectInfo.endStr);
+          console.log('📋 Checking for eventModal...');
+          const hasAdminModal = document.getElementById('eventModal');
+          console.log('📋 Admin modal exists?', !!hasAdminModal);
+          // If admin modal exists (admin-panel.html), use the admin modal flow
+          if (hasAdminModal) {
+            console.log('📋 Calling CalendarEngine.openEventModal from calendar-engine.js (select)');
+            CalendarEngine.openEventModal(null, selectInfo, calendar, scheduleData);
+            return;
+          }
+
+          // Otherwise, if we're in the business panel, open the Add Event modal
+          // and prefill with the selected date range. FullCalendar's select end
+          // is exclusive for all-day selections, so subtract one day for display.
+          const addModal = document.getElementById('addEventModal');
+          if (addModal && typeof window.openAddEventModal === 'function') {
+            try {
+              const startStr = selectInfo.startStr ? selectInfo.startStr.split('T')[0] : null;
+              let endStr = selectInfo.endStr ? selectInfo.endStr.split('T')[0] : startStr;
+
+              // If endStr is present and selection was all-day, FullCalendar gives exclusive end — subtract one day
+              if (selectInfo.endStr) {
+                const ed = new Date(selectInfo.endStr);
+                // subtract 1 day
+                ed.setDate(ed.getDate() - 1);
+                endStr = ed.toISOString().split('T')[0];
+              }
+
+              console.log('📤 Opening Add Event modal with range:', startStr, '→', endStr);
+              // openAddEventModalWithTab accepts (startDate, endDate)
+              window.openAddEventModal(startStr, endStr);
+            } catch (err) {
+              console.warn('⚠ Failed to open Add Event modal from select handler:', err);
+              // Fallback: open with start only
+              window.openAddEventModal(selectInfo.startStr ? selectInfo.startStr.split('T')[0] : null);
+            }
+          } else {
+            console.log('📋 Skipping - no Add Event modal present');
+          }
+        },
+        
+        eventClick: (clickInfo) => {
+          console.log('📅 Event clicked:', clickInfo.event.title);
+          console.log('📋 Checking for eventModal...');
+          const hasAdminModal = document.getElementById('eventModal');
+          console.log('📋 Admin modal exists?', !!hasAdminModal);
+          // Only call if the admin modal exists (admin-panel.html context)
+          if (hasAdminModal) {
+            console.log('📋 Calling CalendarEngine.openEventModal from calendar-engine.js');
+            CalendarEngine.openEventModal(clickInfo.event, null, calendar, scheduleData);
+          } else {
+            console.log('📋 Skipping - not in admin context (no eventModal found)');
+          }
+        },
+
+        eventContent: (arg) => {
+          try {
+            const isMobile = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(max-width: 480px)').matches;
+            if (!isMobile) return undefined;
+
+            const type = arg.event.extendedProps?.type || arg.event.type || null;
+            const typeCfg = (typeof ScheduleRules !== 'undefined' && ScheduleRules.TYPE_CONFIG && type) ? ScheduleRules.TYPE_CONFIG[type] : null;
+            const isBooking = arg.event.extendedProps?.isBooking || arg.event.extendedProps?.tab === 'customer' || arg.event.extendedProps?.customer || arg.event.type === 'booking';
+            let emoji = typeCfg && typeCfg.icon ? typeCfg.icon : null;
+            if (!emoji && isBooking) emoji = '👤';
+            if (!emoji) emoji = '📌';
+
+            return { html: `<span class="mobile-event-emoji" aria-label="${emoji}" title="${emoji}">${emoji}</span>` };
+          } catch (_) {
+            return undefined;
+          }
+        },
+        
+        eventDidMount: (info) => {
+          try {
+            // Always log mounting details for diagnostics
+            const inTimeGrid = info.el && !!info.el.closest('.fc-timegrid');
+            console.log('eventDidMount:', { id: info.event.id, title: info.event.title, allDay: info.event.allDay, inTimeGrid });
+
+            // Ensure event nodes are visible (in case of stray CSS)
+            if (info.el) {
+              info.el.style.visibility = 'visible';
+              info.el.style.opacity = 1;
+              info.el.style.zIndex = 3;
+            }
+
+            // Style booking events (respect explicit per-event coloring when present)
+            if (info.event.extendedProps?.isBooking || info.event.id?.startsWith('apt_')) {
+              if (info.el) {
+                if (!info.event.backgroundColor && !info.event.color) info.el.style.backgroundColor = 'rgba(52, 152, 219, 0.2)';
+                if (!info.event.borderColor) info.el.style.borderColor = '#3498db';
+                info.el.style.borderWidth = '1px';
+                if (!info.event.textColor) info.el.style.color = '#2c3e50';
+              }
+            }
+
+            // General fallback: if an event (any type) lacks explicit colors, apply TYPE_CONFIG values
+            try {
+              const evt = info.event || {};
+              const el = info.el;
+              const type = evt.extendedProps && evt.extendedProps.type ? evt.extendedProps.type : (evt.extendedProps && evt.extendedProps.worker ? 'worker_event' : (evt.type || null));
+              const typeCfg = (typeof ScheduleRules !== 'undefined' && ScheduleRules.TYPE_CONFIG && type) ? ScheduleRules.TYPE_CONFIG[type] : null;
+
+              if (el) {
+                // Only apply if computed background is transparent or no explicit background provided
+                const cs = window.getComputedStyle(el);
+                const isTransparentBg = cs && (cs.background === 'rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box' || cs.backgroundColor === 'rgba(0, 0, 0, 0)');
+
+                if ((!evt.backgroundColor && typeCfg && typeCfg.backgroundColor) || isTransparentBg) {
+                  try { el.style.backgroundColor = (evt.backgroundColor || typeCfg.backgroundColor || typeCfg && typeCfg.color || 'rgba(52, 152, 219, 0.2)'); } catch(_){}
+                }
+                if ((!evt.borderColor && typeCfg && typeCfg.borderColor) || (cs && (!cs.borderColor || cs.borderColor === 'transparent'))) {
+                  try { el.style.borderColor = (evt.borderColor || typeCfg.borderColor || '#3498db'); el.style.borderWidth = el.style.borderWidth || '1px'; } catch(_){}
+                }
+                if ((!evt.textColor && typeCfg && typeCfg.color) || (cs && (!cs.color || cs.color === 'rgba(0, 0, 0, 0)')) ) {
+                  try { el.style.color = (evt.textColor || typeCfg.color || '#2c3e50'); } catch(_){}
+                }
+              }
+            } catch (fbErr) { /* ignore fallback failures */ }
+
+            // Mobile-only: render a single emoji indicator for each event (replace content)
+            try {
+              const isMobile = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(max-width: 480px)').matches;
+              if (isMobile && info.el) {
+                const type = info.event.extendedProps?.type || info.event.type || null;
+                const typeCfg = (typeof ScheduleRules !== 'undefined' && ScheduleRules.TYPE_CONFIG && type) ? ScheduleRules.TYPE_CONFIG[type] : null;
+                const isBooking = info.event.extendedProps?.isBooking || info.event.extendedProps?.tab === 'customer' || info.event.extendedProps?.customer || info.event.type === 'booking';
+                let emoji = typeCfg && typeCfg.icon ? typeCfg.icon : null;
+                if (!emoji && isBooking) emoji = '👤';
+                if (!emoji) emoji = '📌';
+
+                info.el.innerHTML = `<span class="mobile-event-emoji" aria-label="${emoji}" title="${emoji}">${emoji}</span>`;
+                info.el.classList.add('mobile-emoji-only');
+              }
+            } catch (_) { /* ignore */ }
+
+          } catch (err) { console.warn('eventDidMount hook failed', err); }
+        },
+
+        // Hook fired after the events array is applied to the view
+        eventsSet: (events) => {
+          try {
+            const timed = events.filter(e => !e.allDay).length;
+            const allDay = events.length - timed;
+            console.log('eventsSet: total=', events.length, 'timed=', timed, 'allDay=', allDay);
+            // If there are timed events but no timeGrid DOM presence, escalate
+            const timegrid = document.querySelector('.fc-timegrid');
+            const timegridEventEls = document.querySelectorAll('.fc-timegrid .fc-event');
+            if (timed > 0 && timegrid && timegridEventEls.length === 0) {
+              // Remediation disabled: do not attempt automatic remakes or repairs from eventsSet
+              // This avoids any automatic DOM manipulation or forced re-initialization.
+            }
+          } catch (err) { console.warn('eventsSet hook failed', err); }
+        },
+        
+        eventContent: (arg) => {
+          // Custom rendering for booking events - show customer name and time range
+          if (arg.event.extendedProps?.isBooking || arg.event.id?.startsWith('apt_')) {
+            try {
+              const customerName = arg.event.extendedProps?.customer || arg.event.extendedProps?.worker || arg.event.title || 'Rezervacija';
+              const startTime = arg.event.start ? new Date(arg.event.start).toLocaleTimeString('sl-SI', {hour: '2-digit', minute: '2-digit'}) : '';
+              const endTime = arg.event.end ? new Date(arg.event.end).toLocaleTimeString('sl-SI', {hour: '2-digit', minute: '2-digit'}) : '';
+              const timeText = startTime ? (endTime ? `${startTime} - ${endTime}` : startTime) : '';
+              return {
+                html: `<div style="padding: 2px; font-size: 12px; font-weight: bold;">${customerName}</div><div style="padding: 2px; font-size: 10px;">${timeText}</div>`
+              };
+            } catch (err) { /* fallback to default booking rendering */ }
+          }
+
+
+          // Custom rendering for multi-day events
+          if (arg.event.extendedProps?.isMultiDay && arg.event.allDay) {
+            return {
+              html: `<div style="width: 100%; padding: 4px 6px; white-space: normal; overflow: visible;">${arg.event.title}</div>`
+            };
+          }
+          
+          // Default rendering for schedule events - show title with time range when available
+          if (arg.event.title) {
+            const startTime = arg.event.start ? new Date(arg.event.start).toLocaleTimeString('sl-SI', {hour: '2-digit', minute: '2-digit'}) : '';
+            const endTime = arg.event.end ? new Date(arg.event.end).toLocaleTimeString('sl-SI', {hour: '2-digit', minute: '2-digit'}) : '';
+            const timeText = startTime ? (endTime ? `${startTime} - ${endTime}` : startTime) : '';
+            const title = arg.event.title.length > 20 ? arg.event.title.substring(0, 20) + '...' : arg.event.title;
+            return {
+              html: `<div style="padding: 1px 2px; font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><div style=\"font-weight:600; font-size:12px;\">${timeText}</div><div>${title}</div></div>`
+            };
+          }
+          
+          return false; // Use default rendering
+        },
+
+        eventDrop: async (dropInfo) => {
+          console.log('📅 Event dropped:', dropInfo.event.title);
+          const event = scheduleData.events.find(e => e.id === dropInfo.event.id);
+          if (event) {
+            event.start = dropInfo.event.startStr;
+            event.end = dropInfo.event.endStr;
+            await StorageManager.save('schedule', scheduleData);
+          }
+        },
+
+        eventResize: async (resizeInfo) => {
+          console.log('📅 Event resized:', resizeInfo.event.title);
+          const event = scheduleData.events.find(e => e.id === resizeInfo.event.id);
+          if (event) {
+            event.start = resizeInfo.event.startStr;
+            event.end = resizeInfo.event.endStr;
+            await StorageManager.save('schedule', scheduleData);
+          }
+        },
+
+        datesSet: (arg) => {
+          console.log('📅 Dates set');
+
+          // Update view-specific classes so styles can be scoped (dayGrid vs timeGrid)
+          // Restore granular classes so week and day can have separate CSS
+          try {
+            const v = arg && arg.view && arg.view.type ? arg.view.type : '';
+            if (containerElement) {
+              // Specific timegrid variants (no generic view-timegrid class to avoid bleed)
+              containerElement.classList.toggle('view-timegrid-week', v === 'timeGridWeek');
+              containerElement.classList.toggle('view-timegrid-day', v === 'timeGridDay');
+              // Month/daygrid
+              containerElement.classList.toggle('view-daygrid', v === 'dayGridMonth');
+            }
+          } catch (e) { /* ignore */ }
+
+          // If view is a timeGrid, ensure initial scroll position and allow vertical scrolling
+          try {
+            const v2 = arg && arg.view && arg.view.type ? arg.view.type : '';
+            if (v2.startsWith('timeGrid')) {
+              try { if (calendar && typeof calendar.setOption === 'function') {
+                calendar.setOption('scrollTime', initialScrollTime);
+                // Ensure slot bounds are set for full 24h in case the internal options didn't apply
+                calendar.setOption('slotMinTime', '00:00:00');
+                calendar.setOption('slotMaxTime', '24:00:00');
+              } } catch (_) {}
+
+              // Attempt to scroll the timegrid body to the approximate time slot
+              setTimeout(() => {
+                try {
+                  const timeParts = (initialScrollTime || '12:00:00').split(':');
+                  const targetHour = parseInt(timeParts[0], 10) || 12;
+                  const scrollBody = containerElement.querySelector('.fc-scrollgrid-section-body');
+                  const slotEls = containerElement.querySelectorAll('.fc-timegrid .fc-timegrid-slot');
+                  if (scrollBody && slotEls && slotEls.length) {
+                    // Find a slot whose label matches targetHour
+                    for (let i = 0; i < slotEls.length; i++) {
+                      const label = slotEls[i].querySelector('.fc-timegrid-slot-label');
+                      if (label && /\d{1,2}/.test(label.textContent || '')) {
+                        const h = parseInt((label.textContent || '').trim().split(':')[0], 10);
+                        if (!isNaN(h) && h >= targetHour) {
+                          scrollBody.scrollTop = Math.max(0, slotEls[i].offsetTop - 40);
+                          break;
+                        }
+                      }
+                    }
+                    // If no matching slot found, ensure we can scroll to bottom so late slots are reachable
+                    // (this helps if slot labels are not present or in unexpected format)
+                    if (scrollBody.scrollHeight > scrollBody.clientHeight && scrollBody.scrollTop === 0) {
+                      // leave as-is; user can use the Bottom button to jump to end
+                    }
+                  }
+                } catch (_) { /* ignore scrolling failures */ }
+              }, 120);
+            }
+          } catch (_) { /* ignore */ }
+
+          // After view renders, limit timed events to 3 per day
+          setTimeout(() => {
+            if (arg.view.type === 'dayGridMonth') {
+              console.log('� Month view rendered - using FullCalendar dayMaxEvents:true for auto height');
+            }
+            
+            // For timeGridWeek only, ensure timegrid and scroll bodies are sized (skip Day to avoid fallbacks there)
+            if (arg.view.type === 'timeGridWeek') {
+              console.log('🔧 Sizing timeGridWeek view:', arg.view.type);
+              setTimeout(() => {
+                try {
+                  const containerElement = document.getElementById('scheduleCalendar');
+                  if (!containerElement) return;
+                  const toolbar = containerElement.querySelector('.fc-toolbar');
+                  const headerRow = containerElement.querySelector('.fc-col-header');
+                  const fcRoot = containerElement.querySelector('.fc');
+                  const viewHarness = containerElement.querySelector('.fc-view-harness');
+                  const timegrid = containerElement.querySelector('.fc-timegrid');
+                  const scrollBodies = containerElement.querySelectorAll('.fc-scrollgrid-section-body');
+
+                  const toolbarH = toolbar ? Math.ceil(toolbar.getBoundingClientRect().height) : 0;
+                  const headerH = headerRow ? Math.ceil(headerRow.getBoundingClientRect().height) : 0;
+                  const avail = Math.max(520, containerElement.clientHeight - toolbarH - headerH - 8);
+
+                  console.log(`timeGrid sizing: avail=${avail}px, timegrid found? ${!!timegrid}, scrollBodies=${scrollBodies.length}`);
+
+                  if (fcRoot) { fcRoot.style.height = avail + 'px'; fcRoot.style.minHeight = avail + 'px'; fcRoot.style.overflow = 'visible'; }
+                  if (viewHarness) { viewHarness.style.height = avail + 'px'; viewHarness.style.minHeight = avail + 'px'; }
+                  if (timegrid) { timegrid.style.height = avail + 'px'; timegrid.style.minHeight = avail + 'px'; timegrid.style.overflowX = 'hidden'; timegrid.style.overflowY = 'auto'; }
+                  if (scrollBodies && scrollBodies.length) { scrollBodies.forEach(b => { b.style.height = avail + 'px'; b.style.minHeight = avail + 'px'; b.style.maxHeight = avail + 'px'; b.style.overflowX = 'hidden'; b.style.overflowY = 'auto'; }); }
+                  
+                  // Also target the fc-scroller elements inside timegrid
+                  const scrollers = containerElement.querySelectorAll('.fc-timegrid .fc-scroller');
+                  if (scrollers && scrollers.length) { scrollers.forEach(s => { s.style.maxHeight = avail + 'px'; s.style.overflowY = 'auto'; s.style.overflowX = 'hidden'; }); }
+
+                  if (calendar && typeof calendar.updateSize === 'function') calendar.updateSize();
+
+                  // Ensure FullCalendar created the time grid slots - retry a few times and fallback to forcing a view re-render
+                  (function ensureTimeGridSlots(attempt){
+                    try {
+                      const slotsEl = containerElement.querySelector('.fc-timegrid .fc-timegrid-slots');
+                      const hasSlots = slotsEl && slotsEl.querySelectorAll('*').length > 0;
+                      console.log('ensureTimeGridSlots: attempt', attempt, 'hasSlots?', !!hasSlots);
+
+                      if (hasSlots) {
+                        // Slots present - good
+                        return;
+                      }
+
+                      if (attempt >= 4) {
+                        // TimeGrid slots not created after retries. Do not force a view re-render here to avoid aggressive fallback behavior.
+                        // Exiting silently; higher-level flow (if any) may decide to handle this.
+                        return;
+                      }
+
+                      // Not yet present - try again with exponential backoff
+                      const retryDelays = [120, 240, 480, 800];
+                      setTimeout(() => {
+                        try { if (calendar && typeof calendar.updateSize === 'function') calendar.updateSize(); } catch(e){}
+                        ensureTimeGridSlots(attempt + 1);
+                      }, retryDelays[attempt] || 400);
+                    } catch (err) { console.warn('⚠ ensureTimeGridSlots failed', err); }
+                  })(0);
+
+                } catch (err) { console.warn('⚠ timeGrid sizing in datesSet failed', err); }
+              }, 100);
+            }
+            
+            if (calendar.updateSize) {
+              calendar.updateSize();
+            }
+          }, 150);
+        },
+
+        viewDidMount: (arg) => {
+          console.log('📅 View mounted');
+          setTimeout(() => {
+            if (calendar.updateSize) {
+              calendar.updateSize();
+            }
+
+            // Apply view-specific classes on mount so each view can be targeted independently
+            try {
+              const v = arg && arg.view && arg.view.type ? arg.view.type : '';
+              if (containerElement) {
+
+              }
+            } catch (e) { /* ignore */ }
+            
+            // STRETCH ROWS EQUALLY - runs after view fully mounted
+            const daygridBody = document.querySelector('.fc-daygrid-body');
+            if (daygridBody) {
+              const rows = daygridBody.querySelectorAll('.fc-daygrid-row');
+              if (rows.length > 0) {
+                // Do not force equal pixel heights on mount; allow natural heights and enable scrolling
+                try {
+                  daygridBody.style.overflowY = 'auto';
+                  daygridBody.style.webkitOverflowScrolling = 'touch';
+                  rows.forEach((row) => {
+                    row.style.height = '';
+                    row.style.minHeight = '';
+                    row.style.maxHeight = '';
+                    row.style.overflow = '';
+                    row.querySelectorAll('.fc-daygrid-day-cell').forEach(cell => {
+                      cell.style.height = '';
+                      cell.style.minHeight = '';
+
+                      // Clear any temporary per-cell events sizing applied earlier
+                      const eventsContainer = cell.querySelector('.fc-daygrid-day-events');
+                      if (eventsContainer) {
+                        eventsContainer.style.height = '';
+                        eventsContainer.style.maxHeight = '';
+                        eventsContainer.style.overflowY = '';
+                        eventsContainer.style.display = '';
+                        eventsContainer.style.flex = '';
+                        eventsContainer.style.minHeight = '';
+                        eventsContainer.style.boxSizing = '';
+                        eventsContainer.style.paddingBottom = '';
+                        eventsContainer.style.gap = '';
+                      }
+
+                      const moreEl = cell.querySelector('.fc-daygrid-day-more');
+                      if (moreEl) { moreEl.style.marginBottom = ''; moreEl.style.paddingBottom = ''; }
+                    });
+                  });
+                  console.log(`✅ Daygrid mount: cleared forced row sizing (${rows.length} rows)`);
+                } catch (e) { /* ignore */ }
+              }
+            }
+
+            // TIMEGRID SANITY CHECK - only apply to timeGridWeek (do not attempt fallbacks for Day view)
+            try {
+              const v = arg && arg.view && arg.view.type ? arg.view.type : '';
+              if (v === 'timeGridWeek' || v === 'timeGridDay') {
+                // Force slot bounds for full day and set initial scrollTime again in case options didn't apply earlier
+                try { if (calendar && typeof calendar.setOption === 'function') {
+                  calendar.setOption('slotMinTime', '00:00:00');
+                  calendar.setOption('slotMaxTime', '24:00:00');
+                  calendar.setOption('scrollTime', initialScrollTime);
+                  console.log('🔧 Applied timeGrid full-day options:', { slotMinTime: '00:00:00', slotMaxTime: '24:00:00', scrollTime: initialScrollTime });
+
+                  // Note: we avoid DOM overrides to prevent fallback side-effects. If slots do not render properly, investigate CSS/FullCalendar options instead.
+
+                } } catch (_) {}
+
+                setTimeout(async () => {
+                  try {
+                    const timedEvents = (calendar && typeof calendar.getEvents === 'function') ? calendar.getEvents().filter(e => !e.allDay) : [];
+                    const timegridEventEls = containerElement.querySelectorAll('.fc-timegrid .fc-event');
+                    const slots = containerElement.querySelectorAll('.fc-timegrid .fc-timegrid-slot');
+                    console.log('viewDidMount sanity (timeGrid):', { view: v, timedEvents: timedEvents.length, timegridEventEls: timegridEventEls.length, slots: slots.length });
+
+                    // If there are timed events but nothing rendered in the timeGrid, it's likely FullCalendar DOM failed to create time slot or event nodes
+                    if (timedEvents.length > 0 && timegridEventEls.length === 0) {
+                      // Timed events exist but no elements in timeGrid — remediation disabled (no automatic remake)
+                      return;
+                    }
+
+                    // If there are no slots at all (collapsed DOM), do not force re-render; remediation disabled
+                    if (slots.length === 0) {
+                      // No-op: do not force view re-render.
+                    }
+
+                    // Minimal approach: check and log slot counts and presence of scroll body; do NOT modify DOM (no fallbacks)
+                    try {
+                      const slotsContainer = containerElement.querySelector('.fc-timegrid .fc-timegrid-slots');
+                      const scrollBody = containerElement.querySelector('.fc-timegrid .fc-scrollgrid-section-body') || containerElement.querySelector('.fc-scrollgrid-section-body');
+                      if (slotsContainer && slots && slots.length && scrollBody) {
+                        console.log('ℹ timeGrid slots detected:', { slots: slots.length, slotsContainerClientH: slotsContainer.clientHeight, scrollBodyClientH: scrollBody.clientHeight });
+                      } else {
+                        console.log('ℹ timeGrid slots or scroll body missing or insufficient:', { slots: slots.length, hasSlotsContainer: !!slotsContainer, hasScrollBody: !!scrollBody });
+                      }
+                    } catch (e) { console.warn('ℹ timeGrid slot check failed', e); }
+                  } catch (err) { console.warn('viewDidMount sanity check failed', err); }
+                }, 220);
+              }
+            } catch (err) { /* ignore */ }
+          }, 350);
+        },
+
+        // Styling
+        nowIndicator: true,
+        eventDisplay: 'block',
+        // Ensure all-day slot hidden (no dedicated all-day column/row)
+        allDaySlot: false,
+        height: window._calendarHeight || 600,
+        contentHeight: 'parent'
+      });
+
+      console.log('✅ Calendar object created:', calendar);
+      console.log('Calendar constructor type:', typeof calendar);
+      console.log('Calendar is FullCalendar.Calendar:', calendar instanceof FullCalendar.Calendar);
+      console.log('Calendar methods:', Object.getOwnPropertyNames(Object.getPrototypeOf(calendar)).slice(0, 10));
+
+      // Render the calendar
+      console.log('📅 About to call calendar.render()...');
+      console.log('Calendar object:', calendar);
+      console.log('Calendar._component:', calendar._component);
+      
+      try {
+        console.log('Calling render...');
+        const renderResult = calendar.render();
+        console.log('✅ FullCalendar rendered successfully, result:', renderResult);
+        // Expose calendar globally for debug helpers
+        try { window.calendar = calendar; } catch (err) { /* ignore */ }
+
+        // Diagnostic helpers: inspect computed styles for rendered events (call from console)
+        try {
+          window.calendarDebug = window.calendarDebug || {};
+          window.calendarDebug.logEventStyles = () => {
+            try {
+              const firstTimeEvent = document.querySelector('.fc-timegrid .fc-event');
+              const firstDayEvent = document.querySelector('.fc-daygrid .fc-event');
+              const describe = (el) => {
+                if (!el) return null;
+                const cs = window.getComputedStyle(el);
+                return {
+                  tag: el.tagName,
+                  className: el.className,
+                  inlineStyle: el.getAttribute('style'),
+                  background: cs.background,
+                  backgroundImage: cs.backgroundImage,
+                  backgroundColor: cs.backgroundColor,
+                  color: cs.color,
+                  opacity: cs.opacity,
+                  visibility: cs.visibility,
+                  display: cs.display,
+                  zIndex: cs.zIndex
+                };
+              };
+              const res = { timeEvent: describe(firstTimeEvent), dayEvent: describe(firstDayEvent) };
+              console.log('🔬 calendarDebug.logEventStyles result:', res);
+              return res;
+            } catch (e) { console.warn('calendarDebug.logEventStyles failed', e); return null; }
+          };
+        } catch (e) { /* ignore diagnostic helper failure */ }
+
+        // Apply initial view class to container
+        try {
+          const initView = calendar && calendar.view && calendar.view.type ? calendar.view.type : null;
+          if (initView && containerElement) {
+            containerElement.classList.toggle('view-timegrid-week', initView === 'timeGridWeek');
+            containerElement.classList.toggle('view-timegrid-day', initView === 'timeGridDay');
+            containerElement.classList.toggle('view-daygrid', initView === 'dayGridMonth');
+          }
+        } catch (e) { /* ignore */ }
+        // Defer sizing — run a few attempts with increasing delays to allow FullCalendar DOM to settle
+        (function robustSizing() {
+          const delays = [50, 150, 350, 700];
+          const maxAttempts = delays.length;
+
+          function applySizing(avail) {
+            try {
+              const toolbar = containerElement.querySelector('.fc-toolbar');
+              const headerRow = containerElement.querySelector('.fc-col-header');
+              const fcRoot = containerElement.querySelector('.fc');
+              const viewHarness = containerElement.querySelector('.fc-view-harness');
+              const timegrid = containerElement.querySelector('.fc-timegrid');
+              const scrollBodies = containerElement.querySelectorAll('.fc-scrollgrid-section-body');
+
+              console.log('applySizing: timegrid found?', !!timegrid, 'scrollBodies count', scrollBodies.length);
+
+              if (fcRoot) { fcRoot.style.height = avail + 'px'; fcRoot.style.minHeight = avail + 'px'; fcRoot.style.overflow = 'visible'; }
+              if (viewHarness) { viewHarness.style.height = avail + 'px'; viewHarness.style.minHeight = avail + 'px'; }
+              if (timegrid) { timegrid.style.height = avail + 'px'; timegrid.style.minHeight = avail + 'px'; timegrid.style.overflowX = 'hidden'; timegrid.style.overflowY = 'auto'; }
+              if (scrollBodies && scrollBodies.length) { scrollBodies.forEach(b => { b.style.height = avail + 'px'; b.style.minHeight = avail + 'px'; b.style.maxHeight = avail + 'px'; b.style.overflowX = 'hidden'; b.style.overflowY = 'auto'; }); }
+              
+              // Also target the fc-scroller elements inside timegrid
+              const scrollers = containerElement.querySelectorAll('.fc-timegrid .fc-scroller');
+              if (scrollers && scrollers.length) { scrollers.forEach(s => { s.style.maxHeight = avail + 'px'; s.style.overflowY = 'auto'; s.style.overflowX = 'hidden'; }); }
+
+              // Also set calendar options so FullCalendar knows the explicit height
+              try { if (calendar && typeof calendar.setOption === 'function') { calendar.setOption('height', avail); calendar.setOption('contentHeight', 'parent'); } } catch (err) { /* ignore */ }
+              if (calendar && typeof calendar.updateSize === 'function') calendar.updateSize();
+            } catch (err) { console.warn('⚠ applySizing failed', err); }
+          }
+
+          function attempt(n) {
+            try {
+              const toolbar = containerElement.querySelector('.fc-toolbar');
+              const headerRow = containerElement.querySelector('.fc-col-header');
+              const toolbarH = toolbar ? Math.ceil(toolbar.getBoundingClientRect().height) : 0;
+              const headerH = headerRow ? Math.ceil(headerRow.getBoundingClientRect().height) : 0;
+              const avail = Math.max(520, containerElement.clientHeight - toolbarH - headerH - 8);
+
+              console.log(`sizing attempt #${n + 1}/${maxAttempts} — computed avail=${avail}px`, { toolbarH, headerH, containerH: containerElement.clientHeight });
+              applySizing(avail);
+
+              // Check for collapsed sections
+              const collapsed = Array.from(containerElement.querySelectorAll('.fc-scrollgrid-section-body')).filter(b => b.getBoundingClientRect().height < 6);
+              const timegrid = containerElement.querySelector('.fc-timegrid');
+              const timegridCollapsed = timegrid && timegrid.getBoundingClientRect().height < 6;
+
+              console.log('collapsed scrollBodies:', collapsed.length, 'timegrid collapsed?', timegridCollapsed);
+
+              if (collapsed.length === 0 && !timegridCollapsed) {
+                console.log('✅ Sizing successful — no collapsed sections');
+                return;
+              }
+
+              if (n + 1 < maxAttempts) {
+                const delay = delays[n + 1];
+                console.log(`⚠ Detected ${collapsed.length} collapsed sections; retrying in ${delay}ms`);
+                setTimeout(() => attempt(n + 1), delay);
+              } else {
+                // Sizing attempts exhausted. No automatic DOM fallbacks will be applied here to avoid unexpected layout changes.
+                // The caller/view may opt to handle layout issues explicitly. (No-op)
+              }
+            } catch (err) { console.warn('⚠ sizing attempt failed', err); }
+          }
+
+          // Run first attempt after a short delay
+          setTimeout(() => attempt(0), delays[0]);
+        })();
+
+        // Safely process day cells (may not exist immediately after render).
+        (function handleDayCells() {
+          function processDayCell(dayCell) {
+            const eventsContainer = dayCell.querySelector('.fc-daygrid-day-events');
+            if (eventsContainer) {
+              const allEventEls = Array.from(eventsContainer.querySelectorAll('.fc-daygrid-event'));
+              if (allEventEls.length > 3) {
+                const dateEl = dayCell.querySelector('.fc-daygrid-day-number');
+                const dayNum = dateEl ? dateEl.textContent : '?';
+                console.log(`%c📅 FEB ${dayNum}: ${allEventEls.length} events found`, 'color: blue; font-weight: bold; font-size: 13px');
+
+                let timedCount = 0;
+                allEventEls.forEach((el) => {
+                  const text = el.textContent;
+                  const hasTime = /\d{2}:\d{2}/.test(text);
+
+                  if (hasTime) {
+                    timedCount++;
+                    if (timedCount > 3) {
+                      el.style.display = 'none';
+                      console.log(`%c  ❌ HIDING #${timedCount}: ${text.substring(0, 35)}`, 'color: red; font-weight: bold');
+                    }
+                  }
+                });
+              }
+            }
+          }
+
+          try {
+            let dayCells = containerElement.querySelectorAll('.fc-daygrid-day-cell');
+            if (!dayCells || dayCells.length === 0) {
+              // Retry once shortly after render in case DOM hasn't settled
+              setTimeout(() => {
+                try {
+                  dayCells = containerElement.querySelectorAll('.fc-daygrid-day-cell');
+                  if (dayCells && dayCells.length > 0) {
+                    Array.from(dayCells).forEach(processDayCell);
+                  } else {
+                    console.log('⚠ No .fc-daygrid-day-cell elements found after retry.');
+                  }
+                } catch (err) { console.warn('⚠ Error processing dayCells on retry', err); }
+              }, 250);
+              return;
+            }
+
+            Array.from(dayCells).forEach(processDayCell);
+          } catch (err) {
+            console.warn('⚠ Error processing dayCells', err);
+          }
+        })();
+
+      } catch (renderError) {
+        console.error('❌ Error calling calendar.render():', renderError);
+        console.error('Error stack:', renderError.stack);
+        throw renderError;
+      }
+      
+      // Post-render adjustments disabled to avoid automatic DOM sizing/fallbacks
+      // This area formerly applied many forced layout changes (styles, updateSize, resize events, forced table display, refetchEvents).
+      // Per request, we will not modify DOM layout here. We will still call a single updateSize() if available to allow FullCalendar to do its standard layout pass.
+      try {
+        if (calendar && typeof calendar.updateSize === 'function') calendar.updateSize();
+      } catch (err) { /* ignore */ }
+
+      
+      // Store calendar reference
+      this.calendar = calendar;
+      this.containerElement = containerElement;
+      
+      // Add window resize handler for responsive resizing
+      let resizeTimeout;
+      window.addEventListener('resize', () => {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(() => {
+          console.log('📱 Window resized, recalculating calendar height');
+          
+          // Always use 100% - no fixed heights
+          const newCalendarHeight = '100%';
+          const newMinCalendarHeight = '100%';
+          
+          // Store new heights
+          window._calendarHeight = newCalendarHeight;
+          window._minCalendarHeight = newMinCalendarHeight;
+          
+          // Apply to container
+          containerElement.style.minHeight = '100%';
+          containerElement.style.height = '100%';
+          
+          // Apply to FC elements
+          const fcView = containerElement.querySelector('.fc');
+          if (fcView) {
+            fcView.style.height = '100%';
+            const fcRoot = containerElement.querySelector('.fc-root');
+            if (fcRoot) fcRoot.style.height = '100%';
+            const fcViewHarness = containerElement.querySelector('.fc-view-harness');
+            if (fcViewHarness) fcViewHarness.style.height = '100%';
+          }
+          
+          // Update calendar size
+          if (calendar.updateSize) {
+            calendar.updateSize();
+          }
+          
+          console.log('✅ Calendar resized to: 100%');
+        }, 250); // Debounce resize events
+      });
+
+      return calendar;
+    } catch (error) {
+      console.error('❌ Error in initializeCalendar:', error);
+      console.error(error.stack);
+      containerElement.innerHTML = '<p style="color: #e74c3c; padding: 20px;">Error: ' + error.message + '</p>';
+      return null;
+    }
   },
 
   /**
-   * Setup calendar in a container
+   * Remake Day/Week timeGrid views by fully reinitializing the calendar and cycling views
+   * Useful when FullCalendar's timeGrid DOM fails to render the hourly slots
    */
-  async init(container, scheduleData, callbacks = {}) {
-    this.callbacks = callbacks;
-    this.currentScheduleData = scheduleData;
+  async remakeTimeGridViews(preferredView = 'timeGridWeek', scheduleDataParam) {
+    // REMOVED: fallback remediation disabled by request
+    // This function is intentionally a no-op to prevent automatic re-initialization or forced view changes.
+    return this.calendar || null;
+  },
 
-    const events = await this.generateCalendarEvents(scheduleData);
+  /**
+   * Open event creation/editing modal
+   */
+  openEventModal(event, selectInfo, calendar, scheduleData) {
+    const modal = document.getElementById('eventModal');
+    const form = document.getElementById('eventForm');
+    const deleteBtn = document.getElementById('eventDeleteBtn');
+    const cancelBtn = document.getElementById('eventCancelBtn');
+    const titleInput = document.getElementById('eventTitle');
+    const typeInput = document.getElementById('eventType');
+    const startInput = document.getElementById('eventStart');
+    const endInput = document.getElementById('eventEnd');
 
-    this.calendar = new FullCalendar.Calendar(container, {
-      initialView: 'dayGridMonth',
-      locale: 'sl',
-      height: 'auto',
-      headerToolbar: {
-        left: 'prev,next today',
-        center: 'title',
-        right: 'dayGridMonth,timeGridWeek,timeGridDay'
-      },
-      slotMinTime: '06:00:00',
-      slotMaxTime: '22:00:00',
-      slotDuration: '00:15:00',
-      slotLabelInterval: '01:00:00',
-      allDaySlot: true,
-      events: events,
-      editable: true,
-      selectable: true,
-      selectMirror: true,
-      dayMaxEvents: this.maxEventsPerDay || false,
-      eventClick: (info) => {
-        if (callbacks.onEventClick) callbacks.onEventClick(info.event);
-      },
-      eventDrop: (info) => {
-        if (callbacks.onEventDrop) callbacks.onEventDrop(info.event);
-      },
-      eventResize: (info) => {
-        if (callbacks.onEventResize) callbacks.onEventResize(info.event);
-      },
-      select: (info) => {
-        if (callbacks.onDateSelect) callbacks.onDateSelect(info);
-      },
-      eventDidMount: (info) => {
-        // Add custom class based on event type
-        info.el.classList.add('event-type-' + info.event.extendedProps.type);
+    if (!modal || !form) {
+      console.error('❌ Modal or form not found');
+      return;
+    }
+
+    // Setup type buttons
+    const typeButtons = document.querySelectorAll('#typeSelection button');
+    typeButtons.forEach(btn => {
+      btn.style.borderColor = '#ecf0f1';
+      btn.style.backgroundColor = '#f8fafb';
+      btn.style.color = '#2c3e50';
+
+      const type = btn.getAttribute('data-type');
+      // Determine initial selection: explicit event type > selectInfo (new-event defaults) > form input value
+      const initialType = event?.extendedProps?.type ?? (selectInfo ? 'working_hours' : (typeInput ? typeInput.value : 'working_hours'));
+      if (type === initialType) {
+        btn.style.borderColor = '#3498db';
+        btn.style.backgroundColor = '#3498db';
+        btn.style.color = 'white';
+      }
+
+      btn.onclick = (e) => {
+        e.preventDefault();
+        typeButtons.forEach(b => {
+          b.style.borderColor = '#ecf0f1';
+          b.style.backgroundColor = '#f8fafb';
+          b.style.color = '#2c3e50';
+        });
+        btn.style.borderColor = '#3498db';
+        btn.style.backgroundColor = '#3498db';
+        btn.style.color = 'white';
+        typeInput.value = type;
+      };
+    });
+
+    // Helper: format a Date (or date-like) into a local 'YYYY-MM-DDTHH:mm' for datetime-local inputs
+    const fmtLocal = (d) => {
+      try {
+        const dt = (d instanceof Date) ? d : new Date(d);
+        const pad = (n) => String(n).padStart(2, '0');
+        return `${dt.getFullYear()}-${pad(dt.getMonth() + 1)}-${pad(dt.getDate())}T${pad(dt.getHours())}:${pad(dt.getMinutes())}`;
+      } catch (_) { return ''; }
+    };
+
+    // Set form values
+    if (event) {
+      // Editing existing event (FullCalendar EventApi or plain object)
+      titleInput.value = event.title || '';
+      typeInput.value = event.extendedProps?.type || 'working_hours';
+      startInput.value = event.start ? fmtLocal(event.start) : '';
+      endInput.value = event.end ? fmtLocal(event.end) : (event.start ? fmtLocal(event.start) : '');
+      deleteBtn.style.display = 'flex';
+    } else {
+      // Creating new event
+      titleInput.value = '';
+      typeInput.value = 'working_hours';
+      
+      // Debug: log what we received
+      console.log('selectInfo:', selectInfo);
+      console.log('startStr:', selectInfo?.startStr);
+      console.log('endStr:', selectInfo?.endStr);
+      
+      // Auto-fill start and end times from selected date range
+      if (selectInfo?.startStr) {
+        try {
+          // Parse the date string from FullCalendar
+          let startDate = new Date(selectInfo.startStr);
+          let endDate = new Date(selectInfo.endStr || selectInfo.startStr);
+          
+          // If dates are invalid, try parsing without timezone
+          if (isNaN(startDate.getTime())) {
+            startDate = new Date(selectInfo.startStr.replace('Z', ''));
+          }
+          if (isNaN(endDate.getTime())) {
+            endDate = new Date((selectInfo.endStr || selectInfo.startStr).replace('Z', ''));
+          }
+          
+          // Set default times: 09:00 to 17:00
+          startDate.setHours(9, 0, 0, 0);
+          endDate.setHours(17, 0, 0, 0);
+          
+          // Convert to datetime-local format (local time) using helper
+          const startStr = fmtLocal(startDate);
+          const endStr = fmtLocal(endDate);
+
+          console.log('Formatted start (local):', startStr);
+          console.log('Formatted end (local):', endStr);
+
+          startInput.value = startStr;
+          endInput.value = endStr;
+        } catch (err) {
+          console.error('Error parsing dates:', err);
+          // Fallback: set default times for today
+          const now = new Date();
+          now.setHours(9, 0, 0, 0);
+          const tomorrow = new Date(now);
+          tomorrow.setDate(tomorrow.getDate() + 1);
+          tomorrow.setHours(17, 0, 0, 0);
+          
+          startInput.value = now.toISOString().slice(0, 16);
+          endInput.value = tomorrow.toISOString().slice(0, 16);
+        }
+      }
+      
+      deleteBtn.style.display = 'none';
+    }
+
+    // Update type button styles
+    typeButtons.forEach(btn => {
+      const type = btn.getAttribute('data-type');
+      if (type === typeInput.value) {
+        btn.style.borderColor = '#3498db';
+        btn.style.backgroundColor = '#3498db';
+        btn.style.color = 'white';
       }
     });
 
-    this.calendar.render();
-    return this.calendar;
+    // Handle form submission
+    form.onsubmit = async (e) => {
+      e.preventDefault();
+
+      const title = titleInput.value.trim();
+      if (!title) {
+        alert('Vnesite naziv dogodka');
+        return;
+      }
+
+      const type = typeInput.value;
+      const start = startInput.value;
+      const end = endInput.value;
+
+      console.log('🔍 SAVE EVENT - User input from modal:', {
+        title,
+        type,
+        start,
+        end
+      });
+
+      if (!start || !end) {
+        alert('Vnesite datum in čas početka in konca');
+        return;
+      }
+
+      // Get color for type
+      const typeColors = {
+        'working_hours': '#27ae60',
+        'break': '#f39c12',
+        'lunch': '#e67e22',
+        'vacation': '#3498db',
+        'sick_leave': '#9b59b6',
+        'day_off': '#e74c3c'
+      };
+
+      if (event) {
+        // Update existing event
+        const eventObj = scheduleData.events.find(e => e.id === event.id);
+        if (eventObj) {
+          eventObj.title = title;
+          eventObj.type = type;
+          eventObj.start = start;
+          eventObj.end = end;
+          eventObj.color = typeColors[type];
+
+          // Update in calendar when EventApi instance is provided (guarded)
+          try {
+            if (typeof event.setProp === 'function') {
+              event.setProp('title', title);
+              event.setProp('backgroundColor', typeColors[type]);
+              if (typeof event.setExtendedProp === 'function') event.setExtendedProp('type', type);
+              event.setStart(start);
+              event.setEnd(end);
+            }
+          } catch (updateErr) { console.warn('⚠ Failed to update EventApi instance', updateErr); }
+
+          // Persist update to storage/DB
+          try {
+            if (typeof window.saveScheduleData === 'function') {
+              await window.saveScheduleData();
+              console.log('✓ Event update persisted');
+            } else {
+              try { localStorage.setItem('schedule', JSON.stringify(scheduleData)); console.log('✓ Event update saved to localStorage'); } catch(e){}
+            }
+          } catch (saveErr) { console.warn('⚠ Failed to persist event update', saveErr); }
+        }
+      } else {
+        // Create new event
+        const newEvent = {
+          id: Date.now().toString(),
+          title: title,
+          type: type,
+          start: start,
+          end: end,
+          color: typeColors[type],
+          recurring: 'once'
+        };
+
+        try {
+          console.log('📌 Creating new event:', newEvent);
+          scheduleData.events.push(newEvent);
+          
+          // Format event for FullCalendar before adding
+          const formattedEvent = CalendarEngine.formatCalendarEvent(newEvent);
+          console.log('📌 Formatted event for calendar:', formattedEvent);
+
+          // Persist creation to storage/DB first so we treat scheduleData as canonical
+          try {
+            if (typeof window.saveScheduleData === 'function') {
+              await window.saveScheduleData();
+              console.log('✓ New event persisted');
+            } else {
+              try { localStorage.setItem('schedule', JSON.stringify(scheduleData)); console.log('✓ New event saved to localStorage'); } catch(e){}
+            }
+          } catch (saveErr) { console.warn('⚠ Failed to persist new event', saveErr); }
+
+          // Refresh calendar from canonical schedule to avoid duplicates
+          if (typeof loadAppointmentsToCalendarNow === 'function') {
+            try { await loadAppointmentsToCalendarNow(); } catch (e) { console.warn('⚠ loadAppointmentsToCalendarNow failed', e); }
+          } else if (calendar) {
+            // Fallback: add the single formatted event
+            try { calendar.addEvent(formattedEvent); console.log('📌 Event added to calendar (fallback add)'); } catch(e) { console.warn('⚠ calendar.addEvent fallback failed', e); }
+          }
+        } catch (err) {
+          console.error('❌ Error adding event to calendar:', err);
+          console.error('Error stack:', err.stack);
+        }
+      }
+
+      // Save to storage
+      const saveResult = await StorageManager.save('schedule', scheduleData);
+
+      // Update events list
+      CalendarEngine.updateEventsList(scheduleData);
+
+      // Close modal
+      modal.style.display = 'none';
+    };
+
+    // Handle delete
+    deleteBtn.onclick = async (e) => {
+      e.preventDefault();
+      if (!confirm('Izbriši ta dogodek?')) return;
+
+      // Remove from storage
+      const eventId = event && (event.id || event.extendedProps?.eventId);
+      scheduleData.events = scheduleData.events.filter(ev => ev.id !== eventId);
+
+      // Remove from calendar if EventApi instance
+      try { if (event && typeof event.remove === 'function') event.remove(); } catch (_) { }
+
+      await StorageManager.save('schedule', scheduleData);
+
+      // Update events list
+      CalendarEngine.updateEventsList(scheduleData);
+
+      modal.style.display = 'none';
+    };
+
+    // Handle cancel
+    cancelBtn.onclick = () => {
+      modal.style.display = 'none';
+    };
+
+    // Close modal when clicking outside
+    modal.onclick = (e) => {
+      if (e.target === modal) {
+        modal.style.display = 'none';
+      }
+    };
+
+    // Show modal
+    modal.style.display = 'flex';
+  },
+
+  /**
+   * Update events list display
+   */
+  updateEventsList(scheduleData) {
+    const listContainer = document.getElementById('eventsList');
+    if (!listContainer) return;
+
+    if (!scheduleData.events || scheduleData.events.length === 0) {
+      listContainer.innerHTML = '<p style="color: #95a5a6; text-align: center; padding: 20px;">Nema događaja - dodajte novi klikanjem na kalendarijum!</p>';
+      return;
+    }
+
+    const typeEmojis = {
+      'working_hours': '💼',
+      'break': '☕',
+      'lunch': '🍽️',
+      'vacation': '🏖️',
+      'sick_leave': '🏥',
+      'day_off': '❌'
+    };
+
+    const typeColors = {
+      'working_hours': '#27ae60',
+      'break': '#f39c12',
+      'lunch': '#e67e22',
+      'vacation': '#3498db',
+      'sick_leave': '#9b59b6',
+      'day_off': '#e74c3c'
+    };
+
+    const eventsHTML = scheduleData.events.map(event => {
+      const startDate = new Date(event.start);
+      const endDate = new Date(event.end);
+      const emoji = typeEmojis[event.type] || '📅';
+      const color = typeColors[event.type] || '#95a5a6';
+      const startStr = startDate.toLocaleDateString('sl-SI', { weekday: 'short', year: 'numeric', month: '2-digit', day: '2-digit' });
+      const startTime = startDate.toLocaleTimeString('sl-SI', { hour: '2-digit', minute: '2-digit' });
+      const endTime = endDate.toLocaleTimeString('sl-SI', { hour: '2-digit', minute: '2-digit' });
+
+      return `
+        <div style="display: flex; gap: 12px; padding: 12px; background: white; border-radius: 6px; border-left: 4px solid ${color}; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+          <div style="font-size: 24px; min-width: 30px; text-align: center;">${emoji}</div>
+          <div style="flex: 1; min-width: 0;">
+            <div style="font-weight: 600; color: #2c3e50; word-break: break-word;">${event.title}</div>
+            <div style="font-size: 12px; color: #7f8c8d; margin-top: 4px;">
+              📅 ${startStr} | ⏰ ${startTime} - ${endTime}
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    listContainer.innerHTML = eventsHTML;
   }
 };
 
-// Export CalendarEngine to window
+// ===== WORKING HOURS MANAGEMENT =====
+function saveWorkingHours() {
+  const startTime = document.getElementById('workStartTime').value;
+  const endTime = document.getElementById('workEndTime').value;
+  
+  if (!startTime || !endTime) {
+    alert('⚠️ Molim postavi vrijeme početka i kraja rada!');
+    return;
+  }
+  
+  if (startTime >= endTime) {
+    alert('⚠️ Vrijeme početka mora biti prije vremena kraja rada!');
+    return;
+  }
+  
+  // Save working hours config to localStorage
+  const workingHours = { start: startTime, end: endTime };
+  localStorage.setItem('workingHours', JSON.stringify(workingHours));
+  
+  // Show confirmation message
+  const infoDiv = document.getElementById('workingHoursInfo');
+  const displayDiv = document.getElementById('workingHoursDisplay');
+  displayDiv.textContent = `${startTime} - ${endTime}`;
+  infoDiv.style.display = 'block';
+  
+  // Create or update "Delo" events for working hours
+  createWorkingHoursEvents(startTime, endTime).catch(err => {
+    console.error('Greška pri kreiranju radnih sati:', err);
+  });
+  
+  console.log(`✓ Radni sati postavljeni: ${startTime} - ${endTime}`);
+}
+
+// Helper za debug output
+function debugLog(msg) {
+  const timestamp = new Date().toLocaleTimeString();
+  const fullMsg = `[${timestamp}] ${msg}`;
+  console.log(fullMsg);
+  // Write to either internal debugOutput (older) or the visible debug-panel
+  const debugDiv = document.getElementById('debugOutput') || document.getElementById('debug-panel');
+  if (debugDiv) {
+    // If it's the debug-panel created in admin-panel.html, append HTML
+    if (debugDiv.id === 'debug-panel') {
+      debugDiv.innerHTML += fullMsg + '<br>';
+    } else {
+      debugDiv.textContent += '\n' + fullMsg;
+      debugDiv.scrollTop = debugDiv.scrollHeight;
+    }
+  }
+}
+
+// Load appointments from bookings (global function)
+async function loadAppointmentsToCalendarNow() {
+  debugLog('🔄 Loading bookings from StorageManager schedule');
+  try {
+    if (window.calendar) {
+      // Simply refetch events - the events callback will load fresh data
+      window.calendar.refetchEvents();
+      debugLog(`✅ Calendar events refetched`);
+    }
+  } catch (error) {
+    debugLog(`❌ loadAppointmentsToCalendarNow error: ${error.message}`);
+  }
+}
+
+// Create daily working hours events
+async function createWorkingHoursEvents(startTime, endTime) {
+  try {
+    const schedule = await StorageManager.load('schedule');
+    
+    // Remove existing "Delo" events
+    schedule.events = schedule.events.filter(e => e.type !== 'working_hours' || e.title !== '💼 Delo');
+    
+    // Get current and next 365 days
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    for (let i = 0; i < 365; i++) {
+      const date = new Date(today);
+      date.setDate(date.getDate() + i);
+      const dateStr = date.toISOString().split('T')[0];
+      
+      // Create working hours event for this day
+      const event = {
+        id: 'delo_' + dateStr,
+        title: '💼 Delo',
+        type: 'working_hours',
+        start: `${dateStr}T${startTime}`,
+        end: `${dateStr}T${endTime}`,
+        recurring: 'daily',
+        color: '#27ae60',
+        backgroundColor: 'rgba(39, 174, 96, 0.3)',
+        borderColor: '#27ae60',
+        editable: false,
+        extendedProps: {
+          isWorkingHours: true
+        }
+      };
+      
+      schedule.events.push(event);
+    }
+    
+    // Save to storage
+    await StorageManager.save('schedule', schedule);
+    
+    // Refresh calendar from canonical schedule so rendering is consistent
+    if (typeof loadAppointmentsToCalendarNow === 'function') {
+      try { await loadAppointmentsToCalendarNow(); } catch (e) { console.warn('⚠ loadAppointmentsToCalendarNow failed', e); }
+    } else if (window.calendar) {
+      // Fallback: clear and add working hours manually
+      window.calendar.getEvents().forEach(event => {
+        if (event.extendedProps?.isWorkingHours) {
+          event.remove();
+        }
+      });
+      schedule.events.filter(e => e.extendedProps?.isWorkingHours).forEach(event => {
+        const formatted = CalendarEngine.formatCalendarEvent(event);
+        window.calendar.addEvent(formatted);
+      });
+    }
+  } catch (error) {
+    console.error('❌ Greška u createWorkingHoursEvents:', error);
+  }
+}
+
+// Export CalendarEngine to window so it can be accessed globally
 window.CalendarEngine = CalendarEngine;
+console.log('✅ CalendarEngine exported to window:', typeof window.CalendarEngine);
+console.log('✅ CalendarEngine.initializeCalendar exists:', typeof window.CalendarEngine?.initializeCalendar);
