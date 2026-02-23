@@ -4,49 +4,6 @@
  */
 
 const CalendarEngine = {
-  /**
-   * Generate FullCalendar events from schedule data
-   * Handles recurring events expansion and rule application
-   */
-  async generateCalendarEvents(scheduleData) {
-    const events = [];
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    // Generate events for next 6 months
-    const endDate = new Date(today);
-    endDate.setMonth(endDate.getMonth() + 6);
-
-    const eventsSource = (Array.isArray(scheduleData.events) ? scheduleData.events : []).filter(e => !(typeof window !== 'undefined' && typeof window.isEventDeleted === 'function' && window.isEventDeleted(e.id)));
-
-    eventsSource.forEach((event) => {
-      // Single events
-      if (event.recurring === 'once' || !event.recurring) {
-        try {
-          const formattedEvent = this.formatCalendarEvent(event);
-          if (!formattedEvent) {
-            console.warn('⚠ Skipping event due to format error:', event?.id || event?.title);
-          } else {
-            console.log('📌 Adding single event:', formattedEvent);
-            events.push(formattedEvent);
-          }
-        } catch (err) {
-          console.warn('⚠ formatCalendarEvent threw for event:', event?.id || event?.title, err);
-        }
-      }
-
-      // Weekly recurring events
-      if (event.recurring === 'weekly' && event.daysOfWeek) {
-        // Recurrence expansion starts at the later of today or the event's start date (if provided)
-        let startFrom = new Date(today);
-        if (event.start) {
-          try {
-            const eventStartDate = new Date((String(event.start)).split('T')[0] + 'T00:00:00');
-            if (!isNaN(eventStartDate.getTime()) && eventStartDate > startFrom) startFrom = eventStartDate;
-          } catch (_) { /* ignore parsing errors */ }
-        }
-
-        let current = new Date(startFrom);
 
         while (current <= endDate) {
           if (event.daysOfWeek.includes(current.getDay())) {
