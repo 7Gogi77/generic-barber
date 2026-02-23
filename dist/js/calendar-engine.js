@@ -137,6 +137,15 @@ const CalendarEngine = {
     };
 
     events.forEach(e => {
+      // CRITICAL: First check for exact ID match - never allow duplicate IDs
+      if (e.id) {
+        const existingById = unique.findIndex(u => u.id === e.id);
+        if (existingById !== -1) {
+          console.log('⏭️ Skipping duplicate event by ID:', e.id, '(already exists)');
+          return;
+        }
+      }
+
       const cust = (e.extendedProps && e.extendedProps.customer) ? String(e.extendedProps.customer).trim() : (e.title ? String(e.title).replace(/^\S+\s/, '').trim() : '');
       const getMs = (val) => { try { return new Date(val).getTime(); } catch(_) { return NaN; } };
       const sMs = getMs(e.start);
@@ -146,19 +155,13 @@ const CalendarEngine = {
       let conflictIdx = -1;
       for (let i = 0; i < unique.length; i++) {
         const u = unique[i];
-        if (u.id && e.id && u.id === e.id) { conflictIdx = i; break; }
         const uCust = (u.extendedProps && u.extendedProps.customer) ? String(u.extendedProps.customer).trim() : (u.title ? String(u.title).replace(/^\S+\s/, '').trim() : '');
         if (isTimesClose(e.start, e.end, u.start, u.end) && ((cust && uCust && cust === uCust) || (!cust && !uCust))) { conflictIdx = i; break; }
       }
 
       if (conflictIdx !== -1) {
         const u = unique[conflictIdx];
-        // same id -> skip
-        if (u.id && e.id && u.id === e.id) {
-          console.log('⏭️ Skipping exact-duplicate by id:', e);
-          return; // skip this incoming event
-        }
-
+        
         // Decide which to keep
         const keepExisting = prefer(u, e);
         if (!keepExisting) {
@@ -852,22 +855,72 @@ const CalendarEngine = {
         },
 
         eventDrop: async (dropInfo) => {
-          console.log('📅 Event dropped:', dropInfo.event.title);
-          const event = scheduleData.events.find(e => e.id === dropInfo.event.id);
-          if (event) {
-            event.start = dropInfo.event.startStr;
-            event.end = dropInfo.event.endStr;
-            await StorageManager.save('schedule', scheduleData);
+          console.log('📅 Event dropped:', dropInfo.event.title, 'ID:', dropInfo.event.id);
+          
+          try {
+            // Find and update the event in scheduleData
+            const eventIndex = scheduleData.events.findIndex(e => e.id === dropInfo.event.id);
+            
+            if (eventIndex !== -1) {
+              // Update the event in place
+              scheduleData.events[eventIndex].start = dropInfo.event.startStr;
+              scheduleData.events[eventIndex].end = dropInfo.event.endStr;
+              
+              console.log('✅ Updated event:', scheduleData.events[eventIndex].id, 'new times:', dropInfo.event.startStr, '→', dropInfo.event.endStr);
+              
+              // Save to storage
+              await StorageManager.save('schedule', scheduleData);
+              console.log('💾 Saved to storage');
+              
+              // Force calendar to refetch events after a brief delay to ensure save completes
+              setTimeout(() => {
+                if (calendar && typeof calendar.refetchEvents === 'function') {
+                  console.log('🔄 Refetching events after drop');
+                  calendar.refetchEvents();
+                }
+              }, 300);
+            } else {
+              console.warn('⚠ Event not found in scheduleData:', dropInfo.event.id);
+              dropInfo.revert();
+            }
+          } catch (error) {
+            console.error('❌ Error in eventDrop:', error);
+            dropInfo.revert();
           }
         },
 
         eventResize: async (resizeInfo) => {
-          console.log('📅 Event resized:', resizeInfo.event.title);
-          const event = scheduleData.events.find(e => e.id === resizeInfo.event.id);
-          if (event) {
-            event.start = resizeInfo.event.startStr;
-            event.end = resizeInfo.event.endStr;
-            await StorageManager.save('schedule', scheduleData);
+          console.log('📅 Event resized:', resizeInfo.event.title, 'ID:', resizeInfo.event.id);
+          
+          try {
+            // Find and update the event in scheduleData
+            const eventIndex = scheduleData.events.findIndex(e => e.id === resizeInfo.event.id);
+            
+            if (eventIndex !== -1) {
+              // Update the event in place
+              scheduleData.events[eventIndex].start = resizeInfo.event.startStr;
+              scheduleData.events[eventIndex].end = resizeInfo.event.endStr;
+              
+              console.log('✅ Updated event:', scheduleData.events[eventIndex].id, 'new times:', resizeInfo.event.startStr, '→', resizeInfo.event.endStr);
+              
+              // Save to storage
+              await StorageManager.save('schedule', scheduleData);
+              console.log('💾 Saved to storage');
+              
+              // Force calendar to refetch events after a brief delay
+              setTimeout(() => {
+                if (calendar && typeof calendar.refetchEvents === 'function') {
+                  console.log('🔄 Refetching events after resize');
+                  calendar.refetchEvents();
+                }
+              }, 300);
+            } else {
+              console.warn('⚠ Event not found in scheduleData:', resizeInfo.event.id);
+              resizeInfo.revert();
+            }
+          } catch (error) {
+            console.error('❌ Error in eventResize:', error);
+            resizeInfo.revert();
           }
         },
 

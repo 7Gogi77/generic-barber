@@ -2262,6 +2262,29 @@
             return deletedEventIds.has(eventId);
         }
 
+        /**
+         * Remove duplicate events from array based on ID
+         * Keeps the first instance of each unique ID
+         */
+        function deduplicateEvents(events) {
+            if (!Array.isArray(events)) return [];
+            const before = events.length;
+            const seen = new Set();
+            const deduplicated = events.filter(e => {
+                if (!e.id) return true; // Keep events without IDs
+                if (seen.has(e.id)) {
+                    console.log('🔍 Removing duplicate event:', e.id);
+                    return false;
+                }
+                seen.add(e.id);
+                return true;
+            });
+            if (before !== deduplicated.length) {
+                console.log(`✨ Deduplicated ${before - deduplicated.length} events`);
+            }
+            return deduplicated;
+        }
+
         // Load deleted IDs on script load
         loadDeletedEventIds();
         // Dev hint removed (console output suppressed)
@@ -2343,6 +2366,7 @@
                     // Filter out deleted events after loading
                     if (scheduleData && Array.isArray(scheduleData.events)) {
                         scheduleData.events = filterDeletedEvents(scheduleData.events);
+                        scheduleData.events = deduplicateEvents(scheduleData.events);
                     }
                 } catch (e) {
                     console.warn('⚠ Failed to load schedule for customers view', e);
@@ -2598,6 +2622,7 @@
                 }
                 if (scheduleData && Array.isArray(scheduleData.events)) {
                     scheduleData.events = filterDeletedEvents(scheduleData.events);
+                    scheduleData.events = deduplicateEvents(scheduleData.events);
                 }
             } catch (e) {
                 console.warn('⚠ Failed to load schedule for analytics', e);
@@ -4473,6 +4498,7 @@ ${manualEarningsData.map(m => `- ${m.description}: ${m.amount}€ (${new Date(m.
                 if (scheduleData.events && Array.isArray(scheduleData.events)) {
                     const before = scheduleData.events.length;
                     scheduleData.events = filterDeletedEvents(scheduleData.events);
+                    scheduleData.events = deduplicateEvents(scheduleData.events);
                     if (before !== scheduleData.events.length) {
                         debugLog(`🔍 Filtered ${before - scheduleData.events.length} deleted events on load`);
                     }
