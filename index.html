@@ -1323,12 +1323,22 @@
                     }
                 }
 
-                const dbUrl = 'https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app/site_config.json';
-                const response = await fetch(dbUrl, { cache: 'no-store' });
+                // Add timestamp to force fresh data and bypass cache
+                const timestamp = new Date().getTime();
+                const dbUrl = `https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app/site_config.json?_t=${timestamp}`;
+                const response = await fetch(dbUrl, { 
+                    cache: 'no-store',
+                    headers: {
+                        'Cache-Control': 'no-cache, no-store, must-revalidate',
+                        'Pragma': 'no-cache',
+                        'Expires': '0'
+                    }
+                });
                 if (response.ok) {
                     const cloudConfig = await response.json();
                     if (cloudConfig) {
-                        Object.assign(SITE_CONFIG, cloudConfig);
+                        // Completely replace SITE_CONFIG instead of merging
+                        window.SITE_CONFIG = cloudConfig;
                         localStorage.setItem('site_config_backup', JSON.stringify(SITE_CONFIG));
                         console.log('✅ Loaded config from Firebase (REST)');
                         return true;
@@ -1563,8 +1573,11 @@
         }
         
         async function initSite() {
-            await loadSavedConfig();
-            await loadFromFirebase();
+            // Try Firebase first, fall back to localStorage only if Firebase fails
+            const firebaseLoaded = await loadFromFirebase();
+            if (!firebaseLoaded) {
+                await loadSavedConfig();
+            }
             renderSiteContent();
         }
         
