@@ -808,6 +808,124 @@
             font-size: 16px;
             transition: all 200ms ease;
         }
+
+        /* Analytics Panel Styles */
+        #analyticsPanel {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            z-index: 2500;
+            background: var(--ios-bg-primary);
+            overflow: hidden;
+            transform: translateX(100%);
+            opacity: 0;
+            transition: transform 320ms cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 280ms ease;
+            will-change: transform, opacity;
+        }
+        #analyticsPanel.open {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        #analyticsPanel .panel-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--ios-separator);
+            position: sticky;
+            top: 0;
+            background: var(--ios-glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            z-index: 10;
+        }
+        .stat-card {
+            background: var(--ios-bg-secondary);
+            border-radius: var(--ios-radius-lg);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            transition: transform 280ms cubic-bezier(0.25, 0.46, 0.45, 0.94), box-shadow 200ms ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        .stat-label {
+            font-size: 13px;
+            color: var(--ios-text-secondary);
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--ios-text-primary);
+            line-height: 1;
+        }
+        .stat-sublabel {
+            font-size: 13px;
+            color: var(--ios-text-secondary);
+        }
+        .chart-container {
+            background: var(--ios-bg-secondary);
+            border-radius: var(--ios-radius-lg);
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        .manual-earning-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px;
+            background: var(--ios-bg-primary);
+            border-radius: var(--ios-radius-md);
+            margin-bottom: 8px;
+            transition: all 200ms ease;
+        }
+        .manual-earning-item:hover {
+            background: rgba(0, 122, 255, 0.05);
+        }
+        .manual-earning-info {
+            flex: 1;
+        }
+        .manual-earning-desc {
+            font-weight: 600;
+            color: var(--ios-text-primary);
+            margin-bottom: 4px;
+        }
+        .manual-earning-date {
+            font-size: 13px;
+            color: var(--ios-text-secondary);
+        }
+        .manual-earning-amount {
+            font-size: 20px;
+            font-weight: 700;
+            color: #155724;
+            margin-right: 16px;
+        }
+        .manual-earning-actions {
+            display: flex;
+            gap: 8px;
+        }
+
         #customerSearch:focus { 
             background: var(--ios-bg-secondary);
             box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.15); 
@@ -1486,7 +1604,6 @@
             }
         }
     </style>
-  <script type="module" crossorigin src="/assets/firebase-config-IgOxIlYG.js"></script>
 </head>
 <body>
     <!-- SIDEBAR NAVIGATION -->
@@ -1503,20 +1620,27 @@
         </div>
 
         <div class="nav-item">
-            <button class="nav-icon" title="Nastavitve" data-page="settings" aria-label="Nastavitve">
-                <i class="bi bi-gear"></i>
-            </button>
-            <span class="nav-label">Vizualne Nastavitve</span>
-        </div>
-
-        <div class="nav-item">
             <button class="nav-icon" title="Stranke" data-page="customers" aria-label="Stranke">
                 <i class="bi bi-people"></i>
             </button>
             <span class="nav-label">Stranke</span>
         </div>
 
+        <div class="nav-item">
+            <button class="nav-icon" title="Analitika" data-page="analytics" aria-label="Analitika">
+                <i class="bi bi-graph-up"></i>
+            </button>
+            <span class="nav-label">Poslovna Analitika</span>
+        </div>
+
         <div style="flex: 1;"></div>
+
+        <div class="nav-item">
+            <button class="nav-icon" title="Nastavitve" data-page="settings" aria-label="Nastavitve">
+                <i class="bi bi-gear"></i>
+            </button>
+            <span class="nav-label">Vizualne Nastavitve</span>
+        </div>
 
         <div class="nav-item">
             <button class="nav-icon" title="Nazaj" data-page="home" aria-label="Nazaj">
@@ -1558,6 +1682,75 @@
                 </div>
             </div>
             <div id="customerListContent"></div>
+        </div>
+
+        <!-- ANALYTICS PANEL -->
+        <div id="analyticsPanel" style="display:none; position:fixed; left:0; top:0; width:100%; height:100%; background:#fff; color:#222; z-index:2500; transition:all 0.2s; overflow:hidden;">
+            <div class="panel-header" style="justify-content:space-between;">
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <button onclick="closeAnalyticsPanel()" style="background:none; border:none; font-size:20px; color:#888; cursor:pointer;">&larr;</button>
+                    <h3 style="margin:0; font-size:18px; font-weight:700; color:#2c3e50;">Poslovna Analitika</h3>
+                    <div style="margin-left:8px; color:#888; font-size:13px;">(Zaslužek in statistika)</div>
+                </div>
+                <div style="display:flex; gap:8px; align-items:center;">
+                    <select id="analyticsRange" style="padding:8px 10px; border:1px solid #ddd; border-radius:6px;">
+                        <option value="7">Zadnjih 7 dni</option>
+                        <option value="30" selected>Zadnjih 30 dni</option>
+                        <option value="90">Zadnjih 90 dni</option>
+                        <option value="365">Zadnje leto</option>
+                        <option value="all">Vse</option>
+                    </select>
+                    <button id="analyticsExportBtn" class="btn btn-secondary" style="padding:8px 12px; font-size:13px;">Izvozi poročilo</button>
+                </div>
+            </div>
+            <div id="analyticsContent" style="padding:20px; overflow-y:auto; height:calc(100% - 72px);">
+                <!-- Stats Cards -->
+                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:16px; margin-bottom:24px;">
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background:#d4edda; color:#155724;">€</div>
+                        <div class="stat-label">Skupaj zasluženo</div>
+                        <div class="stat-value" id="totalEarnings">0€</div>
+                        <div class="stat-sublabel" id="totalEarningsCount">0 opravljenih terminov</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background:#d1ecf1; color:#0c5460;">📅</div>
+                        <div class="stat-label">Prihodnji prilivi</div>
+                        <div class="stat-value" id="upcomingRevenue">0€</div>
+                        <div class="stat-sublabel" id="upcomingRevenueCount">0 rezerviranih terminov</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background:#fff3cd; color:#856404;">📊</div>
+                        <div class="stat-label">Povprečje na dan</div>
+                        <div class="stat-value" id="avgPerDay">0€</div>
+                        <div class="stat-sublabel" id="avgPerDayData">-</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background:#f8d7da; color:#721c24;">👥</div>
+                        <div class="stat-label">Aktivne stranke</div>
+                        <div class="stat-value" id="activeCustomers">0</div>
+                        <div class="stat-sublabel" id="activeCustomersData">-</div>
+                    </div>
+                </div>
+
+                <!-- Charts Section -->
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:24px;">
+                    <div class="chart-container">
+                        <h4 style="margin:0 0 16px 0; font-size:16px; font-weight:600; color:#2c3e50;">Zaslužek po dnevih</h4>
+                        <canvas id="earningsChart" style="max-height:280px;"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <h4 style="margin:0 0 16px 0; font-size:16px; font-weight:600; color:#2c3e50;">Po storitvah</h4>
+                        <canvas id="servicesChart" style="max-height:280px;"></canvas>
+                    </div>
+                </div>
+
+                <!-- Manual Earnings Section -->
+                <div class="chart-container" style="margin-bottom:24px;">
+                    <h4 style="margin:0 0 12px 0; font-size:16px; font-weight:600; color:#2c3e50;">Ročni vnosi zaslužka</h4>
+                    <button id="addManualEarningBtn" class="btn btn-primary" style="padding:8px 16px; font-size:13px; margin-bottom:16px; width:fit-content;">+ Dodaj vnos</button>
+                    <div id="manualEarningsList"></div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -1765,7 +1958,7 @@
     </div>
 
     <!-- SCRIPTS -->
-
+    <script type="module" src="/js/firebase-config.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
         <script>
             // --- TAB LOGIC FOR ADD EVENT MODAL ---
@@ -2106,9 +2299,15 @@
                         icon.classList.add('active');
                         if (page === 'home') { window.location.href = 'admin-panel.html'; }
                         else if (page === 'settings') { window.location.href = 'admin-panel.html'; }
-                        else if (page === 'calendar') { /* noop */ }
+                        else if (page === 'calendar') { 
+                            hideAllPanels();
+                            document.getElementById('scheduleCalendar').style.display = 'block';
+                        }
                         else if (page === 'customers') {
                             showCustomerListPanel();
+                        }
+                        else if (page === 'analytics') {
+                            showAnalyticsPanel();
                         }
                         else { alert(`${page} page not yet implemented`); }
                     });
@@ -2368,6 +2567,375 @@
         function closeCustomerPanel() {
             const panel = document.getElementById('customerListPanel'); if (!panel) return; panel.classList.remove('open');
             setTimeout(() => { try { panel.style.display = 'none'; const detail = document.getElementById('customerDetail'); if (detail) detail.style.display = 'none'; } catch(e){} }, 320);
+        }
+
+        // ===== ANALYTICS PANEL =====
+        let analyticsCharts = { earnings: null, services: null };
+        let manualEarningsData = [];
+
+        async function showAnalyticsPanel() {
+            const panel = document.getElementById('analyticsPanel');
+            if (!panel) return;
+
+            // Load schedule data
+            try {
+                if (!scheduleData || !Array.isArray(scheduleData.events)) {
+                    scheduleData = await StorageManager.load('schedule');
+                }
+                if (scheduleData && Array.isArray(scheduleData.events)) {
+                    scheduleData.events = filterDeletedEvents(scheduleData.events);
+                }
+            } catch (e) {
+                console.warn('⚠ Failed to load schedule for analytics', e);
+            }
+
+            // Load manual earnings
+            await loadManualEarnings();
+
+            // Show panel with animation
+            panel.style.display = 'block';
+            setTimeout(() => panel.classList.add('open'), 10);
+
+            // Render analytics
+            renderAnalytics();
+
+            // Wire range selector
+            const rangeSelector = document.getElementById('analyticsRange');
+            if (rangeSelector) {
+                rangeSelector.onchange = () => renderAnalytics();
+            }
+
+            // Wire export button
+            const exportBtn = document.getElementById('analyticsExportBtn');
+            if (exportBtn) {
+                exportBtn.onclick = () => exportAnalyticsReport();
+            }
+
+            // Wire add manual earning button
+            const addBtn = document.getElementById('addManualEarningBtn');
+            if (addBtn) {
+                addBtn.onclick = () => showAddManualEarningDialog();
+            }
+        }
+
+        function closeAnalyticsPanel() {
+            const panel = document.getElementById('analyticsPanel');
+            if (!panel) return;
+            panel.classList.remove('open');
+            setTimeout(() => { 
+                try { 
+                    panel.style.display = 'none';
+                    // Destroy charts to free memory
+                    if (analyticsCharts.earnings) analyticsCharts.earnings.destroy();
+                    if (analyticsCharts.services) analyticsCharts.services.destroy();
+                    analyticsCharts = { earnings: null, services: null };
+                } catch(e){} 
+            }, 320);
+        }
+
+        async function loadManualEarnings() {
+            try {
+                const raw = localStorage.getItem('manual_earnings');
+                manualEarningsData = raw ? JSON.parse(raw) : [];
+            } catch (e) {
+                console.warn('Failed to load manual earnings', e);
+                manualEarningsData = [];
+            }
+        }
+
+        async function saveManualEarnings() {
+            try {
+                localStorage.setItem('manual_earnings', JSON.stringify(manualEarningsData));
+            } catch (e) {
+                console.warn('Failed to save manual earnings', e);
+            }
+        }
+
+        function renderAnalytics() {
+            const rangeDays = parseInt(document.getElementById('analyticsRange')?.value || '30');
+            const now = new Date();
+            const rangeStart = rangeDays === 'all' ? new Date(0) : new Date(now.getTime() - (rangeDays * 24 * 60 * 60 * 1000));
+
+            // Filter events
+            const allEvents = (scheduleData && Array.isArray(scheduleData.events)) ? scheduleData.events : [];
+            const completedEvents = allEvents.filter(e => {
+                if (!e.end) return false;
+                const endDate = new Date(e.end);
+                return endDate < now && endDate >= rangeStart && (e.extendedProps?.isBooking || e.isBooking || e.extendedProps?.tab === 'customer');
+            });
+
+            const upcomingEvents = allEvents.filter(e => {
+                if (!e.start) return false;
+                const startDate = new Date(e.start);
+                return startDate > now && (e.extendedProps?.isBooking || e.isBooking || e.extendedProps?.tab === 'customer');
+            });
+
+            // Calculate earnings from appointments
+            const appointmentEarnings = completedEvents.reduce((sum, e) => {
+                const price = parseFloat(e.extendedProps?.price || 0);
+                return sum + price;
+            }, 0);
+
+            // Calculate manual earnings in range
+            const manualEarningsInRange = manualEarningsData.filter(m => {
+                const date = new Date(m.date);
+                return date >= rangeStart && date <= now;
+            });
+            const manualEarningsSum = manualEarningsInRange.reduce((sum, m) => sum + parseFloat(m.amount || 0), 0);
+
+            const totalEarnings = appointmentEarnings + manualEarningsSum;
+
+            // Calculate upcoming revenue
+            const upcomingRevenue = upcomingEvents.reduce((sum, e) => {
+                const price = parseFloat(e.extendedProps?.price || 0);
+                return sum + price;
+            }, 0);
+
+            // Calculate active customers
+            const customerMap = {};
+            completedEvents.forEach(e => {
+                const name = e.extendedProps?.customer || e.title || '';
+                const email = e.extendedProps?.email || '';
+                const phone = e.extendedProps?.phone || '';
+                const key = `${name}_${email}_${phone}`.toLowerCase();
+                if (!customerMap[key]) customerMap[key] = { name, count: 0 };
+                customerMap[key].count++;
+            });
+            const activeCustomers = Object.keys(customerMap).length;
+
+            // Calculate average per day
+            const daysInRange = rangeDays === 'all' ? Math.ceil((now - new Date(completedEvents[0]?.end || now)) / (24 * 60 * 60 * 1000)) : rangeDays;
+            const avgPerDay = daysInRange > 0 ? totalEarnings / daysInRange : 0;
+
+            // Update stat cards
+            document.getElementById('totalEarnings').textContent = `${totalEarnings.toFixed(2)}€`;
+            document.getElementById('totalEarningsCount').textContent = `${completedEvents.length} opravljenih terminov`;
+            document.getElementById('upcomingRevenue').textContent = `${upcomingRevenue.toFixed(2)}€`;
+            document.getElementById('upcomingRevenueCount').textContent = `${upcomingEvents.length} rezerviranih terminov`;
+            document.getElementById('avgPerDay').textContent = `${avgPerDay.toFixed(2)}€`;
+            document.getElementById('avgPerDayData').textContent = `iz ${daysInRange} dni`;
+            document.getElementById('activeCustomers').textContent = activeCustomers;
+            document.getElementById('activeCustomersData').textContent = `${completedEvents.length} terminov skupaj`;
+
+            // Render charts
+            renderEarningsChart(completedEvents, manualEarningsInRange, rangeStart, now);
+            renderServicesChart(completedEvents);
+
+            // Render manual earnings list
+            renderManualEarningsList();
+        }
+
+        function renderEarningsChart(completedEvents, manualEarningsInRange, rangeStart, rangeEnd) {
+            const ctx = document.getElementById('earningsChart');
+            if (!ctx) return;
+
+            // Destroy existing chart
+            if (analyticsCharts.earnings) {
+                analyticsCharts.earnings.destroy();
+            }
+
+            // Group earnings by day
+            const dailyEarnings = {};
+            completedEvents.forEach(e => {
+                const date = new Date(e.end).toISOString().split('T')[0];
+                const price = parseFloat(e.extendedProps?.price || 0);
+                dailyEarnings[date] = (dailyEarnings[date] || 0) + price;
+            });
+
+            manualEarningsInRange.forEach(m => {
+                const date = new Date(m.date).toISOString().split('T')[0];
+                dailyEarnings[date] = (dailyEarnings[date] || 0) + parseFloat(m.amount || 0);
+            });
+
+            // Sort dates and prepare data
+            const dates = Object.keys(dailyEarnings).sort();
+            const values = dates.map(d => dailyEarnings[d]);
+
+            analyticsCharts.earnings = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: dates.map(d => new Date(d).toLocaleDateString('sl-SI', { day: 'numeric', month: 'short' })),
+                    datasets: [{
+                        label: 'Zaslužek (€)',
+                        data: values,
+                        borderColor: '#34C759',
+                        backgroundColor: 'rgba(52, 199, 89, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => `${context.parsed.y.toFixed(2)}€`
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: (value) => `${value}€`
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderServicesChart(completedEvents) {
+            const ctx = document.getElementById('servicesChart');
+            if (!ctx) return;
+
+            // Destroy existing chart
+            if (analyticsCharts.services) {
+                analyticsCharts.services.destroy();
+            }
+
+            // Group by service type
+            const serviceEarnings = {};
+            completedEvents.forEach(e => {
+                const services = e.extendedProps?.services || [];
+                const price = parseFloat(e.extendedProps?.price || 0);
+                const perService = price / (services.length || 1);
+                services.forEach(s => {
+                    serviceEarnings[s] = (serviceEarnings[s] || 0) + perService;
+                });
+            });
+
+            const labels = Object.keys(serviceEarnings);
+            const values = Object.values(serviceEarnings);
+
+            const colors = [
+                '#FF3B30', '#FF9500', '#FFCC00', '#34C759', 
+                '#5AC8FA', '#007AFF', '#AF52DE', '#FF2D55'
+            ];
+
+            analyticsCharts.services = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: values,
+                        backgroundColor: colors.slice(0, labels.length),
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: {
+                                boxWidth: 12,
+                                padding: 10,
+                                font: { size: 12 }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => `${context.label}: ${context.parsed.toFixed(2)}€`
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderManualEarningsList() {
+            const container = document.getElementById('manualEarningsList');
+            if (!container) return;
+
+            if (manualEarningsData.length === 0) {
+                container.innerHTML = '<div style="color:var(--ios-text-secondary); padding:20px; text-align:center;">Ni ročnih vnosov.</div>';
+                return;
+            }
+
+            let html = '';
+            manualEarningsData.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach((m, idx) => {
+                const date = new Date(m.date).toLocaleDateString('sl-SI', { day: 'numeric', month: 'long', year: 'numeric' });
+                html += `
+                    <div class="manual-earning-item">
+                        <div class="manual-earning-info">
+                            <div class="manual-earning-desc">${m.description}</div>
+                            <div class="manual-earning-date">${date}</div>
+                        </div>
+                        <div class="manual-earning-amount">${parseFloat(m.amount).toFixed(2)}€</div>
+                        <div class="manual-earning-actions">
+                            <button class="btn btn-danger btn-sm" onclick="deleteManualEarning(${idx})" style="padding:6px 10px; font-size:12px;">Izbriši</button>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        function showAddManualEarningDialog() {
+            const description = prompt('Opis zaslužka:');
+            if (!description) return;
+
+            const amount = prompt('Znesek (€):');
+            if (!amount || isNaN(parseFloat(amount))) {
+                alert('Napačen znesek!');
+                return;
+            }
+
+            const date = prompt('Datum (YYYY-MM-DD):', new Date().toISOString().split('T')[0]);
+            if (!date) return;
+
+            manualEarningsData.push({
+                description,
+                amount: parseFloat(amount),
+                date,
+                id: Date.now()
+            });
+
+            saveManualEarnings();
+            renderAnalytics();
+        }
+
+        async function deleteManualEarning(index) {
+            if (!confirm('Ali ste prepričani, da želite izbrisati ta vnos?')) return;
+            manualEarningsData.splice(index, 1);
+            await saveManualEarnings();
+            renderAnalytics();
+        }
+
+        function exportAnalyticsReport() {
+            const rangeDays = document.getElementById('analyticsRange')?.value || '30';
+            const totalEarnings = document.getElementById('totalEarnings')?.textContent || '0€';
+            const upcomingRevenue = document.getElementById('upcomingRevenue')?.textContent || '0€';
+            const avgPerDay = document.getElementById('avgPerDay')?.textContent || '0€';
+
+            const report = `
+POSLOVNO POROČILO
+==================
+
+Obdobje: Zadnjih ${rangeDays} dni
+Datum: ${new Date().toLocaleDateString('sl-SI')}
+
+PREGLED ZASLUŽKA:
+- Skupaj zasluženo: ${totalEarnings}
+- Prihodnji prilivi: ${upcomingRevenue}
+- Povprečje na dan: ${avgPerDay}
+
+ROČNI VNOSI:
+${manualEarningsData.map(m => `- ${m.description}: ${m.amount}€ (${new Date(m.date).toLocaleDateString('sl-SI')})`).join('\n')}
+            `.trim();
+
+            // Create download
+            const blob = new Blob([report], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `porocilo_${new Date().toISOString().split('T')[0]}.txt`;
+            a.click();
+            URL.revokeObjectURL(url);
         }
 
         // ===== CUSTOMER BASE HELPERS =====
@@ -4436,6 +5004,9 @@
         };
         console.log("💡 Use window.deletionDebug.show() to see deletion status");
     </script>
+
+    <!-- Chart.js for Analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
     <!-- Dev debug controls removed for production/admin cleanup -->
 
