@@ -230,6 +230,7 @@
             min-height: 0; /* Allow flex shrinking */
             display: flex;
             flex-direction: column;
+            box-sizing: border-box;
         }
 
         /* ===== iOS CALENDAR CARD ===== */
@@ -1160,15 +1161,14 @@
         @media (max-width: 480px) {
             .content-area {
                 padding: 8px;
-                padding-bottom: 20px;
+                padding-bottom: calc(24px + env(safe-area-inset-bottom));
             }
 
             #scheduleCalendar {
                 border-radius: var(--ios-radius-md);
                 margin-top: 0;
-                margin-bottom: 12px;
-                height: calc(100dvh - 116px);
-                min-height: calc(100dvh - 116px);
+                height: 100%;
+                min-height: 0;
             }
 
             /* Hide sidebar completely, show hamburger only */
