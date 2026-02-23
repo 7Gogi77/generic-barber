@@ -1,0 +1,1909 @@
+<!DOCTYPE html>
+<html lang="sl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rezervacija termina</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+    (function(){
+        try {
+            // Avoid running repeatedly
+            if (!('serviceWorker' in navigator) || localStorage.getItem('sw_recovery_done')) return;
+
+            // Unregister any service workers and clear caches to recover from broken SW states
+            navigator.serviceWorker.getRegistrations().then(async (regs) => {
+                await Promise.all(regs.map(async (r) => {
+                    try { await r.unregister(); } catch (e) { /* ignore */ }
+                }));
+
+                if (window.caches && caches.keys) {
+                    try {
+                        const keys = await caches.keys();
+                        await Promise.all(keys.map(k => caches.delete(k)));
+                    } catch(e) { /* ignore */ }
+                }
+
+                try { localStorage.removeItem('schedule'); } catch(e){}
+                try { localStorage.setItem('sw_recovery_done', '1'); } catch(e){}
+
+                // Give the browser a moment, then reload to pick up fresh assets
+                setTimeout(() => { try { location.reload(); } catch(_){} }, 250);
+            }).catch(() => {});
+        } catch (err) { /* silent */ }
+    })();
+    </script>
+    <style>
+        /* ===== iOS DESIGN SYSTEM ===== */
+        :root {
+            --ios-blue: #007AFF;
+            --ios-blue-light: #5AC8FA;
+            --ios-green: #34C759;
+            --ios-red: #FF3B30;
+            --ios-orange: #FF9500;
+            --ios-yellow: #FFCC00;
+            --ios-purple: #AF52DE;
+            --ios-pink: #FF2D55;
+            --ios-teal: #5AC8FA;
+            
+            --ios-bg-primary: #F2F2F7;
+            --ios-bg-secondary: #FFFFFF;
+            --ios-bg-tertiary: #E5E5EA;
+            
+            --ios-text-primary: #000000;
+            --ios-text-secondary: #3C3C43;
+            --ios-text-tertiary: #8E8E93;
+            --ios-text-quaternary: #C7C7CC;
+            
+            --ios-separator: rgba(60, 60, 67, 0.12);
+            --ios-separator-opaque: #C6C6C8;
+            
+            --ios-radius-sm: 8px;
+            --ios-radius-md: 12px;
+            --ios-radius-lg: 16px;
+            --ios-radius-xl: 20px;
+            
+            --ios-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+            --ios-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
+            --ios-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            min-height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Inter', 'Helvetica Neue', sans-serif;
+            background: var(--ios-bg-primary);
+            color: var(--ios-text-primary);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* ===== HEADER ===== */
+        .header {
+            background: var(--ios-bg-secondary);
+            padding: 16px 20px;
+            text-align: center;
+            border-bottom: 1px solid var(--ios-separator);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+
+        .header h1 {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--ios-text-primary);
+        }
+
+        .header .subtitle {
+            font-size: 13px;
+            color: var(--ios-text-tertiary);
+            margin-top: 2px;
+        }
+
+        /* ===== MAIN CONTAINER ===== */
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 16px;
+        }
+
+        /* ===== BOOKING STEPS ===== */
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 24px;
+        }
+
+        .step-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--ios-text-quaternary);
+            transition: all 0.3s ease;
+        }
+
+        .step-dot.active {
+            background: var(--ios-blue);
+            width: 24px;
+            border-radius: 4px;
+        }
+
+        .step-dot.completed {
+            background: var(--ios-green);
+        }
+
+        /* ===== CARD STYLE ===== */
+        .card {
+            background: var(--ios-bg-secondary);
+            border-radius: var(--ios-radius-lg);
+            box-shadow: var(--ios-shadow-md);
+            margin-bottom: 16px;
+            overflow: hidden;
+        }
+
+        .card-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--ios-separator);
+        }
+
+        .card-header h2 {
+            font-size: 17px;
+            font-weight: 600;
+            color: var(--ios-text-primary);
+        }
+
+        .card-header p {
+            font-size: 13px;
+            color: var(--ios-text-tertiary);
+            margin-top: 4px;
+        }
+
+        .card-body {
+            padding: 16px 20px;
+        }
+
+        /* ===== STEP SECTIONS ===== */
+        .booking-step {
+            display: none;
+        }
+
+        .booking-step.active {
+            display: block;
+        }
+
+        /* ===== SERVICES GRID ===== */
+        .services-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .service-item {
+            display: flex;
+            align-items: center;
+            padding: 14px 16px;
+            background: var(--ios-bg-primary);
+            border-radius: var(--ios-radius-md);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 2px solid transparent;
+        }
+
+        .service-item:hover {
+            background: var(--ios-bg-tertiary);
+        }
+
+        .service-item.selected {
+            background: rgba(0, 122, 255, 0.08);
+            border-color: var(--ios-blue);
+        }
+
+        .service-checkbox {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: 2px solid var(--ios-text-quaternary);
+            margin-right: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: all 0.2s ease;
+        }
+
+        .service-item.selected .service-checkbox {
+            background: var(--ios-blue);
+            border-color: var(--ios-blue);
+        }
+
+        .service-checkbox::after {
+            content: '✓';
+            color: white;
+            font-size: 14px;
+            font-weight: 700;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .service-item.selected .service-checkbox::after {
+            opacity: 1;
+        }
+
+        .service-info {
+            flex: 1;
+        }
+
+        .service-name {
+            font-size: 16px;
+            font-weight: 500;
+            color: var(--ios-text-primary);
+        }
+
+        .service-desc {
+            font-size: 13px;
+            color: var(--ios-text-tertiary);
+            margin-top: 2px;
+        }
+
+        .service-price {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--ios-blue);
+        }
+
+        /* ===== DATE PICKER ===== */
+        .calendar-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .calendar-nav {
+            display: flex;
+            gap: 8px;
+        }
+
+        .calendar-nav-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: var(--ios-radius-sm);
+            border: none;
+            background: var(--ios-bg-primary);
+            color: var(--ios-blue);
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s ease;
+        }
+
+        .calendar-nav-btn:hover {
+            background: var(--ios-bg-tertiary);
+        }
+
+        .calendar-month-year {
+            font-size: 17px;
+            font-weight: 600;
+            color: var(--ios-text-primary);
+        }
+
+        .calendar-weekdays {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+            margin-bottom: 8px;
+        }
+
+        .calendar-weekday {
+            text-align: center;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--ios-text-tertiary);
+            padding: 8px 0;
+        }
+
+        .calendar-days {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+        }
+
+        .calendar-day {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: var(--ios-radius-sm);
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: var(--ios-text-primary);
+            background: transparent;
+            border: none;
+        }
+
+        .calendar-day:hover:not(.disabled):not(.selected) {
+            background: var(--ios-bg-tertiary);
+        }
+
+        .calendar-day.today {
+            background: var(--ios-bg-tertiary);
+            font-weight: 700;
+        }
+
+        .calendar-day.selected {
+            background: var(--ios-blue);
+            color: white;
+        }
+
+        .calendar-day.disabled {
+            color: var(--ios-text-quaternary);
+            cursor: not-allowed;
+        }
+
+        .calendar-day.other-month {
+            color: var(--ios-text-quaternary);
+        }
+
+        .calendar-day.has-slots {
+            position: relative;
+        }
+
+        .calendar-day.has-slots::after {
+            content: '';
+            position: absolute;
+            bottom: 4px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: var(--ios-green);
+        }
+
+        .calendar-day.no-slots {
+            position: relative;
+        }
+
+        .calendar-day.no-slots::after {
+            content: '';
+            position: absolute;
+            bottom: 4px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: var(--ios-red);
+        }
+
+        /* ===== TIME SLOTS ===== */
+        .time-slots-container {
+            margin-top: 20px;
+        }
+
+        .time-slots-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--ios-text-secondary);
+            margin-bottom: 12px;
+        }
+
+        .time-slots-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+        }
+
+        .time-slot {
+            padding: 12px 8px;
+            background: var(--ios-bg-primary);
+            border-radius: var(--ios-radius-sm);
+            border: 2px solid transparent;
+            font-size: 14px;
+            font-weight: 500;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: var(--ios-text-primary);
+        }
+
+        .time-slot:hover:not(.disabled) {
+            background: var(--ios-bg-tertiary);
+        }
+
+        .time-slot.selected {
+            background: var(--ios-blue);
+            color: white;
+            border-color: var(--ios-blue);
+        }
+
+        .time-slot.disabled {
+            background: var(--ios-bg-tertiary);
+            color: var(--ios-text-quaternary);
+            cursor: not-allowed;
+            text-decoration: line-through;
+        }
+
+        .no-slots-message {
+            text-align: center;
+            padding: 32px 16px;
+            color: var(--ios-text-tertiary);
+            font-size: 15px;
+        }
+
+        .no-slots-message .icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+
+        /* ===== SELECTION SUMMARY ===== */
+        .selection-summary {
+            margin-top: 20px;
+            padding: 16px;
+            background: var(--ios-bg-primary);
+            border-radius: var(--ios-radius-md);
+            border: 1px solid var(--ios-separator-opaque);
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            font-size: 15px;
+        }
+
+        .summary-row:not(:last-child) {
+            border-bottom: 1px solid var(--ios-separator);
+        }
+
+        .summary-row span:last-child {
+            font-weight: 600;
+            color: var(--ios-blue);
+        }
+
+        /* ===== BUSINESS HOURS INFO ===== */
+        .business-hours-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 12px;
+            padding: 10px 14px;
+            background: rgba(52, 199, 89, 0.1);
+            border-radius: var(--ios-radius-sm);
+            font-size: 13px;
+            color: var(--ios-green);
+        }
+
+        .business-hours-info .icon {
+            font-size: 16px;
+        }
+
+        .duration-warning {
+            margin-top: 16px;
+            padding: 12px 16px;
+            background: rgba(255, 149, 0, 0.1);
+            border-radius: var(--ios-radius-md);
+            border: 1px solid rgba(255, 149, 0, 0.3);
+            color: var(--ios-orange);
+            font-size: 13px;
+            line-height: 1.4;
+        }
+
+        .duration-warning .icon {
+            margin-right: 8px;
+        }
+
+        /* ===== FORM INPUTS ===== */
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--ios-text-secondary);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 14px 16px;
+            font-size: 16px;
+            border: 1px solid var(--ios-separator-opaque);
+            border-radius: var(--ios-radius-md);
+            background: var(--ios-bg-primary);
+            color: var(--ios-text-primary);
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--ios-blue);
+            box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+        }
+
+        .form-input::placeholder {
+            color: var(--ios-text-tertiary);
+        }
+
+        textarea.form-input {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        /* ===== SUMMARY ===== */
+        .summary-section {
+            background: var(--ios-bg-primary);
+            border-radius: var(--ios-radius-md);
+            padding: 16px;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--ios-separator);
+        }
+
+        .summary-row:last-child {
+            border-bottom: none;
+        }
+
+        .summary-label {
+            font-size: 14px;
+            color: var(--ios-text-tertiary);
+        }
+
+        .summary-value {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--ios-text-primary);
+            text-align: right;
+        }
+
+        .summary-total {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 2px solid var(--ios-separator);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .summary-total .summary-label {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--ios-text-primary);
+        }
+
+        .summary-total .summary-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--ios-blue);
+        }
+
+        /* ===== BUTTONS ===== */
+        .btn {
+            width: 100%;
+            padding: 16px 24px;
+            font-size: 17px;
+            font-weight: 600;
+            border-radius: var(--ios-radius-md);
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+
+        .btn-primary {
+            background: var(--ios-blue);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #0066D6;
+        }
+
+        .btn-primary:disabled {
+            background: var(--ios-text-quaternary);
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: var(--ios-bg-tertiary);
+            color: var(--ios-blue);
+        }
+
+        .btn-secondary:hover {
+            background: #D1D1D6;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .btn-group .btn {
+            flex: 1;
+        }
+
+        /* ===== SUCCESS MESSAGE ===== */
+        .success-container {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .success-icon {
+            width: 80px;
+            height: 80px;
+            background: var(--ios-green);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 24px;
+        }
+
+        .success-icon::after {
+            content: '✓';
+            color: white;
+            font-size: 40px;
+            font-weight: 700;
+        }
+
+        .success-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--ios-text-primary);
+            margin-bottom: 8px;
+        }
+
+        .success-message {
+            font-size: 15px;
+            color: var(--ios-text-tertiary);
+            line-height: 1.5;
+        }
+
+        /* ===== LOADING ===== */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .loading-overlay.visible {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--ios-bg-tertiary);
+            border-top-color: var(--ios-blue);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 480px) {
+            .time-slots-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            .service-item {
+                flex-wrap: wrap;
+            }
+
+            .service-price {
+                width: 100%;
+                margin-top: 8px;
+                margin-left: 38px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+    </div>
+
+    <!-- Header -->
+    <header class="header">
+        <h1 id="shopName">Rezervacija termina</h1>
+        <p class="subtitle">Izberite storitev in termin</p>
+    </header>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Step Indicator -->
+        <div class="step-indicator">
+            <div class="step-dot active" data-step="1"></div>
+            <div class="step-dot" data-step="2"></div>
+            <div class="step-dot" data-step="3"></div>
+            <div class="step-dot" data-step="4"></div>
+        </div>
+
+        <!-- Step 1: Select Services -->
+        <div class="booking-step active" id="step1">
+            <div class="card">
+                <div class="card-header">
+                    <h2>1. Izberite storitev</h2>
+                    <p>Izberite eno ali več storitev</p>
+                </div>
+                <div class="card-body">
+                    <div class="services-grid" id="servicesGrid">
+                        <!-- Services loaded dynamically -->
+                    </div>
+                    <!-- Selection Summary -->
+                    <div class="selection-summary" id="selectionSummary" style="display: none;">
+                        <div class="summary-row">
+                            <span>Skupaj čas:</span>
+                            <span id="totalDurationText">0 min</span>
+                        </div>
+                        <div class="summary-row">
+                            <span>Skupaj cena:</span>
+                            <span id="totalPriceText">0 €</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button class="btn btn-primary" id="toStep2Btn" disabled>
+                Naprej
+            </button>
+        </div>
+
+        <!-- Step 2: Select Date & Time -->
+        <div class="booking-step" id="step2">
+            <div class="card">
+                <div class="card-header">
+                    <h2>2. Izberite datum</h2>
+                    <p>Zeleni datumi imajo proste termine</p>
+                    <!-- Business Hours Info -->
+                    <div class="business-hours-info" id="businessHoursInfo">
+                        <div style="display: flex; align-items: center; gap: 6px;">
+                            <span class="icon">🕐</span>
+                            <span>Delovni čas: <span id="businessHoursText">9:00 - 19:00</span></span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 6px; margin-top: 4px;">
+                            <span class="icon">📅</span>
+                            <span>Delovni dnevi: <span id="workingDaysInfo">Pon - Pet</span></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Calendar -->
+                    <div class="calendar-header">
+                        <button class="calendar-nav-btn" id="prevMonth">‹</button>
+                        <span class="calendar-month-year" id="calendarMonthYear"></span>
+                        <button class="calendar-nav-btn" id="nextMonth">›</button>
+                    </div>
+                    <div class="calendar-weekdays">
+                        <div class="calendar-weekday">Pon</div>
+                        <div class="calendar-weekday">Tor</div>
+                        <div class="calendar-weekday">Sre</div>
+                        <div class="calendar-weekday">Čet</div>
+                        <div class="calendar-weekday">Pet</div>
+                        <div class="calendar-weekday">Sob</div>
+                        <div class="calendar-weekday">Ned</div>
+                    </div>
+                    <div class="calendar-days" id="calendarDays">
+                        <!-- Days loaded dynamically -->
+                    </div>
+
+                    <!-- Time Slots -->
+                    <div class="time-slots-container" id="timeSlotsContainer" style="display: none;">
+                        <div class="time-slots-title">Prosti termini za <span id="selectedDateText"></span></div>
+                        <div class="time-slots-grid" id="timeSlotsGrid">
+                            <!-- Time slots loaded dynamically -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-secondary" id="backToStep1">Nazaj</button>
+                <button class="btn btn-primary" id="toStep3Btn" disabled>Naprej</button>
+            </div>
+        </div>
+
+        <!-- Step 3: Customer Info -->
+        <div class="booking-step" id="step3">
+            <div class="card">
+                <div class="card-header">
+                    <h2>3. Vaši podatki</h2>
+                    <p>Vnesite kontaktne podatke</p>
+                </div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <label class="form-label" id="labelName">Ime in priimek *</label>
+                        <input type="text" class="form-input" id="customerName" placeholder="Janez Novak" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" id="labelEmail">E-pošta *</label>
+                        <input type="email" class="form-input" id="customerEmail" placeholder="janez@email.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" id="labelPhone">Telefon *</label>
+                        <input type="tel" class="form-input" id="customerPhone" placeholder="+386 40 123 456" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" id="labelNotes">Opombe (neobvezno)</label>
+                        <textarea class="form-input" id="customerNotes" placeholder="Posebne želje ali opombe..."></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-secondary" id="backToStep2">Nazaj</button>
+                <button class="btn btn-primary" id="toStep4Btn">Naprej</button>
+            </div>
+        </div>
+
+        <!-- Step 4: Confirmation -->
+        <div class="booking-step" id="step4">
+            <div class="card">
+                <div class="card-header">
+                    <h2>4. Potrditev</h2>
+                    <p>Preverite podatke in potrdite rezervacijo</p>
+                </div>
+                <div class="card-body">
+                    <div class="summary-section">
+                        <div class="summary-row">
+                            <span class="summary-label" id="summaryLabelServices">Storitve</span>
+                            <span class="summary-value" id="summaryServices">-</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="summary-label" id="summaryLabelDate">Datum</span>
+                            <span class="summary-value" id="summaryDate">-</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="summary-label" id="summaryLabelTime">Ura</span>
+                            <span class="summary-value" id="summaryTime">-</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="summary-label" id="summaryLabelDuration">Trajanje</span>
+                            <span class="summary-value" id="summaryDuration">-</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="summary-label" id="summaryLabelCustomer">Stranka</span>
+                            <span class="summary-value" id="summaryCustomer">-</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="summary-label">Kontakt</span>
+                            <span class="summary-value" id="summaryContact">-</span>
+                        </div>
+                        <div class="summary-total">
+                            <span class="summary-label">Skupaj</span>
+                            <span class="summary-value" id="summaryTotal">€0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-secondary" id="backToStep3">Nazaj</button>
+                <button class="btn btn-primary" id="confirmBookingBtn">Potrdi rezervacijo</button>
+            </div>
+        </div>
+
+        <!-- Step 5: Success -->
+        <div class="booking-step" id="step5">
+            <div class="card">
+                <div class="card-body">
+                    <div class="success-container">
+                        <div class="success-icon"></div>
+                        <h2 class="success-title">Rezervacija uspešna!</h2>
+                        <p class="success-message">
+                            Vaš termin je bil uspešno rezerviran.<br>
+                            Potrditev bo poslana na vaš e-poštni naslov.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <button class="btn btn-primary" onclick="location.reload()">Nova rezervacija</button>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/config.js"></script>
+    <script src="js/storage-manager.js?v=3"></script>
+    <script>
+        // ===== BOOKING STATE =====
+        const BookingState = {
+            selectedServices: [],
+            selectedDate: null,
+            selectedTime: null,
+            customerInfo: {
+                name: '',
+                email: '',
+                phone: '',
+                notes: ''
+            },
+            currentMonth: new Date(),
+            events: [], // Loaded from storage
+            totalDuration: 0,
+            totalPrice: 0
+        };
+
+        // ===== SLOVENIAN MONTHS =====
+        const MONTHS_SL = [
+            'Januar', 'Februar', 'Marec', 'April', 'Maj', 'Junij',
+            'Julij', 'Avgust', 'September', 'Oktober', 'November', 'December'
+        ];
+
+        // ===== FIREBASE CONFIG =====
+        const FIREBASE_DB_URL = 'https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app';
+        
+        // Global services array (loaded from Firebase)
+        let servicesData = [];
+        
+        // ===== HELPER: Get local date string (YYYY-MM-DD) =====
+        // This avoids timezone issues with toISOString()
+        function getLocalDateStr(date) {
+            return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+        }
+
+        // ===== APPLY BOOKING PAGE CONTENT FROM CONFIG =====
+        function applyBookingPageContent() {
+            const bp = window.SITE_CONFIG?.bookingPage || {};
+            
+            // Header
+            const headerTitle = document.querySelector('.header h1');
+            const headerSubtitle = document.querySelector('.header .subtitle');
+            if (headerTitle && bp.pageTitle) headerTitle.textContent = bp.pageTitle;
+            if (headerSubtitle && bp.pageSubtitle) headerSubtitle.textContent = bp.pageSubtitle;
+            
+            // Step 1
+            const step1Title = document.querySelector('#step1 .card-header h2');
+            const step1Desc = document.querySelector('#step1 .card-header p');
+            if (step1Title && bp.step1Title) step1Title.textContent = bp.step1Title;
+            if (step1Desc && bp.step1Desc) step1Desc.textContent = bp.step1Desc;
+            
+            // Step 2
+            const step2Title = document.querySelector('#step2 .card-header h2');
+            const step2Desc = document.querySelector('#step2 .card-header p');
+            if (step2Title && bp.step2Title) step2Title.textContent = bp.step2Title;
+            if (step2Desc && bp.step2Desc) step2Desc.textContent = bp.step2Desc;
+            
+            // Step 3
+            const step3Title = document.querySelector('#step3 .card-header h2');
+            const step3Desc = document.querySelector('#step3 .card-header p');
+            if (step3Title && bp.step3Title) step3Title.textContent = bp.step3Title;
+            if (step3Desc && bp.step3Desc) step3Desc.textContent = bp.step3Desc;
+            
+            // Step 4
+            const step4Title = document.querySelector('#step4 .card-header h2');
+            const step4Desc = document.querySelector('#step4 .card-header p');
+            if (step4Title && bp.step4Title) step4Title.textContent = bp.step4Title;
+            if (step4Desc && bp.step4Desc) step4Desc.textContent = bp.step4Desc;
+            
+            // Success step
+            const successTitle = document.querySelector('#step5 .success-title');
+            const successMessage = document.querySelector('#step5 .success-message');
+            if (successTitle && bp.successTitle) successTitle.textContent = bp.successTitle;
+            if (successMessage && bp.successMessage) {
+                successMessage.innerHTML = bp.successMessage + '<br>Potrditev bo poslana na vaš e-poštni naslov.';
+            }
+            
+            // Buttons - Next
+            const nextBtns = document.querySelectorAll('#toStep2Btn, #toStep3Btn, #toStep4Btn');
+            nextBtns.forEach(btn => {
+                if (bp.nextButton) btn.textContent = bp.nextButton;
+            });
+            
+            // Buttons - Back
+            const backBtns = document.querySelectorAll('#backToStep1, #backToStep2, #backToStep3');
+            backBtns.forEach(btn => {
+                if (bp.backButton) btn.textContent = bp.backButton;
+            });
+            
+            // Confirm button
+            const confirmBtn = document.getElementById('confirmBookingBtn');
+            if (confirmBtn && bp.confirmButton) confirmBtn.textContent = bp.confirmButton;
+            
+            // New booking button
+            const newBtn = document.querySelector('#step5 .btn-primary');
+            if (newBtn && bp.newButton) newBtn.textContent = bp.newButton;
+        }
+
+        // ===== INIT =====
+        document.addEventListener('DOMContentLoaded', async () => {
+            showLoading(true);
+            
+            // Load config from Firebase first
+            await loadConfigFromFirebase();
+            
+            // Set shop name
+            if (window.SITE_CONFIG && window.SITE_CONFIG.shopName) {
+                document.getElementById('shopName').textContent = window.SITE_CONFIG.shopName;
+            }
+            
+            // Apply booking page content from config
+            applyBookingPageContent();
+
+            // Load events from storage
+            await loadEvents();
+            
+            // Load services (now uses servicesData from Firebase)
+            loadServices();
+            
+            // Init calendar
+            renderCalendar();
+            
+            // Setup event listeners
+            setupEventListeners();
+            
+            showLoading(false);
+        });
+        
+        // ===== LOAD CONFIG FROM FIREBASE =====
+        async function loadConfigFromFirebase() {
+            try {
+                const response = await fetch(`${FIREBASE_DB_URL}/site_config.json`);
+                if (response.ok) {
+                    const config = await response.json();
+                    console.log('✅ Loaded config from Firebase:', config);
+                    
+                    // Store globally
+                    window.SITE_CONFIG = config;
+                    
+                    // Extract services
+                    if (config && config.servicesSection && config.servicesSection.items) {
+                        // Firebase stores arrays as objects with numeric keys
+                        const items = config.servicesSection.items;
+                        if (Array.isArray(items)) {
+                            servicesData = items;
+                        } else if (typeof items === 'object') {
+                            // Convert object with numeric keys to array
+                            servicesData = Object.values(items).filter(item => item !== null);
+                        }
+                        console.log('✅ Services loaded:', servicesData.length, servicesData);
+                    }
+                    
+                    // Update business hours display
+                    updateBusinessHoursDisplay();
+                    
+                    // Apply theme colors from admin panel
+                    applyThemeColors();
+                    
+                } else {
+                    console.warn('⚠ Firebase response not OK:', response.status);
+                }
+            } catch (err) {
+                console.error('❌ Failed to load config from Firebase:', err);
+                // Fallback to local config.js if available
+                if (typeof SITE_CONFIG !== 'undefined' && SITE_CONFIG.servicesSection) {
+                    servicesData = SITE_CONFIG.servicesSection.items || [];
+                }
+            }
+        }
+        
+        // ===== APPLY THEME COLORS FROM CONFIG =====
+        function applyThemeColors() {
+            const theme = window.SITE_CONFIG?.theme || {};
+            const root = document.documentElement;
+            
+            // Apply primary color to iOS blue if set
+            if (theme.primaryColor) {
+                root.style.setProperty('--ios-blue', theme.primaryColor);
+            }
+            
+            // Apply button color
+            if (theme.buttonColor) {
+                root.style.setProperty('--ios-blue', theme.buttonColor);
+            }
+            
+            // Apply button text color
+            if (theme.buttonTextColor) {
+                // Used in button text
+            }
+            
+            console.log('✅ Theme colors applied from config');
+        }
+        
+        // ===== UPDATE BUSINESS HOURS DISPLAY =====
+        function updateBusinessHoursDisplay() {
+            const businessHours = window.SITE_CONFIG?.booking?.businessHours || { start: 9, end: 19 };
+            const workingDays = window.SITE_CONFIG?.booking?.workingDays || {};
+            const daysClosed = window.SITE_CONFIG?.booking?.daysClosed || [0];
+            const hoursPerDay = window.SITE_CONFIG?.booking?.hours || {};
+            
+            const hoursText = document.getElementById('businessHoursText');
+            if (hoursText) {
+                hoursText.textContent = `${businessHours.start}:00 - ${businessHours.end}:00`;
+            }
+            
+            // Update working days info if element exists
+            const workingDaysInfo = document.getElementById('workingDaysInfo');
+            if (workingDaysInfo) {
+                const dayNames = ['Ned', 'Pon', 'Tor', 'Sre', 'Čet', 'Pet', 'Sob'];
+                const openDays = [];
+                for (let i = 0; i < 7; i++) {
+                    if (workingDays[i] || !daysClosed.includes(i)) {
+                        openDays.push(dayNames[i]);
+                    }
+                }
+                workingDaysInfo.textContent = openDays.join(', ') || 'Pon - Pet';
+            }
+        }
+        
+        // ===== GET BUSINESS HOURS FOR SPECIFIC DAY =====
+        function getBusinessHoursForDay(dayOfWeek) {
+            const defaultHours = window.SITE_CONFIG?.booking?.businessHours || { start: 9, end: 19 };
+            const hoursPerDay = window.SITE_CONFIG?.booking?.hours || {};
+            
+            // Check if there are custom hours for this day
+            if (hoursPerDay[dayOfWeek]) {
+                return {
+                    start: hoursPerDay[dayOfWeek].start ?? defaultHours.start,
+                    end: hoursPerDay[dayOfWeek].end ?? defaultHours.end
+                };
+            }
+            
+            return defaultHours;
+        }
+
+        // ===== LOADING =====
+        function showLoading(show) {
+            document.getElementById('loadingOverlay').classList.toggle('visible', show);
+        }
+
+        // ===== LOAD EVENTS =====
+        async function loadEvents() {
+            try {
+                // Load schedule events from StorageManager
+                const scheduleData = await StorageManager.load('schedule');
+                
+                if (scheduleData && Array.isArray(scheduleData.events)) {
+                    BookingState.events = scheduleData.events;
+                    console.log('✅ Loaded', BookingState.events.length, 'events from schedule');
+                } else {
+                    BookingState.events = [];
+                    console.log('📋 No events found in schedule');
+                }
+                
+                // Debug: log event details
+                if (BookingState.events.length > 0) {
+                    console.log('📋 Sample events:', BookingState.events.slice(0, 3));
+                }
+                
+            } catch (err) {
+                console.warn('⚠ Could not load events:', err);
+                BookingState.events = [];
+            }
+        }
+
+        // ===== LOAD SERVICES =====
+        function loadServices() {
+            const grid = document.getElementById('servicesGrid');
+            grid.innerHTML = '';
+            
+            // Use servicesData loaded from Firebase
+            const services = servicesData;
+            
+            console.log('🔍 Services found:', services.length, services);
+            
+            if (services.length === 0) {
+                grid.innerHTML = '<p style="text-align: center; color: var(--ios-text-tertiary);">Ni razpoložljivih storitev</p>';
+                return;
+            }
+            
+            services.forEach((service, index) => {
+                const item = document.createElement('div');
+                item.className = 'service-item';
+                item.dataset.index = index;
+                
+                // Format price - add € if not present
+                let priceDisplay = service.price || '';
+                if (priceDisplay && !priceDisplay.includes('€')) {
+                    priceDisplay = priceDisplay + ' €';
+                }
+                
+                item.innerHTML = `
+                    <div class="service-checkbox"></div>
+                    <div class="service-info">
+                        <div class="service-name">${service.name}</div>
+                        <div class="service-desc">${service.desc || ''}</div>
+                    </div>
+                    <div class="service-price">${priceDisplay}</div>
+                `;
+                item.addEventListener('click', () => toggleService(index));
+                grid.appendChild(item);
+            });
+        }
+
+        // ===== TOGGLE SERVICE =====
+        function toggleService(index) {
+            const services = servicesData;
+            const service = services[index];
+            if (!service) return;
+            
+            const idx = BookingState.selectedServices.findIndex(s => s.index === index);
+            
+            if (idx >= 0) {
+                BookingState.selectedServices.splice(idx, 1);
+            } else {
+                BookingState.selectedServices.push({
+                    index,
+                    name: service.name,
+                    price: parseFloat((service.price || '0').toString().replace(/[^0-9.,]/g, '').replace(',', '.')) || 0,
+                    duration: parseInt(service.duration, 10) || 30
+                });
+            }
+            
+            // Update UI
+            document.querySelectorAll('.service-item').forEach((el, i) => {
+                el.classList.toggle('selected', BookingState.selectedServices.some(s => s.index === i));
+            });
+            
+            // Calculate totals
+            BookingState.totalDuration = BookingState.selectedServices.reduce((sum, s) => sum + s.duration, 0);
+            BookingState.totalPrice = BookingState.selectedServices.reduce((sum, s) => sum + s.price, 0);
+            
+            // Update summary display
+            updateSelectionSummary();
+            
+            // Enable/disable next button
+            document.getElementById('toStep2Btn').disabled = BookingState.selectedServices.length === 0;
+            
+            console.log('Selected services:', BookingState.selectedServices);
+            console.log('Total duration:', BookingState.totalDuration, 'min');
+        }
+        
+        // ===== UPDATE SELECTION SUMMARY =====
+        function updateSelectionSummary() {
+            const summary = document.getElementById('selectionSummary');
+            const durationText = document.getElementById('totalDurationText');
+            const priceText = document.getElementById('totalPriceText');
+            
+            if (BookingState.selectedServices.length > 0) {
+                summary.style.display = 'block';
+                
+                // Format duration (convert minutes to hours and minutes)
+                const totalMins = BookingState.totalDuration;
+                const hours = Math.floor(totalMins / 60);
+                const mins = totalMins % 60;
+                let durationStr = '';
+                if (hours > 0) {
+                    durationStr += `${hours} h `;
+                }
+                if (mins > 0 || hours === 0) {
+                    durationStr += `${mins} min`;
+                }
+                durationText.textContent = durationStr.trim();
+                
+                // Format price
+                priceText.textContent = `${BookingState.totalPrice.toFixed(2)} €`;
+            } else {
+                summary.style.display = 'none';
+            }
+        }
+
+        // ===== RENDER CALENDAR =====
+        function renderCalendar() {
+            const container = document.getElementById('calendarDays');
+            container.innerHTML = '';
+            
+            const year = BookingState.currentMonth.getFullYear();
+            const month = BookingState.currentMonth.getMonth();
+            
+            // Update header
+            document.getElementById('calendarMonthYear').textContent = `${MONTHS_SL[month]} ${year}`;
+            
+            // First day of month (0 = Sunday, adjust to Monday start)
+            const firstDay = new Date(year, month, 1).getDay();
+            const startOffset = firstDay === 0 ? 6 : firstDay - 1; // Monday = 0
+            
+            // Days in month
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            
+            // Days in previous month
+            const prevMonthDays = new Date(year, month, 0).getDate();
+            
+            // Today
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            // Render previous month days
+            for (let i = startOffset - 1; i >= 0; i--) {
+                const day = prevMonthDays - i;
+                const btn = createDayButton(day, true, false, null);
+                container.appendChild(btn);
+            }
+            
+            // Calculate max date (2 months from today)
+            const maxDate = new Date();
+            maxDate.setHours(0, 0, 0, 0);
+            maxDate.setMonth(maxDate.getMonth() + 2);
+            
+            // Render current month days
+            for (let day = 1; day <= daysInMonth; day++) {
+                const date = new Date(year, month, day);
+                date.setHours(0, 0, 0, 0);
+                
+                const isPast = date < today;
+                const isTooFar = date > maxDate; // Disable dates more than 2 months ahead
+                const isToday = date.getTime() === today.getTime();
+                const isSelected = BookingState.selectedDate && 
+                    BookingState.selectedDate.getTime() === date.getTime();
+                const isClosed = isDateClosed(date);
+                const isDisabled = isPast || isTooFar || isClosed;
+                const hasSlots = !isDisabled && hasAvailableSlots(date);
+                
+                const btn = createDayButton(day, false, isDisabled, date);
+                if (isToday) btn.classList.add('today');
+                if (isSelected) btn.classList.add('selected');
+                if (!isDisabled) {
+                    btn.classList.add(hasSlots ? 'has-slots' : 'no-slots');
+                }
+                container.appendChild(btn);
+            }
+            
+            // Render next month days to fill grid
+            const totalCells = startOffset + daysInMonth;
+            const remainingCells = totalCells % 7 === 0 ? 0 : 7 - (totalCells % 7);
+            for (let day = 1; day <= remainingCells; day++) {
+                const btn = createDayButton(day, true, false, null);
+                container.appendChild(btn);
+            }
+        }
+
+        function createDayButton(day, isOtherMonth, isDisabled, date) {
+            const btn = document.createElement('button');
+            btn.className = 'calendar-day';
+            btn.textContent = day;
+            
+            if (isOtherMonth) btn.classList.add('other-month', 'disabled');
+            if (isDisabled) btn.classList.add('disabled');
+            
+            if (date && !isDisabled && !isOtherMonth) {
+                btn.addEventListener('click', () => selectDate(date, btn));
+            }
+            
+            return btn;
+        }
+
+        // ===== CHECK IF DATE IS CLOSED =====
+        function isDateClosed(date) {
+            const dayOfWeek = date.getDay(); // 0 = Sunday
+            const workingDays = window.SITE_CONFIG?.booking?.workingDays || {};
+            const daysClosed = window.SITE_CONFIG?.booking?.daysClosed || [0];
+            
+            // If workingDays is defined, use it (day is closed if NOT in workingDays)
+            if (Object.keys(workingDays).length > 0) {
+                return !workingDays[dayOfWeek];
+            }
+            
+            // Fallback to daysClosed array
+            return daysClosed.includes(dayOfWeek);
+        }
+
+        // ===== CHECK IF DATE HAS AVAILABLE SLOTS =====
+        function hasAvailableSlots(date) {
+            const slots = getAvailableSlotsForDate(date);
+            return slots.length > 0;
+        }
+
+        // ===== GET AVAILABLE SLOTS FOR DATE =====
+        function getAvailableSlotsForDate(date) {
+            // Use local date string (not UTC) to avoid timezone issues
+            const dateStr = getLocalDateStr(date);
+            const dayOfWeek = date.getDay();
+            
+            // Get business hours for this specific day
+            const businessHours = getBusinessHoursForDay(dayOfWeek);
+            const slotDuration = window.SITE_CONFIG?.booking?.slotDuration || 15;
+            const serviceDuration = BookingState.totalDuration || 30;
+            
+            console.log('📅 Generating slots for:', dateStr, '(day:', dayOfWeek, ') Business hours:', businessHours.start, '-', businessHours.end, 'Service:', serviceDuration, 'min');
+            
+            // Calculate the latest possible start time
+            // Appointment must END before or at closing time
+            const closingTimeMinutes = businessHours.end * 60;
+            const latestStartMinutes = closingTimeMinutes - serviceDuration;
+            const latestStartHour = Math.floor(latestStartMinutes / 60);
+            const latestStartMin = latestStartMinutes % 60;
+            
+            // If service is too long to fit in a day, show no slots
+            if (latestStartMinutes < businessHours.start * 60) {
+                console.log('⚠️ Service too long for business hours!');
+                return [];
+            }
+            
+            // Generate all possible slots
+            const allSlots = [];
+            for (let hour = businessHours.start; hour <= latestStartHour; hour++) {
+                const maxMin = (hour === latestStartHour) ? latestStartMin : 59;
+                for (let min = 0; min <= maxMin; min += slotDuration) {
+                    // Skip if this slot would exceed latest start time
+                    const slotStartMinutes = hour * 60 + min;
+                    if (slotStartMinutes > latestStartMinutes) {
+                        continue;
+                    }
+                    
+                    const slotStart = new Date(date);
+                    slotStart.setHours(hour, min, 0, 0);
+                    
+                    const slotEnd = new Date(slotStart);
+                    slotEnd.setMinutes(slotEnd.getMinutes() + serviceDuration);
+                    
+                    // Double check: appointment must end on same day and before closing
+                    const endHour = slotEnd.getHours();
+                    const endMin = slotEnd.getMinutes();
+                    // Use local date string (not UTC) to avoid timezone issues
+                    const endDate = getLocalDateStr(slotEnd);
+                    
+                    // If ends on different day, skip
+                    if (endDate !== dateStr) {
+                        continue;
+                    }
+                    
+                    // If ends after closing time, skip
+                    if (endHour > businessHours.end || (endHour === businessHours.end && endMin > 0)) {
+                        continue;
+                    }
+                    
+                    allSlots.push({
+                        start: slotStart,
+                        end: slotEnd,
+                        timeStr: `${String(hour).padStart(2, '0')}:${String(min).padStart(2, '0')}`
+                    });
+                }
+            }
+            
+            console.log('📅 Generated', allSlots.length, 'potential slots, checking against', BookingState.events.length, 'events');
+            
+            // Filter out slots that conflict with existing events
+            const availableSlots = allSlots.filter(slot => {
+                return !hasConflict(slot.start, slot.end);
+            });
+            
+            console.log('📅 Available slots after conflict check:', availableSlots.length, '(blocked:', allSlots.length - availableSlots.length, ')');
+            
+            return availableSlots;
+        }
+
+        // ===== CHECK FOR CONFLICTS =====
+        function hasConflict(slotStart, slotEnd) {
+            // Get the date string for this slot to filter relevant events
+            const slotDateStr = getLocalDateStr(slotStart);
+            
+            for (const event of BookingState.events) {
+                try {
+                    let eventStart, eventEnd;
+                    
+                    // Parse event start - handle multiple formats
+                    if (event.start instanceof Date) {
+                        eventStart = event.start;
+                    } else if (typeof event.start === 'string') {
+                        eventStart = new Date(event.start);
+                    } else if (event.startDate && event.startTime) {
+                        const startTimeStr = typeof event.startTime === 'string' ? event.startTime : `${event.startTime}:00`;
+                        eventStart = new Date(`${event.startDate}T${startTimeStr}`);
+                    } else if (event.startDate) {
+                        eventStart = new Date(event.startDate);
+                    } else {
+                        continue;
+                    }
+                    
+                    // Parse event end - handle multiple formats
+                    if (event.end instanceof Date) {
+                        eventEnd = event.end;
+                    } else if (typeof event.end === 'string') {
+                        eventEnd = new Date(event.end);
+                    } else if (event.endDate && event.endTime) {
+                        const endTimeStr = typeof event.endTime === 'string' ? event.endTime : `${event.endTime}:00`;
+                        eventEnd = new Date(`${event.endDate}T${endTimeStr}`);
+                    } else if (event.endDate) {
+                        eventEnd = new Date(event.endDate);
+                        eventEnd.setHours(23, 59, 59, 999);
+                    } else {
+                        eventEnd = new Date(eventStart);
+                        eventEnd.setHours(eventEnd.getHours() + 1);
+                    }
+                    
+                    // Check if times are valid
+                    if (isNaN(eventStart.getTime()) || isNaN(eventEnd.getTime())) {
+                        continue;
+                    }
+                    
+                    // Check for overlap: (slotStart < eventEnd) && (slotEnd > eventStart)
+                    if (slotStart < eventEnd && slotEnd > eventStart) {
+                        console.log('🚫 Conflict found:', event.title, eventStart.toISOString(), '-', eventEnd.toISOString(), 'vs slot', slotStart.toISOString());
+                        return true; // Conflict found
+                    }
+                } catch (err) {
+                    console.warn('Error checking event conflict:', err);
+                }
+            }
+            return false;
+        }
+
+        // ===== SELECT DATE =====
+        function selectDate(date, button) {
+            BookingState.selectedDate = date;
+            BookingState.selectedTime = null;
+            
+            // Update calendar UI
+            document.querySelectorAll('.calendar-day').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            if (button) {
+                button.classList.add('selected');
+            }
+            
+            // Show time slots
+            renderTimeSlots(date);
+            
+            // Disable next button until time is selected
+            document.getElementById('toStep3Btn').disabled = true;
+        }
+
+        // ===== RENDER TIME SLOTS =====
+        function renderTimeSlots(date) {
+            const container = document.getElementById('timeSlotsContainer');
+            const grid = document.getElementById('timeSlotsGrid');
+            const dateText = document.getElementById('selectedDateText');
+            
+            container.style.display = 'block';
+            grid.innerHTML = '';
+            
+            // Format date for display
+            const day = date.getDate();
+            const month = MONTHS_SL[date.getMonth()];
+            dateText.textContent = `${day}. ${month}`;
+            
+            // Get available slots
+            const slots = getAvailableSlotsForDate(date);
+            const dayOfWeek = date.getDay();
+            const businessHours = getBusinessHoursForDay(dayOfWeek);
+            const totalWorkMinutes = (businessHours.end - businessHours.start) * 60;
+            const serviceDuration = BookingState.totalDuration || 30;
+            
+            if (slots.length === 0) {
+                // Check if service is too long for business hours
+                if (serviceDuration > totalWorkMinutes) {
+                    const hours = Math.floor(serviceDuration / 60);
+                    const mins = serviceDuration % 60;
+                    grid.innerHTML = `
+                        <div class="no-slots-message" style="grid-column: 1 / -1;">
+                            <div class="icon">⏰</div>
+                            <p>Izbrane storitve trajajo <strong>${hours}h ${mins}min</strong>, 
+                            kar presega delovni čas (${businessHours.start}:00 - ${businessHours.end}:00).</p>
+                            <p style="margin-top: 10px; font-size: 13px;">Prosimo, izberite manj storitev ali nas kontaktirajte za posebno rezervacijo.</p>
+                        </div>
+                    `;
+                } else {
+                    grid.innerHTML = `
+                        <div class="no-slots-message" style="grid-column: 1 / -1;">
+                            <div class="icon">😔</div>
+                            <p>Na ta dan ni prostih terminov.<br>Prosimo, izberite drug datum.</p>
+                        </div>
+                    `;
+                }
+                return;
+            }
+            
+            // Show info about service duration
+            const svcHours = Math.floor(serviceDuration / 60);
+            const svcMins = serviceDuration % 60;
+            const durationStr = svcHours > 0 ? `${svcHours}h ${svcMins}min` : `${svcMins} min`;
+            
+            // Add duration info header
+            const infoDiv = document.createElement('div');
+            infoDiv.className = 'slots-info';
+            infoDiv.style.cssText = 'grid-column: 1 / -1; margin-bottom: 12px; padding: 10px; background: rgba(0, 122, 255, 0.1); border-radius: 8px; font-size: 13px; color: var(--ios-blue);';
+            infoDiv.innerHTML = `<strong>Trajanje:</strong> ${durationStr} • <strong>Konec do:</strong> ${businessHours.end}:00`;
+            grid.appendChild(infoDiv);
+            
+            // Render slots with end time tooltip
+            slots.forEach(slot => {
+                const btn = document.createElement('button');
+                btn.className = 'time-slot';
+                
+                // Format end time
+                const endHour = slot.end.getHours();
+                const endMin = slot.end.getMinutes();
+                const endTimeStr = `${String(endHour).padStart(2, '0')}:${String(endMin).padStart(2, '0')}`;
+                
+                btn.innerHTML = `
+                    <div class="slot-time">${slot.timeStr}</div>
+                    <div class="slot-end" style="font-size: 10px; color: var(--ios-text-tertiary); margin-top: 2px;">→ ${endTimeStr}</div>
+                `;
+                btn.addEventListener('click', () => selectTimeSlot(slot, btn));
+                grid.appendChild(btn);
+            });
+        }
+
+        // ===== SELECT TIME SLOT =====
+        function selectTimeSlot(slot, button) {
+            BookingState.selectedTime = slot;
+            
+            // Update UI
+            document.querySelectorAll('.time-slot').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            if (button) {
+                button.classList.add('selected');
+            }
+            
+            // Enable next button
+            document.getElementById('toStep3Btn').disabled = false;
+        }
+
+        // ===== NAVIGATION =====
+        function goToStep(stepNum) {
+            // Hide all steps
+            document.querySelectorAll('.booking-step').forEach(step => {
+                step.classList.remove('active');
+            });
+            
+            // Show target step
+            document.getElementById(`step${stepNum}`).classList.add('active');
+            
+            // Update step indicators
+            document.querySelectorAll('.step-dot').forEach((dot, index) => {
+                dot.classList.remove('active', 'completed');
+                if (index + 1 < stepNum) {
+                    dot.classList.add('completed');
+                } else if (index + 1 === stepNum) {
+                    dot.classList.add('active');
+                }
+            });
+            
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // ===== VALIDATE STEP 3 =====
+        function validateCustomerInfo() {
+            const name = document.getElementById('customerName').value.trim();
+            const email = document.getElementById('customerEmail').value.trim();
+            const phone = document.getElementById('customerPhone').value.trim();
+            
+            if (!name) {
+                alert('Prosimo, vnesite ime in priimek.');
+                return false;
+            }
+            
+            if (!email || !email.includes('@')) {
+                alert('Prosimo, vnesite veljavni e-poštni naslov.');
+                return false;
+            }
+            
+            if (!phone) {
+                alert('Prosimo, vnesite telefonsko številko.');
+                return false;
+            }
+            
+            BookingState.customerInfo = {
+                name,
+                email,
+                phone,
+                notes: document.getElementById('customerNotes').value.trim()
+            };
+            
+            return true;
+        }
+
+        // ===== UPDATE SUMMARY =====
+        function updateSummary() {
+            // Services
+            const servicesNames = BookingState.selectedServices.map(s => s.name).join(', ');
+            document.getElementById('summaryServices').textContent = servicesNames || '-';
+            
+            // Date
+            if (BookingState.selectedDate) {
+                const d = BookingState.selectedDate;
+                document.getElementById('summaryDate').textContent = 
+                    `${d.getDate()}. ${MONTHS_SL[d.getMonth()]} ${d.getFullYear()}`;
+            }
+            
+            // Time
+            if (BookingState.selectedTime) {
+                const endTime = new Date(BookingState.selectedTime.start);
+                endTime.setMinutes(endTime.getMinutes() + BookingState.totalDuration);
+                const endStr = `${String(endTime.getHours()).padStart(2, '0')}:${String(endTime.getMinutes()).padStart(2, '0')}`;
+                document.getElementById('summaryTime').textContent = 
+                    `${BookingState.selectedTime.timeStr} - ${endStr}`;
+            }
+            
+            // Duration
+            document.getElementById('summaryDuration').textContent = `${BookingState.totalDuration} min`;
+            
+            // Customer
+            document.getElementById('summaryCustomer').textContent = BookingState.customerInfo.name || '-';
+            document.getElementById('summaryContact').textContent = 
+                `${BookingState.customerInfo.email}\n${BookingState.customerInfo.phone}`;
+            
+            // Total
+            const currency = window.SITE_CONFIG?.currency || '€';
+            document.getElementById('summaryTotal').textContent = `${currency}${BookingState.totalPrice.toFixed(2)}`;
+        }
+
+        // ===== CONFIRM BOOKING =====
+        async function confirmBooking() {
+            showLoading(true);
+            
+            try {
+                // Create appointment object - MINIMAL data for lighter database
+                const appointmentId = 'apt_' + Date.now();
+                
+                const startDate = new Date(BookingState.selectedDate);
+                startDate.setHours(
+                    parseInt(BookingState.selectedTime.timeStr.split(':')[0]),
+                    parseInt(BookingState.selectedTime.timeStr.split(':')[1]),
+                    0, 0
+                );
+                
+                const endDate = new Date(startDate);
+                endDate.setMinutes(endDate.getMinutes() + BookingState.totalDuration);
+                
+                // Build minimal appointment object
+                const appointment = {
+                    id: appointmentId,
+                    type: 'booking',
+                    title: BookingState.customerInfo.name,
+                    start: startDate.toISOString(),
+                    end: endDate.toISOString(),
+                    extendedProps: {
+                        customer: BookingState.customerInfo.name,
+                        email: BookingState.customerInfo.email,
+                        phone: BookingState.customerInfo.phone,
+                        services: BookingState.selectedServices.map(s => s.name),
+                        price: BookingState.totalPrice
+                    }
+                };
+                
+                // Only add notes if not empty
+                if (BookingState.customerInfo.notes && BookingState.customerInfo.notes.trim()) {
+                    appointment.extendedProps.notes = BookingState.customerInfo.notes.trim();
+                }
+                
+                // Load current schedule and add appointment
+                let scheduleData = await StorageManager.load('schedule') || { events: [] };
+                if (!Array.isArray(scheduleData.events)) {
+                    scheduleData.events = [];
+                }
+                scheduleData.events.push(appointment);
+                
+                // Save
+                await StorageManager.save('schedule', scheduleData);
+                
+                console.log('✅ Booking saved:', appointment);
+                
+                // Go to success step
+                goToStep(5);
+                
+                // Fire confetti celebration! 🎉
+                if (typeof fireConfetti === 'function') {
+                    fireConfetti();
+                }
+                
+            } catch (err) {
+                console.error('❌ Error saving booking:', err);
+                alert('Prišlo je do napake. Prosimo, poskusite znova.');
+            }
+            
+            showLoading(false);
+        }
+
+        // ===== EVENT LISTENERS =====
+        function setupEventListeners() {
+            // Step navigation
+            document.getElementById('toStep2Btn').addEventListener('click', () => {
+                if (BookingState.selectedServices.length > 0) {
+                    goToStep(2);
+                    renderCalendar(); // Re-render with current service duration
+                }
+            });
+            
+            document.getElementById('backToStep1').addEventListener('click', () => goToStep(1));
+            
+            document.getElementById('toStep3Btn').addEventListener('click', () => {
+                if (BookingState.selectedDate && BookingState.selectedTime) {
+                    goToStep(3);
+                }
+            });
+            
+            document.getElementById('backToStep2').addEventListener('click', () => goToStep(2));
+            
+            document.getElementById('toStep4Btn').addEventListener('click', () => {
+                if (validateCustomerInfo()) {
+                    updateSummary();
+                    goToStep(4);
+                }
+            });
+            
+            document.getElementById('backToStep3').addEventListener('click', () => goToStep(3));
+            
+            document.getElementById('confirmBookingBtn').addEventListener('click', confirmBooking);
+            
+            // Calendar navigation
+            document.getElementById('prevMonth').addEventListener('click', () => {
+                // Don't go before current month
+                const now = new Date();
+                const currentViewMonth = new Date(BookingState.currentMonth.getFullYear(), BookingState.currentMonth.getMonth(), 1);
+                const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+                if (currentViewMonth > thisMonth) {
+                    BookingState.currentMonth.setMonth(BookingState.currentMonth.getMonth() - 1);
+                    renderCalendar();
+                    updateNavigationButtons();
+                }
+            });
+            
+            document.getElementById('nextMonth').addEventListener('click', () => {
+                // Don't go more than 2 months ahead
+                const now = new Date();
+                const maxMonth = new Date(now.getFullYear(), now.getMonth() + 2, 1);
+                const nextViewMonth = new Date(BookingState.currentMonth.getFullYear(), BookingState.currentMonth.getMonth() + 1, 1);
+                if (nextViewMonth <= maxMonth) {
+                    BookingState.currentMonth.setMonth(BookingState.currentMonth.getMonth() + 1);
+                    renderCalendar();
+                    updateNavigationButtons();
+                }
+            });
+            
+            // Update navigation button states
+            function updateNavigationButtons() {
+                const now = new Date();
+                const currentViewMonth = new Date(BookingState.currentMonth.getFullYear(), BookingState.currentMonth.getMonth(), 1);
+                const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+                const maxMonth = new Date(now.getFullYear(), now.getMonth() + 2, 1);
+                
+                const prevBtn = document.getElementById('prevMonth');
+                const nextBtn = document.getElementById('nextMonth');
+                
+                // Disable prev if at current month
+                prevBtn.disabled = currentViewMonth <= thisMonth;
+                prevBtn.style.opacity = prevBtn.disabled ? '0.3' : '1';
+                prevBtn.style.cursor = prevBtn.disabled ? 'not-allowed' : 'pointer';
+                
+                // Disable next if at max month (2 months ahead)
+                nextBtn.disabled = currentViewMonth >= maxMonth;
+                nextBtn.style.opacity = nextBtn.disabled ? '0.3' : '1';
+                nextBtn.style.cursor = nextBtn.disabled ? 'not-allowed' : 'pointer';
+            }
+            
+            // Initial button state update
+            updateNavigationButtons();
+        }
+    </script>
+    <!-- Confetti Effect -->
+    <script src="js/confetti.js"></script>
+</body>
+</html>
