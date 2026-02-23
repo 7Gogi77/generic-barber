@@ -1764,7 +1764,8 @@
         </div>
     </div>
 
-    <!-- SCRIPTS -->
+    <!-- SCRIPTS -->
+
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
         <script>
             // --- TAB LOGIC FOR ADD EVENT MODAL ---
@@ -3753,6 +3754,18 @@
                 console.error('nukeAdminSchedule failed', err);
             }
         };
+
+        if (typeof window.debugLog !== 'function') {
+            window.debugLog = function(...args) {
+                try {
+                    if (window.DEBUG_SCHEDULE) {
+                        console.log(...args);
+                    }
+                } catch (e) {
+                    // Ignore logging failures
+                }
+            };
+        }
 
         async function initializeBusinessCalendar() {
             debugLog('🚀 Initialization started');
