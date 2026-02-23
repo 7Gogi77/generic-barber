@@ -4135,7 +4135,10 @@
             const dbUrl = 'https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app/site_config.json';
 
             try {
-                console.log('📤 syncToFirebase sending payload. adminSchedule.entries:', config.adminSchedule ? config.adminSchedule.entries.length : 0);
+                const adminScheduleEntries = config && config.adminSchedule && Array.isArray(config.adminSchedule.entries)
+                    ? config.adminSchedule.entries.length
+                    : 0;
+                console.log('📤 syncToFirebase sending payload. adminSchedule.entries:', adminScheduleEntries);
                 const body = JSON.stringify(config);
                 console.log('📦 Payload size (bytes):', new Blob([body]).size);
 
