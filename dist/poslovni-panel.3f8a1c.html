@@ -2957,13 +2957,36 @@ ${manualEarningsData.map(m => `- ${m.description}: ${m.amount}€ (${new Date(m.
             try {
                 console.log('🔄 Force refreshing calendar from Firebase...');
                 
+                // Get current event count for comparison
+                const oldCount = (scheduleData && scheduleData.events) ? scheduleData.events.length : 0;
+                console.log(`📊 Current events in memory: ${oldCount}`);
+                
                 // Force load from Firebase with cache-busting
-                scheduleData = await StorageManager.load('schedule', true);
+                const newData = await StorageManager.load('schedule', true);
+                
+                // Validate we got data
+                if (!newData || !Array.isArray(newData.events)) {
+                    console.error('❌ Invalid data received from refresh');
+                    throw new Error('Neveljavni podatki iz baze');
+                }
+
+                const newCount = newData.events.length;
+                console.log(`📊 Events after refresh: ${newCount}`);
+                
+                // Update scheduleData
+                scheduleData = newData;
                 
                 // Filter deleted events
-                if (scheduleData && Array.isArray(scheduleData.events)) {
+                if (Array.isArray(scheduleData.events)) {
+                    const beforeFilter = scheduleData.events.length;
                     scheduleData.events = filterDeletedEvents(scheduleData.events);
+                    const afterFilter = scheduleData.events.length;
+                    if (beforeFilter !== afterFilter) {
+                        console.log(`🔍 Filtered ${beforeFilter - afterFilter} deleted events`);
+                    }
                 }
+
+                console.log(`✅ Final event count: ${scheduleData.events ? scheduleData.events.length : 0}`);
 
                 // Reload calendar
                 if (window.calendar && typeof window.calendar.refetchEvents === 'function') {
@@ -2972,18 +2995,32 @@ ${manualEarningsData.map(m => `- ${m.description}: ${m.amount}€ (${new Date(m.
                     
                     // Show success feedback
                     btn.style.background = 'var(--ios-green)';
+                    btn.innerHTML = '<i class="bi bi-check-circle" style="font-size: 16px;"></i><span>Uspešno!</span>';
                     setTimeout(() => {
                         btn.style.background = 'var(--ios-blue)';
-                    }, 1500);
+                        btn.innerHTML = originalHTML;
+                    }, 2000);
+                } else {
+                    console.warn('⚠ Calendar refetch not available');
+                    // Manually reload page as fallback
+                    btn.innerHTML = '<i class="bi bi-check-circle" style="font-size: 16px;"></i><span>Ponovno nalagam...</span>';
+                    setTimeout(() => window.location.reload(), 1000);
                 }
             } catch (error) {
                 console.error('❌ Failed to refresh calendar:', error);
-                alert('Napaka pri osvežitvi podatkov. Poskusite ponovno.');
+                btn.style.background = 'var(--ios-red)';
+                btn.innerHTML = '<i class="bi bi-x-circle" style="font-size: 16px;"></i><span>Napaka!</span>';
+                setTimeout(() => {
+                    btn.style.background = 'var(--ios-blue)';
+                    btn.innerHTML = originalHTML;
+                }, 2000);
+                alert('Napaka pri osvežitvi podatkov: ' + (error.message || 'Neznana napaka'));
             } finally {
-                // Restore button
-                btn.innerHTML = originalHTML;
-                btn.disabled = false;
-                btn.style.opacity = '1';
+                // Restore button state if not already done
+                setTimeout(() => {
+                    btn.disabled = false;
+                    btn.style.opacity = '1';
+                }, 100);
             }
         }
 

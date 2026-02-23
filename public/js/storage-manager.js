@@ -55,16 +55,6 @@ const StorageManager = {
    * @param {boolean} forceRefresh - Force reload from Firebase, bypassing cache
    */
   async load(key, forceRefresh = false) {
-    // Clear localStorage if forcing refresh
-    if (forceRefresh) {
-      console.log('🔄 Force refresh: clearing localStorage cache');
-      try {
-        localStorage.removeItem(key);
-      } catch (e) {
-        console.warn('⚠ Failed to clear localStorage:', e);
-      }
-    }
-
     // Try Firebase first (single source of truth) with cache-busting
     try {
       const cacheBuster = forceRefresh ? `?t=${Date.now()}` : '';
@@ -77,14 +67,32 @@ const StorageManager = {
           console.log('✓ Loaded from Firebase:', key, '- Events:', data.events.length);
           // Update localStorage cache
           localStorage.setItem(key, JSON.stringify(data));
+          // Clear localStorage cache only AFTER successful Firebase load with data
+          if (forceRefresh) {
+            console.log('🔄 Force refresh successful - cache updated with Firebase data');
+          }
           return data;
+        } else if (data === null || !data.events) {
+          console.warn('⚠ Firebase returned empty/null data');
+          // If forcing refresh but Firebase is empty, try localStorage as backup
+          if (forceRefresh) {
+            console.log('🔄 Firebase empty, checking localStorage backup...');
+            const item = localStorage.getItem(key);
+            if (item) {
+              const localData = JSON.parse(item);
+              if (localData && localData.events && localData.events.length > 0) {
+                console.log('✓ Using localStorage backup:', key, '- Events:', localData.events.length);
+                return localData;
+              }
+            }
+          }
         }
       }
     } catch (fbError) {
       console.warn('⚠ Firebase load failed, trying localStorage:', fbError);
     }
 
-    // Fallback to localStorage (only if not forcing refresh)
+    // Fallback to localStorage
     if (!forceRefresh) {
       try {
         const item = localStorage.getItem(key);
@@ -95,6 +103,18 @@ const StorageManager = {
         }
       } catch (lsError) {
         console.warn('⚠ localStorage load failed:', lsError);
+      }
+    } else {
+      // Even with force refresh, if Firebase failed, try localStorage
+      try {
+        const item = localStorage.getItem(key);
+        if (item) {
+          const data = JSON.parse(item);
+          console.log('✓ Force refresh fallback to localStorage:', key);
+          return data;
+        }
+      } catch (lsError) {
+        console.warn('⚠ localStorage fallback failed:', lsError);
       }
     }
 
