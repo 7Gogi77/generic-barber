@@ -3767,6 +3767,76 @@
             };
         }
 
+        if (!window.StorageManager || typeof window.StorageManager.load !== 'function') {
+            const fallbackFirebaseUrl = 'https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app';
+            const getDefaultSchedule = () => ({
+                version: '1.0',
+                timezone: 'UTC',
+                settings: {
+                    weekStart: 1,
+                    defaultWorkStart: 9,
+                    defaultWorkEnd: 17
+                },
+                events: [],
+                metadata: {
+                    createdAt: Date.now(),
+                    lastModified: Date.now(),
+                    lastSync: Date.now()
+                }
+            });
+
+            window.StorageManager = window.StorageManager || {};
+            window.StorageManager.firebaseUrl = window.StorageManager.firebaseUrl || fallbackFirebaseUrl;
+
+            if (typeof window.StorageManager.load !== 'function') {
+                window.StorageManager.load = async function(key) {
+                    try {
+                        const response = await fetch(`${this.firebaseUrl}/${key}.json`);
+                        if (response.ok) {
+                            const data = await response.json();
+                            if (data && data.events) {
+                                localStorage.setItem(key, JSON.stringify(data));
+                                return data;
+                            }
+                        }
+                    } catch (err) {
+                        console.warn('StorageManager fallback load failed', err);
+                    }
+
+                    try {
+                        const item = localStorage.getItem(key);
+                        if (item) return JSON.parse(item);
+                    } catch (err) {
+                        console.warn('StorageManager fallback localStorage read failed', err);
+                    }
+
+                    return getDefaultSchedule();
+                };
+            }
+
+            if (typeof window.StorageManager.save !== 'function') {
+                window.StorageManager.save = async function(key, data) {
+                    try {
+                        localStorage.setItem(key, JSON.stringify(data));
+                    } catch (err) {
+                        console.warn('StorageManager fallback localStorage save failed', err);
+                    }
+
+                    try {
+                        const response = await fetch(`${this.firebaseUrl}/${key}.json`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(data)
+                        });
+                        return { ok: response.ok, method: response.ok ? 'firebase' : 'localStorage' };
+                    } catch (err) {
+                        console.warn('StorageManager fallback firebase save failed', err);
+                        return { ok: true, method: 'localStorage' };
+                    }
+                };
+            }
+        }
+
         async function initializeBusinessCalendar() {
             debugLog('🚀 Initialization started');
             const container = document.getElementById('scheduleCalendar');
