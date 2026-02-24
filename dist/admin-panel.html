@@ -8,7 +8,8 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="js/config.js"></script>
-    <script src="js/admin-env.js"></script>
+    <script src="js/admin-env.js"></script>
+    <link rel="stylesheet" href="admin-style.css">
     <style>
         /* iOS-inspired overrides for admin panel */
         :root {
@@ -117,6 +118,7 @@
             font-size: 13px;
             font-weight: 500;
             transition: all 0.2s;
+            white-space: nowrap;
         }
         
         .logout-btn:hover { 
@@ -186,12 +188,13 @@
             background: var(--ios-blue); 
             color: white; 
             border: none; 
-            padding: 14px 24px; 
-            border-radius: var(--ios-radius-md); 
+            padding: 10px 18px; 
+            border-radius: 8px; 
             cursor: pointer; 
-            font-size: 16px; 
-            font-weight: 600; 
+            font-size: 13px; 
+            font-weight: 500; 
             transition: all 0.2s; 
+            white-space: nowrap;
         }
         
         .save-btn:hover { 
@@ -806,7 +809,6 @@
             }
         }
     </style>
-  <link rel="stylesheet" crossorigin href="/assets/admin-C2Be-1k3.css">
 </head>
 <body>
     <!-- LOGIN SCREEN -->
@@ -932,13 +934,6 @@
                                 <option value="dark">Temna</option>
                                 <option value="light">Svetla</option>
                             </select>
-                        </div>
-                        <div class="form-group-admin">
-                            <label class="form-label-admin">Glavna Barva</label>
-                            <div style="display: flex; gap: 10px; align-items: center;">
-                                <input id="theme-primary" type="color" class="form-input-admin" style="flex: 0.3; height: 40px; cursor: pointer;">
-                                <input id="theme-primary-text" type="text" class="form-input-admin" placeholder="#E91E63" style="flex: 0.7;">
-                            </div>
                         </div>
                     </div>
                     <button class="save-btn" onclick="saveTheme()">Shrani temo</button>
@@ -4135,7 +4130,10 @@
             const dbUrl = 'https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app/site_config.json';
 
             try {
-                console.log('📤 syncToFirebase sending payload. adminSchedule.entries:', config.adminSchedule ? config.adminSchedule.entries.length : 0);
+                const adminScheduleEntries = config && config.adminSchedule && Array.isArray(config.adminSchedule.entries)
+                    ? config.adminSchedule.entries.length
+                    : 0;
+                console.log('📤 syncToFirebase sending payload. adminSchedule.entries:', adminScheduleEntries);
                 const body = JSON.stringify(config);
                 console.log('📦 Payload size (bytes):', new Blob([body]).size);
 
@@ -4208,9 +4206,9 @@
             });
         }
 
-        // Initialize color inputs when page loads
+        // Initialize on page load
         document.addEventListener('DOMContentLoaded', function() {
-            syncColorInputs();
+            loadConfig();
         });
         
         // Business panel helpers
@@ -4919,7 +4917,8 @@
     <script src="/js/storage-manager.js?v=3"></script>
     <script src="/js/calendar-engine.js"></script>
 
-    <!-- Schedule Styles -->
+    <!-- Schedule Styles -->
+    <link rel="stylesheet" href="/css/calendar.css">
 
     <!-- Initialize Schedule Calendar -->
     <script>

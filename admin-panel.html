@@ -935,13 +935,6 @@
                                 <option value="light">Svetla</option>
                             </select>
                         </div>
-                        <div class="form-group-admin">
-                            <label class="form-label-admin">Glavna Barva</label>
-                            <div style="display: flex; gap: 10px; align-items: center;">
-                                <input id="theme-primary" type="color" class="form-input-admin" style="flex: 0.3; height: 40px; cursor: pointer;">
-                                <input id="theme-primary-text" type="text" class="form-input-admin" placeholder="#E91E63" style="flex: 0.7;">
-                            </div>
-                        </div>
                     </div>
                     <button class="save-btn" onclick="saveTheme()">Shrani temo</button>
                 </div>
@@ -4213,9 +4206,9 @@
             });
         }
 
-        // Initialize color inputs when page loads
+        // Initialize on page load
         document.addEventListener('DOMContentLoaded', function() {
-            syncColorInputs();
+            loadConfig();
         });
         
         // Business panel helpers
