@@ -2203,11 +2203,8 @@
             return total;
         }
       </script>
-    <script src="/js/config.js?v=2"></script>
-    <script src="/js/schedule-model.js?v=2"></script>
-    <script src="/js/storage-manager.js?v=3"></script>
-    <script src="/js/calendar-engine.js?v=2"></script>
 
+    <!-- ===== DELETION TRACKING - LOAD BEFORE CALENDAR ENGINE ===== -->
     <script>
         // ===== GLOBAL DELETION TRACKING SYSTEM =====
         // Track deleted event IDs persistently across page reloads
@@ -2265,7 +2262,6 @@
         function markEventDeleted(eventId) {
             deletedEventIds.add(eventId);
             saveDeletedEventIds();
-            // Event marked as deleted and persisted (console output removed)
         }
 
         /**
@@ -2274,6 +2270,24 @@
         function isEventDeleted(eventId) {
             return deletedEventIds.has(eventId);
         }
+
+        // IMMEDIATELY load deleted event IDs from localStorage
+        loadDeletedEventIds();
+        
+        // Expose to window globally so all scripts can use
+        window.markEventDeleted = markEventDeleted;
+        window.isEventDeleted = isEventDeleted;
+        window.filterDeletedEvents = filterDeletedEvents;
+        window.loadDeletedEventIds = loadDeletedEventIds;
+        window.saveDeletedEventIds = saveDeletedEventIds;
+    </script>
+
+    <script src="/js/config.js?v=2"></script>
+    <script src="/js/schedule-model.js?v=2"></script>
+    <script src="/js/storage-manager.js?v=3"></script>
+    <script src="/js/calendar-engine.js?v=2"></script>
+
+    <script>
 
         /**
          * Remove duplicate events from array based on ID
@@ -2298,16 +2312,6 @@
             return deduplicated;
         }
 
-        // Load deleted IDs on script load
-        loadDeletedEventIds();
-        
-        // ===== EXPOSE DELETION FUNCTIONS TO WINDOW GLOBAL =====
-        // Allow calendar-engine.js and other scripts to access deletion tracking
-        window.markEventDeleted = markEventDeleted;
-        window.isEventDeleted = isEventDeleted;
-        window.filterDeletedEvents = filterDeletedEvents;
-        window.loadDeletedEventIds = loadDeletedEventIds;
-        window.saveDeletedEventIds = saveDeletedEventIds;
     </script>
 
     <script>
