@@ -2300,7 +2300,14 @@
 
         // Load deleted IDs on script load
         loadDeletedEventIds();
-        // Dev hint removed (console output suppressed)
+        
+        // ===== EXPOSE DELETION FUNCTIONS TO WINDOW GLOBAL =====
+        // Allow calendar-engine.js and other scripts to access deletion tracking
+        window.markEventDeleted = markEventDeleted;
+        window.isEventDeleted = isEventDeleted;
+        window.filterDeletedEvents = filterDeletedEvents;
+        window.loadDeletedEventIds = loadDeletedEventIds;
+        window.saveDeletedEventIds = saveDeletedEventIds;
     </script>
 
     <script>

@@ -209,7 +209,7 @@
 
 #scheduleCalendar.view-timegrid-week .fc .fc-timegrid-slot,
 #scheduleCalendar.view-timegrid-day .fc .fc-timegrid-slot {
-  min-height: 1.8em;
+  min-height: 1.2em;
   height: auto;
 }
 

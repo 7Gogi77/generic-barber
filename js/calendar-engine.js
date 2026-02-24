@@ -618,7 +618,7 @@ const CalendarEngine = {
         slotMinTime: slotMinTimeVal,
         slotMaxTime: slotMaxTimeVal,
         slotDuration: slotDurationStr,
-        slotLabelInterval: { minutes: 30 },
+        slotLabelInterval: { hours: 1 },
         slotLabelFormat: { hour: '2-digit', minute: '2-digit', hour12: false },
         // Hide the all-day slot so week/day views don't show a separate all-day row
         allDaySlot: false,
@@ -1677,8 +1677,16 @@ const CalendarEngine = {
       e.preventDefault();
       if (!confirm('Izbriši ta dogodek?')) return;
 
-      // Remove from storage
+      // Get event ID
       const eventId = event && (event.id || event.extendedProps?.eventId);
+      
+      // Mark as deleted in global deletion tracker (for persistent deletion)
+      if (eventId && typeof window.markEventDeleted === 'function') {
+        window.markEventDeleted(eventId);
+        console.log('📌 Event marked as deleted:', eventId);
+      }
+
+      // Remove from storage array
       scheduleData.events = scheduleData.events.filter(ev => ev.id !== eventId);
 
       // Remove from calendar if EventApi instance
@@ -1689,9 +1697,13 @@ const CalendarEngine = {
       // Update events list
       CalendarEngine.updateEventsList(scheduleData);
 
-      // Refetch calendar to ensure consistency
+      // Force complete calendar refresh to ensure deleted event doesn't reappear
       if (calendar && typeof calendar.refetchEvents === 'function') {
-        setTimeout(() => calendar.refetchEvents(), 100);
+        // Clear and reload all events from storage
+        setTimeout(() => {
+          calendar.refetchEvents();
+          console.log('🔄 Calendar refetched after deletion');
+        }, 50);
       }
 
       modal.style.display = 'none';
