@@ -636,9 +636,9 @@ const CalendarEngine = {
         // Load events - always fetch fresh from storage to avoid duplicates
         events: async (info, successCallback, failureCallback) => {
           try {
-            // CRITICAL: Reload deletion tracking before loading events
+            // CRITICAL: Always reload deletion tracking FIRST before any event loading
             if (typeof window !== 'undefined' && typeof window.loadDeletedEventIds === 'function') {
-              window.loadDeletedEventIds();
+              await Promise.resolve(window.loadDeletedEventIds());
             }
             
             // Load fresh schedule data from storage each time
@@ -650,6 +650,8 @@ const CalendarEngine = {
                 console.warn('⚠ Could not load fresh schedule, using initial data');
               }
             }
+            
+            // Generate events with deletion filter applied
             const events = await CalendarEngine.generateCalendarEvents(freshScheduleData);
             successCallback(events);
           } catch (err) { failureCallback(err); }
@@ -1691,46 +1693,63 @@ const CalendarEngine = {
 
       console.log('🗑️ Deleting:', eventId);
 
-      // IMMEDIATE: Remove from memory
+      // STEP 1: Remove from memory
       scheduleData.events = scheduleData.events.filter(ev => ev.id !== eventId);
 
-      // IMMEDIATE: Save to localStorage directly (no await, no network)
+      // STEP 2: Save to localStorage with verification
       try {
-        localStorage.setItem('schedule', JSON.stringify(scheduleData));
+        const saved = JSON.stringify(scheduleData);
+        localStorage.setItem('schedule', saved);
+        const verify = localStorage.getItem('schedule');
+        if (verify) {
+          const parsed = JSON.parse(verify);
+          const stillThere = parsed.events.find(ev => ev.id === eventId);
+          console.log('✓ Saved to localStorage - Event removed:', !stillThere);
+        }
       } catch (e) {
         console.error('❌ localStorage failed:', e);
       }
 
-      // IMMEDIATE: Mark deleted in localStorage
+      // STEP 3: Mark deleted FIRST before refetch
       if (typeof window.markEventDeleted === 'function') {
         window.markEventDeleted(eventId);
+        console.log('✓ Marked in deletion tracker');
       }
 
-      // Remove from DOM
+      // STEP 4: Remove from DOM
       try {
         if (event && typeof event.remove === 'function') event.remove();
       } catch (_) {}
 
-      // Remove all calendar instances
+      // STEP 5: Remove all calendar instances
       if (calendar) {
         try {
           calendar.getEvents().forEach(ev => {
             if (ev.id === eventId) ev.remove();
           });
-          calendar.refetchEvents();
         } catch (_) {}
       }
 
       modal.style.display = 'none';
 
-      // Sync to Firebase in background (non-blocking)
+      // STEP 6: Force reload deletion tracker and refetch
+      if (typeof window.loadDeletedEventIds === 'function') {
+        window.loadDeletedEventIds();
+      }
+      if (calendar) {
+        try {
+          calendar.refetchEvents();
+        } catch (_) {}
+      }
+
+      // STEP 7: Sync to Firebase in background (non-blocking)
       if (typeof StorageManager !== 'undefined' && StorageManager.save) {
         StorageManager.save('schedule', scheduleData).catch(err => {
           console.warn('⚠ Firebase sync failed:', err);
         });
       }
 
-      console.log('✅ Deleted');
+      console.log('✅ Deleted and filtered');
     };
 
     // Handle cancel
