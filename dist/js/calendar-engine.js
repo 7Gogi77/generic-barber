@@ -636,6 +636,11 @@ const CalendarEngine = {
         // Load events - always fetch fresh from storage to avoid duplicates
         events: async (info, successCallback, failureCallback) => {
           try {
+            // CRITICAL: Reload deletion tracking before loading events
+            if (typeof window !== 'undefined' && typeof window.loadDeletedEventIds === 'function') {
+              window.loadDeletedEventIds();
+            }
+            
             // Load fresh schedule data from storage each time
             let freshScheduleData = scheduleData;
             if (typeof StorageManager !== 'undefined' && StorageManager.load) {
@@ -1683,8 +1688,10 @@ const CalendarEngine = {
       // Mark as deleted in global deletion tracker (for persistent deletion)
       if (eventId && typeof window.markEventDeleted === 'function') {
         window.markEventDeleted(eventId);
-        console.log('📌 Event marked as deleted:', eventId);
       }
+
+      // Wait a moment for localStorage to persist
+      await new Promise(resolve => setTimeout(resolve, 50));
 
       // Remove from storage array
       scheduleData.events = scheduleData.events.filter(ev => ev.id !== eventId);
@@ -1692,18 +1699,15 @@ const CalendarEngine = {
       // Remove from calendar if EventApi instance
       try { if (event && typeof event.remove === 'function') event.remove(); } catch (_) { }
 
-      await StorageManager.save('schedule', scheduleData);
+      // Save to database/storage
+      if (typeof StorageManager !== 'undefined' && StorageManager.save) {
+        await StorageManager.save('schedule', scheduleData);
+      }
 
-      // Update events list
-      CalendarEngine.updateEventsList(scheduleData);
-
-      // Force complete calendar refresh to ensure deleted event doesn't reappear
+      // Wait for save to complete, then refetch calendar from storage
+      await new Promise(resolve => setTimeout(resolve, 150));
       if (calendar && typeof calendar.refetchEvents === 'function') {
-        // Clear and reload all events from storage
-        setTimeout(() => {
-          calendar.refetchEvents();
-          console.log('🔄 Calendar refetched after deletion');
-        }, 200);
+        calendar.refetchEvents();
       }
 
       modal.style.display = 'none';
