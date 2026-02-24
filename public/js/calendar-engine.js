@@ -1682,7 +1682,6 @@ const CalendarEngine = {
       e.preventDefault();
       if (!confirm('Izbriši ta dogodek?')) return;
 
-      // Get event ID from both possible sources
       const eventId = event && (event.id || event.extendedProps?.eventId);
       if (!eventId) {
         console.error('❌ Cannot delete: No event ID found');
@@ -1692,64 +1691,45 @@ const CalendarEngine = {
 
       console.log('🗑️ DELETING EVENT:', eventId);
 
-      // STEP 1: Mark as deleted in global deletion tracker
-      if (typeof window.markEventDeleted === 'function') {
-        window.markEventDeleted(eventId);
-        console.log('✓ Marked in deletion tracker');
-      }
-
-      // STEP 2: Remove immediately from memory (scheduleData)
-      const beforeCount = scheduleData.events.length;
+      // STEP 1: Remove from memory immediately
       scheduleData.events = scheduleData.events.filter(ev => ev.id !== eventId);
-      const removedCount = beforeCount - scheduleData.events.length;
-      console.log(`✓ Removed ${removedCount} event(s) from scheduleData`);
 
-      // STEP 3: Remove from calendar DOM immediately
-      try {
-        if (event && typeof event.remove === 'function') {
-          event.remove();
-          console.log('✓ Removed from calendar DOM');
-        }
-      } catch (_) {}
-
-      // STEP 4: Save to storage IMMEDIATELY
+      // STEP 2: Save to DB/storage immediately (AWAIT to ensure it completes)
       try {
         if (typeof StorageManager !== 'undefined' && StorageManager.save) {
           await StorageManager.save('schedule', scheduleData);
-          console.log('✓ Saved to storage');
+          console.log('✓ Saved to DB');
         }
       } catch (err) {
-        console.error('❌ Failed to save:', err);
+        console.error('❌ Save failed:', err);
+        modal.style.display = 'none';
+        return;
       }
 
-      // STEP 5: Small delay to ensure storage is written
-      await new Promise(resolve => setTimeout(resolve, 100));
-
-      // STEP 6: Reload deletion tracker from localStorage
-      if (typeof window.loadDeletedEventIds === 'function') {
-        window.loadDeletedEventIds();
-        console.log('✓ Reloaded deletion tracker');
+      // STEP 3: Mark as deleted in localStorage for filtering
+      if (typeof window.markEventDeleted === 'function') {
+        window.markEventDeleted(eventId);
       }
 
-      // STEP 7: Critical: Clear all instances of this event from calendar
+      // STEP 4: Remove from calendar DOM
+      try {
+        if (event && typeof event.remove === 'function') {
+          event.remove();
+        }
+      } catch (_) {}
+
+      // STEP 5: Remove all instances from calendar
       if (calendar) {
         try {
-          const allEvents = calendar.getEvents();
-          let removedCount = 0;
-          allEvents.forEach(ev => {
+          calendar.getEvents().forEach(ev => {
             if (ev.id === eventId) {
               ev.remove();
-              removedCount++;
             }
           });
-          console.log(`✓ Removed ${removedCount} calendar instance(s)`);
-          
-          // Refetch to get fresh data from storage with filters applied
-          await new Promise(resolve => setTimeout(resolve, 50));
+          // Refetch to ensure no instances remain
           calendar.refetchEvents();
-          console.log('✓ Calendar refetched');
         } catch (err) {
-          console.error('❌ Failed to refresh calendar:', err);
+          console.error('❌ Calendar refresh failed:', err);
         }
       }
 
