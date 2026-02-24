@@ -4180,7 +4180,9 @@
                 { picker: 'nav-text-color', text: 'nav-text-color-text' },
                 { picker: 'nav-hover-color', text: 'nav-hover-color-text' },
                 { picker: 'footer-bg-color', text: 'footer-bg-color-text' },
-                { picker: 'footer-text-color', text: 'footer-text-color-text' }
+                { picker: 'footer-text-color', text: 'footer-text-color-text' },
+                { picker: 'scrollbar-thumb', text: 'scrollbar-thumb-text' },
+                { picker: 'scrollbar-track', text: 'scrollbar-track-text' }
             ];
 
             colorPairs.forEach(pair => {
@@ -4213,6 +4215,7 @@
         // Initialize on page load
         document.addEventListener('DOMContentLoaded', function() {
             loadConfig();
+            syncColorInputs();
         });
         
         // Business panel helpers
