@@ -1689,52 +1689,48 @@ const CalendarEngine = {
         return;
       }
 
-      console.log('🗑️ DELETING EVENT:', eventId);
+      console.log('🗑️ Deleting:', eventId);
 
-      // STEP 1: Remove from memory immediately
+      // IMMEDIATE: Remove from memory
       scheduleData.events = scheduleData.events.filter(ev => ev.id !== eventId);
 
-      // STEP 2: Save to DB/storage immediately (AWAIT to ensure it completes)
+      // IMMEDIATE: Save to localStorage directly (no await, no network)
       try {
-        if (typeof StorageManager !== 'undefined' && StorageManager.save) {
-          await StorageManager.save('schedule', scheduleData);
-          console.log('✓ Saved to DB');
-        }
-      } catch (err) {
-        console.error('❌ Save failed:', err);
-        modal.style.display = 'none';
-        return;
+        localStorage.setItem('schedule', JSON.stringify(scheduleData));
+      } catch (e) {
+        console.error('❌ localStorage failed:', e);
       }
 
-      // STEP 3: Mark as deleted in localStorage for filtering
+      // IMMEDIATE: Mark deleted in localStorage
       if (typeof window.markEventDeleted === 'function') {
         window.markEventDeleted(eventId);
       }
 
-      // STEP 4: Remove from calendar DOM
+      // Remove from DOM
       try {
-        if (event && typeof event.remove === 'function') {
-          event.remove();
-        }
+        if (event && typeof event.remove === 'function') event.remove();
       } catch (_) {}
 
-      // STEP 5: Remove all instances from calendar
+      // Remove all calendar instances
       if (calendar) {
         try {
           calendar.getEvents().forEach(ev => {
-            if (ev.id === eventId) {
-              ev.remove();
-            }
+            if (ev.id === eventId) ev.remove();
           });
-          // Refetch to ensure no instances remain
           calendar.refetchEvents();
-        } catch (err) {
-          console.error('❌ Calendar refresh failed:', err);
-        }
+        } catch (_) {}
       }
 
       modal.style.display = 'none';
-      console.log('✅ DELETION COMPLETE');
+
+      // Sync to Firebase in background (non-blocking)
+      if (typeof StorageManager !== 'undefined' && StorageManager.save) {
+        StorageManager.save('schedule', scheduleData).catch(err => {
+          console.warn('⚠ Firebase sync failed:', err);
+        });
+      }
+
+      console.log('✅ Deleted');
     };
 
     // Handle cancel
