@@ -3604,6 +3604,8 @@
 
         // Save navigation and footer colors
         function saveNavFooterColors() {
+            const buttonColor = document.getElementById('button-color-text').value || document.getElementById('button-color').value;
+            const buttonTextColor = document.getElementById('button-text-color-text').value || document.getElementById('button-text-color').value;
             const navTextColor = document.getElementById('nav-text-color-text').value || document.getElementById('nav-text-color').value;
             const navHoverColor = document.getElementById('nav-hover-color-text').value || document.getElementById('nav-hover-color').value;
             const footerBgColor = document.getElementById('footer-bg-color-text').value || document.getElementById('footer-bg-color').value;
@@ -3613,6 +3615,8 @@
             if (!SITE_CONFIG.theme) SITE_CONFIG.theme = {};
 
             // Update config
+            SITE_CONFIG.theme.buttonColor = buttonColor;
+            SITE_CONFIG.theme.buttonTextColor = buttonTextColor;
             SITE_CONFIG.theme.navTextColor = navTextColor;
             SITE_CONFIG.theme.navHoverColor = navHoverColor;
             SITE_CONFIG.theme.footerBgColor = footerBgColor;
@@ -3623,7 +3627,7 @@
 
             // Save config
             saveConfig();
-            showNotification('Barve navigacije in noge so bile shranjene!', 'success');
+            showNotification('Barve gumbov, navigacije in noge so bile shranjene!', 'success');
         }
 
         // Save scrollbar colors
