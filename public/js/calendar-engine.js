@@ -1776,9 +1776,7 @@ const CalendarEngine = {
         });
       }
 
-      console.log(`✅ DELETION COMPLETE: Event ${eventId} PERMANENTLY deleted`);      }
-
-      console.log('✅ DELETION COMPLETE - Event should NOT reappear after refresh');
+      console.log(`✅ DELETION COMPLETE: Event ${eventId} PERMANENTLY deleted`);
     };
 
     // Handle cancel
