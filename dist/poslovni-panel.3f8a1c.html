@@ -2964,28 +2964,50 @@
             const upcomingRevenue = document.getElementById('upcomingRevenue')?.textContent || '0€';
             const avgPerDay = document.getElementById('avgPerDay')?.textContent || '0€';
 
-            const report = `
-POSLOVNO POROČILO
-==================
+            // Extract numeric values from currency strings
+            const parseAmount = (str) => parseFloat((str || '0€').replace(/[^0-9.-]/g, '')) || 0;
 
-Obdobje: Zadnjih ${rangeDays} dni
-Datum: ${new Date().toLocaleDateString('sl-SI')}
+            // Create arrays for CSV/Excel
+            let csvContent = 'sep=,\n'; // Excel separator declaration
 
-PREGLED ZASLUŽKA:
-- Skupaj zasluženo: ${totalEarnings}
-- Prihodnji prilivi: ${upcomingRevenue}
-- Povprečje na dan: ${avgPerDay}
+            // Header section
+            csvContent += 'POSLOVNO POROČILO (Business Report),,\n';
+            csvContent += ',,\n';
+            csvContent += 'Obdobje (Period),' + rangeDays + ' dni (days),\n';
+            csvContent += 'Datum (Date),' + new Date().toLocaleDateString('sl-SI') + ',\n';
+            csvContent += ',,\n';
 
-ROČNI VNOSI:
-${manualEarningsData.map(m => `- ${m.description}: ${m.amount}€ (${new Date(m.date).toLocaleDateString('sl-SI')})`).join('\n')}
-            `.trim();
+            // Summary section
+            csvContent += 'PREGLED ZASLUŽKA (Earnings Overview),,\n';
+            csvContent += 'Skupaj zasluženo (Total Earned),' + totalEarnings + ',\n';
+            csvContent += 'Prihodnji prilivi (Upcoming Revenue),' + upcomingRevenue + ',\n';
+            csvContent += 'Povprečje na dan (Daily Average),' + avgPerDay + ',\n';
+            csvContent += ',,\n';
 
-            // Create download
-            const blob = new Blob([report], { type: 'text/plain' });
+            // Manual earnings section
+            csvContent += 'ROČNI VNOSI (Manual Earnings),,\n';
+            csvContent += 'Opis (Description),Znesek (Amount),Datum (Date)\n';
+            
+            if (manualEarningsData && manualEarningsData.length > 0) {
+                manualEarningsData.forEach(m => {
+                    const desc = String(m.description || '').replace(/,/g, ';'); // Escape commas
+                    const amount = String(m.amount || '0').replace(/,/g, '.');
+                    const date = new Date(m.date).toLocaleDateString('sl-SI');
+                    csvContent += `"${desc}","${amount}€","${date}"\n`;
+                });
+            }
+
+            csvContent += ',,\n';
+            csvContent += 'Skupaj ročnih vnosov (Total Manual),"' + 
+                (manualEarningsData.reduce((sum, m) => sum + parseFloat(m.amount || 0), 0).toFixed(2)) + 
+                '€",\n';
+
+            // Create download as Excel file
+            const blob = new Blob([csvContent], { type: 'application/vnd.ms-excel;charset=utf-8;' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `porocilo_${new Date().toISOString().split('T')[0]}.txt`;
+            a.download = `porocilo_${new Date().toISOString().split('T')[0]}.csv`;
             a.click();
             URL.revokeObjectURL(url);
         }
