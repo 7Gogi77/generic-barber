@@ -3226,7 +3226,8 @@
         
         async function deleteScheduleEvent(eventId) {
             try {
-                console.log(`🗑️  Deleting event: ${eventId}`);
+                console.log(`🗑️  DELETING EVENT: ${eventId}`);
+                console.log(`📋 Deletion Tracker Size BEFORE: ${deletedEventIds.size}`);
                 
                 const existing = scheduleData.events.find(e => e.id === eventId);
                 if (!existing) {
@@ -3235,12 +3236,16 @@
                 }
 
                 // STEP 1: Mark as deleted FIRST - this prevents all restores
+                console.log(`⏳ Step 1: Calling markEventDeleted(${eventId})...`);
                 markEventDeleted(eventId);
-                console.log(`✓ Marked ${eventId} as deleted in memory and localStorage`);
+                console.log(`✓ Step 1 COMPLETE: ${eventId} marked as deleted`);
+                console.log(`📋 Deletion Tracker Size AFTER markEventDeleted: ${deletedEventIds.size}`);
+                console.log(`✓ Step 1 VERIFIED: isEventDeleted returns ${isEventDeleted(eventId)}`);
 
                 // STEP 2: Remove from scheduleData
+                console.log(`⏳ Step 2: Removing from scheduleData...`);
                 scheduleData.events = scheduleData.events.filter(e => e.id !== eventId);
-                console.log(`✓ Removed from scheduleData`);
+                console.log(`✓ Step 2 COMPLETE: Removed from scheduleData`);
 
                 // STEP 3: Write deletion markers to Firebase (before removing entries)
                 const base = 'https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app/';
@@ -3321,42 +3326,61 @@
                 }
 
                 // STEP 6: Save scheduleData
+                console.log(`⏳ Step 6: Saving schedule data...`);
                 try {
                     scheduleData.events = filterDeletedEvents(scheduleData.events);
                     if (window.saveScheduleDataNoBroadcast) {
                         await window.saveScheduleDataNoBroadcast();
-                        console.log('✓ Schedule saved (no broadcast)');
+                        console.log('✓ Step 6 COMPLETE: Schedule saved (no broadcast)');
                     } else if (window.saveScheduleData) {
                         await window.saveScheduleData();
-                        console.log('✓ Schedule saved');
+                        console.log('✓ Step 6 COMPLETE: Schedule saved');
                     } else {
                         localStorage.setItem('schedule', JSON.stringify(scheduleData));
+                        console.log('✓ Step 6 COMPLETE: Schedule saved to localStorage');
                     }
                 } catch (saveErr) {
-                    console.warn('⚠ Failed to save schedule', saveErr);
+                    console.warn('⚠ Step 6 FAILED: Failed to save schedule', saveErr);
                 }
 
-                // STEP 7: Remove from UI
+                // STEP 7: Remove from calendar UI and REFETCH to apply deletion filter
+                console.log(`⏳ Step 7: Removing from UI and refetching calendar...`);
                 try {
                     const calEvent = window.calendar && window.calendar.getEventById(eventId);
                     if (calEvent) {
                         calEvent.remove();
-                        console.log(`✓ Removed from calendar UI`);
+                        console.log(`✓ Removed event from calendar DOM`);
                     }
-                } catch (uiErr) { }
+                    
+                    // CRITICAL: Refetch ALL events to apply deletion filter
+                    if (window.calendar && typeof window.calendar.refetchEvents === 'function') {
+                        console.log(`⏳ Calling calendar.refetchEvents()...`);
+                        await Promise.resolve(window.calendar.refetchEvents());
+                        console.log(`✓ Step 7 COMPLETE: Calendar refetched - deletion filter applied`);
+                    } else {
+                        console.warn('⚠ Calendar.refetchEvents not available');
+                    }
+                } catch (uiErr) {
+                    console.warn('⚠ Step 7 FAILED:', uiErr);
+                }
 
                 // STEP 8: Clear empty storage
+                console.log(`⏳ Step 8: Checking if storage empty...`);
                 const activeEvents = filterDeletedEvents(scheduleData.events);
                 if (activeEvents.length === 0) {
                     try {
                         localStorage.removeItem('schedule');
                         await fetch(`${base}site_config/adminSchedule/entries.json`, { method: 'PUT', body: '{}' });
                         await fetch(`${base}adminSchedule/entries.json`, { method: 'PUT', body: '{}' });
-                        console.log('✓ Cleared all storage');
-                    } catch (e) { }
+                        console.log('✓ Step 8 COMPLETE: Cleared all storage (no active events)');
+                    } catch (e) {
+                        console.warn('⚠ Step 8 FAILED: Could not clear storage', e);
+                    }
+                } else {
+                    console.log(`✓ Step 8 COMPLETE: ${activeEvents.length} active events remain`);
                 }
 
-                console.log(`✅ Event ${eventId} PERMANENTLY deleted`);
+                console.log(`✅ DELETION COMPLETE: Event ${eventId} PERMANENTLY deleted`);
                 return true;
 
             } catch (err) {
