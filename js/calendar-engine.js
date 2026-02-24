@@ -554,7 +554,7 @@ const CalendarEngine = {
       containerElement.style.overflow = 'auto';
 
       // Compute slot duration from SITE_CONFIG if present
-      const slotMinutes = (window.SITE_CONFIG && window.SITE_CONFIG.booking && window.SITE_CONFIG.booking.slotDuration) ? window.SITE_CONFIG.booking.slotDuration : 15;
+      const slotMinutes = (window.SITE_CONFIG && window.SITE_CONFIG.booking && window.SITE_CONFIG.booking.slotDuration) ? window.SITE_CONFIG.booking.slotDuration : 30;
       const slotDurationStr = `00:${('0' + slotMinutes).slice(-2)}:00`;
 
       // Compute commonly used slot min/max strings and allow timeGrid views to show the full day (scrollable)
@@ -1703,7 +1703,7 @@ const CalendarEngine = {
         setTimeout(() => {
           calendar.refetchEvents();
           console.log('🔄 Calendar refetched after deletion');
-        }, 50);
+        }, 200);
       }
 
       modal.style.display = 'none';

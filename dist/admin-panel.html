@@ -10,6 +10,53 @@
     <script src="js/config.js"></script>
     <script src="js/admin-env.js"></script>
     <link rel="stylesheet" href="admin-style.css">
+    <script>
+        // ===== GLOBAL DELETION TRACKING SYSTEM (duplicated from poslovni-panel for admin context) =====
+        let deletedEventIds = new Set();
+
+        function loadDeletedEventIds() {
+            try {
+                const stored = localStorage.getItem('schedule_deleted_ids');
+                if (stored) {
+                    deletedEventIds = new Set(JSON.parse(stored));
+                } else {
+                    deletedEventIds = new Set();
+                }
+            } catch (e) {
+                deletedEventIds = new Set();
+            }
+        }
+
+        function saveDeletedEventIds() {
+            try {
+                localStorage.setItem('schedule_deleted_ids', JSON.stringify(Array.from(deletedEventIds)));
+            } catch (e) {}
+        }
+
+        function markEventDeleted(eventId) {
+            deletedEventIds.add(eventId);
+            saveDeletedEventIds();
+        }
+
+        function isEventDeleted(eventId) {
+            return deletedEventIds.has(eventId);
+        }
+
+        function filterDeletedEvents(events) {
+            if (!Array.isArray(events)) return [];
+            return events.filter(e => !deletedEventIds.has(e.id));
+        }
+
+        // Initialize on page load
+        loadDeletedEventIds();
+        
+        // Expose to window for calendar-engine.js
+        window.markEventDeleted = markEventDeleted;
+        window.isEventDeleted = isEventDeleted;
+        window.filterDeletedEvents = filterDeletedEvents;
+        window.loadDeletedEventIds = loadDeletedEventIds;
+        window.saveDeletedEventIds = saveDeletedEventIds;
+    </script>
     <style>
         /* iOS-inspired overrides for admin panel */
         :root {
