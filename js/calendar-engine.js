@@ -618,7 +618,7 @@ const CalendarEngine = {
         slotMinTime: slotMinTimeVal,
         slotMaxTime: slotMaxTimeVal,
         slotDuration: slotDurationStr,
-        slotLabelInterval: { hours: 1 },
+        slotLabelInterval: { minutes: 30 },
         slotLabelFormat: { hour: '2-digit', minute: '2-digit', hour12: false },
         // Hide the all-day slot so week/day views don't show a separate all-day row
         allDaySlot: false,
@@ -1688,6 +1688,11 @@ const CalendarEngine = {
 
       // Update events list
       CalendarEngine.updateEventsList(scheduleData);
+
+      // Refetch calendar to ensure consistency
+      if (calendar && typeof calendar.refetchEvents === 'function') {
+        setTimeout(() => calendar.refetchEvents(), 100);
+      }
 
       modal.style.display = 'none';
     };
