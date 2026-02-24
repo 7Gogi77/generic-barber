@@ -1009,44 +1009,6 @@
                     <button class="save-btn" onclick="saveTextColors()">Shrani Barve Besedila</button>
                 </div>
 
-                <!-- BUTTON & NAV COLORS SECTION -->
-                <div class="admin-section">
-                    <div class="section-title">Gumbi in Navigacija</div>
-                    <div class="form-row">
-                        <div class="form-group-admin">
-                            <label class="form-label-admin">Barva Gumbov</label>
-                            <div style="display: flex; gap: 10px; align-items: center;">
-                                <input id="button-color" type="color" class="form-input-admin" style="flex: 0.3; height: 40px; cursor: pointer;">
-                                <input id="button-color-text" type="text" class="form-input-admin" placeholder="#007AFF" style="flex: 0.7;">
-                            </div>
-                        </div>
-                        <div class="form-group-admin">
-                            <label class="form-label-admin">Barva Besedila na Gumbih</label>
-                            <div style="display: flex; gap: 10px; align-items: center;">
-                                <input id="button-text-color" type="color" class="form-input-admin" style="flex: 0.3; height: 40px; cursor: pointer;">
-                                <input id="button-text-color-text" type="text" class="form-input-admin" placeholder="#0A0A0A" style="flex: 0.7;">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group-admin">
-                            <label class="form-label-admin">Barva Navigacijskih Povezav</label>
-                            <div style="display: flex; gap: 10px; align-items: center;">
-                                <input id="nav-text-color" type="color" class="form-input-admin" style="flex: 0.3; height: 40px; cursor: pointer;">
-                                <input id="nav-text-color-text" type="text" class="form-input-admin" placeholder="#A0A0A0" style="flex: 0.7;">
-                            </div>
-                        </div>
-                        <div class="form-group-admin">
-                            <label class="form-label-admin">Barva Podčrtave Navigacije</label>
-                            <div style="display: flex; gap: 10px; align-items: center;">
-                                <input id="nav-hover-color" type="color" class="form-input-admin" style="flex: 0.3; height: 40px; cursor: pointer;">
-                                <input id="nav-hover-color-text" type="text" class="form-input-admin" placeholder="#007AFF" style="flex: 0.7;">
-                            </div>
-                        </div>
-                    </div>
-                    <button class="save-btn" onclick="saveNavFooterColors()">Shrani Nastavitve</button>
-                </div>
-
                 <!-- FOOTER COLORS SECTION -->
                 <div class="admin-section">
                     <div class="section-title">Noga Spletne Strani</div>
@@ -1066,7 +1028,7 @@
                             </div>
                         </div>
                     </div>
-                    <button class="save-btn" onclick="saveNavFooterColors()">Shrani Nastavitve Noge</button>
+                    <button class="save-btn" onclick="saveFooterColors()">Shrani Nastavitve Noge</button>
                 </div>
 
                 <!-- SCROLLBAR COLORS SECTION -->
@@ -2518,16 +2480,8 @@
                 document.getElementById('text-primary-text').value = SITE_CONFIG.theme.textPrimary || '#FFFFFF';
                 document.getElementById('text-secondary').value = SITE_CONFIG.theme.textSecondary || '#8E8E93';
                 document.getElementById('text-secondary-text').value = SITE_CONFIG.theme.textSecondary || '#8E8E93';
-                document.getElementById('button-color').value = SITE_CONFIG.theme.buttonColor || '#007AFF';
-                document.getElementById('button-color-text').value = SITE_CONFIG.theme.buttonColor || '#007AFF';
-                document.getElementById('button-text-color').value = SITE_CONFIG.theme.buttonTextColor || '#FFFFFF';
-                document.getElementById('button-text-color-text').value = SITE_CONFIG.theme.buttonTextColor || '#FFFFFF';
                 
-                // Nav & Footer Colors
-                document.getElementById('nav-text-color').value = SITE_CONFIG.theme.navTextColor || '#8E8E93';
-                document.getElementById('nav-text-color-text').value = SITE_CONFIG.theme.navTextColor || '#8E8E93';
-                document.getElementById('nav-hover-color').value = SITE_CONFIG.theme.navHoverColor || '#007AFF';
-                document.getElementById('nav-hover-color-text').value = SITE_CONFIG.theme.navHoverColor || '#007AFF';
+                // Footer Colors
                 document.getElementById('footer-bg-color').value = SITE_CONFIG.theme.footerBgColor || '#0A0A0A';
                 document.getElementById('footer-bg-color-text').value = SITE_CONFIG.theme.footerBgColor || '#0A0A0A';
                 document.getElementById('footer-text-color').value = SITE_CONFIG.theme.footerTextColor || '#636366';
@@ -3602,12 +3556,8 @@
             showNotification('Barve besedila in gumbov so bile shranjene!', 'success');
         }
 
-        // Save navigation and footer colors
-        function saveNavFooterColors() {
-            const buttonColor = document.getElementById('button-color-text').value || document.getElementById('button-color').value;
-            const buttonTextColor = document.getElementById('button-text-color-text').value || document.getElementById('button-text-color').value;
-            const navTextColor = document.getElementById('nav-text-color-text').value || document.getElementById('nav-text-color').value;
-            const navHoverColor = document.getElementById('nav-hover-color-text').value || document.getElementById('nav-hover-color').value;
+        // Save footer colors
+        function saveFooterColors() {
             const footerBgColor = document.getElementById('footer-bg-color-text').value || document.getElementById('footer-bg-color').value;
             const footerTextColor = document.getElementById('footer-text-color-text').value || document.getElementById('footer-text-color').value;
 
@@ -3615,10 +3565,6 @@
             if (!SITE_CONFIG.theme) SITE_CONFIG.theme = {};
 
             // Update config
-            SITE_CONFIG.theme.buttonColor = buttonColor;
-            SITE_CONFIG.theme.buttonTextColor = buttonTextColor;
-            SITE_CONFIG.theme.navTextColor = navTextColor;
-            SITE_CONFIG.theme.navHoverColor = navHoverColor;
             SITE_CONFIG.theme.footerBgColor = footerBgColor;
             SITE_CONFIG.theme.footerTextColor = footerTextColor;
 
@@ -3627,7 +3573,7 @@
 
             // Save config
             saveConfig();
-            showNotification('Barve gumbov, navigacije in noge so bile shranjene!', 'success');
+            showNotification('Barve noge so bile shranjene!', 'success');
         }
 
         // Save scrollbar colors
@@ -3832,31 +3778,7 @@
                 document.getElementById('text-secondary').value = val;
                 document.getElementById('text-secondary-text').value = val;
             }
-            if (e.target.id === 'button-color' || e.target.id === 'button-color-text') {
-                const val = document.getElementById('button-color-text').value || document.getElementById('button-color').value;
-                SITE_CONFIG.theme.buttonColor = val;
-                document.getElementById('button-color').value = val;
-                document.getElementById('button-color-text').value = val;
-            }
-            if (e.target.id === 'button-text-color' || e.target.id === 'button-text-color-text') {
-                const val = document.getElementById('button-text-color-text').value || document.getElementById('button-text-color').value;
-                SITE_CONFIG.theme.buttonTextColor = val;
-                document.getElementById('button-text-color').value = val;
-                document.getElementById('button-text-color-text').value = val;
-            }
-            // Nav & Footer Colors
-            if (e.target.id === 'nav-text-color' || e.target.id === 'nav-text-color-text') {
-                const val = document.getElementById('nav-text-color-text').value || document.getElementById('nav-text-color').value;
-                SITE_CONFIG.theme.navTextColor = val;
-                document.getElementById('nav-text-color').value = val;
-                document.getElementById('nav-text-color-text').value = val;
-            }
-            if (e.target.id === 'nav-hover-color' || e.target.id === 'nav-hover-color-text') {
-                const val = document.getElementById('nav-hover-color-text').value || document.getElementById('nav-hover-color').value;
-                SITE_CONFIG.theme.navHoverColor = val;
-                document.getElementById('nav-hover-color').value = val;
-                document.getElementById('nav-hover-color-text').value = val;
-            }
+            // Footer Colors
             if (e.target.id === 'footer-bg-color' || e.target.id === 'footer-bg-color-text') {
                 const val = document.getElementById('footer-bg-color-text').value || document.getElementById('footer-bg-color').value;
                 SITE_CONFIG.theme.footerBgColor = val;
@@ -4175,10 +4097,6 @@
                 { picker: 'theme-gradient-end', text: 'theme-gradient-end-text' },
                 { picker: 'text-primary', text: 'text-primary-text' },
                 { picker: 'text-secondary', text: 'text-secondary-text' },
-                { picker: 'button-color', text: 'button-color-text' },
-                { picker: 'button-text-color', text: 'button-text-color-text' },
-                { picker: 'nav-text-color', text: 'nav-text-color-text' },
-                { picker: 'nav-hover-color', text: 'nav-hover-color-text' },
                 { picker: 'footer-bg-color', text: 'footer-bg-color-text' },
                 { picker: 'footer-text-color', text: 'footer-text-color-text' },
                 { picker: 'scrollbar-thumb', text: 'scrollbar-thumb-text' },
