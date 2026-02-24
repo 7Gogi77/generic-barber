@@ -1691,6 +1691,7 @@ const CalendarEngine = {
         return;
       }
 
+      alert(`🗑️  DELETING (calendar-engine): ${eventId}`);
       console.log(`🗑️  DELETING EVENT: ${eventId}`);
       console.log(`📋 Deletion Tracker Size BEFORE: ${window.deletedEventIds?.size || 0}`);
 
