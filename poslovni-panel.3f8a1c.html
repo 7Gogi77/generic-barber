@@ -4893,7 +4893,10 @@
                                         console.log(`➕ Merged adminSchedule event: ${newEvent.id} (${newEvent.title})`);
                                     } catch (inner2) { console.warn('⚠ failed merging adminSchedule item (post-load)', inner2); }
                                 });
-                                console.log(`📊 Before post-load save: ${scheduleData.events.length} total events`);
+                                console.log(`📊 Before filtering deleted: ${scheduleData.events.length} total events`);
+                                // CRITICAL: Filter deleted events BEFORE saving
+                                scheduleData.events = scheduleData.events.filter(e => !window.isEventDeleted(e.id));
+                                console.log(`📊 After filtering deleted: ${scheduleData.events.length} total events`);
                                 try { await saveScheduleData(); debugLog('✅ Merged adminSchedule into scheduleData (post-load) and saved'); } catch(e){ console.warn('⚠ save after post-load merge failed', e); }
                             }
                         }
