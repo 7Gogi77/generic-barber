@@ -1788,17 +1788,15 @@
         </div>
     </div>
 
-    <!-- SIMPLE APPOINTMENTS MANAGEMENT PANEL -->
-    <div id="appointmentsPanel" style="display:none; position:fixed; left:0; top:0; width:100%; height:100%; background:#fff; color:#222; z-index:2500; transition:all 0.2s; overflow:hidden; flex-direction:column;">
-        <div class="panel-header" style="justify-content:space-between;">
-            <div style="display:flex; align-items:center; gap:12px;">
-                <button onclick="closeAppointmentsPanel()" style="background:none; border:none; font-size:20px; color:#888; cursor:pointer;">&larr;</button>
-                <h3 style="margin:0; font-size:18px; font-weight:700; color:#2c3e50;">Rezervacije</h3>
-            </div>
-            <button id="addNewApptBtn" class="btn btn-primary" style="padding:8px 16px; font-size:13px;">+ Nova</button>
+    <!-- APPOINTMENTS OVERLAY ON CALENDAR -->
+    <div id="appointmentsPanel" style="display:none; position:fixed; right:0; top:0; width:320px; height:100vh; background:#fff; color:#222; z-index:2400; overflow-y:auto; border-left:1px solid #ddd; box-shadow:-2px 0 8px rgba(0,0,0,0.1); padding:16px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; padding-bottom:12px; border-bottom:1px solid #eee;">
+            <h3 style="margin:0; font-size:16px; font-weight:700;">Rezervacije</h3>
+            <button onclick="closeAppointmentsPanel()" style="background:none; border:none; font-size:20px; color:#999; cursor:pointer; padding:0; width:28px; height:28px; display:flex; align-items:center; justify-content:center;">&times;</button>
         </div>
-        <div id="appointmentsListContent" style="flex:1; overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:12px;">
-            <!-- Appointments will be rendered here -->
+        <button id="addNewApptBtn" class="btn btn-primary" style="padding:8px 12px; font-size:12px; width:100%; margin-bottom:16px;">+ Nova rezervacija</button>
+        <div id="appointmentsListContent" style="display:flex; flex-direction:column; gap:12px;">
+            <!-- Appointments list rendered here -->
         </div>
     </div>
 
@@ -5251,7 +5249,7 @@
                 : [];
 
             if (bookings.length === 0) {
-                container.innerHTML = '<div style="padding:20px; text-align:center; color:#999;">Ni rezervacij. Dodaj prvo!</div>';
+                container.innerHTML = '<div style="padding:12px; text-align:center; color:#999; font-size:13px;">Ni rezervacij</div>';
                 return;
             }
 
@@ -5265,28 +5263,26 @@
             container.innerHTML = sorted.map(booking => {
                 const props = booking.extendedProps || {};
                 const customerName = props.customer || booking.title || '?';
-                const startDate = booking.start ? new Date(booking.start).toLocaleDateString('sl-SI') : '?';
-                const startTime = booking.start ? new Date(booking.start).toLocaleTimeString('sl-SI', {hour: '2-digit', minute: '2-digit'}) : '?';
-                const endTime = booking.end ? new Date(booking.end).toLocaleTimeString('sl-SI', {hour: '2-digit', minute: '2-digit'}) : '?';
+                const startDate = booking.start ? new Date(booking.start) : new Date();
+                const dateStr = startDate.toLocaleDateString('sl-SI', { month: 'short', day: 'numeric' });
+                const timeStr = startDate.toLocaleTimeString('sl-SI', {hour: '2-digit', minute: '2-digit'});
                 const services = (props.services && Array.isArray(props.services)) ? props.services.join(', ') : '';
                 const price = props.price ? props.price + '€' : '';
                 
                 return `
-                    <div style="background:#f5f5f5; border-radius:8px; padding:12px; border-left:4px solid #007AFF; display:flex; flex-direction:column; gap:8px;">
-                        <div style="display:grid; grid-template-columns:1fr auto auto auto; gap:8px; align-items:start;">
-                            <div>
-                                <div style="font-weight:600; font-size:15px;">${escapeHtml(customerName)}</div>
-                                <div style="font-size:13px; color:#666; margin-top:4px;">
-                                    📅 ${startDate} • 🕐 ${startTime} - ${endTime}
-                                </div>
-                                ${props.phone ? '<div style="font-size:12px; color:#999;">📞 ' + escapeHtml(props.phone) + '</div>' : ''}
-                                ${props.email ? '<div style="font-size:12px; color:#999;">✉️ ' + escapeHtml(props.email) + '</div>' : ''}
-                                ${services ? '<div style="font-size:12px; color:#666; margin-top:4px;">🛠️ ' + escapeHtml(services) + '</div>' : ''}
+                    <div style="background:#f9f9f9; border-radius:6px; padding:10px; border-left:3px solid #007AFF; cursor:pointer; transition:all 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='#f9f9f9'">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
+                            <div style="flex:1; min-width:0;">
+                                <div style="font-weight:600; font-size:13px; word-break:break-word;">${escapeHtml(customerName)}</div>
+                                <div style="font-size:11px; color:#666; margin-top:2px;">📅 ${dateStr} 🕐 ${timeStr}</div>
+                                ${services ? '<div style="font-size:10px; color:#666; margin-top:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="' + escapeHtml(services) + '">🛠️ ' + escapeHtml(services) + '</div>' : ''}
                             </div>
-                            <button onclick="editAppointmentFromPanel('${booking.id}')" class="btn btn-primary" style="padding:6px 12px; font-size:12px; white-space:nowrap;">Uredi</button>
-                            <button onclick="deleteAppointmentFromPanel('${booking.id}')" class="btn btn-danger" style="padding:6px 12px; font-size:12px; white-space:nowrap;">Izbriši</button>
+                            <div style="display:flex; gap:4px; flex-shrink:0;">
+                                <button onclick="editAppointmentFromPanel('${booking.id}')" class="btn btn-primary" style="padding:4px 8px; font-size:10px; white-space:nowrap;">✎</button>
+                                <button onclick="deleteAppointmentFromPanel('${booking.id}')" class="btn btn-danger" style="padding:4px 8px; font-size:10px; white-space:nowrap;">✕</button>
+                            </div>
                         </div>
-                        ${price ? '<div style="text-align:right; font-weight:600; color:#007AFF;">' + price + '</div>' : ''}
+                        ${price ? '<div style="font-size:12px; color:#007AFF; font-weight:600; margin-top:4px; text-align:right;">' + price + '</div>' : ''}
                     </div>
                 `;
             }).join('');
@@ -5295,17 +5291,36 @@
         // Open appointments panel
         function openAppointmentsPanel() {
             const panel = document.getElementById('appointmentsPanel');
+            const calendar = document.getElementById('scheduleCalendar');
             if (panel) {
                 renderAppointments();
-                panel.style.display = 'flex';
+                panel.style.display = 'block';
+                // Adjust calendar width
+                if (calendar) {
+                    calendar.style.paddingRight = '320px';
+                    calendar.style.boxSizing = 'border-box';
+                }
+                // Trigger calendar resize
+                if (window.calendar && typeof window.calendar.updateSize === 'function') {
+                    setTimeout(() => window.calendar.updateSize(), 100);
+                }
             }
         }
 
         // Close appointments panel
         function closeAppointmentsPanel() {
             const panel = document.getElementById('appointmentsPanel');
+            const calendar = document.getElementById('scheduleCalendar');
             if (panel) {
                 panel.style.display = 'none';
+                // Reset calendar width
+                if (calendar) {
+                    calendar.style.paddingRight = '0';
+                }
+                // Trigger calendar resize
+                if (window.calendar && typeof window.calendar.updateSize === 'function') {
+                    setTimeout(() => window.calendar.updateSize(), 100);
+                }
             }
         }
 
