@@ -1985,7 +1985,7 @@
     </div>
 
     <!-- LOADING OVERLAY -->
-    <div id="loadingOverlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999; display:flex; align-items:center; justify-content:center;">
+    <div id="loadingOverlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center;">
         <div style="background:white; padding:40px; border-radius:12px; text-align:center; box-shadow:0 4px 12px rgba(0,0,0,0.3);">
             <div class="calendar-spinner" style="margin:0 auto 16px;"></div>
             <p style="font-size:16px; color:#333; margin:0; font-weight:600;">Brisanje termina...</p>
@@ -3679,6 +3679,7 @@
                     const loadingOverlay = document.getElementById('loadingOverlay');
                     if (loadingOverlay) {
                         loadingOverlay.style.display = 'flex';
+                        loadingOverlay.style.opacity = '1';
                     }
 
                     // Simple deletion: remove from data and save
@@ -3697,10 +3698,11 @@
                         console.log('✅ Event deleted and saved to localStorage');
 
                         // Simulate database operation - wait 800ms to show loading
-                        setTimeout(() => {
+                        const timeoutId = setTimeout(() => {
                             // Hide loading overlay
                             if (loadingOverlay) {
                                 loadingOverlay.style.display = 'none';
+                                loadingOverlay.style.opacity = '0';
                             }
                             closeEditEventModal();
                         }, 800);
@@ -3708,12 +3710,22 @@
                         console.error('Failed to delete:', err);
                         if (loadingOverlay) {
                             loadingOverlay.style.display = 'none';
+                            loadingOverlay.style.opacity = '0';
                         }
                         alert('Napaka pri brisanju');
                     }
                 }
             }
         }
+
+        // Ensure loading overlay is hidden on page load
+        window.addEventListener('load', () => {
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            if (loadingOverlay) {
+                loadingOverlay.style.display = 'none';
+                loadingOverlay.style.opacity = '0';
+            }
+        });
 
         // Handle add event form
         document.getElementById('addEventForm').addEventListener('submit', async (e) => {
