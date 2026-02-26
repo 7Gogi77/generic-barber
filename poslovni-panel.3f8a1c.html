@@ -4579,11 +4579,18 @@
                 scheduleData = await StorageManager.load('schedule');
                 debugLog(`✅ Schedule data loaded (${scheduleData.events ? scheduleData.events.length : 0} events)`);
                 
+                // CRITICAL: Load deletion tracker FIRST before filtering
+                if (typeof window.loadDeletedEventIds === 'function') {
+                    await window.loadDeletedEventIds();
+                    console.log(`🔍 Loaded deletion tracker with ${Array.from(deletedEventIds).length} deleted IDs`);
+                }
+                
                 // CRITICAL: Filter out any deleted events right after loading
                 if (scheduleData.events && Array.isArray(scheduleData.events)) {
                     const before = scheduleData.events.length;
                     scheduleData.events = filterDeletedEvents(scheduleData.events);
                     scheduleData.events = deduplicateEvents(scheduleData.events);
+                    console.log(`📊 After deletion filter: ${before} → ${scheduleData.events.length} events (removed ${before - scheduleData.events.length})`);
                     if (before !== scheduleData.events.length) {
                         debugLog(`🔍 Filtered ${before - scheduleData.events.length} deleted events on load`);
                     }
@@ -4799,14 +4806,11 @@
                                     try {
                                         // skip if the key is marked deleted (tombstone)
                                         if (key && deletedMap && deletedMap[key]) {
-                                            console.log(`⏭️  Skipping merge of ${key} (Firebase tombstone)`);
                                             return;
                                         }
                                         // CRITICAL: Also skip if we've marked this event as deleted locally
                                         const eventId = `admin_${key}`;
-                                        console.log(`🔍 Checking deletion for ${eventId}: isEventDeleted=${typeof isEventDeleted === 'function'}, result=${typeof isEventDeleted === 'function' ? isEventDeleted(eventId) : 'N/A'}`);
                                         if (typeof isEventDeleted === 'function' && isEventDeleted(eventId)) {
-                                            console.log(`⏭️  Skipping merge of ${eventId} (marked as deleted locally)`);
                                             return;
                                         }
                                         // skip if identical adminKey present
@@ -4901,20 +4905,8 @@
                                         }
 
                                         scheduleData.events.push(newEvent);
-                                        console.log(`➕ Merged adminSchedule event: ${newEvent.id} (${newEvent.title})`);
                                     } catch (inner2) { console.warn('⚠ failed merging adminSchedule item (post-load)', inner2); }
                                 });
-                                console.log(`📊 Before filtering deleted: ${scheduleData.events.length} total events`);
-                                // CRITICAL: Filter deleted events BEFORE saving
-                                console.log(`🔍 Deletion tracker currently has: ${Array.from(deletedEventIds).join(', ')}`);
-                                console.log(`🔍 Event IDs in scheduleData: ${scheduleData.events.map(e => e.id).join(', ')}`);
-                                const eventsToFilter = scheduleData.events.filter(e => {
-                                    const isDeleted = window.isEventDeleted(e.id);
-                                    console.log(`  → ${e.id}: deleted=${isDeleted}`);
-                                    return !isDeleted;
-                                });
-                                scheduleData.events = eventsToFilter;
-                                console.log(`📊 After filtering deleted: ${scheduleData.events.length} total events`);
                                 try { await saveScheduleData(); debugLog('✅ Merged adminSchedule into scheduleData (post-load) and saved'); } catch(e){ console.warn('⚠ save after post-load merge failed', e); }
                             }
                         }
