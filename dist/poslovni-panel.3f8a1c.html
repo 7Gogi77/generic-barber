@@ -438,6 +438,17 @@
             max-height: 100px !important;
             overflow: hidden !important;
             flex: 1 !important;
+            display: flex !important;
+            flex-direction: column !important;
+        }
+
+        .fc-daygrid-day-frame {
+            height: 100px !important;
+            min-height: 100px !important;
+            max-height: 100px !important;
+            overflow: hidden !important;
+            display: flex !important;
+            flex-direction: column !important;
         }
 
         .fc-daygrid-day {
@@ -448,6 +459,8 @@
             max-height: 100px !important;
             overflow: hidden !important;
             flex: 1 1 auto !important;
+            display: flex !important;
+            flex-direction: column !important;
         }
 
         #scheduleCalendar.view-daygrid .fc .fc-daygrid-day:hover {
@@ -499,8 +512,16 @@
             flex-direction: column !important;
             gap: 2px !important;
             padding-top: 4px !important;
-            height: calc(100% - 40px) !important;
+            height: calc(100% - 35px) !important;
+            max-height: calc(100% - 35px) !important;
             overflow: hidden !important;
+            flex: 1 !important;
+        }
+
+        #scheduleCalendar.view-daygrid .fc-daygrid-day-top {
+            height: auto !important;
+            max-height: 30px !important;
+            flex-shrink: 0 !important;
         }
 
         /* iOS-Style Events */
