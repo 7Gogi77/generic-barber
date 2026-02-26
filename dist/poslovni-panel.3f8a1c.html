@@ -413,6 +413,17 @@
             color: var(--ios-text-secondary);
         }
 
+        /* Fix month view cell heights - prevent expanding based on content */
+        #scheduleCalendar.view-daygrid .fc .fc-daygrid-body {
+            height: auto !important;
+        }
+
+        #scheduleCalendar.view-daygrid .fc .fc-daygrid-row {
+            height: 120px !important;
+            min-height: 120px !important;
+            max-height: 120px !important;
+        }
+
         #scheduleCalendar.view-daygrid .fc .fc-daygrid-day {
             background: var(--ios-bg-secondary);
             transition: background 0.15s ease;
@@ -420,6 +431,7 @@
             min-height: 120px !important;
             max-height: 120px !important;
             overflow: hidden !important;
+            flex: 0 0 auto !important;
         }
 
         #scheduleCalendar.view-daygrid .fc .fc-daygrid-day-cell {
@@ -427,6 +439,7 @@
             min-height: 120px !important;
             max-height: 120px !important;
             vertical-align: top !important;
+            overflow: visible !important;
         }
 
         #scheduleCalendar.view-daygrid .fc .fc-daygrid-day:hover {

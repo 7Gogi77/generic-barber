@@ -1117,43 +1117,79 @@ const CalendarEngine = {
               }
             } catch (e) { /* ignore */ }
             
-            // STRETCH ROWS EQUALLY - runs after view fully mounted
+            // MONTH VIEW: Fix cell heights to prevent expansion - runs after view fully mounted
             const daygridBody = document.querySelector('.fc-daygrid-body');
             if (daygridBody) {
+              const isMonthView = arg && arg.view && arg.view.type === 'dayGridMonth';
               const rows = daygridBody.querySelectorAll('.fc-daygrid-row');
               if (rows.length > 0) {
-                // Do not force equal pixel heights on mount; allow natural heights and enable scrolling
                 try {
-                  daygridBody.style.overflowY = 'auto';
-                  daygridBody.style.webkitOverflowScrolling = 'touch';
-                  rows.forEach((row) => {
-                    row.style.height = '';
-                    row.style.minHeight = '';
-                    row.style.maxHeight = '';
-                    row.style.overflow = '';
-                    row.querySelectorAll('.fc-daygrid-day-cell').forEach(cell => {
-                      cell.style.height = '';
-                      cell.style.minHeight = '';
+                  if (isMonthView) {
+                    // MONTH VIEW: Set fixed 120px height on all rows and cells
+                    daygridBody.style.overflowY = 'auto';
+                    daygridBody.style.webkitOverflowScrolling = 'touch';
+                    rows.forEach((row) => {
+                      row.style.height = '120px';
+                      row.style.minHeight = '120px';
+                      row.style.maxHeight = '120px';
+                      row.style.overflow = 'hidden';
+                      row.querySelectorAll('.fc-daygrid-day-cell').forEach(cell => {
+                        cell.style.height = '120px';
+                        cell.style.minHeight = '120px';
+                        cell.style.maxHeight = '120px';
+                        cell.style.overflow = 'hidden';
 
-                      // Clear any temporary per-cell events sizing applied earlier
-                      const eventsContainer = cell.querySelector('.fc-daygrid-day-events');
-                      if (eventsContainer) {
-                        eventsContainer.style.height = '';
-                        eventsContainer.style.maxHeight = '';
-                        eventsContainer.style.overflowY = '';
-                        eventsContainer.style.display = '';
-                        eventsContainer.style.flex = '';
-                        eventsContainer.style.minHeight = '';
-                        eventsContainer.style.boxSizing = '';
-                        eventsContainer.style.paddingBottom = '';
-                        eventsContainer.style.gap = '';
-                      }
+                        // Keep events container within cell bounds
+                        const eventsContainer = cell.querySelector('.fc-daygrid-day-events');
+                        if (eventsContainer) {
+                          eventsContainer.style.height = 'calc(100% - 40px)';
+                          eventsContainer.style.maxHeight = 'calc(100% - 40px)';
+                          eventsContainer.style.overflowY = 'hidden';
+                          eventsContainer.style.display = 'flex';
+                          eventsContainer.style.flexDirection = 'column';
+                          eventsContainer.style.flex = 'none';
+                          eventsContainer.style.minHeight = '0';
+                          eventsContainer.style.boxSizing = 'border-box';
+                        }
 
-                      const moreEl = cell.querySelector('.fc-daygrid-day-more');
-                      if (moreEl) { moreEl.style.marginBottom = ''; moreEl.style.paddingBottom = ''; }
+                        const moreEl = cell.querySelector('.fc-daygrid-day-more');
+                        if (moreEl) { moreEl.style.marginBottom = ''; moreEl.style.paddingBottom = ''; }
+                      });
                     });
-                  });
-                  console.log(`✅ Daygrid mount: cleared forced row sizing (${rows.length} rows)`);
+                    console.log(`✅ Month view mount: fixed 120px cell heights (${rows.length} rows)`);
+                  } else {
+                    // Other views: clear forced sizing to allow natural heights
+                    daygridBody.style.overflowY = 'auto';
+                    daygridBody.style.webkitOverflowScrolling = 'touch';
+                    rows.forEach((row) => {
+                      row.style.height = '';
+                      row.style.minHeight = '';
+                      row.style.maxHeight = '';
+                      row.style.overflow = '';
+                      row.querySelectorAll('.fc-daygrid-day-cell').forEach(cell => {
+                        cell.style.height = '';
+                        cell.style.minHeight = '';
+
+                        // Clear any temporary per-cell events sizing applied earlier
+                        const eventsContainer = cell.querySelector('.fc-daygrid-day-events');
+                        if (eventsContainer) {
+                          eventsContainer.style.height = '';
+                          eventsContainer.style.maxHeight = '';
+                          eventsContainer.style.overflowY = '';
+                          eventsContainer.style.display = '';
+                          eventsContainer.style.flex = '';
+                          eventsContainer.style.minHeight = '';
+                          eventsContainer.style.boxSizing = '';
+                          eventsContainer.style.paddingBottom = '';
+                          eventsContainer.style.gap = '';
+                        }
+
+                        const moreEl = cell.querySelector('.fc-daygrid-day-more');
+                        if (moreEl) { moreEl.style.marginBottom = ''; moreEl.style.paddingBottom = ''; }
+                      });
+                    });
+                    console.log(`✅ Daygrid mount: cleared forced row sizing (${rows.length} rows)`);
+                  }
                 } catch (e) { /* ignore */ }
               }
             }
