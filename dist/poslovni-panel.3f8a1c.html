@@ -680,6 +680,7 @@
         #scheduleCalendar.view-timegrid-day .fc .fc-timegrid-event .fc-event-main {
             height: 100% !important;
             display: flex;
+            overflow: hidden;
         }
 
         #scheduleCalendar.view-timegrid-week .fc .fc-timegrid-event .fc-event-main-frame,
@@ -690,6 +691,26 @@
             gap: 2px;
             padding: 2px 6px;
             overflow: hidden;
+            height: 100%;
+            min-height: 0;
+        }
+
+        #scheduleCalendar.view-timegrid-week .fc .fc-timegrid-event .fc-event-title-container,
+        #scheduleCalendar.view-timegrid-day .fc .fc-timegrid-event .fc-event-title-container {
+            display: flex;
+            align-items: center;
+            min-height: 0;
+            overflow: hidden;
+            flex: 1 1 auto;
+        }
+
+        #scheduleCalendar.view-timegrid-week .fc .fc-timegrid-event .fc-event-time,
+        #scheduleCalendar.view-timegrid-day .fc .fc-timegrid-event .fc-event-time {
+            line-height: 1.1;
+            font-size: 11px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         #scheduleCalendar.view-timegrid-week .fc .fc-timegrid-event .fc-event-title,
@@ -697,6 +718,12 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            line-height: 1.1;
+        }
+
+        #scheduleCalendar.view-timegrid-week .fc .fc-timegrid-event-harness,
+        #scheduleCalendar.view-timegrid-day .fc .fc-timegrid-event-harness {
+            overflow: hidden;
         }
 
         /* All-day section */
