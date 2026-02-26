@@ -3234,9 +3234,7 @@
         
         async function deleteScheduleEvent(eventId) {
             try {
-                alert(`🗑️  DELETING EVENT: ${eventId}`);
                 console.log(`🗑️  DELETING EVENT: ${eventId}`);
-                console.log(`📋 Deletion Tracker Size BEFORE: ${deletedEventIds.size}`);
                 
                 const existing = scheduleData.events.find(e => e.id === eventId);
                 if (!existing) {
@@ -3245,93 +3243,87 @@
                 }
 
                 // STEP 1: Mark as deleted FIRST - this prevents all restores
-                console.log(`⏳ Step 1: Calling markEventDeleted(${eventId})...`);
+                console.log(`⏳ Step 1: Marking as deleted...`);
                 markEventDeleted(eventId);
                 console.log(`✓ Step 1 COMPLETE: ${eventId} marked as deleted`);
-                console.log(`📋 Deletion Tracker Size AFTER markEventDeleted: ${deletedEventIds.size}`);
-                console.log(`✓ Step 1 VERIFIED: isEventDeleted returns ${isEventDeleted(eventId)}`);
 
                 // STEP 2: Remove from scheduleData
                 console.log(`⏳ Step 2: Removing from scheduleData...`);
                 scheduleData.events = scheduleData.events.filter(e => e.id !== eventId);
                 console.log(`✓ Step 2 COMPLETE: Removed from scheduleData`);
 
-                // STEP 3: Write deletion markers to Firebase (before removing entries)
+                // STEP 3: Delete from Firebase by searching for matching entries
                 const base = 'https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app/';
-                const adminKey = existing?.extendedProps?.adminKey;
+                const timestamp = new Date().toISOString();
                 
+                // Delete from site_config/adminSchedule/entries (array)
                 try {
-                    const timestamp = new Date().toISOString();
-                    
-                    // Mark as deleted in both paths
-                    if (adminKey) {
-                        await fetch(`${base}site_config/adminSchedule/deleted/${adminKey}.json`, {
-                            method: 'PUT',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ deletedAt: timestamp, eventId: eventId })
-                        });
-                        console.log(`✓ Marked ${adminKey} in site_config deleted path`);
-
-                        await fetch(`${base}adminSchedule/deleted/${adminKey}.json`, {
-                            method: 'PUT',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ deletedAt: timestamp, eventId: eventId })
-                        });
-                        console.log(`✓ Marked ${adminKey} in adminSchedule deleted path`);
-                    }
-
-                    await fetch(`${base}site_config/adminSchedule/deleted/event_${eventId}.json`, {
-                        method: 'PUT',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ deletedAt: timestamp })
-                    });
-                    console.log(`✓ Marked event_${eventId} by ID`);
-
-                } catch (markErr) {
-                    console.warn('⚠ Failed to write deletion markers', markErr);
-                }
-
-                // STEP 4: Remove entries from Firebase
-                try {
-                    if (adminKey) {
-                        await fetch(`${base}site_config/adminSchedule/entries/${adminKey}.json`, { method: 'DELETE' });
-                        await fetch(`${base}adminSchedule/entries/${adminKey}.json`, { method: 'DELETE' });
-                        console.log(`✓ Deleted entries for ${adminKey}`);
-                    }
-                    
-                    await fetch(`${base}site_config/adminSchedule/entries/event_${eventId}.json`, { method: 'DELETE' });
-                    console.log(`✓ Deleted entry for event_${eventId}`);
-
-                } catch (delErr) {
-                    console.warn('⚠ Failed to delete entries', delErr);
-                }
-
-                // STEP 5: Find and clean related entries
-                try {
-                    const entriesRes = await fetch(`${base}site_config/adminSchedule/entries.json`);
-                    if (entriesRes.ok) {
-                        const entries = await entriesRes.json().catch(() => null);
-                        if (entries && typeof entries === 'object') {
-                            for (const [k, item] of Object.entries(entries)) {
-                                try {
-                                    const matchCustomer = existing?.extendedProps?.customer && item?.customer === existing.extendedProps.customer;
-                                    const matchDate = existing?.start && item?.startDate === existing.start.split('T')[0];
+                    const siteConfigRes = await fetch(`${base}site_config/adminSchedule/entries.json`);
+                    if (siteConfigRes.ok) {
+                        const entries = await siteConfigRes.json();
+                        if (Array.isArray(entries)) {
+                            // Find matching entry by comparing key fields
+                            for (let i = 0; i < entries.length; i++) {
+                                const entry = entries[i];
+                                if (!entry) continue;
+                                
+                                // Match by id or by worker+date+time
+                                const matchId = entry.id === eventId || entry.id === existing.id;
+                                const matchWorker = existing.extendedProps?.worker && entry.worker === existing.extendedProps.worker;
+                                const matchDate = existing.start && entry.startDate === existing.start.split('T')[0];
+                                const matchTime = existing.start && entry.startTime === existing.start.split('T')[1]?.substring(0, 5);
+                                
+                                if (matchId || (matchWorker && matchDate && matchTime)) {
+                                    // Delete this array element
+                                    await fetch(`${base}site_config/adminSchedule/entries/${i}.json`, { method: 'DELETE' });
+                                    console.log(`✓ Deleted site_config entry at index ${i}`);
                                     
-                                    if ((matchCustomer && matchDate) || item?.id === existing?.id) {
-                                        await fetch(`${base}site_config/adminSchedule/entries/${k}.json`, { method: 'DELETE' });
-                                        await fetch(`${base}site_config/adminSchedule/deleted/${k}.json`, {
-                                            method: 'PUT',
-                                            headers: { 'Content-Type': 'application/json' },
-                                            body: JSON.stringify({ deletedAt: new Date().toISOString() })
-                                        });
-                                        console.log(`✓ Cleaned up related entry: ${k}`);
-                                    }
-                                } catch (e) { }
+                                    // Mark as deleted
+                                    await fetch(`${base}site_config/adminSchedule/deleted/${i}.json`, {
+                                        method: 'PUT',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({ deletedAt: timestamp, eventId: eventId })
+                                    });
+                                }
                             }
                         }
                     }
-                } catch (searchErr) {
-                    console.warn('⚠ Failed to search related entries', searchErr);
+                } catch (err) {
+                    console.warn('⚠ Failed to delete from site_config/adminSchedule/entries', err);
+                }
+
+                // Delete from adminSchedule/entries (object with Firebase push IDs)
+                try {
+                    const adminRes = await fetch(`${base}adminSchedule/entries.json`);
+                    if (adminRes.ok) {
+                        const entries = await adminRes.json();
+                        if (entries && typeof entries === 'object') {
+                            for (const [key, entry] of Object.entries(entries)) {
+                                if (!entry) continue;
+                                
+                                // Match by id or by worker+date+time
+                                const matchId = entry.id === eventId || entry.id === existing.id;
+                                const matchWorker = existing.extendedProps?.worker && entry.worker === existing.extendedProps.worker;
+                                const matchDate = existing.start && entry.startDate === existing.start.split('T')[0];
+                                const matchTime = existing.start && entry.startTime === existing.start.split('T')[1]?.substring(0, 5);
+                                
+                                if (matchId || (matchWorker && matchDate && matchTime)) {
+                                    // Delete this entry
+                                    await fetch(`${base}adminSchedule/entries/${key}.json`, { method: 'DELETE' });
+                                    console.log(`✓ Deleted adminSchedule entry ${key}`);
+                                    
+                                    // Mark as deleted
+                                    await fetch(`${base}adminSchedule/deleted/${key}.json`, {
+                                        method: 'PUT',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({ deletedAt: timestamp, eventId: eventId })
+                                    });
+                                }
+                            }
+                        }
+                    }
+                } catch (err) {
+                    console.warn('⚠ Failed to delete from adminSchedule/entries', err);
                 }
 
                 // STEP 6: Save scheduleData
