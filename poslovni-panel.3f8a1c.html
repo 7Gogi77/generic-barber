@@ -3697,15 +3697,12 @@
                         localStorage.setItem('schedule', JSON.stringify(scheduleData));
                         console.log('✅ Event deleted and saved to localStorage');
 
-                        // Simulate database operation - wait 800ms to show loading
-                        const timeoutId = setTimeout(() => {
-                            // Hide loading overlay
-                            if (loadingOverlay) {
-                                loadingOverlay.style.display = 'none';
-                                loadingOverlay.style.opacity = '0';
-                            }
-                            closeEditEventModal();
-                        }, 800);
+                        // Hide loading overlay immediately after deletion completes
+                        if (loadingOverlay) {
+                            loadingOverlay.style.display = 'none';
+                            loadingOverlay.style.opacity = '0';
+                        }
+                        closeEditEventModal();
                     } catch (err) {
                         console.error('Failed to delete:', err);
                         if (loadingOverlay) {
