@@ -675,6 +675,30 @@
             box-shadow: var(--ios-shadow-sm) !important;
         }
 
+        /* Keep timeGrid event text inside the event box */
+        #scheduleCalendar.view-timegrid-week .fc .fc-timegrid-event .fc-event-main,
+        #scheduleCalendar.view-timegrid-day .fc .fc-timegrid-event .fc-event-main {
+            height: 100% !important;
+            display: flex;
+        }
+
+        #scheduleCalendar.view-timegrid-week .fc .fc-timegrid-event .fc-event-main-frame,
+        #scheduleCalendar.view-timegrid-day .fc .fc-timegrid-event .fc-event-main-frame {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 2px;
+            padding: 2px 6px;
+            overflow: hidden;
+        }
+
+        #scheduleCalendar.view-timegrid-week .fc .fc-timegrid-event .fc-event-title,
+        #scheduleCalendar.view-timegrid-day .fc .fc-timegrid-event .fc-event-title {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
         /* All-day section */
         #scheduleCalendar.view-timegrid-week .fc .fc-daygrid-body,
         #scheduleCalendar.view-timegrid-day .fc .fc-daygrid-body {
