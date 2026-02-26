@@ -556,6 +556,7 @@ const CalendarEngine = {
       // Compute slot duration from SITE_CONFIG if present
       const slotMinutes = (window.SITE_CONFIG && window.SITE_CONFIG.booking && window.SITE_CONFIG.booking.slotDuration) ? window.SITE_CONFIG.booking.slotDuration : 30;
       const slotDurationStr = `00:${('0' + slotMinutes).slice(-2)}:00`;
+      console.log(`📅 Calendar slot duration: ${slotMinutes} minutes (${slotDurationStr})`);
 
       // Compute commonly used slot min/max strings and allow timeGrid views to show the full day (scrollable)
       const slotMinTimeVal = (window.SITE_CONFIG && window.SITE_CONFIG.booking && window.SITE_CONFIG.booking.businessHours) ? (('0' + window.SITE_CONFIG.booking.businessHours.start).slice(-2) + ':00:00') : '06:00:00';

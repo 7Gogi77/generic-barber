@@ -1551,6 +1551,38 @@
                 font-size: 15px;
                 border-radius: var(--ios-radius-md);
             }
+            
+            /* Full-screen panels on mobile */
+            #customerListPanel,
+            #analyticsPanel {
+                position: fixed !important;
+                top: 0 !important;
+                left: 0 !important;
+                width: 100% !important;
+                height: 100% !important;
+                z-index: 3000 !important;
+            }
+            
+            /* Week view improvements for mobile */
+            .fc-timeGrid-view .fc-time-grid,
+            .fc-timegrid {
+                font-size: 11px !important;
+            }
+            
+            .fc .fc-timegrid-slot-label {
+                font-size: 10px !important;
+            }
+            
+            .fc-timegrid-slot {
+                height: 3em !important;
+            }
+            
+            /* Make event text more readable on mobile */
+            .fc-event-title,
+            .fc-event-time {
+                font-size: 10px !important;
+                line-height: 1.2 !important;
+            }
         }
 
         /* Very small phones */
@@ -1787,8 +1819,8 @@
             <div class="modal-header">Dodaj dogodek</div>
             <form id="addEventForm">
                 <div style="display:flex; gap:10px; margin-bottom:18px;">
-                  <button type="button" id="tabWorker" class="btn btn-secondary" style="flex:1;" onclick="setEventTab('worker')">Delavec</button>
-                  <button type="button" id="tabCustomer" class="btn btn-primary" style="flex:1;" onclick="setEventTab('customer')">Stranka</button>
+                  <button type="button" id="tabWorker" class="btn btn-primary" style="flex:1;" onclick="setEventTab('worker')">Delavec</button>
+                  <button type="button" id="tabCustomer" class="btn btn-secondary" style="flex:1;" onclick="setEventTab('customer')">Stranka</button>
                 </div>
                 <div class="form-horizontal">
                     <div class="form-column" style="flex:1;">
@@ -2333,6 +2365,31 @@
         };
 
         // Debug logging function
+            // Define panel control functions in outer scope
+            function closeCustomerPanel() {
+                const panel = document.getElementById('customerListPanel'); if (!panel) return; panel.classList.remove('open');
+                setTimeout(() => { try { panel.style.display = 'none'; const detail = document.getElementById('customerDetail'); if (detail) detail.style.display = 'none'; } catch(e){} }, 320);
+            }
+            
+            function closeAnalyticsPanel() {
+                const panel = document.getElementById('analyticsPanel');
+                if (!panel) return;
+                panel.classList.remove('open');
+                setTimeout(() => { 
+                    try { 
+                        panel.style.display = 'none';
+                        if (analyticsCharts.earnings) analyticsCharts.earnings.destroy();
+                        if (analyticsCharts.services) analyticsCharts.services.destroy();
+                        analyticsCharts = { earnings: null, services: null };
+                    } catch(e){} 
+                }, 320);
+            }
+            
+            function hideAllPanels() {
+                closeCustomerPanel();
+                closeAnalyticsPanel();
+            }
+
             (function(){
                 const sidebar = document.getElementById('sidebar');
                 const sidebarToggle = document.getElementById('sidebarToggle');
@@ -2391,12 +2448,6 @@
 
                 applyState();
             })();
-
-            // Hide all panels and show calendar
-            function hideAllPanels() {
-                closeCustomerPanel();
-                closeAnalyticsPanel();
-            }
 
             // ========== CUSTOMER LIST PANEL ========== //
             async function showCustomerListPanel() {
@@ -2643,13 +2694,8 @@
 
         // Open/close helpers for customer panel with animation
         function openCustomerPanel() {
-            const panel = document.getElementById('customerListPanel'); if (!panel) return; panel.style.display = 'block'; // ensure layout
-            // use microtask to allow layout then animate
+            const panel = document.getElementById('customerListPanel'); if (!panel) return; panel.style.display = 'block';
             setTimeout(() => panel.classList.add('open'), 20);
-        }
-        function closeCustomerPanel() {
-            const panel = document.getElementById('customerListPanel'); if (!panel) return; panel.classList.remove('open');
-            setTimeout(() => { try { panel.style.display = 'none'; const detail = document.getElementById('customerDetail'); if (detail) detail.style.display = 'none'; } catch(e){} }, 320);
         }
 
         // ===== ANALYTICS PANEL =====
@@ -2700,21 +2746,6 @@
             if (addBtn) {
                 addBtn.onclick = () => showAddManualEarningDialog();
             }
-        }
-
-        function closeAnalyticsPanel() {
-            const panel = document.getElementById('analyticsPanel');
-            if (!panel) return;
-            panel.classList.remove('open');
-            setTimeout(() => { 
-                try { 
-                    panel.style.display = 'none';
-                    // Destroy charts to free memory
-                    if (analyticsCharts.earnings) analyticsCharts.earnings.destroy();
-                    if (analyticsCharts.services) analyticsCharts.services.destroy();
-                    analyticsCharts = { earnings: null, services: null };
-                } catch(e){} 
-            }, 320);
         }
 
         async function loadManualEarnings() {
