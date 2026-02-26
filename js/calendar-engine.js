@@ -842,14 +842,17 @@ const CalendarEngine = {
           if (isBooking) emoji = '👤'; // Customer booking
           else if (type === 'worker' || arg.event.extendedProps?.worker) emoji = '👨‍💼'; // Worker event
           
-          // If duration is less than 45 minutes, show only time + emoji to prevent text overflow
-          if (durationMinutes < 45 && durationMinutes > 0) {
+          // Check current view type
+          const currentView = arg.view?.type || '';
+          
+          // In WEEK view only: if duration < 45 minutes, show only time + emoji to prevent text overflow
+          if (currentView === 'timeGridWeek' && durationMinutes < 45 && durationMinutes > 0) {
             return {
               html: `<div style="display: flex; align-items: center; justify-content: space-between; width: 100%; height: 100%; padding: 1px 3px; font-size: 11px; font-weight: 600;" title="${arg.event.title}"><span>${startTime}</span><span>${emoji}</span></div>`
             };
           }
           
-          // For longer appointments (>= 45 min), show full content
+          // For longer appointments (>= 45 min) OR in month/day views, show full content
           if (arg.event.extendedProps?.isBooking || arg.event.id?.startsWith('apt_')) {
             try {
               const customerName = arg.event.extendedProps?.customer || arg.event.extendedProps?.worker || arg.event.title || 'Rezervacija';
