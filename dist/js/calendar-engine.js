@@ -582,7 +582,7 @@ const CalendarEngine = {
         locale: 'sl',
         firstDay: 1,
         nowIndicator: true,
-        dayMaxEvents: 3, // Limit to 3 events per day cell, rest shown in +more link
+        dayMaxEvents: 2, // Limit to 2 events per day cell, rest shown in +more link
         dayMaxEventRows: 2, // Limit rows to prevent overlap
         moreLinkClick: 'popover',
         // Prioritize multi-day events first, then by start time
