@@ -884,41 +884,61 @@ const CalendarEngine = {
           console.log('📅 Event dropped:', dropInfo.event.title, 'ID:', dropInfo.event.id);
           
           try {
-            // Find and update the event in scheduleData
-            const eventIndex = scheduleData.events.findIndex(e => e.id === dropInfo.event.id);
+            // CRITICAL: Reload fresh data from storage to avoid using stale copies
+            let currentData = scheduleData;
+            if (typeof StorageManager !== 'undefined' && StorageManager.load) {
+              try {
+                currentData = await StorageManager.load('schedule');
+              } catch (e) {
+                console.warn('⚠ Could not load fresh schedule, using initial data');
+              }
+            }
+            
+            // Find the event by ID
+            const eventIndex = currentData.events.findIndex(e => e.id === dropInfo.event.id);
             
             if (eventIndex !== -1) {
-              const originalStart = scheduleData.events[eventIndex].start;
-              const originalEnd = scheduleData.events[eventIndex].end;
+              const originalStart = currentData.events[eventIndex].start;
+              const originalEnd = currentData.events[eventIndex].end;
+              const workerName = currentData.events[eventIndex].workerName;
+              const clientName = currentData.events[eventIndex].clientName;
               
-              // Update the event in place
-              scheduleData.events[eventIndex].start = dropInfo.event.startStr;
-              scheduleData.events[eventIndex].end = dropInfo.event.endStr;
+              // Update times
+              currentData.events[eventIndex].start = dropInfo.event.startStr;
+              currentData.events[eventIndex].end = dropInfo.event.endStr;
               
-              console.log('✅ Updated event:', scheduleData.events[eventIndex].id, 'old times:', originalStart, '→', originalEnd);
-              console.log('✅ New times:', dropInfo.event.startStr, '→', dropInfo.event.endStr);
+              console.log('✅ Updated event:', currentData.events[eventIndex].id, 'old:', originalStart, '→', 'new:', dropInfo.event.startStr);
               
-              // Remove any duplicate entries with the same ID (should only have one)
-              const uniqueEntries = [];
-              const seenIds = new Set();
-              for (let i = 0; i < scheduleData.events.length; i++) {
-                const evt = scheduleData.events[i];
-                if (evt.id && !seenIds.has(evt.id)) {
-                  uniqueEntries.push(evt);
-                  seenIds.add(evt.id);
-                } else if (!evt.id) {
-                  uniqueEntries.push(evt);
-                } else {
-                  console.log('🗑️ Removing duplicate event:', evt.id, 'keeping latest update');
+              // Remove ALL duplicates with same ID, worker, date, and time combination
+              const cleanedEvents = currentData.events.filter((evt, idx) => {
+                // Keep if it's the current index (the one we just updated)
+                if (idx === eventIndex) return true;
+                // Remove if same ID
+                if (evt.id === dropInfo.event.id) {
+                  console.log('🗑️ Removing duplicate event:', evt.id, 'at', evt.start, '→', evt.end);
+                  return false;
                 }
-              }
-              scheduleData.events = uniqueEntries;
+                // Remove if same worker + client + time (different ID but same slot)
+                if (evt.workerName === workerName && 
+                    evt.clientName === clientName && 
+                    evt.start === originalStart && 
+                    evt.end === originalEnd) {
+                  console.log('🗑️ Removing duplicate by slot:', evt.id, evt.workerName, evt.clientName);
+                  return false;
+                }
+                return true;
+              });
+              
+              currentData.events = cleanedEvents;
+              
+              // Update the global scheduleData
+              scheduleData = currentData;
               
               // Save to storage
-              await StorageManager.save('schedule', scheduleData);
-              console.log('💾 Saved to storage (duplicates cleaned)');
+              await StorageManager.save('schedule', currentData);
+              console.log('💾 Saved to storage after drop (total events:', currentData.events.length, ')');
               
-              // Force calendar to refetch events after a brief delay to ensure save completes
+              // Force calendar to refetch from storage
               setTimeout(() => {
                 if (calendar && typeof calendar.refetchEvents === 'function') {
                   console.log('🔄 Refetching events after drop');
@@ -927,7 +947,7 @@ const CalendarEngine = {
               }, 300);
             } else {
               console.warn('⚠ Event not found in scheduleData:', dropInfo.event.id);
-              console.warn('Available event IDs:', scheduleData.events.map(e => e.id));
+              console.warn('Available event IDs:', currentData.events.map(e => e.id));
               dropInfo.revert();
             }
           } catch (error) {
