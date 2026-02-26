@@ -3678,6 +3678,7 @@
                 if (confirm('Sigurno želiš izbrisati ta dogodek?')) {
                     // Show loading overlay
                     const loadingOverlay = document.getElementById('loadingOverlay');
+                    const startTime = Date.now();
                     if (loadingOverlay) {
                         loadingOverlay.style.display = 'flex';
                         loadingOverlay.style.opacity = '1';
@@ -3698,12 +3699,18 @@
                         localStorage.setItem('schedule', JSON.stringify(scheduleData));
                         console.log('✅ Event deleted and saved to localStorage');
 
-                        // Hide loading overlay immediately after deletion completes
-                        if (loadingOverlay) {
-                            loadingOverlay.style.display = 'none';
-                            loadingOverlay.style.opacity = '0';
-                        }
-                        closeEditEventModal();
+                        // Ensure minimum display time of 400ms so animation is visible
+                        const elapsed = Date.now() - startTime;
+                        const remainingTime = Math.max(0, 400 - elapsed);
+                        
+                        setTimeout(() => {
+                            // Hide loading overlay
+                            if (loadingOverlay) {
+                                loadingOverlay.style.display = 'none';
+                                loadingOverlay.style.opacity = '0';
+                            }
+                            closeEditEventModal();
+                        }, remainingTime);
                     } catch (err) {
                         console.error('Failed to delete:', err);
                         if (loadingOverlay) {
