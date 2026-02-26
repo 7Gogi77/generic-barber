@@ -3713,14 +3713,6 @@
                         }
                         alert('Napaka pri brisanju');
                     });
-                    }).catch(err => {
-                        console.error('Failed to delete:', err);
-                        if (loadingOverlay) {
-                            loadingOverlay.style.display = 'none';
-                            loadingOverlay.style.opacity = '0';
-                        }
-                        alert('Napaka pri brisanju');
-                    });
                 }
             }
         }
