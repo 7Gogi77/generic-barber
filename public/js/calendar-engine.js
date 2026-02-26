@@ -888,15 +888,35 @@ const CalendarEngine = {
             const eventIndex = scheduleData.events.findIndex(e => e.id === dropInfo.event.id);
             
             if (eventIndex !== -1) {
+              const originalStart = scheduleData.events[eventIndex].start;
+              const originalEnd = scheduleData.events[eventIndex].end;
+              
               // Update the event in place
               scheduleData.events[eventIndex].start = dropInfo.event.startStr;
               scheduleData.events[eventIndex].end = dropInfo.event.endStr;
               
-              console.log('✅ Updated event:', scheduleData.events[eventIndex].id, 'new times:', dropInfo.event.startStr, '→', dropInfo.event.endStr);
+              console.log('✅ Updated event:', scheduleData.events[eventIndex].id, 'old times:', originalStart, '→', originalEnd);
+              console.log('✅ New times:', dropInfo.event.startStr, '→', dropInfo.event.endStr);
+              
+              // Remove any duplicate entries with the same ID (should only have one)
+              const uniqueEntries = [];
+              const seenIds = new Set();
+              for (let i = 0; i < scheduleData.events.length; i++) {
+                const evt = scheduleData.events[i];
+                if (evt.id && !seenIds.has(evt.id)) {
+                  uniqueEntries.push(evt);
+                  seenIds.add(evt.id);
+                } else if (!evt.id) {
+                  uniqueEntries.push(evt);
+                } else {
+                  console.log('🗑️ Removing duplicate event:', evt.id, 'keeping latest update');
+                }
+              }
+              scheduleData.events = uniqueEntries;
               
               // Save to storage
               await StorageManager.save('schedule', scheduleData);
-              console.log('💾 Saved to storage');
+              console.log('💾 Saved to storage (duplicates cleaned)');
               
               // Force calendar to refetch events after a brief delay to ensure save completes
               setTimeout(() => {
@@ -907,6 +927,7 @@ const CalendarEngine = {
               }, 300);
             } else {
               console.warn('⚠ Event not found in scheduleData:', dropInfo.event.id);
+              console.warn('Available event IDs:', scheduleData.events.map(e => e.id));
               dropInfo.revert();
             }
           } catch (error) {
