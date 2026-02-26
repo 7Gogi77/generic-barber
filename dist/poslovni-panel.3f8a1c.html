@@ -4841,6 +4841,17 @@
                                                 return Number.isFinite(as) && Number.isFinite(bs) && Number.isFinite(ae) && Number.isFinite(be) && Math.abs(as - bs) <= TIME_TOLERANCE_MS && Math.abs(ae - be) <= TIME_TOLERANCE_MS;
                                             } catch (_) { return false; }
                                         };
+                                        
+                                        // CRITICAL: Check if a matching event (by customer+time) is already marked as deleted
+                                        const existingMatchingEvent = scheduleData.events.find(e => {
+                                            const eName = (e.extendedProps && ((e.extendedProps.customer) || e.extendedProps.worker)) || '';
+                                            return eName === matchName && start && end && timesApproxEqual(e.start, e.end, start, end);
+                                        });
+                                        if (existingMatchingEvent && window.isEventDeleted(existingMatchingEvent.id)) {
+                                            console.log(`⏭️  Skipping Firebase entry (matching deleted event: ${existingMatchingEvent.id})`);
+                                            return;
+                                        }
+                                        
                                         if (start && end && scheduleData.events.some(e => {
                                             const eName = (e.extendedProps && ((e.extendedProps.customer) || e.extendedProps.worker)) || '';
                                             return eName === matchName && timesApproxEqual(e.start, e.end, start, end);
