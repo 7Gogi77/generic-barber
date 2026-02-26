@@ -1793,9 +1793,9 @@
         <div class="panel-header" style="justify-content:space-between;">
             <div style="display:flex; align-items:center; gap:12px;">
                 <button onclick="closeAppointmentsPanel()" style="background:none; border:none; font-size:20px; color:#888; cursor:pointer;">&larr;</button>
-                <h3 style="margin:0; font-size:18px; font-weight:700; color:#2c3e50;">Termini</h3>
+                <h3 style="margin:0; font-size:18px; font-weight:700; color:#2c3e50;">Rezervacije</h3>
             </div>
-            <button id="addNewApptBtn" class="btn btn-primary" style="padding:8px 16px; font-size:13px;">+ Dodaj termin</button>
+            <button id="addNewApptBtn" class="btn btn-primary" style="padding:8px 16px; font-size:13px;">+ Nova</button>
         </div>
         <div id="appointmentsListContent" style="flex:1; overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:12px;">
             <!-- Appointments will be rendered here -->
@@ -1805,12 +1805,22 @@
     <!-- APPOINTMENT EDIT MODAL -->
     <div class="modal" id="appointmentEditModal">
         <div class="modal-content" style="max-width:600px;">
-            <div class="modal-header">Uredi termin</div>
+            <div class="modal-header">Uredi rezervacijo</div>
             <form id="appointmentEditForm" style="display:flex; flex-direction:column; gap:16px;">
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
                     <div class="form-group">
                         <label>Ime</label>
                         <input type="text" id="apptEditName" required style="width:100%; padding:8px 10px; border:1px solid #ddd; border-radius:6px;">
+                    </div>
+                    <div class="form-group">
+                        <label>Priimek</label>
+                        <input type="text" id="apptEditSurname" style="width:100%; padding:8px 10px; border:1px solid #ddd; border-radius:6px;">
+                    </div>
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="apptEditEmail" style="width:100%; padding:8px 10px; border:1px solid #ddd; border-radius:6px;">
                     </div>
                     <div class="form-group">
                         <label>Telefon</label>
@@ -1827,15 +1837,13 @@
                         <input type="time" id="apptEditTime" required style="width:100%; padding:8px 10px; border:1px solid #ddd; border-radius:6px;">
                     </div>
                 </div>
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-                    <div class="form-group">
-                        <label>Storitev</label>
-                        <input type="text" id="apptEditService" style="width:100%; padding:8px 10px; border:1px solid #ddd; border-radius:6px;">
-                    </div>
-                    <div class="form-group">
-                        <label>Cena (€)</label>
-                        <input type="number" id="apptEditPrice" step="0.01" style="width:100%; padding:8px 10px; border:1px solid #ddd; border-radius:6px;">
-                    </div>
+                <div class="form-group">
+                    <label>Storitve</label>
+                    <input type="text" id="apptEditServices" placeholder="npr. Striženje, Brada" style="width:100%; padding:8px 10px; border:1px solid #ddd; border-radius:6px;">
+                </div>
+                <div class="form-group">
+                    <label>Cena (€)</label>
+                    <input type="number" id="apptEditPrice" step="0.01" style="width:100%; padding:8px 10px; border:1px solid #ddd; border-radius:6px;">
                 </div>
                 <div class="form-group">
                     <label>Opombe</label>
@@ -5228,73 +5236,67 @@
         console.log("💡 Use window.deletionDebug.show() to see deletion status");
 
         // ============================================
-        // SIMPLE APPOINTMENTS MANAGEMENT SYSTEM
+        // APPOINTMENTS PANEL - Using Calendar Backend
         // ============================================
-        let appointmentsList = [];
-        let currentEditingApptId = null;
+        let currentEditingApptEventId = null;
 
-        // Load appointments from localStorage only (no Firebase complications)
-        function loadAppointments() {
-            try {
-                const data = localStorage.getItem('simple_appointments');
-                appointmentsList = data ? JSON.parse(data) : [];
-                renderAppointments();
-            } catch (e) {
-                console.error('Failed to load appointments', e);
-                appointmentsList = [];
-            }
-        }
-
-        // Save appointments to localStorage only
-        function saveAppointments() {
-            try {
-                localStorage.setItem('simple_appointments', JSON.stringify(appointmentsList));
-                console.log('✅ Appointments saved (direct localStorage)');
-            } catch (e) {
-                console.error('Failed to save appointments', e);
-            }
-        }
-
-        // Render appointments list
+        // Render appointments from scheduleData (customer bookings only)
         function renderAppointments() {
             const container = document.getElementById('appointmentsListContent');
             if (!container) return;
 
-            if (appointmentsList.length === 0) {
-                container.innerHTML = '<div style="padding:20px; text-align:center; color:#999;">Ni terminov. Dodaj prvega!</div>';
+            // Filter for customer bookings only
+            const bookings = (scheduleData && scheduleData.events) ? 
+                scheduleData.events.filter(e => e.extendedProps && e.extendedProps.isBooking) 
+                : [];
+
+            if (bookings.length === 0) {
+                container.innerHTML = '<div style="padding:20px; text-align:center; color:#999;">Ni rezervacij. Dodaj prvo!</div>';
                 return;
             }
 
             // Sort by date
-            const sorted = [...appointmentsList].sort((a, b) => {
-                const dateA = new Date(`${a.date}T${a.time || '00:00'}`);
-                const dateB = new Date(`${b.date}T${b.time || '00:00'}`);
+            const sorted = [...bookings].sort((a, b) => {
+                const dateA = new Date(a.start || 0);
+                const dateB = new Date(b.start || 0);
                 return dateA - dateB;
             });
 
-            container.innerHTML = sorted.map(appt => `
-                <div style="background:#f5f5f5; border-radius:8px; padding:12px; border-left:4px solid #007AFF; display:grid; grid-template-columns:1fr auto auto auto; gap:8px; align-items:center;">
-                    <div>
-                        <div style="font-weight:600; font-size:15px;">${escapeHtml(appt.name || '?')}</div>
-                        <div style="font-size:13px; color:#666; margin-top:2px;">
-                            ${appt.date || '?'} • ${appt.time || '00:00'} 
-                            ${appt.service ? '• ' + escapeHtml(appt.service) : ''}
+            container.innerHTML = sorted.map(booking => {
+                const props = booking.extendedProps || {};
+                const customerName = props.customer || booking.title || '?';
+                const startDate = booking.start ? new Date(booking.start).toLocaleDateString('sl-SI') : '?';
+                const startTime = booking.start ? new Date(booking.start).toLocaleTimeString('sl-SI', {hour: '2-digit', minute: '2-digit'}) : '?';
+                const endTime = booking.end ? new Date(booking.end).toLocaleTimeString('sl-SI', {hour: '2-digit', minute: '2-digit'}) : '?';
+                const services = (props.services && Array.isArray(props.services)) ? props.services.join(', ') : '';
+                const price = props.price ? props.price + '€' : '';
+                
+                return `
+                    <div style="background:#f5f5f5; border-radius:8px; padding:12px; border-left:4px solid #007AFF; display:flex; flex-direction:column; gap:8px;">
+                        <div style="display:grid; grid-template-columns:1fr auto auto auto; gap:8px; align-items:start;">
+                            <div>
+                                <div style="font-weight:600; font-size:15px;">${escapeHtml(customerName)}</div>
+                                <div style="font-size:13px; color:#666; margin-top:4px;">
+                                    📅 ${startDate} • 🕐 ${startTime} - ${endTime}
+                                </div>
+                                ${props.phone ? '<div style="font-size:12px; color:#999;">📞 ' + escapeHtml(props.phone) + '</div>' : ''}
+                                ${props.email ? '<div style="font-size:12px; color:#999;">✉️ ' + escapeHtml(props.email) + '</div>' : ''}
+                                ${services ? '<div style="font-size:12px; color:#666; margin-top:4px;">🛠️ ' + escapeHtml(services) + '</div>' : ''}
+                            </div>
+                            <button onclick="editAppointmentFromPanel('${booking.id}')" class="btn btn-primary" style="padding:6px 12px; font-size:12px; white-space:nowrap;">Uredi</button>
+                            <button onclick="deleteAppointmentFromPanel('${booking.id}')" class="btn btn-danger" style="padding:6px 12px; font-size:12px; white-space:nowrap;">Izbriši</button>
                         </div>
-                        ${appt.phone ? '<div style="font-size:12px; color:#999;">' + escapeHtml(appt.phone) + '</div>' : ''}
-                        ${appt.price ? '<div style="font-size:13px; color:#007AFF; font-weight:600; margin-top:4px;">' + appt.price + '€</div>' : ''}
+                        ${price ? '<div style="text-align:right; font-weight:600; color:#007AFF;">' + price + '</div>' : ''}
                     </div>
-                    <button onclick="editAppointment('${appt.id}')" class="btn btn-primary" style="padding:6px 12px; font-size:12px;">Uredi</button>
-                    <button onclick="changeApptDate('${appt.id}')" class="btn btn-secondary" style="padding:6px 12px; font-size:12px;">Datum</button>
-                    <button onclick="deleteAppointmentQuick('${appt.id}')" class="btn btn-danger" style="padding:6px 12px; font-size:12px;">Izbriši</button>
-                </div>
-            `).join('');
+                `;
+            }).join('');
         }
 
         // Open appointments panel
         function openAppointmentsPanel() {
-            loadAppointments();
             const panel = document.getElementById('appointmentsPanel');
             if (panel) {
+                renderAppointments();
                 panel.style.display = 'flex';
             }
         }
@@ -5307,129 +5309,211 @@
             }
         }
 
-        // Add new appointment
+        // Initialize add/edit handlers
         document.addEventListener('DOMContentLoaded', function() {
+            // Add new appointment button
             const addBtn = document.getElementById('addNewApptBtn');
             if (addBtn) {
                 addBtn.addEventListener('click', function() {
-                    currentEditingApptId = null;
+                    currentEditingApptEventId = null;
                     document.getElementById('apptEditName').value = '';
+                    document.getElementById('apptEditSurname').value = '';
+                    document.getElementById('apptEditEmail').value = '';
                     document.getElementById('apptEditPhone').value = '';
                     document.getElementById('apptEditDate').value = new Date().toISOString().split('T')[0];
                     document.getElementById('apptEditTime').value = '10:00';
-                    document.getElementById('apptEditService').value = '';
+                    document.getElementById('apptEditServices').value = '';
                     document.getElementById('apptEditPrice').value = '';
                     document.getElementById('apptEditNotes').value = '';
                     document.getElementById('apptDeleteBtn').style.display = 'none';
+                    
                     const modal = document.getElementById('appointmentEditModal');
                     if (modal) modal.style.display = 'flex';
                 });
             }
 
-            // Save appointment form
+            // Save/Edit appointment form
             const form = document.getElementById('appointmentEditForm');
             if (form) {
-                form.addEventListener('submit', function(e) {
+                form.addEventListener('submit', async function(e) {
                     e.preventDefault();
-                    const name = document.getElementById('apptEditName').value;
-                    const date = document.getElementById('apptEditDate').value;
-                    const time = document.getElementById('apptEditTime').value;
                     
-                    if (!name || !date) {
+                    const firstName = (document.getElementById('apptEditName').value || '').trim();
+                    const surname = (document.getElementById('apptEditSurname').value || '').trim();
+                    const email = (document.getElementById('apptEditEmail').value || '').trim();
+                    const phone = (document.getElementById('apptEditPhone').value || '').trim();
+                    const date = document.getElementById('apptEditDate').value;
+                    const time = document.getElementById('apptEditTime').value || '10:00';
+                    const servicesRaw = (document.getElementById('apptEditServices').value || '').trim();
+                    const price = document.getElementById('apptEditPrice').value || '0';
+                    const notes = (document.getElementById('apptEditNotes').value || '').trim();
+                    
+                    if (!firstName || !date) {
                         alert('Ime in datum sta obvezna!');
                         return;
                     }
 
-                    if (currentEditingApptId) {
-                        // Update existing
-                        const appt = appointmentsList.find(a => a.id === currentEditingApptId);
-                        if (appt) {
-                            appt.name = name;
-                            appt.date = date;
-                            appt.time = time;
-                            appt.phone = document.getElementById('apptEditPhone').value;
-                            appt.service = document.getElementById('apptEditService').value;
-                            appt.price = document.getElementById('apptEditPrice').value;
-                            appt.notes = document.getElementById('apptEditNotes').value;
+                    const customerName = (firstName + (surname ? ' ' + surname : '')).trim() || 'Rezervacija';
+                    const services = servicesRaw ? servicesRaw.split(',').map(s => s.trim()).filter(Boolean) : [];
+                    
+                    // Calculate 30-minute default duration
+                    const startDateTime = new Date(`${date}T${time}`);
+                    const endDateTime = new Date(startDateTime.getTime() + 30 * 60000);
+                    const endTime = endDateTime.toTimeString().slice(0, 5);
+                    
+                    const eventPayload = {
+                        title: customerName,
+                        start: `${date}T${time}`,
+                        end: `${date}T${endTime}`,
+                        type: 'booking',
+                        description: notes,
+                        extendedProps: {
+                            customer: customerName,
+                            email: email || null,
+                            phone: phone || null,
+                            services: services,
+                            price: parseFloat(price) || 0,
+                            isBooking: true,
+                            tab: 'customer',
+                            origin: 'local'
                         }
-                    } else {
-                        // Create new
-                        appointmentsList.push({
-                            id: 'appt_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8),
-                            name: name,
-                            date: date,
-                            time: time,
-                            phone: document.getElementById('apptEditPhone').value,
-                            service: document.getElementById('apptEditService').value,
-                            price: document.getElementById('apptEditPrice').value,
-                            notes: document.getElementById('apptEditNotes').value
-                        });
-                    }
+                    };
 
-                    saveAppointments();
-                    renderAppointments();
-                    const modal = document.getElementById('appointmentEditModal');
-                    if (modal) modal.style.display = 'none';
-                    currentEditingApptId = null;
+                    try {
+                        if (currentEditingApptEventId) {
+                            // UPDATE existing using updateScheduleEvent
+                            await updateScheduleEvent(currentEditingApptEventId, eventPayload);
+                            console.log('✅ Appointment updated');
+                        } else {
+                            // CREATE new using addScheduleEvent
+                            if (typeof window.addScheduleEvent === 'function') {
+                                await window.addScheduleEvent(eventPayload);
+                            } else {
+                                eventPayload.id = 'apt_' + Date.now();
+                                scheduleData.events.push(eventPayload);
+                            }
+                            console.log('✅ Appointment created');
+
+                            // Persist customer info
+                            try {
+                                await persistCustomerToBase({ firstName, surname, email, phone });
+                            } catch (_) {}
+                        }
+
+                        // Save to storage
+                        if (typeof window.saveScheduleData === 'function') {
+                            await window.saveScheduleData();
+                        } else {
+                            localStorage.setItem('schedule', JSON.stringify(scheduleData));
+                        }
+
+                        // Refresh calendar
+                        if (typeof loadAppointmentsToCalendarNow === 'function') {
+                            await loadAppointmentsToCalendarNow();
+                        } else if (window.calendar && typeof window.calendar.refetchEvents === 'function') {
+                            await window.calendar.refetchEvents();
+                        }
+
+                        // Close and refresh list
+                        const modal = document.getElementById('appointmentEditModal');
+                        if (modal) modal.style.display = 'none';
+                        renderAppointments();
+                        currentEditingApptEventId = null;
+                    } catch (err) {
+                        console.error('Failed to save appointment', err);
+                        alert('Napaka pri shranjevanju: ' + err.message);
+                    }
                 });
             }
 
             // Delete button
             const deleteBtn = document.getElementById('apptDeleteBtn');
             if (deleteBtn) {
-                deleteBtn.addEventListener('click', function() {
-                    if (currentEditingApptId && confirm('Res želiš izbrisati ta termin?')) {
-                        appointmentsList = appointmentsList.filter(a => a.id !== currentEditingApptId);
-                        saveAppointments();
-                        renderAppointments();
+                deleteBtn.addEventListener('click', async function() {
+                    if (!currentEditingApptEventId) return;
+                    if (!confirm('Res želiš izbrisati to rezervacijo?')) return;
+
+                    try {
+                        // Use the deleteScheduleEvent function
+                        if (typeof window.deleteScheduleEvent === 'function') {
+                            await window.deleteScheduleEvent(currentEditingApptEventId);
+                        } else {
+                            scheduleData.events = scheduleData.events.filter(e => e.id !== currentEditingApptEventId);
+                            localStorage.setItem('schedule', JSON.stringify(scheduleData));
+                        }
+
+                        // Refresh
+                        if (typeof loadAppointmentsToCalendarNow === 'function') {
+                            await loadAppointmentsToCalendarNow();
+                        }
+
                         const modal = document.getElementById('appointmentEditModal');
                         if (modal) modal.style.display = 'none';
-                        currentEditingApptId = null;
+                        renderAppointments();
+                        currentEditingApptEventId = null;
+                        console.log('✅ Appointment deleted');
+                    } catch (err) {
+                        console.error('Failed to delete appointment', err);
+                        alert('Napaka pri brisanju');
                     }
                 });
             }
         });
 
-        // Edit appointment
-        function editAppointment(apptId) {
-            const appt = appointmentsList.find(a => a.id === apptId);
-            if (!appt) return;
+        // Edit appointment from panel
+        function editAppointmentFromPanel(eventId) {
+            const event = scheduleData && scheduleData.events ? 
+                scheduleData.events.find(e => e.id === eventId) : null;
+            
+            if (!event) return;
 
-            currentEditingApptId = apptId;
-            document.getElementById('apptEditName').value = appt.name || '';
-            document.getElementById('apptEditPhone').value = appt.phone || '';
-            document.getElementById('apptEditDate').value = appt.date || '';
-            document.getElementById('apptEditTime').value = appt.time || '';
-            document.getElementById('apptEditService').value = appt.service || '';
-            document.getElementById('apptEditPrice').value = appt.price || '';
-            document.getElementById('apptEditNotes').value = appt.notes || '';
+            const props = event.extendedProps || {};
+            const startDate = event.start ? new Date(event.start) : new Date();
+            const dateStr = startDate.toISOString().split('T')[0];
+            const timeStr = startDate.toTimeString().slice(0, 5);
+            
+            // Parse customer name into first and last
+            const nameParts = (props.customer || event.title || '').split(' ');
+            const firstName = nameParts[0] || '';
+            const surname = nameParts.slice(1).join(' ') || '';
+
+            currentEditingApptEventId = eventId;
+            document.getElementById('apptEditName').value = firstName;
+            document.getElementById('apptEditSurname').value = surname;
+            document.getElementById('apptEditEmail').value = props.email || '';
+            document.getElementById('apptEditPhone').value = props.phone || '';
+            document.getElementById('apptEditDate').value = dateStr;
+            document.getElementById('apptEditTime').value = timeStr;
+            document.getElementById('apptEditServices').value = (props.services && Array.isArray(props.services)) ? props.services.join(', ') : '';
+            document.getElementById('apptEditPrice').value = props.price || '';
+            document.getElementById('apptEditNotes').value = event.description || '';
             document.getElementById('apptDeleteBtn').style.display = 'block';
 
             const modal = document.getElementById('appointmentEditModal');
             if (modal) modal.style.display = 'flex';
         }
 
-        // Delete appointment quickly (no modal, direct confirmation)
-        function deleteAppointmentQuick(apptId) {
-            if (confirm('Izbriši ta termin?')) {
-                appointmentsList = appointmentsList.filter(a => a.id !== apptId);
-                saveAppointments();
-                renderAppointments();
-                console.log('✅ Appointment deleted immediately');
-            }
-        }
+        // Delete appointment from panel
+        async function deleteAppointmentFromPanel(eventId) {
+            if (!confirm('Res želiš izbrisati to rezervacijo?')) return;
 
-        // Change appointment date
-        function changeApptDate(apptId) {
-            const appt = appointmentsList.find(a => a.id === apptId);
-            if (!appt) return;
+            try {
+                if (typeof window.deleteScheduleEvent === 'function') {
+                    await window.deleteScheduleEvent(eventId);
+                } else {
+                    scheduleData.events = scheduleData.events.filter(e => e.id !== eventId);
+                    localStorage.setItem('schedule', JSON.stringify(scheduleData));
+                }
 
-            const newDate = prompt('Nov datum (YYYY-MM-DD):', appt.date);
-            if (newDate && /^\d{4}-\d{2}-\d{2}$/.test(newDate)) {
-                appt.date = newDate;
-                saveAppointments();
+                if (typeof loadAppointmentsToCalendarNow === 'function') {
+                    await loadAppointmentsToCalendarNow();
+                }
+
                 renderAppointments();
-                console.log('✅ Date changed to ' + newDate);
+                console.log('✅ Appointment deleted from panel');
+            } catch (err) {
+                console.error('Failed to delete', err);
+                alert('Napaka pri brisanju');
             }
         }
 
