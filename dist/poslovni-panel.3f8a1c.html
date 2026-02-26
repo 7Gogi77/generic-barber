@@ -4906,7 +4906,14 @@
                                 });
                                 console.log(`📊 Before filtering deleted: ${scheduleData.events.length} total events`);
                                 // CRITICAL: Filter deleted events BEFORE saving
-                                scheduleData.events = scheduleData.events.filter(e => !window.isEventDeleted(e.id));
+                                console.log(`🔍 Deletion tracker currently has: ${Array.from(deletedEventIds).join(', ')}`);
+                                console.log(`🔍 Event IDs in scheduleData: ${scheduleData.events.map(e => e.id).join(', ')}`);
+                                const eventsToFilter = scheduleData.events.filter(e => {
+                                    const isDeleted = window.isEventDeleted(e.id);
+                                    console.log(`  → ${e.id}: deleted=${isDeleted}`);
+                                    return !isDeleted;
+                                });
+                                scheduleData.events = eventsToFilter;
                                 console.log(`📊 After filtering deleted: ${scheduleData.events.length} total events`);
                                 try { await saveScheduleData(); debugLog('✅ Merged adminSchedule into scheduleData (post-load) and saved'); } catch(e){ console.warn('⚠ save after post-load merge failed', e); }
                             }
