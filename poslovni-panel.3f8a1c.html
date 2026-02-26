@@ -1984,6 +1984,14 @@
         </div>
     </div>
 
+    <!-- LOADING OVERLAY -->
+    <div id="loadingOverlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999; display:flex; align-items:center; justify-content:center;">
+        <div style="background:white; padding:40px; border-radius:12px; text-align:center; box-shadow:0 4px 12px rgba(0,0,0,0.3);">
+            <div class="calendar-spinner" style="margin:0 auto 16px;"></div>
+            <p style="font-size:16px; color:#333; margin:0; font-weight:600;">Brisanje termina...</p>
+        </div>
+    </div>
+
     <!-- SCRIPTS -->
     <script type="module" src="/js/firebase-config.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
@@ -3667,25 +3675,42 @@
         function deleteCurrentEvent() {
             if (currentEditingEvent) {
                 if (confirm('Sigurno želiš izbrisati ta dogodek?')) {
+                    // Show loading overlay
+                    const loadingOverlay = document.getElementById('loadingOverlay');
+                    if (loadingOverlay) {
+                        loadingOverlay.style.display = 'flex';
+                    }
+
                     // Simple deletion: remove from data and save
                     const eventId = currentEditingEvent.id;
                     
-                    // Remove from calendar display
-                    const calEvent = window.calendar.getEventById(eventId);
-                    if (calEvent) calEvent.remove();
-                    
-                    // Remove from data array
-                    scheduleData.events = scheduleData.events.filter(e => e.id !== eventId);
-                    
-                    // Save to localStorage immediately
                     try {
+                        // Remove from calendar display
+                        const calEvent = window.calendar.getEventById(eventId);
+                        if (calEvent) calEvent.remove();
+                        
+                        // Remove from data array
+                        scheduleData.events = scheduleData.events.filter(e => e.id !== eventId);
+                        
+                        // Save to localStorage
                         localStorage.setItem('schedule', JSON.stringify(scheduleData));
                         console.log('✅ Event deleted and saved to localStorage');
+
+                        // Simulate database operation - wait 800ms to show loading
+                        setTimeout(() => {
+                            // Hide loading overlay
+                            if (loadingOverlay) {
+                                loadingOverlay.style.display = 'none';
+                            }
+                            closeEditEventModal();
+                        }, 800);
                     } catch (err) {
-                        console.error('Failed to save after delete:', err);
+                        console.error('Failed to delete:', err);
+                        if (loadingOverlay) {
+                            loadingOverlay.style.display = 'none';
+                        }
+                        alert('Napaka pri brisanju');
                     }
-                    
-                    closeEditEventModal();
                 }
             }
         }
