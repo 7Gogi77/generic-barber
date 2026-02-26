@@ -1186,7 +1186,9 @@ const CalendarEngine = {
 
         // Styling
         nowIndicator: true,
-        eventDisplay: 'block',
+        eventDisplay: 'auto',
+        // Make overlapping events display side-by-side in timeGrid views
+        slotEventOverlap: false,
         // Ensure all-day slot hidden (no dedicated all-day column/row)
         allDaySlot: false,
         height: window._calendarHeight || 600,
