@@ -175,7 +175,7 @@ const SITE_CONFIG = {
             end: 19      // 7 PM
         },
         daysClosed: [0], // 0 = Sunday (days where shop is closed)
-        slotDuration: 15, // 15 minute slots
+        slotDuration: 30, // 30 minute slots (2 per hour)
         // Working days: true = open, false/missing = closed
         // 0 = Sunday, 1 = Monday, 2 = Tuesday, etc.
         workingDays: {

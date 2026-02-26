@@ -1998,7 +1998,7 @@
         <script>
             // --- TAB LOGIC FOR ADD EVENT MODAL ---
             // Tab logic
-            let currentEventTab = 'customer';
+            let currentEventTab = 'worker';
             // Types used for worker-mode events
             const workerTypes = [
                 { value: 'working_hours', label: 'Delovni čas' },
@@ -2157,7 +2157,7 @@
                     setTimeout(() => openAddEventModalWithTab(startDate, retry + 1, tab), 200);
                     return;
                 }
-                setEventTab(tab || 'customer');
+                setEventTab(tab || 'worker');
                 // Reset form fields if needed
                 const form = document.getElementById('addEventForm');
                 if (form) form.reset();
@@ -2366,6 +2366,13 @@
                         const page = icon.dataset.page;
                         navIcons.forEach(i => i.classList.remove('active'));
                         icon.classList.add('active');
+                        
+                        // Collapse sidebar on mobile after selection
+                        if (window.innerWidth <= 768) {
+                            sidebar.classList.remove('expanded');
+                            localStorage.setItem('sidebarExpanded', 'false');
+                        }
+                        
                         if (page === 'home') { window.location.href = 'admin-panel.html'; }
                         else if (page === 'settings') { window.location.href = 'admin-panel.html'; }
                         else if (page === 'calendar') { 
@@ -2384,6 +2391,12 @@
 
                 applyState();
             })();
+
+            // Hide all panels and show calendar
+            function hideAllPanels() {
+                closeCustomerPanel();
+                closeAnalyticsPanel();
+            }
 
             // ========== CUSTOMER LIST PANEL ========== //
             async function showCustomerListPanel() {
