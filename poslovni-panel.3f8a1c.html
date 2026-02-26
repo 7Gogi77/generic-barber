@@ -3667,8 +3667,24 @@
         function deleteCurrentEvent() {
             if (currentEditingEvent) {
                 if (confirm('Sigurno želiš izbrisati ta dogodek?')) {
-                    window.calendar.getEventById(currentEditingEvent.id).remove();
-                    deleteScheduleEvent(currentEditingEvent.id);
+                    // Simple deletion: remove from data and save
+                    const eventId = currentEditingEvent.id;
+                    
+                    // Remove from calendar display
+                    const calEvent = window.calendar.getEventById(eventId);
+                    if (calEvent) calEvent.remove();
+                    
+                    // Remove from data array
+                    scheduleData.events = scheduleData.events.filter(e => e.id !== eventId);
+                    
+                    // Save to localStorage immediately
+                    try {
+                        localStorage.setItem('schedule', JSON.stringify(scheduleData));
+                        console.log('✅ Event deleted and saved to localStorage');
+                    } catch (err) {
+                        console.error('Failed to save after delete:', err);
+                    }
+                    
                     closeEditEventModal();
                 }
             }
@@ -3907,7 +3923,8 @@
                 const description = (document.getElementById('eventDescription')?.value || '').trim() || '';
 
                 const services = Array.from(document.querySelectorAll('#eventTypeCheckboxes input[type=checkbox]:checked')).map(i => i.value).filter(Boolean);
-                const price = (typeof recalcServicePrice === 'function') ? recalcServicePrice() : 0;
+                const priceInput = document.getElementById('eventPrice')?.value;
+                const price = priceInput ? parseFloat(priceInput) : 0;
 
                 // Dates/times
                 const startDate = document.getElementById('eventStartDate')?.value;
@@ -3919,7 +3936,13 @@
                 const defaultDurationMinutes = 30;
                 const sTime = startTimeRaw || defaultStart;
                 if (!endTimeRaw) {
-                    try { const s = new Date(`${startDate}T${sTime}`); s.setMinutes(s.getMinutes() + defaultDurationMinutes); endTimeRaw = s.toTimeString().slice(0,5); } catch (_) { endTimeRaw = '09:30'; }
+                    try { 
+                        const s = new Date(`${startDate}T${sTime}`); 
+                        s.setMinutes(s.getMinutes() + defaultDurationMinutes); 
+                        endTimeRaw = s.toTimeString().slice(0,5); 
+                    } catch (_) { 
+                        endTimeRaw = '09:30'; 
+                    }
                 }
 
                 const start = `${startDate}T${sTime}`;
@@ -3927,20 +3950,17 @@
 
                 const typeSelect = document.getElementById('eventType');
                 const selectedType = typeSelect ? typeSelect.value : (tab === 'worker' ? 'working_hours' : 'booking');
-
                 const eventType = (tab === 'customer') ? 'booking' : (selectedType || 'working_hours');
+
+                // Create simple event object
+                const eventId = `event_${Date.now()}`;
                 const eventPayload = {
+                    id: eventId,
                     title,
                     type: eventType,
                     start,
                     end,
                     description,
-                    tab,
-                    isBooking: tab === 'customer',
-                    // apply type-based colors so events stay visually distinct
-                    color: (typeof ScheduleRules !== 'undefined' && ScheduleRules.TYPE_CONFIG && ScheduleRules.TYPE_CONFIG[eventType]) ? ScheduleRules.TYPE_CONFIG[eventType].color : undefined,
-                    backgroundColor: (typeof ScheduleRules !== 'undefined' && ScheduleRules.TYPE_CONFIG && ScheduleRules.TYPE_CONFIG[eventType]) ? ScheduleRules.TYPE_CONFIG[eventType].backgroundColor : undefined,
-                    borderColor: (typeof ScheduleRules !== 'undefined' && ScheduleRules.TYPE_CONFIG && ScheduleRules.TYPE_CONFIG[eventType]) ? ScheduleRules.TYPE_CONFIG[eventType].borderColor : undefined,
                     extendedProps: {
                         customer: tab === 'customer' ? title : null,
                         worker: tab === 'worker' ? title : null,
@@ -3950,58 +3970,35 @@
                         price,
                         isBooking: tab === 'customer',
                         tab,
-                        // mark local origin so merge can preserve these events
                         origin: 'local'
                     }
                 };
 
-                if (tab === 'customer') {
-                    try { await persistCustomerToBase({ firstName, surname: lastName, email, phone }); } catch (_) {}
-                }
+                // Add to scheduleData
+                scheduleData.events = scheduleData.events || [];
+                scheduleData.events.push(eventPayload);
 
-                // Persist event
-                let eventId = null;
+                // Save to localStorage
                 try {
-                    if (typeof window.addScheduleEvent === 'function') eventId = window.addScheduleEvent(eventPayload);
-                    else { eventPayload.id = eventPayload.id || `event_${Date.now()}`; scheduleData.events = scheduleData.events || []; scheduleData.events.push(eventPayload); eventId = eventPayload.id; try { localStorage.setItem('schedule', JSON.stringify(scheduleData)); } catch(_){} }
+                    localStorage.setItem('schedule', JSON.stringify(scheduleData));
+                    console.log('✅ Event created and saved to localStorage');
                 } catch (err) {
-                    console.error('✗ addScheduleEvent failed', err);
-                    alert('Napaka pri ustvarjanju termina');
-                    return false;
+                    console.error('Failed to save new event:', err);
                 }
 
-                // Ensure TYPE_CONFIG rules
-                try {
-                    const cfg = (typeof ScheduleRules !== 'undefined' && ScheduleRules.TYPE_CONFIG && ScheduleRules.TYPE_CONFIG[eventPayload.type]) ? ScheduleRules.TYPE_CONFIG[eventPayload.type] : null;
-                    const idx = scheduleData.events.findIndex(e => e.id === eventId);
-                    if (idx !== -1 && cfg) { scheduleData.events[idx].rules = scheduleData.events[idx].rules || {}; scheduleData.events[idx].rules.isBlocking = cfg.isBlocking || false; scheduleData.events[idx].rules.isSubtractive = cfg.isSubtractive || false; scheduleData.events[idx].rules.conflictPriority = cfg.priority || 0; }
-                } catch (_) {}
-
-                // Save and refresh
-                try {
-                    if (typeof window.saveScheduleData === 'function') await window.saveScheduleData();
-                    else try { localStorage.setItem('schedule', JSON.stringify(scheduleData)); } catch(_){}
-                } catch (_) {}
-
-                // Refresh canonical source - this will load the event from storage
-                // Do NOT manually add the event first as that causes duplicates
-                if (typeof loadAppointmentsToCalendarNow === 'function') {
-                    await loadAppointmentsToCalendarNow();
-                } else if (window.calendar && typeof window.calendar.refetchEvents === 'function') {
-                    try { window.calendar.refetchEvents(); } catch(e) {}
+                // Add to calendar display
+                if (window.calendar && typeof window.calendar.addEvent === 'function') {
+                    window.calendar.addEvent(eventPayload);
                 }
-
-                // Mirror to adminSchedule and attach adminKey when possible
-                try {
-                    const adminEntry = { id: `event_${eventId}`, type: (tab === 'customer') ? 'rezervacija' : (selectedType || 'worker_event'), startDate, startTime: sTime, endDate, endTime: endTimeRaw, customer: tab === 'customer' ? title : null, worker: tab === 'worker' ? title : null, email, phone, services, price, duration: (new Date(end) - new Date(start)) / 60000, notes: description, createdAt: new Date().toISOString() };
-                    if (typeof sendAdminScheduleEntry === 'function') {
-                        const res = await sendAdminScheduleEntry(adminEntry).catch(() => false);
-                        if (res) { const idx = scheduleData.events.findIndex(e => e.id === eventId); if (idx !== -1) { scheduleData.events[idx].extendedProps = scheduleData.events[idx].extendedProps || {}; if (typeof res === 'string') scheduleData.events[idx].extendedProps.adminKey = res; try { if (typeof window.saveScheduleDataNoBroadcast === 'function') await window.saveScheduleDataNoBroadcast(); else if (typeof window.saveScheduleData === 'function') await window.saveScheduleData(); } catch (_){} } }
-                    }
-                } catch (_) {}
 
                 closeAddEventModal();
                 return true;
+            } catch (err) {
+                console.error('handleAddEventSimplified failed', err);
+                alert('Napaka pri dodajanju termina');
+                return false;
+            }
+        }
             } catch (err) {
                 console.error('handleAddEventSimplified failed', err);
                 alert('Napaka pri dodajanju termina');
@@ -4026,124 +4023,51 @@
             const start = startTime ? `${startDate}T${startTime}` : `${startDate}T00:00`;
             const end = endTime ? `${endDate}T${endTime}` : `${endDate}T23:59`;
 
-            updateScheduleEvent(currentEditingEvent.id, {
-                title,
-                type,
-                start,
-                end,
-                description
-            });
+            // Simple update: modify the data directly
+            const idx = scheduleData.events.findIndex(e => e.id === currentEditingEvent.id);
+            if (idx !== -1) {
+                scheduleData.events[idx] = {
+                    ...scheduleData.events[idx],
+                    title,
+                    type,
+                    start,
+                    end,
+                    description
+                };
+                
+                // Update extended props if they exist in the form
+                try {
+                    const email = document.getElementById('editEventEmail')?.value || null;
+                    const phone = document.getElementById('editEventPhone')?.value || null;
+                    const servicesRaw = document.getElementById('editEventServices')?.value || '';
+                    const services = servicesRaw ? servicesRaw.split(',').map(s=>s.trim()).filter(Boolean) : [];
+                    const priceRaw = document.getElementById('editEventPrice')?.value || null;
+                    const price = priceRaw ? parseFloat(priceRaw) : null;
+                    
+                    scheduleData.events[idx].extendedProps = scheduleData.events[idx].extendedProps || {};
+                    if (email) scheduleData.events[idx].extendedProps.email = email;
+                    if (phone) scheduleData.events[idx].extendedProps.phone = phone;
+                    if (services.length) scheduleData.events[idx].extendedProps.services = services;
+                    if (price) scheduleData.events[idx].extendedProps.price = price;
+                } catch (_) {}
+                
+                // Save to localStorage
+                try {
+                    localStorage.setItem('schedule', JSON.stringify(scheduleData));
+                    console.log('✅ Event updated and saved to localStorage');
+                } catch (err) {
+                    console.error('Failed to save after update:', err);
+                }
+            }
 
+            // Update calendar display
             const event = window.calendar.getEventById(currentEditingEvent.id);
             if (event) {
                 event.setProp('title', title);
-                // update visuals for type change
-                try {
-                  const typeCfg = (typeof ScheduleRules !== 'undefined' && ScheduleRules.TYPE_CONFIG && ScheduleRules.TYPE_CONFIG[type]) ? ScheduleRules.TYPE_CONFIG[type] : null;
-                  if (typeCfg) {
-                    const icon = typeCfg.icon || '';
-                    // prefix title for immediate UI if worker
-                    if (currentEditingEvent && (currentEditingEvent.extendedProps?.tab === 'worker' || currentEditingEvent.extendedProps?.worker)) {
-                      event.setProp('title', (icon ? (icon + ' ' + title) : title));
-                    }
-                    if (typeof event.setProp === 'function') {
-                      event.setProp('backgroundColor', typeCfg.backgroundColor);
-                      event.setProp('borderColor', typeCfg.borderColor);
-                    }
-                    // update class name for CSS rules
-                    try { if (Array.isArray(event.classNames)) event.setProp('classNames', ['event-type-' + type]); else event.setProp('classNames', ['event-type-' + type]); } catch (_) {}
-                  }
-                } catch (visErr) { /* ignore */ }
-
                 event.setStart(new Date(start).toISOString());
                 event.setEnd(new Date(end).toISOString());
                 event.setExtendedProp('type', type);
                 event.setExtendedProp('description', description);
-                // Update booking-related extendedProps if present in the edit form
-                try {
-                    const email = document.getElementById('editEventEmail') ? document.getElementById('editEventEmail').value : null;
-                    const phone = document.getElementById('editEventPhone') ? document.getElementById('editEventPhone').value : null;
-                    const servicesRaw = document.getElementById('editEventServices') ? document.getElementById('editEventServices').value : '';
-                    const services = servicesRaw ? servicesRaw.split(',').map(s=>s.trim()).filter(Boolean) : [];
-                    const priceRaw = document.getElementById('editEventPrice') ? document.getElementById('editEventPrice').value : null;
-                    const price = priceRaw ? Number(String(priceRaw).replace(/[^0-9.,-]/g,'')) || 0 : null;
-                    const duration = document.getElementById('editEventDuration') ? Number(document.getElementById('editEventDuration').value) || 0 : null;
-
-                    if (typeof event.setExtendedProp === 'function') {
-                        if (email !== null) event.setExtendedProp('email', email);
-                        if (phone !== null) event.setExtendedProp('phone', phone);
-                        if (services.length) event.setExtendedProp('services', services);
-                        if (price !== null) event.setExtendedProp('price', price);
-                        if (!isNaN(duration)) event.setExtendedProp('duration', duration);
-                    }
-
-                    // Also update scheduleData in-memory and persist
-                    const idx = scheduleData.events.findIndex(e => e.id === currentEditingEvent.id);
-                    if (idx !== -1) {
-                        scheduleData.events[idx].extendedProps = scheduleData.events[idx].extendedProps || {};
-                        if (email !== null) scheduleData.events[idx].extendedProps.email = email;
-                        if (phone !== null) scheduleData.events[idx].extendedProps.phone = phone;
-                        if (services.length) scheduleData.events[idx].extendedProps.services = services;
-                        if (price !== null) scheduleData.events[idx].extendedProps.price = price;
-                        if (!isNaN(duration)) scheduleData.events[idx].extendedProps.duration = duration;
-                        // Keep customer names in extendedProps in sync with title for bookings
-                        try {
-                            // If booking, use separate name fields
-                            if (scheduleData.events[idx].extendedProps.isBooking || scheduleData.events[idx].extendedProps.tab === 'customer') {
-                                const editFirst = document.getElementById('editEventFirstName') ? (document.getElementById('editEventFirstName').value || '').trim() : '';
-                                const editLast = document.getElementById('editEventLastName') ? (document.getElementById('editEventLastName').value || '').trim() : '';
-                                const fullName = (editFirst + (editLast ? ' ' + editLast : '')).trim() || title;
-                                scheduleData.events[idx].title = fullName;
-                                scheduleData.events[idx].extendedProps.customer = fullName;
-                                scheduleData.events[idx].extendedProps.customerFirstName = editFirst;
-                                scheduleData.events[idx].extendedProps.customerSurname = editLast;
-                            } else {
-                                scheduleData.events[idx].title = title;
-                            }
-                        } catch (_) {}
-                        // persist
-                        if (window.saveScheduleData) await window.saveScheduleData();
-                        // If this event was originally mirrored from site_config, update that entry too
-                        try {
-                            const adminKey = scheduleData.events[idx].extendedProps.adminKey;
-                            if (adminKey) {
-                                const mirrorUrl = `https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app/site_config/adminSchedule/entries/${adminKey}.json`;
-                                const mirrorPayload = Object.assign({}, {
-                                    id: scheduleData.events[idx].id,
-                                    customer: scheduleData.events[idx].extendedProps.customer,
-                                    email: scheduleData.events[idx].extendedProps.email,
-                                    phone: scheduleData.events[idx].extendedProps.phone,
-                                    services: scheduleData.events[idx].extendedProps.services,
-                                    price: scheduleData.events[idx].extendedProps.price,
-                                    duration: scheduleData.events[idx].extendedProps.duration,
-                                    notes: scheduleData.events[idx].extendedProps.notes || '' ,
-                                    startDate: scheduleData.events[idx].start ? scheduleData.events[idx].start.split('T')[0] : null,
-                                    endDate: scheduleData.events[idx].end ? scheduleData.events[idx].end.split('T')[0] : null,
-                                    startTime: scheduleData.events[idx].start ? new Date(scheduleData.events[idx].start).getHours() : null,
-                                    endTime: scheduleData.events[idx].end ? new Date(scheduleData.events[idx].end).getHours() : null
-                                });
-                                const mirrorRes = await fetch(mirrorUrl, {
-                                    method: 'PUT',
-                                    headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify(mirrorPayload)
-                                });
-                                console.log('editEvent: mirrored update status', mirrorRes.status);
-                            }
-                        } catch (mirrorErr) { console.warn('⚠ failed to mirror edit to site_config', mirrorErr); }
-
-                        // Persist updated customer info to customer base (if this is a booking)
-                        try {
-                            const updated = scheduleData.events[idx];
-                            if ((updated && updated.extendedProps && (updated.extendedProps.isBooking || updated.extendedProps.tab === 'customer'))) {
-                                const uFirst = updated.extendedProps.customerFirstName || (updated.extendedProps.customer ? String(updated.extendedProps.customer).split(/\s+/)[0] : '');
-                                const uLast = updated.extendedProps.customerSurname || (updated.extendedProps.customer ? String(updated.extendedProps.customer).split(/\s+/).slice(1).join(' ') : '');
-                                await persistCustomerToBase({ firstName: uFirst, surname: uLast, email: updated.extendedProps.email, phone: updated.extendedProps.phone });
-                            }
-                        } catch (e) { console.warn('⚠ persistCustomerToBase failed during edit', e); }
-                    }
-                } catch (e) {
-                    console.warn('⚠ failed to update booking extendedProps', e);
-                }
             }
 
             closeEditEventModal();
