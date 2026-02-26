@@ -416,6 +416,17 @@
         #scheduleCalendar.view-daygrid .fc .fc-daygrid-day {
             background: var(--ios-bg-secondary);
             transition: background 0.15s ease;
+            height: 120px !important;
+            min-height: 120px !important;
+            max-height: 120px !important;
+            overflow: hidden !important;
+        }
+
+        #scheduleCalendar.view-daygrid .fc .fc-daygrid-day-cell {
+            height: 120px !important;
+            min-height: 120px !important;
+            max-height: 120px !important;
+            vertical-align: top !important;
         }
 
         #scheduleCalendar.view-daygrid .fc .fc-daygrid-day:hover {
@@ -467,6 +478,8 @@
             flex-direction: column !important;
             gap: 2px !important;
             padding-top: 4px !important;
+            height: calc(100% - 40px) !important;
+            overflow: hidden !important;
         }
 
         /* iOS-Style Events */
