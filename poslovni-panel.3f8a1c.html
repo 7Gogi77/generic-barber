@@ -3683,21 +3683,16 @@
                         loadingOverlay.style.opacity = '1';
                     }
 
-                    // Simple deletion: remove from data and save
                     const eventId = currentEditingEvent.id;
                     
-                    try {
+                    // Use the existing Firebase deletion function
+                    deleteScheduleEvent(eventId).then(() => {
+                        console.log('✅ Event deleted from Firebase');
+                        
                         // Remove from calendar display
                         const calEvent = window.calendar.getEventById(eventId);
                         if (calEvent) calEvent.remove();
                         
-                        // Remove from data array
-                        scheduleData.events = scheduleData.events.filter(e => e.id !== eventId);
-                        
-                        // Save to localStorage
-                        localStorage.setItem('schedule', JSON.stringify(scheduleData));
-                        console.log('✅ Event deleted and saved to localStorage');
-
                         // Ensure minimum display time of 400ms so animation is visible
                         const elapsed = Date.now() - startTime;
                         const remainingTime = Math.max(0, 400 - elapsed);
@@ -3710,14 +3705,22 @@
                             }
                             closeEditEventModal();
                         }, remainingTime);
-                    } catch (err) {
+                    }).catch(err => {
                         console.error('Failed to delete:', err);
                         if (loadingOverlay) {
                             loadingOverlay.style.display = 'none';
                             loadingOverlay.style.opacity = '0';
                         }
                         alert('Napaka pri brisanju');
-                    }
+                    });
+                    }).catch(err => {
+                        console.error('Failed to delete:', err);
+                        if (loadingOverlay) {
+                            loadingOverlay.style.display = 'none';
+                            loadingOverlay.style.opacity = '0';
+                        }
+                        alert('Napaka pri brisanju');
+                    });
                 }
             }
         }
