@@ -1129,14 +1129,14 @@ const CalendarEngine = {
                     daygridBody.style.overflowY = 'auto';
                     daygridBody.style.webkitOverflowScrolling = 'touch';
                     rows.forEach((row) => {
-                      row.style.height = '120px';
-                      row.style.minHeight = '120px';
-                      row.style.maxHeight = '120px';
+                      row.style.height = '140px';
+                      row.style.minHeight = '140px';
+                      row.style.maxHeight = '140px';
                       row.style.overflow = 'hidden';
                       row.querySelectorAll('.fc-daygrid-day-cell').forEach(cell => {
-                        cell.style.height = '120px';
-                        cell.style.minHeight = '120px';
-                        cell.style.maxHeight = '120px';
+                        cell.style.height = '140px';
+                        cell.style.minHeight = '140px';
+                        cell.style.maxHeight = '140px';
                         cell.style.overflow = 'hidden';
 
                         // Keep events container within cell bounds
@@ -1156,7 +1156,7 @@ const CalendarEngine = {
                         if (moreEl) { moreEl.style.marginBottom = ''; moreEl.style.paddingBottom = ''; }
                       });
                     });
-                    console.log(`✅ Month view mount: fixed 120px cell heights (${rows.length} rows)`);
+                    console.log(`✅ Month view mount: fixed 140px cell heights (${rows.length} rows)`);
                   } else {
                     // Other views: clear forced sizing to allow natural heights
                     daygridBody.style.overflowY = 'auto';

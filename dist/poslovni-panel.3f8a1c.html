@@ -414,32 +414,35 @@
         }
 
         /* Fix month view cell heights - prevent expanding based on content */
+        #scheduleCalendar.view-daygrid .fc {
+            height: 100% !important;
+        }
+
         #scheduleCalendar.view-daygrid .fc .fc-daygrid-body {
-            height: auto !important;
+            height: 100% !important;
+            overflow-y: hidden !important;
         }
 
         #scheduleCalendar.view-daygrid .fc .fc-daygrid-row {
-            height: 120px !important;
-            min-height: 120px !important;
-            max-height: 120px !important;
+            height: 140px !important;
+            min-height: 140px !important;
+            max-height: 140px !important;
+            flex: 0 0 140px !important;
+        }
+
+        #scheduleCalendar.view-daygrid .fc .fc-daygrid-day,
+        #scheduleCalendar.view-daygrid .fc .fc-daygrid-day-cell {
+            background: var(--ios-bg-secondary);
+            transition: background 0.15s ease;
+            height: 140px !important;
+            min-height: 140px !important;
+            max-height: 140px !important;
+            overflow: hidden !important;
+            flex: 1 !important;
         }
 
         #scheduleCalendar.view-daygrid .fc .fc-daygrid-day {
-            background: var(--ios-bg-secondary);
-            transition: background 0.15s ease;
-            height: 120px !important;
-            min-height: 120px !important;
-            max-height: 120px !important;
-            overflow: hidden !important;
-            flex: 0 0 auto !important;
-        }
-
-        #scheduleCalendar.view-daygrid .fc .fc-daygrid-day-cell {
-            height: 120px !important;
-            min-height: 120px !important;
-            max-height: 120px !important;
-            vertical-align: top !important;
-            overflow: visible !important;
+            flex: 1 1 auto !important;
         }
 
         #scheduleCalendar.view-daygrid .fc .fc-daygrid-day:hover {
@@ -1282,9 +1285,12 @@
                 font-size: 18px !important;
             }
 
-            /* Day cells */
+            /* Day cells - FIXED HEIGHT FOR MONTH VIEW */
             .fc .fc-daygrid-day-frame {
-                min-height: auto;
+                min-height: 80px !important;
+                max-height: 80px !important;
+                height: 80px !important;
+                overflow: hidden !important;
             }
 
             .fc-col-header-cell {
