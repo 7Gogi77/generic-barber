@@ -626,7 +626,7 @@ const CalendarEngine = {
         views: {
           dayGridMonth: { type: 'dayGridMonth' },
           // Force full 24-hour rendering for timeGrid week/day views
-          timeGridWeek: { type: 'timeGrid', slotMinTime: '00:00:00', slotMaxTime: '24:00:00' },
+          timeGridWeek: { type: 'timeGrid', slotMinTime: '00:00:00', slotMaxTime: '24:00:00', slotDuration: '00:30:00' },
           timeGridDay: { type: 'timeGrid', slotMinTime: '00:00:00', slotMaxTime: '24:00:00' }
         },
         // Initial vertical scroll position in timeGrid views
