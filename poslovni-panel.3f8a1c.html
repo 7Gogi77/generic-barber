@@ -4975,8 +4975,11 @@
         }
 
         // Silence console output for production/admin usage (no prints to console)
+        // Set localStorage.enable_console = '1' to allow logs during debugging.
         (function silenceConsole(){
             try {
+                const allowConsole = localStorage.getItem('enable_console') === '1';
+                if (allowConsole) return;
                 const noOp = function(){};
                 if (typeof console !== 'undefined') {
                     console.log = noOp;
