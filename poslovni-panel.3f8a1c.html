@@ -3565,6 +3565,10 @@
 
         // Modal functions
         function openAddEventModal(startDate = null, endDate = null) {
+            const form = document.getElementById('addEventForm');
+            if (form) form.reset();
+            setEventTab('worker');
+
             const modal = document.getElementById('addEventModal');
             if (startDate) {
                 document.getElementById('eventStartDate').value = startDate;
