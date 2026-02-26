@@ -619,21 +619,10 @@
             min-height: 0 !important;
         }
 
-        /* MONTH VIEW: Prevent scrollgrid from expanding */
+        /* MONTH VIEW: Keep scrollgrid filling container, but rows stay fixed at 140px */
         #scheduleCalendar.view-daygrid .fc-scrollgrid {
-            flex: 0 0 auto !important;
-            height: auto !important;
-            max-height: 100% !important;
-        }
-
-        #scheduleCalendar.view-daygrid .fc-scroller-harness {
-            height: auto !important;
-            max-height: 100% !important;
-        }
-
-        #scheduleCalendar.view-daygrid .fc-scroller {
-            max-height: 100% !important;
-            height: auto !important;
+            flex: 1 !important;
+            min-height: 0 !important;
         }
 
         /* Ensure daygrid scroller clips properly */
