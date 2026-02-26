@@ -3390,6 +3390,9 @@
             }
         }
 
+        window.deleteScheduleEvent = deleteScheduleEvent;
+        console.log('BUILD 2026-02-26-1: deleteScheduleEvent attached', typeof window.deleteScheduleEvent);
+
         // Mark an adminSchedule key as deleted to prevent re-merge
         async function markAdminEntryDeleted(key) {
             if (!key) return false;
