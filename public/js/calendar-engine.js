@@ -827,19 +827,37 @@ const CalendarEngine = {
         },
         
         eventContent: (arg) => {
-          // Custom rendering for booking events - show customer name and time range
+          // Calculate event duration in minutes
+          const durationMinutes = arg.event.start && arg.event.end ? 
+            Math.round((new Date(arg.event.end) - new Date(arg.event.start)) / (1000 * 60)) : 0;
+          
+          const startTime = arg.event.start ? new Date(arg.event.start).toLocaleTimeString('sl-SI', {hour: '2-digit', minute: '2-digit'}) : '';
+          const endTime = arg.event.end ? new Date(arg.event.end).toLocaleTimeString('sl-SI', {hour: '2-digit', minute: '2-digit'}) : '';
+          const timeText = startTime ? (endTime ? `${startTime} - ${endTime}` : startTime) : '';
+          
+          // Determine emoji based on event type
+          let emoji = '📌';
+          const type = arg.event.extendedProps?.type || arg.event.type;
+          const isBooking = arg.event.extendedProps?.isBooking || arg.event.id?.startsWith('apt_') || arg.event.extendedProps?.tab === 'customer';
+          if (isBooking) emoji = '👤'; // Customer booking
+          else if (type === 'worker' || arg.event.extendedProps?.worker) emoji = '👨‍💼'; // Worker event
+          
+          // If duration is less than 45 minutes, show only time + emoji to prevent text overflow
+          if (durationMinutes < 45 && durationMinutes > 0) {
+            return {
+              html: `<div style="display: flex; align-items: center; justify-content: space-between; width: 100%; height: 100%; padding: 1px 3px; font-size: 11px; font-weight: 600;" title="${arg.event.title}"><span>${startTime}</span><span>${emoji}</span></div>`
+            };
+          }
+          
+          // For longer appointments (>= 45 min), show full content
           if (arg.event.extendedProps?.isBooking || arg.event.id?.startsWith('apt_')) {
             try {
               const customerName = arg.event.extendedProps?.customer || arg.event.extendedProps?.worker || arg.event.title || 'Rezervacija';
-              const startTime = arg.event.start ? new Date(arg.event.start).toLocaleTimeString('sl-SI', {hour: '2-digit', minute: '2-digit'}) : '';
-              const endTime = arg.event.end ? new Date(arg.event.end).toLocaleTimeString('sl-SI', {hour: '2-digit', minute: '2-digit'}) : '';
-              const timeText = startTime ? (endTime ? `${startTime} - ${endTime}` : startTime) : '';
               return {
                 html: `<div style="padding: 2px; font-size: 12px; font-weight: bold;">${customerName}</div><div style="padding: 2px; font-size: 10px;">${timeText}</div>`
               };
             } catch (err) { /* fallback to default booking rendering */ }
           }
-
 
           // Custom rendering for multi-day events
           if (arg.event.extendedProps?.isMultiDay && arg.event.allDay) {
@@ -850,9 +868,6 @@ const CalendarEngine = {
           
           // Default rendering for schedule events - show title with time range when available
           if (arg.event.title) {
-            const startTime = arg.event.start ? new Date(arg.event.start).toLocaleTimeString('sl-SI', {hour: '2-digit', minute: '2-digit'}) : '';
-            const endTime = arg.event.end ? new Date(arg.event.end).toLocaleTimeString('sl-SI', {hour: '2-digit', minute: '2-digit'}) : '';
-            const timeText = startTime ? (endTime ? `${startTime} - ${endTime}` : startTime) : '';
             const title = arg.event.title.length > 20 ? arg.event.title.substring(0, 20) + '...' : arg.event.title;
             return {
               html: `<div style="padding: 1px 2px; font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><div style=\"font-weight:600; font-size:12px;\">${timeText}</div><div>${title}</div></div>`
