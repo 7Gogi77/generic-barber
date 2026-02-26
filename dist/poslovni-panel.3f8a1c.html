@@ -418,20 +418,19 @@
             height: 100% !important;
         }
 
-        #scheduleCalendar.view-daygrid .fc .fc-daygrid-body {
+        .fc-daygrid-body {
             height: 100% !important;
             overflow-y: hidden !important;
         }
 
-        #scheduleCalendar.view-daygrid .fc .fc-daygrid-row {
+        .fc-daygrid-row {
             height: 140px !important;
             min-height: 140px !important;
             max-height: 140px !important;
             flex: 0 0 140px !important;
         }
 
-        #scheduleCalendar.view-daygrid .fc .fc-daygrid-day,
-        #scheduleCalendar.view-daygrid .fc .fc-daygrid-day-cell {
+        .fc-daygrid-day-cell {
             background: var(--ios-bg-secondary);
             transition: background 0.15s ease;
             height: 140px !important;
@@ -441,7 +440,13 @@
             flex: 1 !important;
         }
 
-        #scheduleCalendar.view-daygrid .fc .fc-daygrid-day {
+        .fc-daygrid-day {
+            background: var(--ios-bg-secondary);
+            transition: background 0.15s ease;
+            height: 140px !important;
+            min-height: 140px !important;
+            max-height: 140px !important;
+            overflow: hidden !important;
             flex: 1 1 auto !important;
         }
 
