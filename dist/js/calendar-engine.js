@@ -673,9 +673,27 @@ const CalendarEngine = {
         select: (selectInfo) => {
           console.log('📅 Date selected:', selectInfo.startStr, '→', selectInfo.endStr);
           
-          // TEMPORARY: Return early to allow inspecting highlighted cells without modal
-          console.log('🔍 DEBUG MODE: Skipping modal. Remove this return when done.');
-          return;
+          // Parse start and end dates (handle both with and without time)
+          let startDate = selectInfo.startStr.split('T')[0]; // "2026-02-16"
+          let endDate = selectInfo.endStr ? selectInfo.endStr.split('T')[0] : startDate; // "2026-02-21"
+          
+          // FullCalendar's end is exclusive, so subtract 1 day
+          const ed = new Date(endDate);
+          ed.setDate(ed.getDate() - 1);
+          endDate = ed.toISOString().split('T')[0]; // "2026-02-20"
+          
+          console.log('🎯 Highlighting range:', startDate, 'to', endDate);
+          
+          // Get all day cells and highlight those within range
+          document.querySelectorAll('[data-date]').forEach(cell => {
+            const cellDate = cell.getAttribute('data-date'); // "2026-02-17"
+            if (cellDate >= startDate && cellDate <= endDate) {
+              cell.style.backgroundColor = 'rgba(0, 122, 255, 0.2)'; // Blue highlight
+              console.log('  ✓ Highlighted', cellDate);
+            } else {
+              cell.style.backgroundColor = ''; // Clear previous highlight
+            }
+          });
           
           console.log('📋 Checking for eventModal...');
           const hasAdminModal = document.getElementById('eventModal');

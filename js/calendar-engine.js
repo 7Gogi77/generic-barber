@@ -673,18 +673,25 @@ const CalendarEngine = {
         select: (selectInfo) => {
           console.log('📅 Date selected:', selectInfo.startStr, '→', selectInfo.endStr);
           
-          // Highlight all cells in the selection range
-          const start = new Date(selectInfo.startStr);
-          const end = new Date(selectInfo.endStr);
-          if (selectInfo.endStr) {
-            end.setDate(end.getDate() - 1); // FullCalendar's end is exclusive
-          }
+          // Parse start and end dates (handle both with and without time)
+          let startDate = selectInfo.startStr.split('T')[0]; // "2026-02-16"
+          let endDate = selectInfo.endStr ? selectInfo.endStr.split('T')[0] : startDate; // "2026-02-21"
+          
+          // FullCalendar's end is exclusive, so subtract 1 day
+          const ed = new Date(endDate);
+          ed.setDate(ed.getDate() - 1);
+          endDate = ed.toISOString().split('T')[0]; // "2026-02-20"
+          
+          console.log('🎯 Highlighting range:', startDate, 'to', endDate);
           
           // Get all day cells and highlight those within range
           document.querySelectorAll('[data-date]').forEach(cell => {
-            const cellDate = new Date(cell.getAttribute('data-date'));
-            if (cellDate >= start && cellDate <= end) {
+            const cellDate = cell.getAttribute('data-date'); // "2026-02-17"
+            if (cellDate >= startDate && cellDate <= endDate) {
               cell.style.backgroundColor = 'rgba(0, 122, 255, 0.2)'; // Blue highlight
+              console.log('  ✓ Highlighted', cellDate);
+            } else {
+              cell.style.backgroundColor = ''; // Clear previous highlight
             }
           });
           
