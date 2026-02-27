@@ -659,7 +659,10 @@
         function initMinDate() {
             const today = new Date();
             const dateStr = today.toISOString().split('T')[0];
-            document.getElementById('newDate').min = dateStr;
+            const dateInput = document.getElementById('newDate');
+            if (dateInput) {
+                dateInput.min = dateStr;
+            }
         }
 
         // Format Phone Number for Comparison
