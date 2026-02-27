@@ -727,7 +727,7 @@
                     <span class="detail-value">${timeStr}</span>
                 </div>
                 <div class="detail-row">
-                    <span class="detail-label"><i class="bi bi-scissors"></i> Storitve:</span>
+                    <span class="detail-label"><i class="bi bi-briefcase"></i> Storitve:</span>
                     <span class="detail-value">${services || '-'}</span>
                 </div>
                 <div class="detail-row">
@@ -772,6 +772,7 @@
         let selectedDate = null;
         let selectedTime = null;
         let calendarAppointments = [];
+        let allAppointments = [];
 
         // Initialize Calendar
         async function initializeCalendar(date) {
@@ -780,10 +781,86 @@
             try {
                 const scheduleData = await StorageManager.load('schedule') || { events: [] };
                 calendarAppointments = Array.isArray(scheduleData.events) ? scheduleData.events : [];
+                // Also keep reference for conflict checking
+                allAppointments = calendarAppointments;
             } catch (e) {
                 calendarAppointments = [];
+                allAppointments = [];
             }
             renderCalendar();
+        }
+
+        // Check if a day is closed
+        function isDateClosed(date) {
+            const dayOfWeek = date.getDay();
+            const workingDays = window.SITE_CONFIG?.booking?.workingDays || {};
+            const daysClosed = window.SITE_CONFIG?.booking?.daysClosed || [0]; // Sunday closed by default
+            
+            // If workingDays is defined, use it
+            if (Object.keys(workingDays).length > 0) {
+                return !workingDays[dayOfWeek];
+            }
+            
+            // Fallback to daysClosed array
+            return daysClosed.includes(dayOfWeek);
+        }
+
+        // Get business hours for a specific day
+        function getBusinessHoursForDay(dayOfWeek) {
+            const defaultHours = window.SITE_CONFIG?.booking?.businessHours || { start: 9, end: 19 };
+            const hoursPerDay = window.SITE_CONFIG?.booking?.hours || {};
+            
+            if (hoursPerDay[dayOfWeek]) {
+                return {
+                    start: hoursPerDay[dayOfWeek].start ?? defaultHours.start,
+                    end: hoursPerDay[dayOfWeek].end ?? defaultHours.end
+                };
+            }
+            
+            return defaultHours;
+        }
+
+        // Check for time slot conflicts with existing appointments
+        function hasConflict(slotStart, slotEnd, excludeAppointmentId = null) {
+            for (const event of allAppointments) {
+                // Skip if this is the appointment we're editing
+                if (excludeAppointmentId && event.id === excludeAppointmentId) {
+                    continue;
+                }
+
+                try {
+                    let eventStart, eventEnd;
+                    
+                    if (event.start instanceof Date) {
+                        eventStart = event.start;
+                    } else if (typeof event.start === 'string') {
+                        eventStart = new Date(event.start);
+                    } else {
+                        continue;
+                    }
+                    
+                    if (event.end instanceof Date) {
+                        eventEnd = event.end;
+                    } else if (typeof event.end === 'string') {
+                        eventEnd = new Date(event.end);
+                    } else {
+                        eventEnd = new Date(eventStart);
+                        eventEnd.setHours(eventEnd.getHours() + 1);
+                    }
+                    
+                    if (isNaN(eventStart.getTime()) || isNaN(eventEnd.getTime())) {
+                        continue;
+                    }
+                    
+                    // Check for overlap
+                    if (slotStart < eventEnd && slotEnd > eventStart) {
+                        return true;
+                    }
+                } catch (err) {
+                    console.warn('Error checking conflict:', err);
+                }
+            }
+            return false;
         }
 
         // Render Calendar
@@ -831,7 +908,9 @@
             for (let i = 1; i <= daysInMonth; i++) {
                 const btn = document.createElement('button');
                 const date = new Date(year, month, i);
-                const isDisabled = date < today;
+                const isPast = date < today;
+                const isClosed = isDateClosed(date);
+                const isDisabled = isPast || isClosed;
                 const isSelected = selectedDate && 
                     selectedDate.getFullYear() === year && 
                     selectedDate.getMonth() === month && 
@@ -856,7 +935,9 @@
                 }
 
                 btn.textContent = i;
-                btn.onclick = () => selectDate(date);
+                if (!isDisabled) {
+                    btn.onclick = () => selectDate(date);
+                }
                 daysEl.appendChild(btn);
             }
 
@@ -893,41 +974,91 @@
             const slotContainer = document.getElementById('timeSlots');
             slotContainer.innerHTML = '';
 
-            // Get all available times (example: 09:00 - 18:00 in 30-min intervals)
-            const times = generateTimeSlots('09:00', '18:00', 30);
+            if (!date) {
+                slotContainer.innerHTML = '<div class="no-slots-message">Izberite datum</div>';
+                return;
+            }
+
+            const dayOfWeek = date.getDay();
+            const businessHours = getBusinessHoursForDay(dayOfWeek);
+            const slotDuration = window.SITE_CONFIG?.booking?.slotDuration || 30;
             
-            times.forEach(time => {
+            // Get service duration from current appointment if available
+            const serviceDuration = currentAppointment ? 
+                (new Date(currentAppointment.end) - new Date(currentAppointment.start)) / 60000 : 60;
+            
+            const availableSlots = generateAvailableTimeSlots(date, businessHours, slotDuration, serviceDuration);
+            
+            if (availableSlots.length === 0) {
+                slotContainer.innerHTML = '<div class="no-slots-message">Ni prostih terminov za ta dan</div>';
+                return;
+            }
+            
+            availableSlots.forEach(slot => {
                 const btn = document.createElement('button');
                 btn.className = 'time-slot';
-                if (selectedTime === time) {
+                if (selectedTime === slot.timeStr) {
                     btn.classList.add('selected');
                 }
-                btn.textContent = time;
+                btn.textContent = slot.timeStr;
                 btn.onclick = () => {
-                    selectedTime = time;
+                    selectedTime = slot.timeStr;
                     initializeTimeSlots(date);
                 };
                 slotContainer.appendChild(btn);
             });
         }
 
-        function generateTimeSlots(start, end, intervalMins) {
+        // Generate available time slots with conflict checking
+        function generateAvailableTimeSlots(date, businessHours, slotDuration, serviceDuration) {
             const slots = [];
-            const [startH, startM] = start.split(':').map(Number);
-            const [endH, endM] = end.split(':').map(Number);
-
-            let current = startH * 60 + startM;
-            const endTime = endH * 60 + endM;
-
-            while (current <= endTime) {
-                const h = Math.floor(current / 60);
-                const m = current % 60;
-                slots.push(`${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`);
-                current += intervalMins;
+            const closingTimeMinutes = businessHours.end * 60;
+            const latestStartMinutes = closingTimeMinutes - serviceDuration;
+            
+            if (latestStartMinutes < businessHours.start * 60) {
+                return [];
             }
-
+            
+            const latestStartHour = Math.floor(latestStartMinutes / 60);
+            const latestStartMin = latestStartMinutes % 60;
+            
+            for (let hour = businessHours.start; hour <= latestStartHour; hour++) {
+                const maxMin = (hour === latestStartHour) ? latestStartMin : 59;
+                for (let min = 0; min <= maxMin; min += slotDuration) {
+                    const slotStartMinutes = hour * 60 + min;
+                    if (slotStartMinutes > latestStartMinutes) {
+                        continue;
+                    }
+                    
+                    const slotStart = new Date(date);
+                    slotStart.setHours(hour, min, 0, 0);
+                    
+                    const slotEnd = new Date(slotStart);
+                    slotEnd.setMinutes(slotEnd.getMinutes() + serviceDuration);
+                    
+                    const endHour = slotEnd.getHours();
+                    const endMin = slotEnd.getMinutes();
+                    
+                    if (endHour > businessHours.end || (endHour === businessHours.end && endMin > 0)) {
+                        continue;
+                    }
+                    
+                    // Check for conflicts with other appointments (exclude current appointment being edited)
+                    const excludeId = currentAppointment ? currentAppointment.id : null;
+                    if (!hasConflict(slotStart, slotEnd, excludeId)) {
+                        slots.push({
+                            start: slotStart,
+                            end: slotEnd,
+                            timeStr: `${String(hour).padStart(2, '0')}:${String(min).padStart(2, '0')}`
+                        });
+                    }
+                }
+            }
+            
             return slots;
         }
+
+
 
         // Confirm Reschedule
         async function confirmReschedule() {
@@ -1097,13 +1228,17 @@
         }
 
         // Initialize
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
             initMinDate();
 
             const idFromUrl = getQueryParam('id');
             if (idFromUrl) {
+                // Auto-open appointment from SMS link
                 document.getElementById('appointmentId').value = idFromUrl;
-                searchAppointment();
+                // Wait a moment for scripts to load
+                setTimeout(() => {
+                    searchAppointment();
+                }, 100);
             }
             
             // Allow Enter key to search
