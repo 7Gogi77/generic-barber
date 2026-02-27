@@ -336,6 +336,22 @@
             color: var(--ios-text-quaternary);
         }
 
+        .calendar-day.has-availability {
+            position: relative;
+        }
+
+        .calendar-day.has-availability::after {
+            content: '';
+            position: absolute;
+            bottom: 3px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: var(--ios-green);
+        }
+
         /* Time Slots */
         .time-slots-title {
             font-size: 15px;
@@ -463,7 +479,7 @@
     <div class="container">
         <div class="header">
             <h1>Upravljanje termina</h1>
-            <p>Spremenite ali odpovedite svoj termin</p>
+            <p>Spremenite ali odpovedite svoj termin storitve</p>
         </div>
 
         <div class="content">
@@ -627,20 +643,24 @@
                 // Format search phone
                 const searchPhone = phone ? formatPhoneForSearch(phone) : '';
 
-                const findMatch = (eventList) => {
+                // Find ALL matches and return the most recent one
+                const findMatches = (eventList) => {
+                    const matches = [];
                     for (const event of eventList) {
                         const isSameId = appointmentId && event.id === appointmentId;
                         const isSameEmail = email && event.extendedProps.email?.toLowerCase() === email;
                         const isSamePhone = phone && formatPhoneForSearch(event.extendedProps.phone) === searchPhone;
 
                         if (isSameId || isSameEmail || isSamePhone) {
-                            return event;
+                            matches.push(event);
                         }
                     }
-                    return null;
+                    if (matches.length === 0) return null;
+                    // Sort by date descending and return the most recent
+                    return matches.sort((a, b) => new Date(b.start) - new Date(a.start))[0];
                 };
 
-                let found = findMatch(events);
+                let found = findMatches(events);
 
                 // Fallback to localStorage if Firebase data is stale or missing
                 if (!found) {
@@ -649,7 +669,7 @@
                         if (localItem) {
                             const localData = JSON.parse(localItem);
                             const localEvents = Array.isArray(localData.events) ? localData.events : [];
-                            found = findMatch(localEvents);
+                            found = findMatches(localEvents);
                             if (found) {
                                 console.log('✓ Found appointment in localStorage backup');
                             }
@@ -665,7 +685,7 @@
                 }
 
                 currentAppointment = found;
-                displayAppointmentDetails(found);
+                await displayAppointmentDetails(found);
                 
                 showSection('detailsSection');
                 hideAlert();
@@ -677,7 +697,7 @@
         }
 
         // Display Appointment Details
-        function displayAppointmentDetails(event) {
+        async function displayAppointmentDetails(event) {
             const startDate = new Date(event.start);
             const endDate = new Date(event.end);
             
@@ -732,17 +752,17 @@
 
             // Set default calendar to current appointment date
             const currentDate = new Date(event.start);
-            initializeCalendar(currentDate);
+            await initializeCalendar(currentDate);
             initializeTimeSlots(currentDate);
         }
 
         // Toggle Reschedule Section
-        function toggleReschedule() {
+        async function toggleReschedule() {
             const box = document.getElementById('rescheduleBox');
             box.classList.toggle('active');
             if (box.classList.contains('active')) {
                 const now = new Date(currentAppointment.start);
-                initializeCalendar(now);
+                await initializeCalendar(now);
                 initializeTimeSlots(now);
             }
         }
@@ -751,10 +771,18 @@
         let currentCalendarDate = new Date();
         let selectedDate = null;
         let selectedTime = null;
+        let calendarAppointments = [];
 
         // Initialize Calendar
-        function initializeCalendar(date) {
+        async function initializeCalendar(date) {
             currentCalendarDate = new Date(date);
+            // Load appointments for availability check
+            try {
+                const scheduleData = await StorageManager.load('schedule') || { events: [] };
+                calendarAppointments = Array.isArray(scheduleData.events) ? scheduleData.events : [];
+            } catch (e) {
+                calendarAppointments = [];
+            }
             renderCalendar();
         }
 
@@ -798,6 +826,8 @@
 
             // Current month days
             const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
             for (let i = 1; i <= daysInMonth; i++) {
                 const btn = document.createElement('button');
                 const date = new Date(year, month, i);
@@ -807,12 +837,22 @@
                     selectedDate.getMonth() === month && 
                     selectedDate.getDate() === i;
 
+                // Check if this date has appointments
+                const hasAppointments = calendarAppointments.some(event => {
+                    const eventDate = new Date(event.start);
+                    return eventDate.getFullYear() === year && 
+                           eventDate.getMonth() === month && 
+                           eventDate.getDate() === i;
+                });
+
                 btn.className = 'calendar-day';
                 if (isDisabled) {
                     btn.className += ' disabled';
                     btn.disabled = true;
                 } else if (isSelected) {
                     btn.className += ' selected';
+                } else if (hasAppointments) {
+                    btn.className += ' has-availability';
                 }
 
                 btn.textContent = i;
@@ -921,21 +961,33 @@
                     await StorageManager.save('schedule', scheduleData);
                 }
 
-                // Send SMS notification
+                // Send SMS notification to customer
                 if (currentAppointment.extendedProps.phone) {
                     try {
                         const dateStr = selectedDate.toLocaleDateString('sl-SI');
-                        const message = `Termin pri ${window.SITE_CONFIG?.businessName || 'frizerštvom'} je bil spremenjen na: ${dateStr} ob ${selectedTime}. Hvala!`;
+                        const message = `Termin pri ${window.SITE_CONFIG?.businessName || 'naši storitvi'} je bil spremenjen na: ${dateStr} ob ${selectedTime}. Hvala!`;
                         await window.SMSHandler.sendSMS(
                             currentAppointment.extendedProps.phone,
                             message
                         );
                     } catch (smsError) {
-                        console.warn('SMS failed:', smsError);
+                        console.warn('SMS to customer failed:', smsError);
                     }
                 }
 
-                showAlert('✓ Termin je bil uspešno spremenjen! SMS obvestilo je bilo poslano.', 'success');
+                // Notify owner about the change
+                try {
+                    const dateStr = selectedDate.toLocaleDateString('sl-SI');
+                    const ownerMessage = `Termin je bil spremenjen. Stranka: ${currentAppointment.extendedProps.customer}, Nov termin: ${dateStr} ob ${selectedTime}`;
+                    const ownerPhone = window.SITE_CONFIG?.ownerPhone;
+                    if (ownerPhone) {
+                        await window.SMSHandler.sendSMS(ownerPhone, ownerMessage);
+                    }
+                } catch (ownerError) {
+                    console.warn('Failed to notify owner:', ownerError);
+                }
+
+                showAlert('✓ Termin je bil uspešno spremenjen!', 'success');
                 
                 setTimeout(() => {
                     clearSearch();
@@ -963,25 +1015,49 @@
             try {
                 showAlert('Odpoved termina...', 'info');
 
-                // Remove from storage
+                const appointmentId = currentAppointment.id;
+                const customerData = {
+                    customer: currentAppointment.extendedProps.customer,
+                    email: currentAppointment.extendedProps.email,
+                    phone: currentAppointment.extendedProps.phone
+                };
+
+                // Remove from Firebase storage
                 const scheduleData = await StorageManager.load('schedule') || { events: [] };
-                scheduleData.events = scheduleData.events.filter(e => e.id !== currentAppointment.id);
+                scheduleData.events = scheduleData.events.filter(e => e.id !== appointmentId);
                 await StorageManager.save('schedule', scheduleData);
 
-                // Send SMS notification
-                if (currentAppointment.extendedProps.phone) {
+                // Also update localStorage as backup
+                try {
+                    localStorage.removeItem('schedule');
+                    localStorage.setItem('schedule', JSON.stringify(scheduleData));
+                } catch (e) {}
+
+                // Send SMS notification to customer
+                if (customerData.phone) {
                     try {
-                        const message = `Vaš termin pri ${window.SITE_CONFIG?.businessName || 'frizerštvom'} je bil odpovedan. Če ste to naredili po pomoti, nas kontaktirajte.`;
+                        const message = `Vaš termin pri ${window.SITE_CONFIG?.businessName || 'naši storitvi'} je bil odpovedan. Če ste to naredili po pomoti, nas kontaktirajte.`;
                         await window.SMSHandler.sendSMS(
-                            currentAppointment.extendedProps.phone,
+                            customerData.phone,
                             message
                         );
                     } catch (smsError) {
-                        console.warn('SMS failed:', smsError);
+                        console.warn('SMS to customer failed:', smsError);
                     }
                 }
 
-                showAlert('✓ Termin je bil odpovedan. SMS obvestilo je bilo poslano.', 'success');
+                // Notify owner about cancellation
+                try {
+                    const ownerMessage = `Termin je bil odpovedan. Stranka: ${customerData.customer}, Email: ${customerData.email}, Telefon: ${customerData.phone}`;
+                    const ownerPhone = window.SITE_CONFIG?.ownerPhone;
+                    if (ownerPhone) {
+                        await window.SMSHandler.sendSMS(ownerPhone, ownerMessage);
+                    }
+                } catch (ownerError) {
+                    console.warn('Failed to notify owner:', ownerError);
+                }
+
+                showAlert('✓ Termin je bil odpovedan. Obvestilo je bilo poslano.', 'success');
                 
                 setTimeout(() => {
                     clearSearch();

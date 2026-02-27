@@ -9,6 +9,10 @@
 const SITE_CONFIG = {
     // General Brand Settings
     shopName: "Blade & Bourbon", // Your shop title (appears in Logo and Footer)
+    businessName: "Blade & Bourbon", // Generic name for appointment system (works for any business type)
+    
+    // Appointment Notification Settings
+    ownerPhone: "", // Owner's phone number for SMS notifications when appointments change/cancel (format: +386XXXXXXXX)
     
     // Logo Settings
     logo: {
