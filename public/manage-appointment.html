@@ -4,7 +4,35 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Upravljanje termina</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <style>
+        :root {
+            /* iOS Colors */
+            --ios-blue: #007AFF;
+            --ios-green: #34C759;
+            --ios-red: #FF3B30;
+            --ios-orange: #FF9500;
+            
+            /* Backgrounds */
+            --ios-bg-primary: #F2F2F7;
+            --ios-bg-secondary: #FFFFFF;
+            --ios-bg-tertiary: #E5E5EA;
+            
+            /* Text */
+            --ios-text-primary: #000000;
+            --ios-text-secondary: #8E8E93;
+            --ios-text-tertiary: #C7C7CC;
+            
+            /* Shadows */
+            --ios-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+            --ios-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+            
+            /* Border Radius */
+            --ios-radius-sm: 8px;
+            --ios-radius-md: 12px;
+            --ios-radius-lg: 16px;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -12,40 +40,46 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif;
+            background: var(--ios-bg-primary);
             min-height: 100vh;
-            padding: 20px;
+            padding: 16px;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
 
         .container {
-            max-width: 800px;
+            max-width: 500px;
             margin: 0 auto;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            background: var(--ios-bg-secondary);
+            border-radius: var(--ios-radius-lg);
+            box-shadow: var(--ios-shadow-md);
             overflow: hidden;
         }
 
         .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 30px 20px;
+            background: var(--ios-bg-secondary);
+            padding: 32px 20px 24px;
             text-align: center;
+            border-bottom: 1px solid var(--ios-bg-tertiary);
         }
 
         .header h1 {
             font-size: 28px;
-            margin-bottom: 5px;
+            font-weight: 600;
+            color: var(--ios-text-primary);
+            margin-bottom: 8px;
+            letter-spacing: -0.4px;
         }
 
         .header p {
-            font-size: 14px;
-            opacity: 0.9;
+            font-size: 13px;
+            color: var(--ios-text-secondary);
+            weight: 400;
         }
 
         .content {
-            padding: 30px 20px;
+            padding: 20px;
         }
 
         .section {
@@ -56,112 +90,120 @@
             display: block;
         }
 
-        /* Search Section */
+        /* Search Box */
         .search-box {
-            background: #f8f9ff;
+            background: var(--ios-bg-primary);
             padding: 20px;
-            border-radius: 8px;
+            border-radius: var(--ios-radius-md);
             margin-bottom: 20px;
         }
 
         .search-box h3 {
-            margin-bottom: 15px;
-            color: #333;
+            margin-bottom: 16px;
+            color: var(--ios-text-primary);
             font-size: 16px;
+            font-weight: 600;
+            letter-spacing: -0.3px;
         }
 
         .search-group {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
+            display: flex;
+            flex-direction: column;
             gap: 10px;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
         }
 
         .search-group input {
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            font-size: 14px;
+            padding: 12px 14px;
+            border: 1px solid var(--ios-bg-tertiary);
+            border-radius: var(--ios-radius-sm);
+            font-size: 16px;
+            background: var(--ios-bg-secondary);
+            color: var(--ios-text-primary);
+            transition: all 0.2s ease;
+        }
+
+        .search-group input::placeholder {
+            color: var(--ios-text-tertiary);
         }
 
         .search-group input:focus {
             outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            border-color: var(--ios-blue);
+            background: var(--ios-bg-secondary);
+            box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.1);
         }
 
         .search-actions {
             display: flex;
             gap: 10px;
+            margin-top: 16px;
         }
 
         .btn {
             flex: 1;
-            padding: 12px 20px;
+            padding: 12px 16px;
             border: none;
-            border-radius: 6px;
-            font-size: 14px;
-            font-weight: 600;
+            border-radius: var(--ios-radius-sm);
+            font-size: 16px;
+            font-weight: 500;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
+            letter-spacing: -0.3px;
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: var(--ios-blue);
             color: white;
         }
 
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        .btn-primary:active {
+            opacity: 0.8;
+            transform: scale(0.98);
         }
 
         .btn-secondary {
-            background: #f0f0f0;
-            color: #333;
+            background: var(--ios-bg-tertiary);
+            color: var(--ios-text-primary);
         }
 
-        .btn-secondary:hover {
-            background: #e0e0e0;
+        .btn-secondary:active {
+            background: #D1D1D6;
         }
 
         .btn-danger {
-            background: #ff6b6b;
+            background: var(--ios-red);
             color: white;
         }
 
-        .btn-danger:hover {
-            background: #ff5252;
+        .btn-danger:active {
+            opacity: 0.8;
         }
 
         .btn-warning {
-            background: #ffa94d;
+            background: var(--ios-orange);
             color: white;
         }
 
-        .btn-warning:hover {
-            background: #ff9933;
+        .btn-warning:active {
+            opacity: 0.8;
         }
 
         /* Appointment Details */
         .appointment-details {
-            background: #f8f9ff;
+            background: var(--ios-bg-primary);
             padding: 20px;
-            border-radius: 8px;
+            border-radius: var(--ios-radius-md);
             margin-bottom: 20px;
-        }
-
-        .appointment-details h3 {
-            color: #333;
-            margin-bottom: 15px;
-            font-size: 18px;
         }
 
         .detail-row {
             display: flex;
             justify-content: space-between;
-            padding: 12px 0;
-            border-bottom: 1px solid #e0e0e0;
+            align-items: center;
+            padding: 14px 0;
+            border-bottom: 1px solid var(--ios-bg-tertiary);
+            font-size: 16px;
         }
 
         .detail-row:last-child {
@@ -169,49 +211,64 @@
         }
 
         .detail-label {
-            font-weight: 600;
-            color: #666;
+            font-weight: 500;
+            color: var(--ios-text-secondary);
+            font-size: 15px;
         }
 
         .detail-value {
-            color: #333;
+            color: var(--ios-text-primary);
             text-align: right;
+            font-weight: 500;
+            font-size: 15px;
         }
 
         /* Reschedule Section */
         .reschedule-box {
-            background: #f0f7ff;
+            background: var(--ios-bg-primary);
             padding: 20px;
-            border-radius: 8px;
-            border-left: 4px solid #667eea;
+            border-radius: var(--ios-radius-md);
+            border-left: 3px solid var(--ios-blue);
             margin-bottom: 20px;
         }
 
         .reschedule-box h3 {
-            color: #333;
-            margin-bottom: 15px;
+            color: var(--ios-text-primary);
+            margin-bottom: 16px;
+            font-size: 16px;
+            font-weight: 600;
         }
 
         .date-time-group {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
+            display: flex;
             gap: 10px;
-            margin-bottom: 15px;
+            margin-bottom: 16px;
         }
 
         .date-time-group input {
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            font-size: 14px;
+            flex: 1;
+            padding: 12px 14px;
+            border: 1px solid var(--ios-bg-tertiary);
+            border-radius: var(--ios-radius-sm);
+            font-size: 16px;
+            background: var(--ios-bg-secondary);
+            color: var(--ios-text-primary);
+        }
+
+        .date-time-group input:focus {
+            outline: none;
+            border-color: var(--ios-blue);
+            box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.1);
         }
 
         /* Alert Messages */
         .alert {
-            padding: 15px;
-            border-radius: 6px;
+            padding: 14px 16px;
+            border-radius: var(--ios-radius-sm);
             margin-bottom: 20px;
             display: none;
+            font-size: 15px;
+            font-weight: 500;
         }
 
         .alert.show {
@@ -219,24 +276,24 @@
         }
 
         .alert-success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
+            background: rgba(52, 199, 89, 0.12);
+            color: var(--ios-green);
+            border-left: 3px solid var(--ios-green);
         }
 
         .alert-error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
+            background: rgba(255, 59, 48, 0.12);
+            color: var(--ios-red);
+            border-left: 3px solid var(--ios-red);
         }
 
         .alert-info {
-            background: #d1ecf1;
-            color: #0c5460;
-            border: 1px solid #bee5eb;
+            background: rgba(0, 122, 255, 0.12);
+            color: var(--ios-blue);
+            border-left: 3px solid var(--ios-blue);
         }
 
-        /* Actions */
+        /* Action Buttons */
         .action-buttons {
             display: flex;
             gap: 10px;
@@ -247,60 +304,29 @@
             flex: 1;
         }
 
-        /* Loading */
-        .loading {
-            text-align: center;
-            padding: 20px;
-            color: #666;
+        h2 {
+            color: var(--ios-text-primary);
+            margin-bottom: 20px;
+            font-size: 20px;
+            font-weight: 600;
+            letter-spacing: -0.4px;
         }
 
-        .spinner {
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #667eea;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 10px;
-        }
+        @media (max-width: 500px) {
+            body {
+                padding: 12px;
+            }
 
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
+            .header {
+                padding: 24px 16px 20px;
+            }
 
-        /* Empty State */
-        .empty-state {
-            text-align: center;
-            padding: 40px 20px;
-            color: #999;
-        }
-
-        .empty-state-icon {
-            font-size: 48px;
-            margin-bottom: 15px;
-        }
-
-        /* Mobile */
-        @media (max-width: 600px) {
             .header h1 {
-                font-size: 22px;
+                font-size: 24px;
             }
 
-            .search-group {
-                grid-template-columns: 1fr;
-            }
-
-            .search-actions {
-                flex-direction: column;
-            }
-
-            .date-time-group {
-                grid-template-columns: 1fr;
-            }
-
-            .action-buttons {
-                flex-direction: column;
+            .content {
+                padding: 16px;
             }
         }
     </style>
