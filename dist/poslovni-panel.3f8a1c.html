@@ -4112,6 +4112,28 @@
                     window.calendar.addEvent(eventPayload);
                 }
 
+                // Send SMS confirmation if booking with phone number
+                if (eventPayload.extendedProps.isBooking && eventPayload.extendedProps.phone) {
+                    try {
+                        // Pass appointment data to SMS handler
+                        const appointmentForSMS = {
+                            id: eventPayload.id,
+                            phoneNumber: eventPayload.extendedProps.phone,
+                            start: eventPayload.start,
+                            customer: eventPayload.extendedProps.customer,
+                            services: eventPayload.extendedProps.services,
+                            worker: eventPayload.extendedProps.worker
+                        };
+                        
+                        if (window.SMSHandler && typeof window.SMSHandler.sendAppointmentConfirmation === 'function') {
+                            window.SMSHandler.sendAppointmentConfirmation(appointmentForSMS);
+                            console.log('📱 SMS confirmation sent to:', appointmentForSMS.phoneNumber);
+                        }
+                    } catch (smsError) {
+                        console.warn('⚠️ SMS confirmation failed (not critical):', smsError.message);
+                    }
+                }
+
                 closeAddEventModal();
                 return true;
             } catch (err) {

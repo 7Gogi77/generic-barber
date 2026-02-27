@@ -15,10 +15,10 @@ import fetch from 'node-fetch';
 // ========== CONFIGURATION - UPDATE THESE ==========
 const SMS_CONFIG = {
   // Get these from HTTP SMS app (https://httpsms.com)
-  apiKey: 'your_api_key_here',        // From HTTP SMS app → API Keys
-  phoneNumber: '+381641234567',        // Your phone number (the sender)
+  apiKey: 'uk_bwPUw3HInCfOQQUj67MeG-wv-JVtVdHZeOr910i4qvh7X9qD8v5ZJjKFmzF-VkWZ',        // From HTTP SMS app → API Keys
+  phoneNumber: '+38631886977',        // Your phone number (the sender)
   apiUrl: 'https://api.httpsms.com/v1/messages/send',
-  businessName: 'Vaš Frizer',          // Your business name
+  businessName: 'Aaa',          // Your business name
   firebaseUrl: 'https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app',
 };
 
