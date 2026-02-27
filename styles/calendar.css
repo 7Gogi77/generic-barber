@@ -276,7 +276,7 @@
 }
 
 /* Highlight selected day cells */
-#scheduleCalendar.view-daygrid .fc .fc-daygrid-day-frame.fc-highlight-color {
+#scheduleCalendar.view-daygrid .fc .fc-daygrid-day.fc-highlight-color {
   background-color: rgba(0, 122, 255, 0.2) !important;
 }
 
