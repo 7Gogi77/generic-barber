@@ -673,9 +673,20 @@ const CalendarEngine = {
         select: (selectInfo) => {
           console.log('📅 Date selected:', selectInfo.startStr, '→', selectInfo.endStr);
           
-          // TEMPORARY: Return early to inspector the highlighted cells without modal popping up
-          console.log('🔍 DEBUG MODE: Skipping modal to allow inspector. Remove this when done.');
-          return;
+          // Highlight all cells in the selection range
+          const start = new Date(selectInfo.startStr);
+          const end = new Date(selectInfo.endStr);
+          if (selectInfo.endStr) {
+            end.setDate(end.getDate() - 1); // FullCalendar's end is exclusive
+          }
+          
+          // Get all day cells and highlight those within range
+          document.querySelectorAll('[data-date]').forEach(cell => {
+            const cellDate = new Date(cell.getAttribute('data-date'));
+            if (cellDate >= start && cellDate <= end) {
+              cell.style.backgroundColor = 'rgba(0, 122, 255, 0.2)'; // Blue highlight
+            }
+          });
           
           console.log('📋 Checking for eventModal...');
           const hasAdminModal = document.getElementById('eventModal');
