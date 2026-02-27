@@ -4112,21 +4112,34 @@
                 const endDate = document.getElementById('eventEndDate')?.value || startDate;
                 let endTimeRaw = document.getElementById('eventEndTime')?.value;
 
-                const defaultStart = '09:00';
-                const defaultDurationMinutes = 30;
-                const sTime = startTimeRaw || defaultStart;
-                if (!endTimeRaw) {
-                    try { 
-                        const s = new Date(`${startDate}T${sTime}`); 
-                        s.setMinutes(s.getMinutes() + defaultDurationMinutes); 
-                        endTimeRaw = s.toTimeString().slice(0,5); 
-                    } catch (_) { 
-                        endTimeRaw = '09:30'; 
-                    }
-                }
+                const isMultiDay = !!startDate && !!endDate && startDate !== endDate;
+                const hasTime = !!startTimeRaw || !!endTimeRaw;
+                let start;
+                let end;
+                let allDay = false;
 
-                const start = `${startDate}T${sTime}`;
-                const end = `${endDate}T${endTimeRaw}`;
+                if (isMultiDay && !hasTime) {
+                    // Multi-day all-day event: store date-only and let FullCalendar span across days
+                    start = startDate;
+                    end = endDate;
+                    allDay = true;
+                } else {
+                    const defaultStart = '09:00';
+                    const defaultDurationMinutes = 30;
+                    const sTime = startTimeRaw || defaultStart;
+                    if (!endTimeRaw) {
+                        try { 
+                            const s = new Date(`${startDate}T${sTime}`); 
+                            s.setMinutes(s.getMinutes() + defaultDurationMinutes); 
+                            endTimeRaw = s.toTimeString().slice(0,5); 
+                        } catch (_) { 
+                            endTimeRaw = '09:30'; 
+                        }
+                    }
+
+                    start = `${startDate}T${sTime}`;
+                    end = `${endDate}T${endTimeRaw}`;
+                }
 
                 const typeSelect = document.getElementById('eventType');
                 const selectedType = typeSelect ? typeSelect.value : (tab === 'worker' ? 'working_hours' : 'booking');
@@ -4140,6 +4153,7 @@
                     type: eventType,
                     start,
                     end,
+                    allDay,
                     description,
                     extendedProps: {
                         customer: tab === 'customer' ? title : null,
@@ -4154,21 +4168,28 @@
                     }
                 };
 
-                // Add to scheduleData
-                scheduleData.events = scheduleData.events || [];
-                scheduleData.events.push(eventPayload);
+                // Persist via schedule system (Firebase + localStorage) and refresh calendar
+                const savedId = (typeof window.addScheduleEvent === 'function')
+                    ? window.addScheduleEvent(eventPayload)
+                    : (function fallbackAdd(ev) {
+                        try {
+                            scheduleData.events = scheduleData.events || [];
+                            scheduleData.events.push(ev);
+                            localStorage.setItem('schedule', JSON.stringify(scheduleData));
+                            return ev.id;
+                        } catch (err) {
+                            console.error('Failed to save new event:', err);
+                            return null;
+                        }
+                    })(eventPayload);
 
-                // Save to localStorage
-                try {
-                    localStorage.setItem('schedule', JSON.stringify(scheduleData));
-                    console.log('✅ Event created and saved to localStorage');
-                } catch (err) {
-                    console.error('Failed to save new event:', err);
-                }
-
-                // Add to calendar display
-                if (window.calendar && typeof window.calendar.addEvent === 'function') {
-                    window.calendar.addEvent(eventPayload);
+                if (typeof loadAppointmentsToCalendarNow === 'function') {
+                    await loadAppointmentsToCalendarNow();
+                } else if (window.calendar && typeof window.calendar.addEvent === 'function') {
+                    const formatted = (typeof CalendarEngine !== 'undefined' && CalendarEngine.formatCalendarEvent)
+                        ? CalendarEngine.formatCalendarEvent(eventPayload)
+                        : eventPayload;
+                    if (formatted) window.calendar.addEvent(formatted);
                 }
 
                 // Send SMS confirmation if booking with phone number
