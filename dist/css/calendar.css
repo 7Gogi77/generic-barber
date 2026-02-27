@@ -264,7 +264,6 @@
 /* Ensure month/dayGrid styling is strictly scoped to .view-daygrid */
 #scheduleCalendar.view-daygrid .fc .fc-daygrid-day {
   overflow: visible !important;
-  position: relative;
   z-index: 0;
 }
 
