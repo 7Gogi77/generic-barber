@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Upravljanje Termina - Frizerski Salon Aaa</title>
+    <title>Upravljanje termina</title>
     <style>
         * {
             margin: 0;
@@ -308,7 +308,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>✂️ Upravljanje Termina</h1>
+            <h1>Upravljanje termina</h1>
             <p>Spremenite ali odpovedite svoj termin</p>
         </div>
 
@@ -668,9 +668,21 @@
             document.getElementById(sectionId).classList.add('active');
         }
 
+        // Read query param
+        function getQueryParam(name) {
+            const params = new URLSearchParams(window.location.search);
+            return params.get(name);
+        }
+
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
             initMinDate();
+
+            const idFromUrl = getQueryParam('id');
+            if (idFromUrl) {
+                document.getElementById('appointmentId').value = idFromUrl;
+                searchAppointment();
+            }
             
             // Allow Enter key to search
             document.getElementById('searchEmail').addEventListener('keypress', (e) => {

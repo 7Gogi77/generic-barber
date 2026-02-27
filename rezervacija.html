@@ -1806,6 +1806,11 @@
                 await StorageManager.save('schedule', scheduleData);
                 
                 console.log('✅ Booking saved:', appointment);
+                const manageBaseUrl = (window.SMSHandler && window.SMSHandler.config && window.SMSHandler.config.productionUrl)
+                    ? window.SMSHandler.config.productionUrl
+                    : window.location.origin;
+                const manageLink = `${manageBaseUrl}/manage-appointment.html?id=${appointment.id}`;
+                console.log('Manage appointment link:', manageLink);
                 
                 // Send SMS confirmation if phone number provided
                 if (BookingState.customerInfo.phone) {
