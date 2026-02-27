@@ -778,6 +778,24 @@
                 if (found) {
                     currentAppointment = found;
                     await displayAppointmentDetails(found);
+                    
+                    // Auto-fill customer info form so they don't need to re-enter
+                    if (found.extendedProps) {
+                        const props = found.extendedProps;
+                        if (props.customer) {
+                            document.getElementById('customerName').value = props.customer;
+                        }
+                        if (props.email) {
+                            document.getElementById('customerEmail').value = props.email;
+                        }
+                        if (props.phone) {
+                            document.getElementById('customerPhone').value = props.phone;
+                        }
+                        if (props.notes) {
+                            document.getElementById('customerNotes').value = props.notes;
+                        }
+                    }
+                    
                     showSection('detailsSection');
                     hideAlert();
                     console.log('✓ Auto-opened appointment:', appointmentId);
