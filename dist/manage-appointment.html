@@ -601,6 +601,37 @@
     <script>
         let currentAppointment = null;
 
+        // Load configuration from admin-panel settings
+        async function loadConfig() {
+            // Load SITE_CONFIG from localStorage (saved by admin-panel)
+            const saved = localStorage.getItem('site_config_backup');
+            if (saved) {
+                try {
+                    const config = JSON.parse(saved);
+                    Object.assign(window.SITE_CONFIG, config);
+                    console.log('✓ Loaded SITE_CONFIG from admin settings');
+                } catch (e) {
+                    console.warn('Could not parse saved config:', e);
+                }
+            }
+            
+            // Ensure required booking config exists
+            if (!window.SITE_CONFIG.booking) {
+                window.SITE_CONFIG.booking = {};
+            }
+            if (!window.SITE_CONFIG.booking.businessHours) {
+                window.SITE_CONFIG.booking.businessHours = { start: 9, end: 19 };
+            }
+            if (!window.SITE_CONFIG.booking.workingDays) {
+                window.SITE_CONFIG.booking.workingDays = { 1: true, 2: true, 3: true, 4: true, 5: true, 6: true, 0: false };
+            }
+            if (!window.SITE_CONFIG.booking.daysClosed) {
+                window.SITE_CONFIG.booking.daysClosed = [0]; // Sunday closed by default
+            }
+            
+            console.log('📋 Config loaded - Working Days:', window.SITE_CONFIG.booking.workingDays, 'Hours:', window.SITE_CONFIG.booking.businessHours);
+        }
+
         // Show Alert
         function showAlert(message, type = 'info') {
             const alertEl = document.getElementById('alertMessage');
@@ -1279,6 +1310,9 @@
 
         // Initialize
         document.addEventListener('DOMContentLoaded', async () => {
+            // Load configuration from admin-panel settings
+            await loadConfig();
+            
             initMinDate();
 
             const idFromUrl = getQueryParam('id');
