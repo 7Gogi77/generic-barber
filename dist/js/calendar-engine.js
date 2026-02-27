@@ -1303,6 +1303,45 @@ const CalendarEngine = {
       console.log('Calendar is FullCalendar.Calendar:', calendar instanceof FullCalendar.Calendar);
       console.log('Calendar methods:', Object.getOwnPropertyNames(Object.getPrototypeOf(calendar)).slice(0, 10));
 
+      // Add real-time highlighting during drag selection
+      let isDragging = false;
+      let dragStartDate = null;
+      
+      document.addEventListener('pointerdown', (e) => {
+        const dateCell = e.target.closest('[data-date]');
+        if (dateCell && e.target.closest('#scheduleCalendar')) {
+          isDragging = true;
+          dragStartDate = dateCell.getAttribute('data-date');
+          console.log('🚶 Drag started on', dragStartDate);
+        }
+      });
+      
+      document.addEventListener('pointermove', (e) => {
+        if (!isDragging || !dragStartDate) return;
+        
+        const dateCell = e.target.closest('[data-date]');
+        if (!dateCell || !e.target.closest('#scheduleCalendar')) return;
+        
+        const currentDate = dateCell.getAttribute('data-date');
+        const startDate = dragStartDate < currentDate ? dragStartDate : currentDate;
+        const endDate = dragStartDate < currentDate ? currentDate : dragStartDate;
+        
+        // Highlight all cells in range
+        document.querySelectorAll('[data-date]').forEach(cell => {
+          const cellDate = cell.getAttribute('data-date');
+          if (cellDate >= startDate && cellDate <= endDate) {
+            cell.style.backgroundColor = 'rgba(0, 122, 255, 0.2)';
+          } else {
+            cell.style.backgroundColor = '';
+          }
+        });
+      });
+      
+      document.addEventListener('pointerup', () => {
+        isDragging = false;
+        dragStartDate = null;
+      });
+
       // Render the calendar
       console.log('📅 About to call calendar.render()...');
       console.log('Calendar object:', calendar);
