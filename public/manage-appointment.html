@@ -692,15 +692,24 @@
                 const searchPhone = phone ? formatPhoneForSearch(phone) : '';
 
                 // Find ALL matches and return the most recent one
+                // When searching by ID alone (from SMS link), find exact match
                 const findMatches = (eventList) => {
                     const matches = [];
                     for (const event of eventList) {
-                        const isSameId = appointmentId && event.id === appointmentId;
-                        const isSameEmail = email && event.extendedProps.email?.toLowerCase() === email;
-                        const isSamePhone = phone && formatPhoneForSearch(event.extendedProps.phone) === searchPhone;
+                        // If searching by ID only, find exact match
+                        if (appointmentId && !email && !phone) {
+                            if (event.id === appointmentId) {
+                                return event; // Return immediately for ID-only search
+                            }
+                        } else {
+                            // Search by email/phone/ID (any match)
+                            const isSameId = appointmentId && event.id === appointmentId;
+                            const isSameEmail = email && event.extendedProps?.email?.toLowerCase() === email;
+                            const isSamePhone = phone && formatPhoneForSearch(event.extendedProps?.phone) === searchPhone;
 
-                        if (isSameId || isSameEmail || isSamePhone) {
-                            matches.push(event);
+                            if (isSameId || isSameEmail || isSamePhone) {
+                                matches.push(event);
+                            }
                         }
                     }
                     if (matches.length === 0) return null;
@@ -728,7 +737,11 @@
                 }
 
                 if (!found) {
-                    showAlert('Termin ni najden. Preverite podatke.', 'error');
+                    if (appointmentId) {
+                        showAlert('Termin s to ID številko ni bil najden.', 'error');
+                    } else {
+                        showAlert('Termin ni najden. Preverite podatke.', 'error');
+                    }
                     return;
                 }
 
@@ -741,6 +754,41 @@
             } catch (error) {
                 console.error('Search error:', error);
                 showAlert('Prišlo je do napake: ' + error.message, 'error');
+            }
+        }
+
+        // Auto-open appointment from URL parameter
+        async function autoOpenAppointment(appointmentId) {
+            try {
+                const scheduleData = await StorageManager.load('schedule') || { events: [] };
+                const events = Array.isArray(scheduleData.events) ? scheduleData.events : [];
+                
+                let found = events.find(e => e.id === appointmentId);
+                
+                // Fallback to localStorage
+                if (!found) {
+                    const localItem = localStorage.getItem('schedule');
+                    if (localItem) {
+                        const localData = JSON.parse(localItem);
+                        const localEvents = Array.isArray(localData.events) ? localData.events : [];
+                        found = localEvents.find(e => e.id === appointmentId);
+                    }
+                }
+                
+                if (found) {
+                    currentAppointment = found;
+                    await displayAppointmentDetails(found);
+                    showSection('detailsSection');
+                    hideAlert();
+                    console.log('✓ Auto-opened appointment:', appointmentId);
+                } else {
+                    showAlert('Termin s to ID številko ni bil najden. Molim vnesite email ali telefonsko številko za iskanje.', 'error');
+                    showSection('searchSection');
+                }
+            } catch (error) {
+                console.error('Auto-open error:', error);
+                showAlert('Napaka pri nalaganju termina. Molim poskusite znova.', 'error');
+                showSection('searchSection');
             }
         }
 
@@ -1317,12 +1365,9 @@
 
             const idFromUrl = getQueryParam('id');
             if (idFromUrl) {
-                // Auto-open appointment from SMS link
-                document.getElementById('appointmentId').value = idFromUrl;
-                // Wait a moment for scripts to load
-                setTimeout(() => {
-                    searchAppointment();
-                }, 100);
+                // Auto-open appointment from SMS link (no search needed)
+                console.log('📱 Opening appointment from SMS link:', idFromUrl);
+                await autoOpenAppointment(idFromUrl);
             }
             
             // Allow Enter key to search
