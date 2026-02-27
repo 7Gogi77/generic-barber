@@ -463,14 +463,23 @@
         }
 
         /* FullCalendar Selection Highlight - Show when dragging to select dates */
-        #scheduleCalendar.view-daygrid .fc .fc-highlight {
-            background-color: rgba(0, 122, 255, 0.12) !important;
+        #scheduleCalendar.view-daygrid .fc .fc-daygrid-bg {
+            z-index: 6;
         }
 
-        #scheduleCalendar.view-daygrid .fc .fc-daygrid-day.fc-highlight,
-        #scheduleCalendar.view-daygrid .fc .fc-daygrid-day .fc-highlight,
-        #scheduleCalendar.view-daygrid .fc .fc-daygrid-day.fc-highlight .fc-daygrid-day-frame {
-            background-color: rgba(0, 122, 255, 0.15) !important;
+        #scheduleCalendar.view-daygrid .fc .fc-daygrid-bg table {
+            width: 100% !important;
+            table-layout: fixed !important;
+        }
+
+        #scheduleCalendar.view-daygrid .fc .fc-highlight {
+            background-color: rgba(0, 122, 255, 0.16) !important;
+            box-shadow: inset 0 0 0 9999px rgba(0, 122, 255, 0.12) !important;
+        }
+
+        #scheduleCalendar.view-daygrid .fc .fc-daygrid-day-frame {
+            position: relative;
+            z-index: 1;
         }
 
         /* iOS-Style Day Numbers - Consistent height for perfect alignment */
