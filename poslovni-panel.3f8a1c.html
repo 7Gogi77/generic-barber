@@ -489,13 +489,12 @@
             table-layout: fixed !important;
         }
 
-        #scheduleCalendar.view-daygrid .fc .fc-highlight {
-            background-color: rgba(0, 122, 255, 0.16) !important;
-            box-shadow: inset 0 0 0 9999px rgba(0, 122, 255, 0.12) !important;
-            border: 2px solid red !important; /* DEBUG: See highlight layer size */
+        /* Highlight the cells directly when fc-highlight class is applied */
+        #scheduleCalendar.view-daygrid .fc-daygrid-day.fc-highlight {
+            background-color: rgba(0, 122, 255, 0.2) !important;
         }
 
-        #scheduleCalendar.view-daygrid .fc .fc-daygrid-day-frame {
+        #scheduleCalendar.view-daygrid .fc-daygrid-day-frame {
             position: relative;
             z-index: 1;
         }
