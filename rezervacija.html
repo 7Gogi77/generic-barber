@@ -941,6 +941,7 @@
     <!-- Scripts -->
     <script src="js/config.js"></script>
     <script src="js/storage-manager.js?v=3"></script>
+    <script src="js/sms-handler.js"></script>
     <script>
         // ===== BOOKING STATE =====
         const BookingState = {
@@ -1805,6 +1806,27 @@
                 await StorageManager.save('schedule', scheduleData);
                 
                 console.log('✅ Booking saved:', appointment);
+                
+                // Send SMS confirmation if phone number provided
+                if (bookingData.phone) {
+                    try {
+                        const appointmentForSMS = {
+                            id: appointment.id,
+                            phoneNumber: bookingData.phone,
+                            start: appointment.start,
+                            customer: bookingData.name,
+                            services: bookingData.services,
+                            worker: bookingData.worker
+                        };
+                        
+                        if (window.SMSHandler && typeof window.SMSHandler.sendAppointmentConfirmation === 'function') {
+                            window.SMSHandler.sendAppointmentConfirmation(appointmentForSMS);
+                            console.log('📱 SMS confirmation sent to:', appointmentForSMS.phoneNumber);
+                        }
+                    } catch (smsError) {
+                        console.warn('⚠️ SMS confirmation failed (not critical):', smsError.message);
+                    }
+                }
                 
                 // Go to success step
                 goToStep(5);
