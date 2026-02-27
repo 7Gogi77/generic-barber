@@ -1307,11 +1307,18 @@ const CalendarEngine = {
       let isDragging = false;
       let dragStartDate = null;
       
+      const clearHighlights = () => {
+        document.querySelectorAll('[data-date]').forEach(cell => {
+          cell.style.backgroundColor = '';
+        });
+      };
+      
       document.addEventListener('pointerdown', (e) => {
         const dateCell = e.target.closest('[data-date]');
         if (dateCell && e.target.closest('#scheduleCalendar')) {
           isDragging = true;
           dragStartDate = dateCell.getAttribute('data-date');
+          clearHighlights(); // Clear any previous highlights
           console.log('🚶 Drag started on', dragStartDate);
         }
       });
@@ -1340,7 +1347,18 @@ const CalendarEngine = {
       document.addEventListener('pointerup', () => {
         isDragging = false;
         dragStartDate = null;
+        // Don't clear highlights here - let the select event keep them visible
       });
+      
+      // Clear highlights when modal closes or escape is pressed
+      window.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          clearHighlights();
+        }
+      });
+      
+      // Expose clearHighlights globally for modal close handlers
+      window.clearCalendarHighlights = clearHighlights;
 
       // Render the calendar
       console.log('📅 About to call calendar.render()...');

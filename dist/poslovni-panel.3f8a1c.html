@@ -3627,6 +3627,7 @@
             const modal = document.getElementById('addEventModal');
             modal.classList.remove('show');
             document.getElementById('addEventForm').reset();
+            if (window.clearCalendarHighlights) window.clearCalendarHighlights();
         }
 
         function openEditEventModal(event) {
@@ -3691,6 +3692,7 @@
             const modal = document.getElementById('editEventModal');
             modal.classList.remove('show');
             currentEditingEvent = null;
+            if (window.clearCalendarHighlights) window.clearCalendarHighlights();
         }
 
         function openBookingDetailsModal(event) {
@@ -3755,6 +3757,7 @@
         function closeBookingDetailsModal() {
             const modal = document.getElementById('bookingDetailsModal');
             modal.classList.remove('show');
+            if (window.clearCalendarHighlights) window.clearCalendarHighlights();
         }
 
         function deleteCurrentEvent() {
