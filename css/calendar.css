@@ -283,8 +283,7 @@
 }
 
 /* Highlight selected day cells */
-#scheduleCalendar.view-daygrid .fc .fc-daygrid-day-frame.fc-highlight,
-#scheduleCalendar.view-daygrid .fc .fc-daygrid-day-frame.fc-highlight.fc-scrollgrid-sync-inner {
+#scheduleCalendar.view-daygrid .fc .fc-daygrid-day-frame.fc-highlight-color {
   background-color: rgba(0, 122, 255, 0.2) !important;
 }
 
