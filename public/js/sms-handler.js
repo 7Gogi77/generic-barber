@@ -29,9 +29,16 @@ const SMS_CONFIG = {
 async function sendSMS(phoneNumber, message) {
   console.log('📱 Sending SMS to:', phoneNumber);
 
+  // Auto-format Slovenian numbers: 031... → +38631...
+  let formattedPhone = phoneNumber;
+  if (formattedPhone && formattedPhone.startsWith('0')) {
+    formattedPhone = '+386' + formattedPhone.substring(1);
+    console.log('Auto-formatted to:', formattedPhone);
+  }
+
   // Validate phone number
-  if (!phoneNumber || !phoneNumber.startsWith('+')) {
-    console.error('❌ Invalid phone number format. Must start with + (e.g., +381...)');
+  if (!formattedPhone || !formattedPhone.startsWith('+')) {
+    console.error('❌ Invalid phone number format. Must start with + or 0 (e.g., +381... or 031...)');
     return { success: false, error: 'Invalid phone number format' };
   }
 
@@ -45,7 +52,7 @@ async function sendSMS(phoneNumber, message) {
       },
       body: JSON.stringify({
         from: SMS_CONFIG.phoneNumber,  // Your phone number (the sender)
-        to: phoneNumber,                // Customer's phone number
+        to: formattedPhone,             // Customer's phone number (formatted)
         content: message,               // SMS text
       }),
     });
