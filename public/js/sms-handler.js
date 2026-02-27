@@ -16,6 +16,7 @@ const SMS_CONFIG = {
   
   businessName: 'Aaa',            // Your business name
   appUrl: window.location.origin,
+  productionUrl: 'https://demo-stran.vercel.app', // Production/public URL for SMS links
 };
 
 // ========== SMS SENDING FUNCTION ==========
@@ -83,11 +84,11 @@ async function sendAppointmentConfirmation(appointment) {
   const phoneNumber = appointment.phoneNumber;
   const appointmentId = appointment.id;
 
-  // Generate management link
-  const manageLink = `${SMS_CONFIG.appUrl}/rezervacija.html?id=${appointmentId}`;
+  // Generate management link with appointment ID
+  const manageLink = `${SMS_CONFIG.productionUrl}/manage-appointment.html?id=${appointmentId}`;
 
-  // Compose message
-  const message = `Hvala za vaše naročilo na termin. Pošiljamo vam link do upravljanja vašega termina: ${manageLink}`;
+  // Compose message with link
+  const message = `Hvala za vaše naročilo na termin pri ${SMS_CONFIG.businessName}! Upravljanje: ${manageLink}`;
 
   // Send SMS
   const result = await sendSMS(phoneNumber, message);
