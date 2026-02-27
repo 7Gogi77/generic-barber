@@ -20,8 +20,9 @@
             
             /* Text */
             --ios-text-primary: #000000;
-            --ios-text-secondary: #8E8E93;
-            --ios-text-tertiary: #C7C7CC;
+            --ios-text-secondary: #3C3C43;
+            --ios-text-tertiary: #8E8E93;
+            --ios-text-quaternary: #C7C7CC;
             
             /* Shadows */
             --ios-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
@@ -336,11 +337,11 @@
             color: var(--ios-text-quaternary);
         }
 
-        .calendar-day.has-availability {
+        .calendar-day.has-slots {
             position: relative;
         }
 
-        .calendar-day.has-availability::after {
+        .calendar-day.has-slots::after {
             content: '';
             position: absolute;
             bottom: 3px;
@@ -350,6 +351,22 @@
             height: 5px;
             border-radius: 50%;
             background: var(--ios-green);
+        }
+
+        .calendar-day.no-slots {
+            position: relative;
+        }
+
+        .calendar-day.no-slots::after {
+            content: '';
+            position: absolute;
+            bottom: 3px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: var(--ios-red);
         }
 
         /* Time Slots */
@@ -863,6 +880,17 @@
             return false;
         }
 
+        // Check if date has available time slots
+        function hasAvailableSlots(date) {
+            const dayOfWeek = date.getDay();
+            const businessHours = getBusinessHoursForDay(dayOfWeek);
+            const slotDuration = window.SITE_CONFIG?.booking?.slotDuration || 30;
+            const serviceDuration = currentAppointment ? 
+                (new Date(currentAppointment.end) - new Date(currentAppointment.start)) / 60000 : 60;
+            const availableSlots = generateAvailableTimeSlots(date, businessHours, slotDuration, serviceDuration);
+            return availableSlots.length > 0;
+        }
+
         // Render Calendar
         function renderCalendar() {
             const year = currentCalendarDate.getFullYear();
@@ -916,22 +944,16 @@
                     selectedDate.getMonth() === month && 
                     selectedDate.getDate() === i;
 
-                // Check if this date has appointments
-                const hasAppointments = calendarAppointments.some(event => {
-                    const eventDate = new Date(event.start);
-                    return eventDate.getFullYear() === year && 
-                           eventDate.getMonth() === month && 
-                           eventDate.getDate() === i;
-                });
-
                 btn.className = 'calendar-day';
                 if (isDisabled) {
                     btn.className += ' disabled';
                     btn.disabled = true;
                 } else if (isSelected) {
                     btn.className += ' selected';
-                } else if (hasAppointments) {
-                    btn.className += ' has-availability';
+                } else {
+                    // Check if date has available slots
+                    const hasSlots = hasAvailableSlots(date);
+                    btn.className += hasSlots ? ' has-slots' : ' no-slots';
                 }
 
                 btn.textContent = i;
