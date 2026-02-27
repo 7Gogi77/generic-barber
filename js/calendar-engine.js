@@ -672,6 +672,17 @@ const CalendarEngine = {
         // Only used in admin-panel.html - check if modal exists before calling
         select: (selectInfo) => {
           console.log('📅 Date selected:', selectInfo.startStr, '→', selectInfo.endStr);
+          
+          // Restrict selection to horizontal only (prevent vertical/same-day clicks)
+          const startDate = selectInfo.startStr ? selectInfo.startStr.split('T')[0] : null;
+          const endDate = selectInfo.endStr ? selectInfo.endStr.split('T')[0] : null;
+          
+          // If selection is same day (vertical), ignore it
+          if (startDate === endDate) {
+            console.log('⚠️ Vertical selection detected - ignoring. Must drag horizontally across multiple days.');
+            return;
+          }
+          
           console.log('📋 Checking for eventModal...');
           const hasAdminModal = document.getElementById('eventModal');
           console.log('📋 Admin modal exists?', !!hasAdminModal);
