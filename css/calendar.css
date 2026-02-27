@@ -307,18 +307,14 @@
   overflow: visible !important;
   padding: 0 !important;
   margin: 0 !important;
-  position: relative;
-  z-index: 2;
 }
 
 #scheduleCalendar.view-daygrid .fc .fc-daygrid-day-bg {
-  position: relative;
-  z-index: 1;
+  overflow: visible !important;
 }
 
 #scheduleCalendar.view-daygrid .fc .fc-daygrid-day-top {
-  position: relative;
-  z-index: 3;
+  overflow: visible !important;
 }
 
 #scheduleCalendar.view-daygrid .fc .fc-daygrid-event-harness-abs {
