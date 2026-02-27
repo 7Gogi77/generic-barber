@@ -230,6 +230,11 @@
             border-radius: var(--ios-radius-md);
             border-left: 3px solid var(--ios-blue);
             margin-bottom: 20px;
+            display: none;
+        }
+
+        .reschedule-box.active {
+            display: block;
         }
 
         .reschedule-box h3 {
@@ -239,26 +244,149 @@
             font-weight: 600;
         }
 
-        .date-time-group {
+        /* Calendar Styling */
+        .calendar-header {
             display: flex;
-            gap: 10px;
+            align-items: center;
+            justify-content: space-between;
             margin-bottom: 16px;
         }
 
-        .date-time-group input {
-            flex: 1;
-            padding: 12px 14px;
-            border: 1px solid var(--ios-bg-tertiary);
+        .calendar-nav {
+            display: flex;
+            gap: 8px;
+        }
+
+        .calendar-nav-btn {
+            width: 32px;
+            height: 32px;
             border-radius: var(--ios-radius-sm);
-            font-size: 16px;
+            border: none;
             background: var(--ios-bg-secondary);
+            color: var(--ios-blue);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s ease;
+        }
+
+        .calendar-nav-btn:hover {
+            background: var(--ios-bg-tertiary);
+        }
+
+        .calendar-month-year {
+            font-size: 16px;
+            font-weight: 600;
             color: var(--ios-text-primary);
         }
 
-        .date-time-group input:focus {
-            outline: none;
+        .calendar-weekdays {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+            margin-bottom: 8px;
+        }
+
+        .calendar-weekday {
+            text-align: center;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--ios-text-tertiary);
+            padding: 8px 0;
+        }
+
+        .calendar-days {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+            margin-bottom: 20px;
+        }
+
+        .calendar-day {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: var(--ios-radius-sm);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: var(--ios-text-primary);
+            background: transparent;
+            border: none;
+        }
+
+        .calendar-day:hover:not(.disabled):not(.selected) {
+            background: var(--ios-bg-tertiary);
+        }
+
+        .calendar-day.selected {
+            background: var(--ios-blue);
+            color: white;
+        }
+
+        .calendar-day.disabled {
+            color: var(--ios-text-quaternary);
+            cursor: not-allowed;
+        }
+
+        .calendar-day.other-month {
+            color: var(--ios-text-quaternary);
+        }
+
+        /* Time Slots */
+        .time-slots-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--ios-text-secondary);
+            margin-bottom: 12px;
+            margin-top: 20px;
+        }
+
+        .time-slots-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .time-slot {
+            padding: 12px 8px;
+            background: var(--ios-bg-secondary);
+            border-radius: var(--ios-radius-sm);
+            border: 1px solid var(--ios-bg-tertiary);
+            font-size: 13px;
+            font-weight: 500;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: var(--ios-text-primary);
+        }
+
+        .time-slot:hover:not(.disabled) {
+            background: var(--ios-bg-tertiary);
+        }
+
+        .time-slot.selected {
+            background: var(--ios-blue);
+            color: white;
             border-color: var(--ios-blue);
-            box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.1);
+        }
+
+        .time-slot.disabled {
+            background: var(--ios-bg-tertiary);
+            color: var(--ios-text-quaternary);
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        .no-slots-message {
+            text-align: center;
+            padding: 32px 16px;
+            color: var(--ios-text-tertiary);
+            font-size: 15px;
         }
 
         /* Alert Messages */
@@ -344,10 +472,10 @@
 
             <!-- Search Section -->
             <div id="searchSection" class="section active">
-                <h2 style="margin-bottom: 20px; color: #333;">Poiščite Svoj Termin</h2>
+                <h2 style="margin-bottom: 20px; color: var(--ios-text-primary);">Poiščite Svoj Termin</h2>
                 
                 <div class="search-box">
-                    <h3>Vnesite podatke:</h3>
+                    <h3><i class="bi bi-search"></i> Vnesite podatke:</h3>
                     <div class="search-group">
                         <input 
                             type="text" 
@@ -370,43 +498,63 @@
                         >
                     </div>
                     <div class="search-actions">
-                        <button class="btn btn-primary" onclick="searchAppointment()">Poiščite Termin</button>
-                        <button class="btn btn-secondary" onclick="clearSearch()">Počisti</button>
+                        <button class="btn btn-primary" onclick="searchAppointment()">
+                            <i class="bi bi-search"></i> Poiščite Termin
+                        </button>
+                        <button class="btn btn-secondary" onclick="clearSearch()">
+                            <i class="bi bi-x-lg"></i> Počisti
+                        </button>
                     </div>
                 </div>
             </div>
 
             <!-- Appointment Details Section -->
             <div id="detailsSection" class="section">
-                <h2 style="margin-bottom: 20px; color: #333;">Podrobnosti Termina</h2>
+                <h2 style="margin-bottom: 20px; color: var(--ios-text-primary);">Podrobnosti Termina</h2>
                 
                 <div id="appointmentDetails" class="appointment-details"></div>
 
                 <!-- Reschedule Section -->
-                <div class="reschedule-box">
-                    <h3>📅 Preusmeri Termin</h3>
-                    <div class="date-time-group">
-                        <input 
-                            type="date" 
-                            id="newDate" 
-                            min="" 
-                            required
-                        >
-                        <input 
-                            type="time" 
-                            id="newTime" 
-                            required
-                        >
+                <div id="rescheduleBox" class="reschedule-box">
+                    <h3><i class="bi bi-calendar-event"></i> Nov čas termina</h3>
+                    
+                    <!-- Calendar -->
+                    <div class="calendar-header">
+                        <div class="calendar-nav">
+                            <button class="calendar-nav-btn" onclick="prevMonth()">
+                                <i class="bi bi-chevron-left"></i>
+                            </button>
+                            <button class="calendar-nav-btn" onclick="nextMonth()">
+                                <i class="bi bi-chevron-right"></i>
+                            </button>
+                        </div>
+                        <div class="calendar-month-year" id="currentMonth"></div>
                     </div>
-                    <button class="btn btn-primary" onclick="rescheduleAppointment()" style="width: 100%;">
-                        Potrdite Novo Uro
+
+                    <div class="calendar-weekdays" id="weekdays"></div>
+                    <div class="calendar-days" id="calendarDays"></div>
+
+                    <!-- Time Slots -->
+                    <div class="time-slots-title">Izberite uro:</div>
+                    <div class="time-slots-grid" id="timeSlots"></div>
+
+                    <!-- Confirm Button -->
+                    <button class="btn btn-primary" onclick="confirmReschedule()" style="width: 100%; margin-top: 16px;">
+                        <i class="bi bi-check-circle"></i> Potrdi Nov Čas
                     </button>
                 </div>
 
                 <!-- Action Buttons -->
                 <div class="action-buttons">
-                    <button class="btn btn-warning" onclick="goBack()" style="flex: 1;">↩️ Nazaj</button>
-                    <button class="btn btn-danger" onclick="cancelAppointment()" style="flex: 1;">❌ Odpoved</button>
+                    <button class="btn btn-secondary" onclick="goBack()" style="flex: 1;">
+                        <i class="bi bi-arrow-left"></i> Nazaj
+                    </button>
+                    <button class="btn btn-warning" onclick="toggleReschedule()" style="flex: 1;">
+                        <i class="bi bi-calendar-check"></i> Nov čas termina
+                    </button>
+                    <button class="btn btn-danger" onclick="cancelAppointment()" style="flex: 1;">
+                        <i class="bi bi-x-circle"></i> Odpoved
+                    </button>
                 </div>
             </div>
         </div>
@@ -547,67 +695,214 @@
 
             const html = `
                 <div class="detail-row">
-                    <span class="detail-label">👤 Stranka:</span>
+                    <span class="detail-label"><i class="bi bi-person-fill"></i> Stranka:</span>
                     <span class="detail-value">${event.extendedProps.customer || '-'}</span>
                 </div>
                 <div class="detail-row">
-                    <span class="detail-label">📅 Datum:</span>
+                    <span class="detail-label"><i class="bi bi-calendar"></i> Datum:</span>
                     <span class="detail-value">${dateStr}</span>
                 </div>
                 <div class="detail-row">
-                    <span class="detail-label">⏰ Ura:</span>
+                    <span class="detail-label"><i class="bi bi-clock"></i> Ura:</span>
                     <span class="detail-value">${timeStr}</span>
                 </div>
                 <div class="detail-row">
-                    <span class="detail-label">💇 Storitve:</span>
+                    <span class="detail-label"><i class="bi bi-scissors"></i> Storitve:</span>
                     <span class="detail-value">${services || '-'}</span>
                 </div>
                 <div class="detail-row">
-                    <span class="detail-label">💰 Cena:</span>
+                    <span class="detail-label"><i class="bi bi-cash-coin"></i> Cena:</span>
                     <span class="detail-value">${price}</span>
                 </div>
                 <div class="detail-row">
-                    <span class="detail-label">📧 Email:</span>
+                    <span class="detail-label"><i class="bi bi-envelope"></i> Email:</span>
                     <span class="detail-value" style="font-size: 12px;">${event.extendedProps.email || '-'}</span>
                 </div>
                 <div class="detail-row">
-                    <span class="detail-label">📱 Telefon:</span>
+                    <span class="detail-label"><i class="bi bi-telephone"></i> Telefon:</span>
                     <span class="detail-value">${event.extendedProps.phone || '-'}</span>
                 </div>
                 <div class="detail-row">
-                    <span class="detail-label">ID Termina:</span>
+                    <span class="detail-label"><i class="bi bi-key"></i> ID:</span>
                     <span class="detail-value" style="font-size: 12px; font-family: monospace;">${event.id}</span>
                 </div>
             `;
 
             document.getElementById('appointmentDetails').innerHTML = html;
 
-            // Set default new date/time to current appointment time
+            // Set default calendar to current appointment date
             const currentDate = new Date(event.start);
-            document.getElementById('newDate').value = currentDate.toISOString().split('T')[0];
-            document.getElementById('newTime').value = `${currentDate.getHours().toString().padStart(2, '0')}:${currentDate.getMinutes().toString().padStart(2, '0')}`;
+            initializeCalendar(currentDate);
+            initializeTimeSlots(currentDate);
         }
 
-        // Reschedule Appointment
-        async function rescheduleAppointment() {
-            if (!currentAppointment) return;
+        // Toggle Reschedule Section
+        function toggleReschedule() {
+            const box = document.getElementById('rescheduleBox');
+            box.classList.toggle('active');
+            if (box.classList.contains('active')) {
+                const now = new Date(currentAppointment.start);
+                initializeCalendar(now);
+                initializeTimeSlots(now);
+            }
+        }
 
-            const newDateStr = document.getElementById('newDate').value;
-            const newTimeStr = document.getElementById('newTime').value;
+        // Calendar Variables
+        let currentCalendarDate = new Date();
+        let selectedDate = null;
+        let selectedTime = null;
 
-            if (!newDateStr || !newTimeStr) {
-                showAlert('Molim vnesite novo uro', 'error');
+        // Initialize Calendar
+        function initializeCalendar(date) {
+            currentCalendarDate = new Date(date);
+            renderCalendar();
+        }
+
+        // Render Calendar
+        function renderCalendar() {
+            const year = currentCalendarDate.getFullYear();
+            const month = currentCalendarDate.getMonth();
+
+            // Month/Year Header
+            const monthNames = ['Januar', 'Februar', 'Marec', 'April', 'Maj', 'Junij', 'Julij', 'Avgust', 'September', 'Oktober', 'November', 'December'];
+            document.getElementById('currentMonth').textContent = `${monthNames[month]} ${year}`;
+
+            // Weekday headers
+            const weekdaysEl = document.getElementById('weekdays');
+            const weekdays = ['P', 'T', 'S', 'Č', 'P', 'S', 'N'];
+            if (weekdaysEl.children.length === 0) {
+                weekdays.forEach(day => {
+                    const div = document.createElement('div');
+                    div.className = 'calendar-weekday';
+                    div.textContent = day;
+                    weekdaysEl.appendChild(div);
+                });
+            }
+
+            // Days
+            const firstDay = new Date(year, month, 1).getDay() || 7;
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const daysInPrevMonth = new Date(year, month, 0).getDate();
+
+            const daysEl = document.getElementById('calendarDays');
+            daysEl.innerHTML = '';
+
+            // Previous month days
+            for (let i = firstDay - 1; i > 0; i--) {
+                const btn = document.createElement('button');
+                btn.className = 'calendar-day other-month disabled';
+                btn.textContent = daysInPrevMonth - i + 1;
+                btn.disabled = true;
+                daysEl.appendChild(btn);
+            }
+
+            // Current month days
+            const today = new Date();
+            for (let i = 1; i <= daysInMonth; i++) {
+                const btn = document.createElement('button');
+                const date = new Date(year, month, i);
+                const isDisabled = date < today;
+                const isSelected = selectedDate && 
+                    selectedDate.getFullYear() === year && 
+                    selectedDate.getMonth() === month && 
+                    selectedDate.getDate() === i;
+
+                btn.className = 'calendar-day';
+                if (isDisabled) {
+                    btn.className += ' disabled';
+                    btn.disabled = true;
+                } else if (isSelected) {
+                    btn.className += ' selected';
+                }
+
+                btn.textContent = i;
+                btn.onclick = () => selectDate(date);
+                daysEl.appendChild(btn);
+            }
+
+            // Next month days
+            const totalCells = daysEl.children.length;
+            for (let i = 1; i <= (42 - totalCells); i++) {
+                const btn = document.createElement('button');
+                btn.className = 'calendar-day other-month disabled';
+                btn.textContent = i;
+                btn.disabled = true;
+                daysEl.appendChild(btn);
+            }
+        }
+
+        function prevMonth() {
+            currentCalendarDate.setMonth(currentCalendarDate.getMonth() - 1);
+            renderCalendar();
+        }
+
+        function nextMonth() {
+            currentCalendarDate.setMonth(currentCalendarDate.getMonth() + 1);
+            renderCalendar();
+        }
+
+        function selectDate(date) {
+            selectedDate = new Date(date);
+            selectedTime = null;
+            renderCalendar();
+            initializeTimeSlots(date);
+        }
+
+        // Initialize Time Slots
+        function initializeTimeSlots(date) {
+            const slotContainer = document.getElementById('timeSlots');
+            slotContainer.innerHTML = '';
+
+            // Get all available times (example: 09:00 - 18:00 in 30-min intervals)
+            const times = generateTimeSlots('09:00', '18:00', 30);
+            
+            times.forEach(time => {
+                const btn = document.createElement('button');
+                btn.className = 'time-slot';
+                if (selectedTime === time) {
+                    btn.classList.add('selected');
+                }
+                btn.textContent = time;
+                btn.onclick = () => {
+                    selectedTime = time;
+                    initializeTimeSlots(date);
+                };
+                slotContainer.appendChild(btn);
+            });
+        }
+
+        function generateTimeSlots(start, end, intervalMins) {
+            const slots = [];
+            const [startH, startM] = start.split(':').map(Number);
+            const [endH, endM] = end.split(':').map(Number);
+
+            let current = startH * 60 + startM;
+            const endTime = endH * 60 + endM;
+
+            while (current <= endTime) {
+                const h = Math.floor(current / 60);
+                const m = current % 60;
+                slots.push(`${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`);
+                current += intervalMins;
+            }
+
+            return slots;
+        }
+
+        // Confirm Reschedule
+        async function confirmReschedule() {
+            if (!selectedDate || !selectedTime) {
+                showAlert('Molim izberite datum in čas', 'error');
                 return;
             }
 
             try {
                 showAlert('Spreminjan termin...', 'info');
 
-                // Create new start/end times
-                const [year, month, day] = newDateStr.split('-');
-                const [hours, minutes] = newTimeStr.split(':');
+                const [hours, minutes] = selectedTime.split(':').map(Number);
+                const newStart = new Date(selectedDate);
+                newStart.setHours(hours, minutes, 0);
 
-                const newStart = new Date(year, month - 1, day, hours, minutes);
                 const newEnd = new Date(newStart);
                 const oldStart = new Date(currentAppointment.start);
                 const oldEnd = new Date(currentAppointment.end);
@@ -629,7 +924,8 @@
                 // Send SMS notification
                 if (currentAppointment.extendedProps.phone) {
                     try {
-                        const message = `Termin pri ${window.SITE_CONFIG?.businessName || 'Aaa'} je bil spremenjen na: ${newDateStr} ob ${newTimeStr}. Hvala!`;
+                        const dateStr = selectedDate.toLocaleDateString('sl-SI');
+                        const message = `Termin pri ${window.SITE_CONFIG?.businessName || 'frizerštvom'} je bil spremenjen na: ${dateStr} ob ${selectedTime}. Hvala!`;
                         await window.SMSHandler.sendSMS(
                             currentAppointment.extendedProps.phone,
                             message
@@ -639,7 +935,7 @@
                     }
                 }
 
-                showAlert('✅ Termin je bil uspešno spremenjen! SMS obvestilo je bilo poslano.', 'success');
+                showAlert('✓ Termin je bil uspešno spremenjen! SMS obvestilo je bilo poslano.', 'success');
                 
                 setTimeout(() => {
                     clearSearch();
@@ -649,6 +945,11 @@
                 console.error('Reschedule error:', error);
                 showAlert('Napaka pri spreminjanju termina: ' + error.message, 'error');
             }
+        }
+
+        // Reschedule Appointment (old function - kept for reference)
+        async function rescheduleAppointment() {
+            await confirmReschedule();
         }
 
         // Cancel Appointment
@@ -670,7 +971,7 @@
                 // Send SMS notification
                 if (currentAppointment.extendedProps.phone) {
                     try {
-                        const message = `Vaš termin pri ${window.SITE_CONFIG?.businessName || 'Aaa'} je bil odpovedan. Če ste to naredili po pomoti, nas kontaktirajte.`;
+                        const message = `Vaš termin pri ${window.SITE_CONFIG?.businessName || 'frizerštvom'} je bil odpovedan. Če ste to naredili po pomoti, nas kontaktirajte.`;
                         await window.SMSHandler.sendSMS(
                             currentAppointment.extendedProps.phone,
                             message
@@ -680,7 +981,7 @@
                     }
                 }
 
-                showAlert('✅ Termin je bil odpovedan. SMS obvestilo je bilo poslano.', 'success');
+                showAlert('✓ Termin je bil odpovedan. SMS obvestilo je bilo poslano.', 'success');
                 
                 setTimeout(() => {
                     clearSearch();
