@@ -489,6 +489,11 @@
             table-layout: fixed !important;
         }
 
+        /* Override FullCalendar's default highlight color - use only JS inline styles */
+        .fc .fc-highlight {
+            background: none !important;
+        }
+
         /* Ensure the background harness doesn't clip highlights */
         #scheduleCalendar.view-daygrid .fc-daygrid-bg-harness {
             overflow: visible !important;

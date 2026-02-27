@@ -274,7 +274,10 @@
   flex-direction: column !important;
   min-height: 0 !important; /* critical for flex children to be able to shrink */
 }
-
+/* Override FullCalendar's default highlight color - use only JS inline styles */
+.fc .fc-highlight {
+  background: none !important;
+}
 /* Ensure the background harness doesn't clip highlights */
 #scheduleCalendar.view-daygrid .fc .fc-daygrid-bg-harness {
   overflow: visible !important;
