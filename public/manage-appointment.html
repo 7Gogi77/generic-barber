@@ -807,6 +807,11 @@
             renderCalendar();
         }
 
+        // Helper: Get local date string (YYYY-MM-DD) to avoid timezone issues
+        function getLocalDateStr(date) {
+            return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+        }
+
         // Check if a day is closed
         function isDateClosed(date) {
             const dayOfWeek = date.getDay();
@@ -933,12 +938,20 @@
             const today = new Date();
             today.setHours(0, 0, 0, 0);
             
+            // Calculate max date (2 months from today)
+            const maxDate = new Date();
+            maxDate.setHours(0, 0, 0, 0);
+            maxDate.setMonth(maxDate.getMonth() + 2);
+            
             for (let i = 1; i <= daysInMonth; i++) {
                 const btn = document.createElement('button');
                 const date = new Date(year, month, i);
+                date.setHours(0, 0, 0, 0);
+                
                 const isPast = date < today;
+                const isTooFar = date > maxDate;
                 const isClosed = isDateClosed(date);
-                const isDisabled = isPast || isClosed;
+                const isDisabled = isPast || isTooFar || isClosed;
                 const isSelected = selectedDate && 
                     selectedDate.getFullYear() === year && 
                     selectedDate.getMonth() === month && 
@@ -1033,10 +1046,15 @@
 
         // Generate available time slots with conflict checking
         function generateAvailableTimeSlots(date, businessHours, slotDuration, serviceDuration) {
+            const dateStr = getLocalDateStr(date);
             const slots = [];
+            
+            // Calculate the latest possible start time
+            // Appointment must END before or at closing time
             const closingTimeMinutes = businessHours.end * 60;
             const latestStartMinutes = closingTimeMinutes - serviceDuration;
             
+            // If service is too long to fit in a day, show no slots
             if (latestStartMinutes < businessHours.start * 60) {
                 return [];
             }
@@ -1047,6 +1065,7 @@
             for (let hour = businessHours.start; hour <= latestStartHour; hour++) {
                 const maxMin = (hour === latestStartHour) ? latestStartMin : 59;
                 for (let min = 0; min <= maxMin; min += slotDuration) {
+                    // Skip if this slot would exceed latest start time
                     const slotStartMinutes = hour * 60 + min;
                     if (slotStartMinutes > latestStartMinutes) {
                         continue;
@@ -1061,6 +1080,15 @@
                     const endHour = slotEnd.getHours();
                     const endMin = slotEnd.getMinutes();
                     
+                    // Use local date string (not UTC) to avoid timezone issues
+                    const endDateStr = getLocalDateStr(slotEnd);
+                    
+                    // If ends on different day, skip
+                    if (endDateStr !== dateStr) {
+                        continue;
+                    }
+                    
+                    // If ends after closing time, skip
                     if (endHour > businessHours.end || (endHour === businessHours.end && endMin > 0)) {
                         continue;
                     }
