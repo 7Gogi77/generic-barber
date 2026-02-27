@@ -458,8 +458,17 @@
             background: var(--ios-bg-primary);
         }
 
-        #scheduleCalendar.view-daygrid .fc .fc-daygrid-day.fc-day-today {
+        #scheduleCalendar.view-daygrid .fc . fc-daygrid-day.fc-day-today {
             background: rgba(0, 122, 255, 0.05) !important;
+        }
+
+        /* FullCalendar Selection Highlight - Show when dragging to select dates */
+        .fc .fc-highlight {
+            background-color: rgba(0, 122, 255, 0.12) !important;
+        }
+
+        #scheduleCalendar.view-daygrid .fc .fc-daygrid-day.fc-highlight {
+            background-color: rgba(0, 122, 255, 0.15) !important;
         }
 
         /* iOS-Style Day Numbers - Consistent height for perfect alignment */
