@@ -467,6 +467,31 @@
             background: rgba(0, 122, 255, 0.05) !important;
         }
 
+        #scheduleCalendar.view-daygrid .fc-daygrid-day {
+            position: relative;
+            z-index: 0;
+        }
+
+        #scheduleCalendar.view-daygrid .fc-daygrid-day-frame {
+            position: relative;
+            z-index: 0;
+        }
+
+        #scheduleCalendar.view-daygrid .fc-daygrid-day-bg {
+            position: relative;
+            z-index: 1;
+        }
+
+        #scheduleCalendar.view-daygrid .fc-daygrid-day-events {
+            position: relative;
+            z-index: 2;
+        }
+
+        #scheduleCalendar.view-daygrid .fc-daygrid-day-top {
+            position: relative;
+            z-index: 3;
+        }
+
         /* iOS-Style Day Numbers - Consistent height for perfect alignment */
         #scheduleCalendar.view-daygrid .fc .fc-daygrid-day-top {
             height: 40px !important;
@@ -531,7 +556,7 @@
 
         /* Multi-day events that span across cells */
         #scheduleCalendar.view-daygrid .fc-daygrid-event-harness-abs {
-            z-index: 10 !important;
+            z-index: 5 !important;
             overflow: visible !important;
         }
 
@@ -1312,7 +1337,7 @@
                 min-height: 80px !important;
                 max-height: 80px !important;
                 height: 80px !important;
-                overflow: hidden !important;
+                overflow: visible !important;
             }
 
             .fc-col-header-cell {
