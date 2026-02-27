@@ -603,12 +603,17 @@
 
         // Load configuration from admin-panel settings
         async function loadConfig() {
+            if (!window.SITE_CONFIG) {
+                window.SITE_CONFIG = {};
+            }
             // Load SITE_CONFIG from localStorage (saved by admin-panel)
             const saved = localStorage.getItem('site_config_backup');
             if (saved) {
                 try {
                     const config = JSON.parse(saved);
-                    Object.assign(window.SITE_CONFIG, config);
+                    if (config && typeof config === 'object') {
+                        Object.assign(window.SITE_CONFIG, config);
+                    }
                     console.log('✓ Loaded SITE_CONFIG from admin settings');
                 } catch (e) {
                     console.warn('Could not parse saved config:', e);
