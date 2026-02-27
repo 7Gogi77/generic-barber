@@ -287,6 +287,20 @@
   background-color: rgba(0, 122, 255, 0.2) !important;
 }
 
+/* Target the actual highlight divs that FullCalendar creates */
+#scheduleCalendar.view-daygrid .fc-highlight {
+  background-color: rgba(0, 122, 255, 0.2) !important;
+}
+
+/* Ensure the background harness doesn't clip highlights */
+#scheduleCalendar.view-daygrid .fc-daygrid-bg-harness {
+  overflow: visible !important;
+}
+
+#scheduleCalendar.view-daygrid .fc-daygrid-day-bg {
+  overflow: visible !important;
+}
+
 #scheduleCalendar.view-daygrid .fc .fc-daygrid-day-events {
   /* Events container: flex column, scrolls internally, height controlled by JS */
   display: flex !important;
