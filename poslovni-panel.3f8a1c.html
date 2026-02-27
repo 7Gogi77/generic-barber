@@ -421,6 +421,7 @@
         .fc-daygrid-body {
             height: 100% !important;
             overflow-y: hidden !important;
+            position: relative;
         }
 
         .fc-daygrid-row {
@@ -428,6 +429,8 @@
             min-height: 100px !important;
             max-height: 100px !important;
             flex: 0 0 100px !important;
+            position: relative;
+            overflow: visible !important;
         }
 
         .fc-daygrid-day-cell {
@@ -436,8 +439,9 @@
             height: 100px !important;
             min-height: 100px !important;
             max-height: 100px !important;
-            overflow: hidden !important;
+            overflow: visible !important;
             flex: 1 !important;
+            position: relative;
         }
 
         .fc-daygrid-day {
@@ -446,8 +450,9 @@
             height: 100px !important;
             min-height: 100px !important;
             max-height: 100px !important;
-            overflow: hidden !important;
+            overflow: visible !important;
             flex: 1 1 auto !important;
+            position: relative;
         }
 
         #scheduleCalendar.view-daygrid .fc .fc-daygrid-day:hover {
@@ -568,6 +573,12 @@
         /* Ensure events are properly stacked without overlap */
         #scheduleCalendar.view-daygrid .fc-daygrid-event-harness {
             margin-bottom: 2px !important;
+        }
+
+        /* Multi-day events that span across cells */
+        #scheduleCalendar.view-daygrid .fc-daygrid-event-harness-abs {
+            z-index: 10 !important;
+            overflow: visible !important;
         }
 
         #scheduleCalendar.view-daygrid .fc .fc-event:hover {
