@@ -931,9 +931,23 @@ const CalendarEngine = {
               const workerName = currentData.events[eventIndex].workerName;
               const clientName = currentData.events[eventIndex].clientName;
               
-              // Update times
-              currentData.events[eventIndex].start = dropInfo.event.startStr;
-              currentData.events[eventIndex].end = dropInfo.event.endStr;
+              // Update times (normalize all-day end to inclusive date)
+              const isAllDay = !!dropInfo.event.allDay;
+              let newStart = dropInfo.event.startStr;
+              let newEnd = dropInfo.event.endStr;
+
+              if (isAllDay) {
+                if (newEnd) {
+                  const endDate = new Date(newEnd);
+                  endDate.setDate(endDate.getDate() - 1);
+                  newEnd = endDate.toISOString().split('T')[0];
+                } else if (newStart) {
+                  newEnd = newStart;
+                }
+              }
+
+              currentData.events[eventIndex].start = newStart;
+              currentData.events[eventIndex].end = newEnd;
               
               console.log('✅ Updated event:', currentData.events[eventIndex].id, 'old:', originalStart, '→', 'new:', dropInfo.event.startStr);
               
@@ -992,9 +1006,23 @@ const CalendarEngine = {
             const eventIndex = scheduleData.events.findIndex(e => e.id === resizeInfo.event.id);
             
             if (eventIndex !== -1) {
-              // Update the event in place
-              scheduleData.events[eventIndex].start = resizeInfo.event.startStr;
-              scheduleData.events[eventIndex].end = resizeInfo.event.endStr;
+              // Update the event in place (normalize all-day end to inclusive date)
+              const isAllDay = !!resizeInfo.event.allDay;
+              let newStart = resizeInfo.event.startStr;
+              let newEnd = resizeInfo.event.endStr;
+
+              if (isAllDay) {
+                if (newEnd) {
+                  const endDate = new Date(newEnd);
+                  endDate.setDate(endDate.getDate() - 1);
+                  newEnd = endDate.toISOString().split('T')[0];
+                } else if (newStart) {
+                  newEnd = newStart;
+                }
+              }
+
+              scheduleData.events[eventIndex].start = newStart;
+              scheduleData.events[eventIndex].end = newEnd;
               
               console.log('✅ Updated event:', scheduleData.events[eventIndex].id, 'new times:', resizeInfo.event.startStr, '→', resizeInfo.event.endStr);
               

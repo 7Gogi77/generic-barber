@@ -4113,12 +4113,11 @@
                 let endTimeRaw = document.getElementById('eventEndTime')?.value;
 
                 const isMultiDay = !!startDate && !!endDate && startDate !== endDate;
-                const hasTime = !!startTimeRaw || !!endTimeRaw;
                 let start;
                 let end;
                 let allDay = false;
 
-                if (isMultiDay && !hasTime) {
+                if (isMultiDay) {
                     // Multi-day all-day event: store date-only and let FullCalendar span across days
                     start = startDate;
                     end = endDate;
