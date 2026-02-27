@@ -672,6 +672,11 @@ const CalendarEngine = {
         // Only used in admin-panel.html - check if modal exists before calling
         select: (selectInfo) => {
           console.log('📅 Date selected:', selectInfo.startStr, '→', selectInfo.endStr);
+          
+          // TEMPORARY: Return early to allow inspecting highlighted cells without modal
+          console.log('🔍 DEBUG MODE: Skipping modal. Remove this return when done.');
+          return;
+          
           console.log('📋 Checking for eventModal...');
           const hasAdminModal = document.getElementById('eventModal');
           console.log('📋 Admin modal exists?', !!hasAdminModal);
