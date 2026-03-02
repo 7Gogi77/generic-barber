@@ -1619,7 +1619,10 @@ const CalendarEngine = {
 
           console.log('📋 Modal check:', { hasAdminModal: !!hasAdminModal, addModal: !!addModal, openAddEventModal: typeof window.openAddEventModal });
 
+          // Skip both FullCalendar select handler AND dateClick handler
           window._skipNextFcSelect = true;
+          window._skipNextDateClick = true;
+          console.log('🚫 Set skip flags: _skipNextFcSelect=true, _skipNextDateClick=true');
 
           if (hasAdminModal) {
             console.log('🔧 Opening admin modal with dates:', { startStr, endStr });

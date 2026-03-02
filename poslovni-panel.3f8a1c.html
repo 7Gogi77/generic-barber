@@ -5114,6 +5114,12 @@
                 debugLog('🎯 Attaching event handlers...');
                 calendar.on('dateClick', (info) => {
                     debugLog('📅 dateClick handler fired');
+                    // Skip if we just did a custom drag selection
+                    if (window._skipNextDateClick) {
+                        console.log('⏭️ Skipping dateClick because custom drag just happened');
+                        window._skipNextDateClick = false;
+                        return;
+                    }
                     openAddEventModal(info.dateStr);
                 });
 
