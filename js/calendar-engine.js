@@ -1381,52 +1381,14 @@ const CalendarEngine = {
       console.log('Calendar is FullCalendar.Calendar:', calendar instanceof FullCalendar.Calendar);
       console.log('Calendar methods:', Object.getOwnPropertyNames(Object.getPrototypeOf(calendar)).slice(0, 10));
 
-      // Add real-time highlighting during drag selection
-      let isDragging = false;
-      let dragStartDate = null;
-      
+      // UNIFIED CELL SELECTION SYSTEM
+      // Only FullCalendar's select handler manages cell highlighting - no duplicate pointerdown/move/up handlers
+      // This prevents interference with appointment dragging
       const clearHighlights = () => {
         document.querySelectorAll('[data-date]').forEach(cell => {
           cell.style.backgroundColor = '';
         });
       };
-      
-      document.addEventListener('pointerdown', (e) => {
-        const dateCell = e.target.closest('[data-date]');
-        if (dateCell && e.target.closest('#scheduleCalendar')) {
-          isDragging = true;
-          dragStartDate = dateCell.getAttribute('data-date');
-          clearHighlights(); // Clear any previous highlights
-          console.log('🖱️ Drag started on', dragStartDate);
-        }
-      });
-      
-      document.addEventListener('pointermove', (e) => {
-        if (!isDragging || !dragStartDate) return;
-        
-        const dateCell = e.target.closest('[data-date]');
-        if (!dateCell || !e.target.closest('#scheduleCalendar')) return;
-        
-        const currentDate = dateCell.getAttribute('data-date');
-        const startDate = dragStartDate < currentDate ? dragStartDate : currentDate;
-        const endDate = dragStartDate < currentDate ? currentDate : dragStartDate;
-        
-        // Highlight all cells in range
-        document.querySelectorAll('[data-date]').forEach(cell => {
-          const cellDate = cell.getAttribute('data-date');
-          if (cellDate >= startDate && cellDate <= endDate) {
-            cell.style.backgroundColor = 'rgba(0, 122, 255, 0.2)';
-          } else {
-            cell.style.backgroundColor = '';
-          }
-        });
-      });
-      
-      document.addEventListener('pointerup', () => {
-        isDragging = false;
-        dragStartDate = null;
-        // Don't clear highlights here - let the select event keep them visible
-      });
       
       // Clear highlights when modal closes or escape is pressed
       window.addEventListener('keydown', (e) => {
