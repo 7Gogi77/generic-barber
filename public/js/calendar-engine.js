@@ -1408,18 +1408,18 @@ const CalendarEngine = {
         allCells.forEach(cell => {
           const cellDate = cell.getAttribute('data-date');
           if (cellDate >= actualStart && cellDate <= actualEnd) {
-            // Apply inline styles to ensure they stick through DOM re-renders
-            cell.style.backgroundColor = 'rgba(0, 122, 255, 0.6)';
-            cell.style.outline = '3px solid #007AFF';
-            cell.style.outlineOffset = '-1px';
+            // Apply inline styles for iOS glossy appearance
+            cell.style.border = '2px solid rgba(0, 122, 255, 0.8)';
+            cell.style.borderRadius = '8px';
+            cell.style.boxShadow = '0 2px 8px rgba(0, 122, 255, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.5)';
             cell.style.position = 'relative';
             cell.style.zIndex = '10';
             cell.classList.add('calendar-cell-selected');
           } else {
             // Clear only if not in range
-            cell.style.backgroundColor = '';
-            cell.style.outline = '';
-            cell.style.outlineOffset = '';
+            cell.style.border = '';
+            cell.style.borderRadius = '';
+            cell.style.boxShadow = '';
             cell.style.position = '';
             cell.style.zIndex = '';
             cell.classList.remove('calendar-cell-selected');
