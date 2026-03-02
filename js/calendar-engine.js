@@ -1495,6 +1495,12 @@ const CalendarEngine = {
           return;
         }
         
+        // Check if clicking on a popover (more events popup) - if so, let FullCalendar handle it
+        if (e.target.closest('.fc-popover') || e.target.closest('.fc-more-popover')) {
+          console.log('📌 Clicked on popover - skipping');
+          return;
+        }
+        
         // Check if clicking on a day cell or day header (empty area)
         const dayCell = findDayCell(e.target);
         if (dayCell) {
