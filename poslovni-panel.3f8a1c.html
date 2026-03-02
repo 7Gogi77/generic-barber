@@ -1800,6 +1800,13 @@
             <span class="nav-label">Poslovna Analitika</span>
         </div>
 
+        <div class="nav-item">
+            <button class="nav-icon" title="Nastavitve rezervacij" data-page="booking-settings" aria-label="Nastavitve rezervacij">
+                <i class="bi bi-sliders"></i>
+            </button>
+            <span class="nav-label">Nastavitve rezervacij</span>
+        </div>
+
         <div style="flex: 1;"></div>
 
         <div class="nav-item">
@@ -1823,11 +1830,6 @@
 
     <div class="main-content">
         <div class="content-area">
-            <div style="display:flex; justify-content:flex-end; margin-bottom:12px;">
-                <button id="businessSettingsShortcutBtn" class="btn btn-secondary" style="padding:10px 14px; font-size:13px; width:auto; flex:0 0 auto;" onclick="showBusinessSettingsPanel()">
-                    Nastavitve rezervacij
-                </button>
-            </div>
             <div id="scheduleCalendar">
                 <div class="calendar-loading">
                     <div class="calendar-spinner"></div>
@@ -2623,6 +2625,9 @@
                         else if (page === 'settings') {
                             window.location.href = 'admin-panel.html';
                         }
+                        else if (page === 'booking-settings') {
+                            showBusinessSettingsPanel();
+                        }
                         else if (page === 'calendar') { 
                             hideAllPanels();
                             document.getElementById('scheduleCalendar').style.display = 'block';
@@ -2972,11 +2977,17 @@
             const panel = document.getElementById('businessSettingsPanel');
             if (!panel) return;
 
-            hideAllPanels();
+            // Close other panels individually — do NOT call hideAllPanels() here because
+            // that calls closeBusinessSettingsPanel() which schedules display:none after 320ms
+            // causing the panel to disappear right after opening (race condition).
+            closeCustomerPanel();
+            closeAnalyticsPanel();
             document.getElementById('scheduleCalendar').style.display = 'none';
 
-            loadBusinessSettingsForm();
+            // Cancel any pending close animation and immediately show
+            panel.classList.remove('open');
             panel.style.display = 'block';
+            loadBusinessSettingsForm();
             setTimeout(() => panel.classList.add('open'), 10);
         }
 
