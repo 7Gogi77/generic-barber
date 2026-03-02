@@ -4653,6 +4653,8 @@
 
         async function initializeBusinessCalendar() {
             debugLog('🚀 Initialization started');
+            // Flag to prevent FullCalendar's select handler during custom cell dragging
+            window._isDraggingCustomCells = false;
             const container = document.getElementById('scheduleCalendar');
             container.innerHTML = '🔄 Inicializiram orodje...';
 

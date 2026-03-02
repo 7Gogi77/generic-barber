@@ -682,7 +682,19 @@ const CalendarEngine = {
 
         // Event handling - NOTE: These are overridden by poslovni-panel.html
         // Only used in admin-panel.html - check if modal exists before calling
+        selectStart: (selectInfo) => {
+          // Prevent FullCalendar's default selection behavior during our custom cell drag
+          if (window._isDraggingCustomCells) {
+            return false;
+          }
+          console.log('🖱️ Selection started:', selectInfo.startStr);
+        },
+
         select: (selectInfo) => {
+          // Prevent FullCalendar's select handler if we're doing custom cell dragging
+          if (window._isDraggingCustomCells) {
+            return false;
+          }
           console.log('📅 Date selected:', selectInfo.startStr, '→', selectInfo.endStr);
           const shiftDateString = (dateStr, days) => {
             if (!dateStr) return dateStr;

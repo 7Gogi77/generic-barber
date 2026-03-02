@@ -682,7 +682,19 @@ const CalendarEngine = {
 
         // Event handling - NOTE: These are overridden by poslovni-panel.html
         // Only used in admin-panel.html - check if modal exists before calling
+        selectStart: (selectInfo) => {
+          // Prevent FullCalendar's default selection behavior during our custom cell drag
+          if (window._isDraggingCustomCells) {
+            return false;
+          }
+          console.log('🖱️ Selection started:', selectInfo.startStr);
+        },
+
         select: (selectInfo) => {
+          // Prevent FullCalendar's select handler if we're doing custom cell dragging
+          if (window._isDraggingCustomCells) {
+            return false;
+          }
           console.log('📅 Date selected:', selectInfo.startStr, '→', selectInfo.endStr);
           const shiftDateString = (dateStr, days) => {
             if (!dateStr) return dateStr;
@@ -1381,6 +1393,7 @@ const CalendarEngine = {
       // Detects if clicking on an event vs empty cell to avoid interfering with appointment dragging
       let isDraggingCells = false;
       let cellSelectionStartDate = null;
+      let dragElement = null; // Track which element started the drag
       
       const clearHighlights = () => {
         document.querySelectorAll('[data-date]').forEach(cell => {
@@ -1430,12 +1443,14 @@ const CalendarEngine = {
       
       // Detect drag-to-select: only if pointerdown is on empty cell/day-top, NOT on an event
       document.addEventListener('pointerdown', (e) => {
+        isDraggingCells = false;
+        window._isDraggingCustomCells = false;
+        
         // Only handle events in the calendar
         if (!e.target.closest('#scheduleCalendar')) return;
         
         // Check if clicking on an event - if so, let FullCalendar/drag system handle it
         if (e.target.closest('.fc-event') || e.target.closest('.fc-daygrid-event')) {
-          isDraggingCells = false;
           return;
         }
         
@@ -1443,19 +1458,32 @@ const CalendarEngine = {
         const dayCell = findDayCell(e.target);
         if (dayCell) {
           isDraggingCells = true;
+          window._isDraggingCustomCells = true;
           cellSelectionStartDate = dayCell.getAttribute('data-date');
+          dragElement = dayCell;
           clearHighlights();
           console.log('📍 Cell selection drag started on', cellSelectionStartDate);
+          
+          // Set initial highlight on the start cell
+          dayCell.style.backgroundColor = 'rgba(0, 122, 255, 0.25)';
+          
+          // Capture pointer on the element to ensure we get all move events
+          if (dayCell.setPointerCapture && e.pointerId) {
+            dayCell.setPointerCapture(e.pointerId);
+          }
         }
       });
       
       // Real-time highlighting as user drags across cells
-      // Uses mousemove for more responsive feedback
+      // Uses mousemove for responsive feedback
       document.addEventListener('mousemove', (e) => {
         if (!isDraggingCells || !cellSelectionStartDate) return;
         
         const currentCell = getCellAtCursorPosition(e.clientX, e.clientY);
-        if (!currentCell) return;
+        if (!currentCell) {
+          // Still highlight from start to last known good cell
+          return;
+        }
         
         const currentDate = currentCell.getAttribute('data-date');
         if (!currentDate) return; // No date found
@@ -1475,9 +1503,18 @@ const CalendarEngine = {
       });
       
       // End drag selection
-      document.addEventListener('pointerup', () => {
+      document.addEventListener('pointerup', (e) => {
+        if (isDraggingCells && dragElement && e.pointerId) {
+          try {
+            dragElement.releasePointerCapture(e.pointerId);
+          } catch (err) {
+            // Ignore if not captured
+          }
+        }
         isDraggingCells = false;
+        window._isDraggingCustomCells = false;
         cellSelectionStartDate = null;
+        dragElement = null;
         // Keep highlights visible - FullCalendar's select event will handle opening the modal
       });
       
@@ -1485,6 +1522,9 @@ const CalendarEngine = {
       window.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
           clearHighlights();
+          isDraggingCells = false;
+          window._isDraggingCustomCells = false;
+          cellSelectionStartDate = null;
         }
       });
       

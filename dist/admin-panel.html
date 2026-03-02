@@ -4897,6 +4897,8 @@
       // Add visible debug panel
       
       let calendarInitialized = false;
+      // Flag to prevent FullCalendar's select handler during custom cell dragging
+      window._isDraggingCustomCells = false;
       
       async function initializeAdminSchedule() {
         const container = document.getElementById('scheduleCalendar');
