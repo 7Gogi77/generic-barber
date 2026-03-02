@@ -587,8 +587,8 @@
             background: rgba(0, 122, 255, 0.08);
             font-weight: 600;
             font-size: 12px;
-            padding: 6px 14px;
-            border-radius: 12px;
+            padding: 3px 7px;
+            border-radius: 22px;
             border: 1.5px solid var(--ios-blue);
             transition: all 0.2s ease;
             cursor: pointer;
@@ -5126,20 +5126,29 @@
                 // Calendar interactions
                 debugLog('🎯 Attaching event handlers...');
                 
+                // Prevent dateClick when clicking the more-link by adding a direct listener
+                const addMoreLinkListener = () => {
+                    document.querySelectorAll('.fc-daygrid-more-link').forEach(link => {
+                        if (!link._moreClickAdded) {
+                            link.addEventListener('click', (e) => {
+                                console.log('✓ More-link intercepted before dateClick');
+                                e.stopImmediatePropagation();
+                                // Let the event bubble so FullCalendar's moreLinkClick handler fires
+                            }, true); // capture phase fires first
+                            link._moreClickAdded = true;
+                        }
+                    });
+                };
+                
                 calendar.on('dateClick', (info) => {
                     debugLog('📅 dateClick handler fired');
                     
-                    // Check if clicked element is the +more link
-                    const clickTarget = info.jsEvent?.target || info.jsEvent?.srcElement;
-                    const isMoreLink = clickTarget?.classList?.contains('fc-daygrid-more-link') || 
-                                      clickTarget?.closest('.fc-daygrid-more-link') !== null ||
-                                      clickTarget?.className?.includes('more-link');
-                    
-                    console.log('🔍 Click target:', clickTarget?.className, 'isMoreLink:', isMoreLink);
+                    // Also check the target just in case
+                    const clickTarget = info.jsEvent?.target;
+                    const isMoreLink = clickTarget?.closest('.fc-daygrid-more-link') !== null;
                     
                     if (isMoreLink) {
-                        console.log('✅ Clicked on +more link - allowing popover to show');
-                        // Do NOT prevent default - let FullCalendar handle the popover
+                        console.log('✓ Detected click on more-link, skipping modal');
                         return;
                     }
                     
@@ -5150,6 +5159,12 @@
                         return;
                     }
                     openAddEventModal(info.dateStr);
+                });
+                
+                // Add more-link listeners on init and after calendar renders
+                addMoreLinkListener();
+                calendar.on('datesSet', () => {
+                    setTimeout(() => addMoreLinkListener(), 50);
                 });
 
                 calendar.on('eventClick', (info) => {
