@@ -5096,12 +5096,17 @@
                 // Calendar interactions
                 debugLog('🎯 Attaching event handlers...');
                 
-                // Use DOM click instead of FullCalendar's dateClick to have full control
+                // CRITICAL: Prevent FullCalendar's dateClick by disabling it
+                calendar.setOption('navLinks', false);
+                
+                // Use DOM click with CAPTURE PHASE to intercept everything first
                 container.addEventListener('click', (e) => {
+                    console.log('🖱️ Click detected on:', e.target.className, e.target.tagName);
+                    
                     // Check if click was on more-link - let FullCalendar handle it
                     if (e.target.closest('.fc-daygrid-more-link')) {
-                        console.log('✓ More-link clicked - FullCalendar will show popover');
-                        return;
+                        console.log('✓ More-link clicked - letting FullCalendar show popover');
+                        return; // Don't handle this, let FullCalendar's moreLinkClick work
                     }
                     
                     // Check if click was on an event - don't open add modal
@@ -5110,7 +5115,7 @@
                         return;
                     }
                     
-                    // Check if click was on a day cell
+                    // Check if click was on a day cell (but not on more-link or event)
                     const dayCell = e.target.closest('.fc-daygrid-day');
                     if (dayCell && dayCell.dataset.date) {
                         console.log('📅 Empty cell clicked:', dayCell.dataset.date);
@@ -5124,7 +5129,7 @@
                         
                         openAddEventModal(dayCell.dataset.date);
                     }
-                });
+                }, true); // TRUE = capture phase, fires BEFORE any other handlers
                 addMoreLinkListener();
                 calendar.on('datesSet', () => {
                     setTimeout(() => addMoreLinkListener(), 50);
