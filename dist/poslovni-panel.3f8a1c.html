@@ -2271,9 +2271,7 @@
                     console.warn('⚠️ No startDate provided to openAddEventModalWithTab');
                 }
             }
-            // Override default openAddEventModal
-            window.openAddEventModal = openAddEventModalWithTab;
-            console.log('🔧 OVERRIDE SET: window.openAddEventModal =', typeof window.openAddEventModal, window.openAddEventModal.name || 'unknown');
+            // IMPORTANT: Override will be applied at END of script file to avoid hoisting issues
         // Fallback: Create FullCalendar stub if CDN failed
         if (typeof FullCalendar === 'undefined') {
           console.warn('⚠️ FullCalendar failed to load from CDN');
@@ -5287,6 +5285,11 @@
             div.textContent = text;
             return div.innerHTML;
         }
+
+        // ===== CRITICAL OVERRIDE - AFTER ALL FUNCTION DEFINITIONS =====
+        // Must be here, AFTER openAddEventModal is defined, to override function hoisting
+        window.openAddEventModal = openAddEventModalWithTab;
+        console.log('🔧 OVERRIDE SET (at end of script): window.openAddEventModal =', typeof window.openAddEventModal, window.openAddEventModal.name || 'openAddEventModalWithTab');
     </script>
 
     <!-- Chart.js for Analytics -->
