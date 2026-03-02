@@ -293,7 +293,7 @@ const CalendarEngine = {
       // Booking events should render the customer name (no icon prefix) to avoid duplicate/emoji-titled items
     const isBooking = event.extendedProps?.isBooking || false;
     const customerName = event.extendedProps?.customer || null;
-    const titleText = isBooking ? (customerName || event.title || 'Rezervacija') : ((typeConfig?.icon || '📅') + ' ' + (event.title || event.type));
+    const titleText = isBooking ? (customerName || event.title || 'Rezervacija') : (event.title || event.type);
 
     // For timed events, return Date objects to preserve local time in FullCalendar
     if (!isAllDay) {
@@ -2272,28 +2272,28 @@ const CalendarEngine = {
       return;
     }
 
-    const typeEmojis = {
-      'working_hours': '💼',
-      'break': '☕',
-      'lunch': '🍽️',
-      'vacation': '🏖️',
-      'sick_leave': '🏥',
-      'day_off': '❌'
+    const typeIcons = {
+      'working_hours': 'bi-briefcase',
+      'break': 'bi-cup-hot',
+      'lunch': 'bi-cup-hot',
+      'vacation': 'bi-palmtree',
+      'sick_leave': 'bi-bandaid',
+      'day_off': 'bi-calendar-x'
     };
 
     const typeColors = {
       'working_hours': '#27ae60',
-      'break': '#f39c12',
-      'lunch': '#e67e22',
-      'vacation': '#3498db',
-      'sick_leave': '#9b59b6',
-      'day_off': '#e74c3c'
+      'break': '#8e44ad',
+      'lunch': '#d35400',
+      'vacation': '#f39c12',
+      'sick_leave': '#e74c3c',
+      'day_off': '#95a5a6'
     };
 
     const eventsHTML = scheduleData.events.map(event => {
       const startDate = new Date(event.start);
       const endDate = new Date(event.end);
-      const emoji = typeEmojis[event.type] || '📅';
+      const icon = typeIcons[event.type] || 'bi-calendar';
       const color = typeColors[event.type] || '#95a5a6';
       const startStr = startDate.toLocaleDateString('sl-SI', { weekday: 'short', year: 'numeric', month: '2-digit', day: '2-digit' });
       const startTime = startDate.toLocaleTimeString('sl-SI', { hour: '2-digit', minute: '2-digit' });
@@ -2301,11 +2301,11 @@ const CalendarEngine = {
 
       return `
         <div style="display: flex; gap: 12px; padding: 12px; background: white; border-radius: 6px; border-left: 4px solid ${color}; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-          <div style="font-size: 24px; min-width: 30px; text-align: center;">${emoji}</div>
+          <div style="font-size: 20px; min-width: 30px; text-align: center; color: ${color};"><i class="bi ${icon}"></i></div>
           <div style="flex: 1; min-width: 0;">
             <div style="font-weight: 600; color: #2c3e50; word-break: break-word;">${event.title}</div>
             <div style="font-size: 12px; color: #7f8c8d; margin-top: 4px;">
-              📅 ${startStr} | ⏰ ${startTime} - ${endTime}
+              <i class="bi bi-calendar3" style="margin-right: 4px;"></i>${startStr} | <i class="bi bi-clock" style="margin-right: 4px;"></i>${startTime} - ${endTime}
             </div>
           </div>
         </div>
@@ -2404,7 +2404,7 @@ async function createWorkingHoursEvents(startTime, endTime) {
       // Create working hours event for this day
       const event = {
         id: 'delo_' + dateStr,
-        title: '💼 Delo',
+        title: 'Delovni čas',
         type: 'working_hours',
         start: `${dateStr}T${startTime}`,
         end: `${dateStr}T${endTime}`,
