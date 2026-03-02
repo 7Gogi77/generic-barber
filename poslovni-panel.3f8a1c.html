@@ -5136,21 +5136,31 @@
                 // Calendar interactions
                 debugLog('🎯 Attaching event handlers...');
                 
+                // Add listener to MORE-LINKS at DOM level BEFORE they bubble
+                const attachMoreLinkListeners = () => {
+                    document.querySelectorAll('.fc-daygrid-more-link').forEach(link => {
+                        if (link._moreListenerAdded) return;
+                        
+                        // Capture phase = fires BEFORE bubble phase, BEFORE any other handlers
+                        const handleMoreLinkClick = (e) => {
+                            console.log('🖇️  More-link DOM click captured - blocking bubble to cell');
+                            e.stopPropagation(); // Stop clicking from reaching day cell
+                            e.preventDefault(); // Prevent any default link behavior
+                        };
+                        
+                        link.addEventListener('click', handleMoreLinkClick, true); // true = capture phase
+                        link._moreListenerAdded = true;
+                    });
+                };
+                
+                // Attach on init and after calendar updates
+                attachMoreLinkListeners();
+                calendar.on('datesSet', () => {
+                    setTimeout(() => attachMoreLinkListeners(), 0); // Debounce
+                });
+                
                 calendar.on('dateClick', (info) => {
                     debugLog('📅 dateClick handler fired');
-                    
-                    // Check if the click was on or in the more-link
-                    const clickTarget = info.jsEvent?.target;
-                    const moreLink = clickTarget?.closest('.fc-daygrid-more-link');
-                    
-                    if (moreLink) {
-                        console.log('✓ Click was on more-link, blocking modal');
-                        // Prevent the modal from opening by preventing default
-                        info.jsEvent?.preventDefault?.();
-                        info.jsEvent?.stopPropagation?.();
-                        // FullCalendar's moreLinkClick handler will show the popover
-                        return;
-                    }
                     
                     // Skip if we just did a custom drag selection
                     if (window._skipNextDateClick) {
@@ -5158,6 +5168,9 @@
                         window._skipNextDateClick = false;
                         return;
                     }
+                    
+                    // Only open modal if this is truly an empty cell click
+                    // (not blocked by the more-link stopPropagation above)
                     openAddEventModal(info.dateStr);
                 });
 
