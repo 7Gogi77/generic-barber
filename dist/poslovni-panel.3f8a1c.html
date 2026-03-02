@@ -425,10 +425,9 @@
         }
 
         .fc-daygrid-row {
-            height: auto !important;
-            min-height: auto !important;
-            max-height: none !important;
-            flex: 0 0 auto !important;
+            height: 100px !important;
+            min-height: 100px !important;
+            flex: 0 0 100px !important;
             position: relative;
             overflow: visible !important;
         }
@@ -436,9 +435,8 @@
         .fc-daygrid-day-cell {
             background: var(--ios-bg-secondary);
             transition: background 0.15s ease;
-            height: auto !important;
+            height: 100px !important;
             min-height: 100px !important;
-            max-height: none !important;
             overflow: visible !important;
             flex: 1 !important;
             position: relative;
@@ -447,9 +445,8 @@
         .fc-daygrid-day {
             background: var(--ios-bg-secondary);
             transition: background 0.15s ease;
-            height: auto !important;
+            height: 100px !important;
             min-height: 100px !important;
-            max-height: none !important;
             overflow: visible !important;
             flex: 1 1 auto !important;
             position: relative;
@@ -504,7 +501,7 @@
             flex-direction: column !important;
             gap: 2px !important;
             padding-top: 4px !important;
-            height: auto !important;
+            height: calc(100% - 40px) !important;
             overflow: visible !important;
         }
 
@@ -5101,53 +5098,15 @@
                 // Calendar interactions
                 debugLog('🎯 Attaching event handlers...');
                 
-                // CRITICAL: Prevent FullCalendar's dateClick by disabling it
+                // Let FullCalendar's native handlers work - they handle more-link and dateClick properly
                 calendar.setOption('navLinks', false);
-                
-                // Use DOM click with CAPTURE PHASE to intercept everything first
-                container.addEventListener('click', (e) => {
-                    console.log('🖱️ Click detected on:', e.target.className, e.target.tagName);
-                    
-                    // Check the full event path to see if more-link was clicked anywhere in the chain
-                    const path = e.composedPath ? e.composedPath() : e.path || [];
-                    const moreLinkInPath = path.find(el => el.classList && el.classList.contains('fc-daygrid-more-link'));
-                    
-                    if (moreLinkInPath) {
-                        console.log('✓ More-link found in event path - letting FullCalendar show popover');
-                        return; // Don't handle this, let FullCalendar's moreLinkClick work
-                    }
-                    
-                    // Also check with closest as backup
-                    if (e.target.closest('.fc-daygrid-more-link')) {
-                        console.log('✓ More-link clicked via closest - letting FullCalendar show popover');
-                        return;
-                    }
-                    
-                    // Check if click was on an event - don't open add modal
-                    if (e.target.closest('.fc-event')) {
-                        console.log('✓ Event clicked - will be handled by eventClick');
-                        return;
-                    }
-                    
-                    // Check if click was on a day cell (but not on more-link or event)
-                    const dayCell = e.target.closest('.fc-daygrid-day');
-                    if (dayCell && dayCell.dataset.date) {
-                        console.log('📅 Empty cell clicked:', dayCell.dataset.date);
-                        
-                        // Skip if we just did a custom drag selection
-                        if (window._skipNextDateClick) {
-                            console.log('⏭️ Skipping because custom drag just happened');
-                            window._skipNextDateClick = false;
-                            return;
-                        }
-                        
-                        openAddEventModal(dayCell.dataset.date);
-                    }
-                }, true); // TRUE = capture phase, fires BEFORE any other handlers
-                addMoreLinkListener();
-                calendar.on('datesSet', () => {
-                    setTimeout(() => addMoreLinkListener(), 50);
-                });
+
+                // Handle single day cell clicks to open add modal (but NOT more-link clicks)
+                calendar.on('dateClick', (info) => {
+                    console.log('📅 dateClick fired for:', info.dateStr);
+                    // This is a native FullCalendar event that fires ONLY for empty cell clicks
+                    // It does NOT fire when clicking more-links or events
+                    openAddEventModal(info.dateStr.split('T')[0]);
                 });
 
                 calendar.on('eventClick', (info) => {
