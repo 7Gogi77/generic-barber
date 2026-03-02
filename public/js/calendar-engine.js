@@ -676,6 +676,7 @@ const CalendarEngine = {
 
         // Interactions
         selectable: true,
+        selectMirror: false, // Disable FullCalendar's visual feedback during selection
         selectOverlap: true,
         editable: true,
         eventDurationEditable: true,
@@ -1395,7 +1396,8 @@ const CalendarEngine = {
       let cellSelectionStartDate = null;
       let cellSelectionEndDate = null; // Track the current end date during drag
       let dragElement = null; // Track which element started the drag
-      let highlightRefreshInterval = null; // Track interval that reapplies styles
+      let highlightRefreshRAF = null; // Track requestAnimationFrame for continuous reapplication
+      let mutationObserver = null; // Watch for DOM changes and reapply highlights
       
       const applyHighlights = (startDate, endDate) => {
         if (!startDate || !endDate) return;
@@ -1411,12 +1413,16 @@ const CalendarEngine = {
             cell.style.backgroundColor = 'rgba(0, 122, 255, 0.6)';
             cell.style.outline = '3px solid #007AFF';
             cell.style.outlineOffset = '-1px';
+            cell.style.position = 'relative';
+            cell.style.zIndex = '10';
             cell.classList.add('calendar-cell-selected');
           } else {
             // Clear only if not in range
             cell.style.backgroundColor = '';
             cell.style.outline = '';
             cell.style.outlineOffset = '';
+            cell.style.position = '';
+            cell.style.zIndex = '';
             cell.classList.remove('calendar-cell-selected');
           }
         });
@@ -1513,6 +1519,23 @@ const CalendarEngine = {
             dayCell.setPointerCapture(e.pointerId);
             console.log('   Captured pointer');
           }
+          
+          // Create MutationObserver to immediately reapply highlights when FullCalendar modifies DOM
+          const calendarEl = document.getElementById('scheduleCalendar');
+          if (calendarEl) {
+            mutationObserver = new MutationObserver(() => {
+              if (isDraggingCells && cellSelectionStartDate && cellSelectionEndDate) {
+                applyHighlights(cellSelectionStartDate, cellSelectionEndDate);
+              }
+            });
+            mutationObserver.observe(calendarEl, {
+              childList: true,
+              subtree: true,
+              attributes: true,
+              attributeFilter: ['style', 'class']
+            });
+            console.log('   MutationObserver started');
+          }
         } else {
           console.log('📌 Clicked in calendar but no dayCell found');
         }
@@ -1522,6 +1545,9 @@ const CalendarEngine = {
       // Uses mousemove for responsive feedback
       document.addEventListener('mousemove', (e) => {
         if (!isDraggingCells || !cellSelectionStartDate) return;
+        
+        // Stop event propagation to prevent FullCalendar from processing it
+        e.stopPropagation();
         
         const currentCell = getCellAtCursorPosition(e.clientX, e.clientY);
         if (!currentCell) {
@@ -1535,55 +1561,39 @@ const CalendarEngine = {
           return;
         }
         
-        const startDate = cellSelectionStartDate < currentDate ? cellSelectionStartDate : currentDate;
-        const endDate = cellSelectionStartDate < currentDate ? currentDate : cellSelectionStartDate;
+        // Store the current end date for continuous reapplication
+        cellSelectionEndDate = currentDate;
+        console.log('🎯 Dragging from', cellSelectionStartDate, 'to', currentDate);
         
-        console.log('🎯 Dragging from', startDate, 'to', endDate);
+        // Apply highlights immediately
+        applyHighlights(cellSelectionStartDate, cellSelectionEndDate);
         
-        // Highlight all cells in the range using CSS class (more reliable than inline styles)
-        const allCells = document.querySelectorAll('[data-date]');
-        console.log('📊 Total cells with data-date:', allCells.length);
+        // Cancel any existing animation frame
+        if (highlightRefreshRAF) cancelAnimationFrame(highlightRefreshRAF);
         
-        let highlightedCount = 0;
-        allCells.forEach((cell, idx) => {
-          const cellDate = cell.getAttribute('data-date');
-          if (cellDate >= startDate && cellDate <= endDate) {
-            // Apply inline styles directly to ensure they stick during drag
-            cell.style.backgroundColor = 'rgba(0, 122, 255, 0.6)';
-            cell.style.outline = '3px solid #007AFF';
-            cell.style.outlineOffset = '-1px';
-            cell.classList.add('calendar-cell-selected');
-            
-            // Detailed logging for first highlighted cell
-            if (highlightedCount === 0) {
-              console.log('🔍 First highlighted cell details:');
-              console.log('   Element tag:', cell.tagName);
-              console.log('   Element class:', cell.className);
-              console.log('   Element ID:', cell.id);
-              console.log('   Has class "calendar-cell-selected":', cell.classList.contains('calendar-cell-selected'));
-              console.log('   Computed style display:', window.getComputedStyle(cell).display);
-              console.log('   Computed style background:', window.getComputedStyle(cell).backgroundColor);
-              console.log('   Inline style bg:', cell.style.backgroundColor);
-              console.log('   Element HTML:', cell.outerHTML.substring(0, 200));
-            }
-            highlightedCount++;
-          } else {
-            // Clear inline styles AND class on non-selected cells
-            cell.style.backgroundColor = '';
-            cell.style.outline = '';
-            cell.style.outlineOffset = '';
-            cell.classList.remove('calendar-cell-selected');
+        // Use requestAnimationFrame for smooth 60fps reapplication
+        const continuousHighlight = () => {
+          if (isDraggingCells && cellSelectionStartDate && cellSelectionEndDate) {
+            applyHighlights(cellSelectionStartDate, cellSelectionEndDate);
+            highlightRefreshRAF = requestAnimationFrame(continuousHighlight);
           }
-        });
-        
-        console.log('✨ Highlighted', highlightedCount, 'cells');
-      });
+        };
+        highlightRefreshRAF = requestAnimationFrame(continuousHighlight);
+      }, true); // Use capture phase to intercept before FullCalendar
       
       // End drag selection
       document.addEventListener('pointerup', (e) => {
-        if (highlightRefreshInterval) {
-          clearInterval(highlightRefreshInterval);
-          highlightRefreshInterval = null;
+        // Cancel the continuous highlight animation
+        if (highlightRefreshRAF) {
+          cancelAnimationFrame(highlightRefreshRAF);
+          highlightRefreshRAF = null;
+        }
+        
+        // Disconnect MutationObserver
+        if (mutationObserver) {
+          mutationObserver.disconnect();
+          mutationObserver = null;
+          console.log('   MutationObserver disconnected');
         }
         
         if (isDraggingCells && dragElement && e.pointerId) {

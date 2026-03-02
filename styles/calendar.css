@@ -286,6 +286,9 @@
   background: rgba(0, 122, 255, 0.6) !important;
   outline: 3px solid #007AFF !important;
   outline-offset: -1px !important;
+  z-index: 10 !important;
+  position: relative !important;
+  pointer-events: auto !important;
 }
 
 #scheduleCalendar [data-date].calendar-cell-selected {
@@ -293,6 +296,8 @@
   outline: 3px solid #007AFF !important;
   box-shadow: inset 0 0 10px rgba(0, 122, 255, 0.8) !important;
   position: relative !important;
+  z-index: 10 !important;
+  pointer-events: auto !important;
 }
 
 /* Ensure the background harness doesn't clip highlights */
