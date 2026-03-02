@@ -5103,10 +5103,19 @@
                 container.addEventListener('click', (e) => {
                     console.log('🖱️ Click detected on:', e.target.className, e.target.tagName);
                     
-                    // Check if click was on more-link - let FullCalendar handle it
-                    if (e.target.closest('.fc-daygrid-more-link')) {
-                        console.log('✓ More-link clicked - letting FullCalendar show popover');
+                    // Check the full event path to see if more-link was clicked anywhere in the chain
+                    const path = e.composedPath ? e.composedPath() : e.path || [];
+                    const moreLinkInPath = path.find(el => el.classList && el.classList.contains('fc-daygrid-more-link'));
+                    
+                    if (moreLinkInPath) {
+                        console.log('✓ More-link found in event path - letting FullCalendar show popover');
                         return; // Don't handle this, let FullCalendar's moreLinkClick work
+                    }
+                    
+                    // Also check with closest as backup
+                    if (e.target.closest('.fc-daygrid-more-link')) {
+                        console.log('✓ More-link clicked via closest - letting FullCalendar show popover');
+                        return;
                     }
                     
                     // Check if click was on an event - don't open add modal
