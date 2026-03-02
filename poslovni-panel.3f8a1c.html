@@ -587,23 +587,24 @@
             background: rgba(0, 122, 255, 0.08);
             font-weight: 600;
             font-size: 12px;
-            padding: 4px 10px;
-            border-radius: 8px;
+            padding: 6px 14px;
+            border-radius: 12px;
             border: 1.5px solid var(--ios-blue);
             transition: all 0.2s ease;
             cursor: pointer;
             display: inline-block;
             letter-spacing: -0.3px;
+            line-height: 1.4;
         }
 
         #scheduleCalendar.view-daygrid .fc-daygrid-more-link:hover {
             background: rgba(0, 122, 255, 0.12);
-            box-shadow: 0 1px 3px rgba(0, 122, 255, 0.15);
+            box-shadow: 0 2px 4px rgba(0, 122, 255, 0.2);
         }
         
         #scheduleCalendar.view-daygrid .fc-daygrid-more-link:active {
             background: rgba(0, 122, 255, 0.15);
-            transform: scale(0.98);
+            transform: scale(0.96);
         }
 
         /* iOS-Style Popover */
@@ -5125,29 +5126,20 @@
                 // Calendar interactions
                 debugLog('🎯 Attaching event handlers...');
                 
-                // Attach handler to ALL more-links on the page to prevent dateClick from firing
-                const attachMoreLinkHandlers = () => {
-                    const moreLinks = document.querySelectorAll('.fc-daygrid-more-link');
-                    moreLinks.forEach(link => {
-                        if (!link._handlerAttached) {
-                            link.addEventListener('click', (e) => {
-                                console.log('✓ More-link clicked, stopping propagation');
-                                e.stopPropagation();
-                                e.preventDefault();
-                            }, { capture: true });
-                            link._handlerAttached = true;
-                        }
-                    });
-                };
-                
                 calendar.on('dateClick', (info) => {
                     debugLog('📅 dateClick handler fired');
                     
-                    // Double-check: also prevent if click target is within more-link
-                    const clickedElement = info.jsEvent?.target;
-                    if (clickedElement && clickedElement.closest('.fc-daygrid-more-link')) {
-                        console.log('⏭️ Skipping dateClick because clicked on "+more" link (using popover)');
-                        info.jsEvent.stopPropagation();
+                    // Check if clicked element is the +more link
+                    const clickTarget = info.jsEvent?.target || info.jsEvent?.srcElement;
+                    const isMoreLink = clickTarget?.classList?.contains('fc-daygrid-more-link') || 
+                                      clickTarget?.closest('.fc-daygrid-more-link') !== null ||
+                                      clickTarget?.className?.includes('more-link');
+                    
+                    console.log('🔍 Click target:', clickTarget?.className, 'isMoreLink:', isMoreLink);
+                    
+                    if (isMoreLink) {
+                        console.log('✅ Clicked on +more link - allowing popover to show');
+                        // Do NOT prevent default - let FullCalendar handle the popover
                         return;
                     }
                     
@@ -5158,12 +5150,6 @@
                         return;
                     }
                     openAddEventModal(info.dateStr);
-                });
-                
-                // Attach handlers immediately and after every calendar render
-                attachMoreLinkHandlers();
-                calendar.on('datesSet', () => {
-                    setTimeout(() => attachMoreLinkHandlers(), 100);
                 });
 
                 calendar.on('eventClick', (info) => {
