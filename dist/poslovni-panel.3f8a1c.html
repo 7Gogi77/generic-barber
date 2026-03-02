@@ -5111,8 +5111,34 @@
                         return;
                     }
                     
-                    // This is a native FullCalendar event that fires ONLY for empty cell clicks
+                    // This is a native FullCalendar event that fires for empty cell clicks
                     openAddEventModal(info.dateStr.split('T')[0]);
+                });
+
+                // Add hover listener for more-links to show popover
+                const setupMoreLinkHover = () => {
+                    const moreLinks = document.querySelectorAll('.fc-daygrid-more-link');
+                    console.log('🔍 Found', moreLinks.length, 'more-links');
+                    
+                    moreLinks.forEach(link => {
+                        if (!link._hoverListenerAdded) {
+                            link._hoverListenerAdded = true;
+                            
+                            link.addEventListener('mouseenter', () => {
+                                console.log('✨ Hovering over more-link, triggering click');
+                                // Trigger click to show popover
+                                link.click();
+                            });
+                        }
+                    });
+                };
+
+                // Setup on initial render
+                setupMoreLinkHover();
+                
+                // Setup again when dates change
+                calendar.on('datesSet', () => {
+                    setTimeout(setupMoreLinkHover, 100);
                 });
 
                 calendar.on('eventClick', (info) => {
