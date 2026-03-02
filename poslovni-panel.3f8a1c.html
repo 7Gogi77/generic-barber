@@ -1919,6 +1919,50 @@
                 </div>
             </div>
         </div>
+
+        <!-- BUSINESS SETTINGS PANEL -->
+        <div id="businessSettingsPanel" style="display:none; position:fixed; left:0; top:0; width:100%; height:100%; background:#fff; color:#222; z-index:2500; transition:all 0.2s; overflow:hidden;">
+            <div class="panel-header" style="justify-content:space-between;">
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <button onclick="closeBusinessSettingsPanel()" style="background:none; border:none; font-size:20px; color:#888; cursor:pointer;">&larr;</button>
+                    <h3 style="margin:0; font-size:18px; font-weight:700; color:#2c3e50;">Nastavitve rezervacij</h3>
+                    <div style="margin-left:8px; color:#888; font-size:13px;">(Delovni čas in večdnevni termini)</div>
+                </div>
+            </div>
+            <div style="padding:20px; overflow-y:auto; height:calc(100% - 72px);">
+                <div class="chart-container" style="max-width:700px;">
+                    <h4 style="margin:0 0 16px 0; font-size:16px; font-weight:600; color:#2c3e50;">Delovni čas</h4>
+                    <div style="display:grid; grid-template-columns:repeat(2, minmax(160px, 220px)); gap:16px; align-items:end; margin-bottom:20px;">
+                        <div>
+                            <label for="workStartTime" style="display:block; margin-bottom:6px; font-size:13px; color:#666;">Začetek</label>
+                            <input type="time" id="workStartTime" value="09:00" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px;">
+                        </div>
+                        <div>
+                            <label for="workEndTime" style="display:block; margin-bottom:6px; font-size:13px; color:#666;">Konec</label>
+                            <input type="time" id="workEndTime" value="19:00" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px;">
+                        </div>
+                    </div>
+
+                    <h4 style="margin:8px 0 12px 0; font-size:16px; font-weight:600; color:#2c3e50;">Večdnevne rezervacije</h4>
+                    <div style="margin-bottom:10px; display:flex; align-items:center; gap:10px;">
+                        <input type="checkbox" id="allowMultiDayAppointments" style="width:18px; height:18px; cursor:pointer;">
+                        <label for="allowMultiDayAppointments" style="font-size:14px; color:#2c3e50; cursor:pointer;">Omogoči rezervacije čez več dni (npr. avto detailing)</label>
+                    </div>
+                    <div style="display:grid; grid-template-columns:minmax(180px, 220px); gap:16px; align-items:end; margin-bottom:20px;">
+                        <div>
+                            <label for="maxAppointmentDays" style="display:block; margin-bottom:6px; font-size:13px; color:#666;">Največ trajanje (dni)</label>
+                            <input type="number" id="maxAppointmentDays" min="1" max="14" value="4" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px;">
+                        </div>
+                    </div>
+
+                    <div style="display:flex; gap:10px; margin-top:12px;">
+                        <button id="saveBusinessSettingsBtn" class="btn btn-primary" style="padding:10px 18px;">Shrani nastavitve</button>
+                        <button class="btn btn-secondary" onclick="closeBusinessSettingsPanel()" style="padding:10px 18px;">Zapri</button>
+                    </div>
+                    <p style="margin-top:12px; font-size:12px; color:#888;">Opomba: rezervacije vedno spoštujejo delovni čas in zaprte dni. Če je večdnevni način izklopljen, se termin mora zaključiti isti dan.</p>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- ADD EVENT MODAL -->
@@ -2514,10 +2558,20 @@
                     } catch(e){} 
                 }, 320);
             }
+
+            function closeBusinessSettingsPanel() {
+                const panel = document.getElementById('businessSettingsPanel');
+                if (!panel) return;
+                panel.classList.remove('open');
+                setTimeout(() => {
+                    try { panel.style.display = 'none'; } catch(e){}
+                }, 320);
+            }
             
             function hideAllPanels() {
                 closeCustomerPanel();
                 closeAnalyticsPanel();
+                closeBusinessSettingsPanel();
             }
 
             (function(){
@@ -2561,7 +2615,9 @@
                         }
                         
                         if (page === 'home') { window.location.href = 'admin-panel.html'; }
-                        else if (page === 'settings') { window.location.href = 'admin-panel.html'; }
+                        else if (page === 'settings') {
+                            showBusinessSettingsPanel();
+                        }
                         else if (page === 'calendar') { 
                             hideAllPanels();
                             document.getElementById('scheduleCalendar').style.display = 'block';
@@ -2877,6 +2933,146 @@
                 addBtn.onclick = () => showAddManualEarningDialog();
             }
         }
+
+        function loadBusinessSettingsForm() {
+            const bookingCfg = (window.SITE_CONFIG && window.SITE_CONFIG.booking) ? window.SITE_CONFIG.booking : {};
+            const businessHours = bookingCfg.businessHours || { start: 9, end: 19 };
+
+            const toTimeStr = (hourNumber) => `${String(parseInt(hourNumber, 10) || 0).padStart(2, '0')}:00`;
+
+            const startInput = document.getElementById('workStartTime');
+            const endInput = document.getElementById('workEndTime');
+            const allowMulti = document.getElementById('allowMultiDayAppointments');
+            const maxDays = document.getElementById('maxAppointmentDays');
+
+            if (startInput) startInput.value = toTimeStr(businessHours.start);
+            if (endInput) endInput.value = toTimeStr(businessHours.end);
+
+            try {
+                const localWorkingHours = JSON.parse(localStorage.getItem('workingHours') || 'null');
+                if (localWorkingHours?.start && startInput) startInput.value = localWorkingHours.start;
+                if (localWorkingHours?.end && endInput) endInput.value = localWorkingHours.end;
+            } catch (_) {}
+
+            const allowMultiVal = !!bookingCfg.allowMultiDayAppointments;
+            if (allowMulti) allowMulti.checked = allowMultiVal;
+            if (maxDays) {
+                maxDays.value = parseInt(bookingCfg.maxAppointmentDays, 10) || 4;
+                maxDays.disabled = !allowMultiVal;
+                maxDays.style.opacity = allowMultiVal ? '1' : '0.6';
+            }
+        }
+
+        function showBusinessSettingsPanel() {
+            const panel = document.getElementById('businessSettingsPanel');
+            if (!panel) return;
+
+            hideAllPanels();
+            document.getElementById('scheduleCalendar').style.display = 'none';
+
+            loadBusinessSettingsForm();
+            panel.style.display = 'block';
+            setTimeout(() => panel.classList.add('open'), 10);
+        }
+
+        async function saveBusinessSettings() {
+            const startInput = document.getElementById('workStartTime');
+            const endInput = document.getElementById('workEndTime');
+            const allowMulti = document.getElementById('allowMultiDayAppointments');
+            const maxDays = document.getElementById('maxAppointmentDays');
+
+            const startVal = startInput ? startInput.value : '09:00';
+            const endVal = endInput ? endInput.value : '19:00';
+            const allowMultiDay = !!(allowMulti && allowMulti.checked);
+            const maxAppointmentDays = Math.max(1, Math.min(14, parseInt(maxDays?.value, 10) || 4));
+
+            if (!startVal || !endVal) {
+                alert('Vnesite začetni in končni čas.');
+                return;
+            }
+
+            const [startH, startM] = startVal.split(':').map(v => parseInt(v, 10) || 0);
+            const [endH, endM] = endVal.split(':').map(v => parseInt(v, 10) || 0);
+            const startTotal = (startH * 60) + startM;
+            const endTotal = (endH * 60) + endM;
+
+            if (endTotal <= startTotal) {
+                alert('Konec delovnega časa mora biti po začetku.');
+                return;
+            }
+
+            if (!window.SITE_CONFIG || typeof window.SITE_CONFIG !== 'object') {
+                window.SITE_CONFIG = {};
+            }
+            if (!window.SITE_CONFIG.booking || typeof window.SITE_CONFIG.booking !== 'object') {
+                window.SITE_CONFIG.booking = {};
+            }
+
+            window.SITE_CONFIG.booking.businessHours = {
+                start: startH,
+                end: endH
+            };
+            window.SITE_CONFIG.booking.allowMultiDayAppointments = allowMultiDay;
+            window.SITE_CONFIG.booking.maxAppointmentDays = maxAppointmentDays;
+
+            try {
+                localStorage.setItem('workingHours', JSON.stringify({ start: startVal, end: endVal }));
+                localStorage.setItem('site_config_backup', JSON.stringify(window.SITE_CONFIG));
+            } catch (e) {
+                console.warn('⚠ Failed to save settings to localStorage', e);
+            }
+
+            try {
+                if (window.CloudSync && typeof window.CloudSync.saveToCloud === 'function') {
+                    await window.CloudSync.saveToCloud(window.SITE_CONFIG);
+                }
+            } catch (e) {
+                console.warn('⚠ Failed to sync booking settings to cloud', e);
+            }
+
+            try {
+                const regenWorkingHours = window.createWorkingHoursEvents || (typeof createWorkingHoursEvents === 'function' ? createWorkingHoursEvents : null);
+                if (typeof regenWorkingHours === 'function') {
+                    await regenWorkingHours(startVal, endVal);
+                }
+            } catch (e) {
+                console.warn('⚠ Failed to regenerate working-hour events', e);
+            }
+
+            try {
+                if (window.calendar && typeof window.calendar.setOption === 'function') {
+                    window.calendar.setOption('businessHours', {
+                        daysOfWeek: [1,2,3,4,5],
+                        startTime: `${String(startH).padStart(2, '0')}:00`,
+                        endTime: `${String(endH).padStart(2, '0')}:00`
+                    });
+                    window.calendar.setOption('slotMinTime', `${String(startH).padStart(2, '0')}:00:00`);
+                    window.calendar.setOption('slotMaxTime', `${String(endH).padStart(2, '0')}:00:00`);
+                    if (typeof window.calendar.updateSize === 'function') window.calendar.updateSize();
+                }
+            } catch (e) {
+                console.warn('⚠ Failed to apply calendar business-hours options', e);
+            }
+
+            alert('Nastavitve rezervacij so shranjene.');
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const allowMulti = document.getElementById('allowMultiDayAppointments');
+            const maxDays = document.getElementById('maxAppointmentDays');
+            const saveBtn = document.getElementById('saveBusinessSettingsBtn');
+
+            if (allowMulti && maxDays) {
+                allowMulti.addEventListener('change', () => {
+                    maxDays.disabled = !allowMulti.checked;
+                    maxDays.style.opacity = allowMulti.checked ? '1' : '0.6';
+                });
+            }
+
+            if (saveBtn) {
+                saveBtn.addEventListener('click', saveBusinessSettings);
+            }
+        });
 
         async function loadManualEarnings() {
             try {

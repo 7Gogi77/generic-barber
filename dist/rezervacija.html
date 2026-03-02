@@ -1419,11 +1419,88 @@
             return slots.length > 0;
         }
 
+        function getBookingRules() {
+            const bookingCfg = window.SITE_CONFIG?.booking || {};
+            return {
+                allowMultiDayAppointments: !!bookingCfg.allowMultiDayAppointments,
+                maxAppointmentDays: Math.max(1, parseInt(bookingCfg.maxAppointmentDays, 10) || 4)
+            };
+        }
+
+        function toLocalDateKey(dateObj) {
+            return getLocalDateStr(dateObj);
+        }
+
+        function calculateAppointmentEnd(startDate, durationMinutes) {
+            const rules = getBookingRules();
+            const workDuration = Math.max(1, parseInt(durationMinutes, 10) || 30);
+
+            let remaining = workDuration;
+            let cursor = new Date(startDate);
+            const visitedDays = new Set([toLocalDateKey(cursor)]);
+
+            while (remaining > 0) {
+                const dayStart = new Date(cursor);
+                const dayOfWeek = dayStart.getDay();
+                const dayHours = getBusinessHoursForDay(dayOfWeek);
+
+                const openAt = new Date(dayStart);
+                openAt.setHours(dayHours.start, 0, 0, 0);
+
+                const closeAt = new Date(dayStart);
+                closeAt.setHours(dayHours.end, 0, 0, 0);
+
+                let effectiveStart = new Date(cursor);
+                if (effectiveStart < openAt) effectiveStart = new Date(openAt);
+
+                const isClosed = isDateClosed(dayStart);
+                const hasNoWorkingWindow = closeAt <= openAt;
+
+                if (isClosed || hasNoWorkingWindow || effectiveStart >= closeAt) {
+                    const nextDay = new Date(dayStart);
+                    nextDay.setDate(nextDay.getDate() + 1);
+                    nextDay.setHours(0, 0, 0, 0);
+
+                    visitedDays.add(toLocalDateKey(nextDay));
+                    if (visitedDays.size > rules.maxAppointmentDays) return null;
+
+                    cursor = nextDay;
+                    continue;
+                }
+
+                const availableToday = Math.floor((closeAt - effectiveStart) / 60000);
+                if (remaining <= availableToday) {
+                    const finalEnd = new Date(effectiveStart);
+                    finalEnd.setMinutes(finalEnd.getMinutes() + remaining);
+
+                    if (!rules.allowMultiDayAppointments && toLocalDateKey(finalEnd) !== toLocalDateKey(startDate)) {
+                        return null;
+                    }
+                    return finalEnd;
+                }
+
+                remaining -= availableToday;
+
+                const nextDay = new Date(dayStart);
+                nextDay.setDate(nextDay.getDate() + 1);
+                nextDay.setHours(0, 0, 0, 0);
+
+                visitedDays.add(toLocalDateKey(nextDay));
+                if (visitedDays.size > rules.maxAppointmentDays) return null;
+
+                if (!rules.allowMultiDayAppointments) return null;
+                cursor = nextDay;
+            }
+
+            return null;
+        }
+
         // ===== GET AVAILABLE SLOTS FOR DATE =====
         function getAvailableSlotsForDate(date) {
             // Use local date string (not UTC) to avoid timezone issues
             const dateStr = getLocalDateStr(date);
             const dayOfWeek = date.getDay();
+            const rules = getBookingRules();
             
             // Get business hours for this specific day
             const businessHours = getBusinessHoursForDay(dayOfWeek);
@@ -1432,51 +1509,35 @@
             
             console.log('📅 Generating slots for:', dateStr, '(day:', dayOfWeek, ') Business hours:', businessHours.start, '-', businessHours.end, 'Service:', serviceDuration, 'min');
             
-            // Calculate the latest possible start time
-            // Appointment must END before or at closing time
-            const closingTimeMinutes = businessHours.end * 60;
-            const latestStartMinutes = closingTimeMinutes - serviceDuration;
-            const latestStartHour = Math.floor(latestStartMinutes / 60);
-            const latestStartMin = latestStartMinutes % 60;
-            
-            // If service is too long to fit in a day, show no slots
-            if (latestStartMinutes < businessHours.start * 60) {
+            const totalWorkMinutes = Math.max(0, (businessHours.end - businessHours.start) * 60);
+
+            // If service is too long to fit in a day and multi-day is disabled, show no slots
+            if (!rules.allowMultiDayAppointments && serviceDuration > totalWorkMinutes) {
                 console.log('⚠️ Service too long for business hours!');
                 return [];
             }
             
             // Generate all possible slots
             const allSlots = [];
-            for (let hour = businessHours.start; hour <= latestStartHour; hour++) {
-                const maxMin = (hour === latestStartHour) ? latestStartMin : 59;
+            for (let hour = businessHours.start; hour <= businessHours.end; hour++) {
+                const maxMin = (hour === businessHours.end) ? 0 : 59;
                 for (let min = 0; min <= maxMin; min += slotDuration) {
-                    // Skip if this slot would exceed latest start time
-                    const slotStartMinutes = hour * 60 + min;
-                    if (slotStartMinutes > latestStartMinutes) {
-                        continue;
-                    }
-                    
                     const slotStart = new Date(date);
                     slotStart.setHours(hour, min, 0, 0);
+
+                    const openAt = new Date(date);
+                    openAt.setHours(businessHours.start, 0, 0, 0);
+
+                    const closeAt = new Date(date);
+                    closeAt.setHours(businessHours.end, 0, 0, 0);
+
+                    if (slotStart < openAt || slotStart >= closeAt) continue;
                     
-                    const slotEnd = new Date(slotStart);
-                    slotEnd.setMinutes(slotEnd.getMinutes() + serviceDuration);
-                    
-                    // Double check: appointment must end on same day and before closing
-                    const endHour = slotEnd.getHours();
-                    const endMin = slotEnd.getMinutes();
-                    // Use local date string (not UTC) to avoid timezone issues
-                    const endDate = getLocalDateStr(slotEnd);
-                    
-                    // If ends on different day, skip
-                    if (endDate !== dateStr) {
-                        continue;
-                    }
-                    
-                    // If ends after closing time, skip
-                    if (endHour > businessHours.end || (endHour === businessHours.end && endMin > 0)) {
-                        continue;
-                    }
+                    const slotEnd = calculateAppointmentEnd(slotStart, serviceDuration);
+                    if (!slotEnd) continue;
+
+                    // In single-day mode, keep strict same-day behavior
+                    if (!rules.allowMultiDayAppointments && getLocalDateStr(slotEnd) !== dateStr) continue;
                     
                     allSlots.push({
                         start: slotStart,
@@ -1594,10 +1655,11 @@
             const businessHours = getBusinessHoursForDay(dayOfWeek);
             const totalWorkMinutes = (businessHours.end - businessHours.start) * 60;
             const serviceDuration = BookingState.totalDuration || 30;
+            const bookingRules = getBookingRules();
             
             if (slots.length === 0) {
                 // Check if service is too long for business hours
-                if (serviceDuration > totalWorkMinutes) {
+                if (!bookingRules.allowMultiDayAppointments && serviceDuration > totalWorkMinutes) {
                     const hours = Math.floor(serviceDuration / 60);
                     const mins = serviceDuration % 60;
                     grid.innerHTML = `
@@ -1628,7 +1690,9 @@
             const infoDiv = document.createElement('div');
             infoDiv.className = 'slots-info';
             infoDiv.style.cssText = 'grid-column: 1 / -1; margin-bottom: 12px; padding: 10px; background: rgba(0, 122, 255, 0.1); border-radius: 8px; font-size: 13px; color: var(--ios-blue);';
-            infoDiv.innerHTML = `<strong>Trajanje:</strong> ${durationStr} • <strong>Konec do:</strong> ${businessHours.end}:00`;
+            infoDiv.innerHTML = bookingRules.allowMultiDayAppointments
+                ? `<strong>Trajanje:</strong> ${durationStr} • <strong>Večdnevno:</strong> omogočeno (max ${bookingRules.maxAppointmentDays} dni)`
+                : `<strong>Trajanje:</strong> ${durationStr} • <strong>Konec do:</strong> ${businessHours.end}:00`;
             grid.appendChild(infoDiv);
             
             // Render slots with end time tooltip
@@ -1640,10 +1704,14 @@
                 const endHour = slot.end.getHours();
                 const endMin = slot.end.getMinutes();
                 const endTimeStr = `${String(endHour).padStart(2, '0')}:${String(endMin).padStart(2, '0')}`;
+                const endDateStr = getLocalDateStr(slot.end);
+                const endLabel = (endDateStr === getLocalDateStr(slot.start))
+                    ? `→ ${endTimeStr}`
+                    : `→ ${endDateStr} ${endTimeStr}`;
                 
                 btn.innerHTML = `
                     <div class="slot-time">${slot.timeStr}</div>
-                    <div class="slot-end" style="font-size: 10px; color: var(--ios-text-tertiary); margin-top: 2px;">→ ${endTimeStr}</div>
+                    <div class="slot-end" style="font-size: 10px; color: var(--ios-text-tertiary); margin-top: 2px;">${endLabel}</div>
                 `;
                 btn.addEventListener('click', () => selectTimeSlot(slot, btn));
                 grid.appendChild(btn);
@@ -1736,11 +1804,20 @@
             
             // Time
             if (BookingState.selectedTime) {
-                const endTime = new Date(BookingState.selectedTime.start);
-                endTime.setMinutes(endTime.getMinutes() + BookingState.totalDuration);
-                const endStr = `${String(endTime.getHours()).padStart(2, '0')}:${String(endTime.getMinutes()).padStart(2, '0')}`;
+                const slotEnd = BookingState.selectedTime.end
+                    ? new Date(BookingState.selectedTime.end)
+                    : (() => {
+                        const fallback = new Date(BookingState.selectedTime.start);
+                        fallback.setMinutes(fallback.getMinutes() + BookingState.totalDuration);
+                        return fallback;
+                    })();
+                const endStr = `${String(slotEnd.getHours()).padStart(2, '0')}:${String(slotEnd.getMinutes()).padStart(2, '0')}`;
+                const endDateStr = getLocalDateStr(slotEnd);
+                const startDateStr = BookingState.selectedDate ? getLocalDateStr(BookingState.selectedDate) : endDateStr;
                 document.getElementById('summaryTime').textContent = 
-                    `${BookingState.selectedTime.timeStr} - ${endStr}`;
+                    (endDateStr !== startDateStr)
+                        ? `${BookingState.selectedTime.timeStr} - ${endDateStr} ${endStr}`
+                        : `${BookingState.selectedTime.timeStr} - ${endStr}`;
             }
             
             // Duration
@@ -1771,8 +1848,13 @@
                     0, 0
                 );
                 
-                const endDate = new Date(startDate);
-                endDate.setMinutes(endDate.getMinutes() + BookingState.totalDuration);
+                const endDate = BookingState.selectedTime?.end
+                    ? new Date(BookingState.selectedTime.end)
+                    : (() => {
+                        const fallbackEnd = new Date(startDate);
+                        fallbackEnd.setMinutes(fallbackEnd.getMinutes() + BookingState.totalDuration);
+                        return fallbackEnd;
+                    })();
                 
                 // Build minimal appointment object
                 const appointment = {

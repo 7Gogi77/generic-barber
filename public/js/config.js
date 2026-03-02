@@ -180,6 +180,8 @@ const SITE_CONFIG = {
         },
         daysClosed: [0], // 0 = Sunday (days where shop is closed)
         slotDuration: 30, // 30 minute slots (2 per hour)
+        allowMultiDayAppointments: false, // Allow bookings to continue across multiple days
+        maxAppointmentDays: 4, // Max total calendar days for a single booking when multi-day is enabled
         // Working days: true = open, false/missing = closed
         // 0 = Sunday, 1 = Monday, 2 = Tuesday, etc.
         workingDays: {
