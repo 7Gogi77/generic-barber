@@ -5096,31 +5096,14 @@
                 // Calendar interactions
                 debugLog('🎯 Attaching event handlers...');
                 
-                // Add listener to MORE-LINKS at DOM level BEFORE they bubble
-                const attachMoreLinkListeners = () => {
-                    document.querySelectorAll('.fc-daygrid-more-link').forEach(link => {
-                        if (link._moreListenerAdded) return;
-                        
-                        // Capture phase = fires BEFORE bubble phase, BEFORE any other handlers
-                        const handleMoreLinkClick = (e) => {
-                            console.log('🖇️  More-link DOM click captured - blocking bubble to cell');
-                            e.stopPropagation(); // Stop clicking from reaching day cell
-                            e.preventDefault(); // Prevent any default link behavior
-                        };
-                        
-                        link.addEventListener('click', handleMoreLinkClick, true); // true = capture phase
-                        link._moreListenerAdded = true;
-                    });
-                };
-                
-                // Attach on init and after calendar updates
-                attachMoreLinkListeners();
-                calendar.on('datesSet', () => {
-                    setTimeout(() => attachMoreLinkListeners(), 0); // Debounce
-                });
-                
                 calendar.on('dateClick', (info) => {
                     debugLog('📅 dateClick handler fired');
+                    
+                    // Check if moreLinkClick just fired
+                    if (window._moreLinkJustClicked) {
+                        console.log('✅ More-link was clicked, skipping modal');
+                        return;
+                    }
                     
                     // Skip if we just did a custom drag selection
                     if (window._skipNextDateClick) {
@@ -5129,8 +5112,6 @@
                         return;
                     }
                     
-                    // Only open modal if this is truly an empty cell click
-                    // (not blocked by the more-link stopPropagation above)
                     openAddEventModal(info.dateStr);
                 });
                 addMoreLinkListener();

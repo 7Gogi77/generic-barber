@@ -596,7 +596,12 @@ const CalendarEngine = {
         nowIndicator: true,
         dayMaxEvents: 2, // Limit to 2 events per day cell, rest shown in +more link
         dayMaxEventRows: 2, // Limit rows to prevent overlap
-        moreLinkClick: 'popover',
+        moreLinkClick: function(info) {
+          console.log('📌 moreLinkClick handler called - setting flag and returning popover');
+          window._moreLinkJustClicked = true;
+          setTimeout(() => { window._moreLinkJustClicked = false; }, 100);
+          return 'popover'; // Show popover when clicking more-link
+        },
         // Prioritize multi-day events first, then by start time
         eventOrder: function(a, b) {
           // Calculate if events span multiple days
