@@ -692,6 +692,10 @@ const CalendarEngine = {
         },
 
         select: (selectInfo) => {
+          if (window._skipNextFcSelect) {
+            window._skipNextFcSelect = false;
+            return false;
+          }
           // Prevent FullCalendar's select handler if we're doing custom cell dragging
           if (window._isDraggingCustomCells) {
             return false;
@@ -1506,6 +1510,7 @@ const CalendarEngine = {
           isDraggingCells = true;
           window._isDraggingCustomCells = true;
           cellSelectionStartDate = dayCell.getAttribute('data-date');
+          cellSelectionEndDate = cellSelectionStartDate;
           dragElement = dayCell;
           clearHighlights();
           console.log('📍 Cell selection drag STARTED on', cellSelectionStartDate);
@@ -1573,6 +1578,10 @@ const CalendarEngine = {
       
       // End drag selection
       document.addEventListener('pointerup', (e) => {
+        const hadCustomSelection = !!(cellSelectionStartDate && cellSelectionEndDate);
+        const selectionStart = cellSelectionStartDate;
+        const selectionEnd = cellSelectionEndDate || cellSelectionStartDate;
+
         // Cancel the continuous highlight animation
         if (highlightRefreshRAF) {
           cancelAnimationFrame(highlightRefreshRAF);
@@ -1591,7 +1600,29 @@ const CalendarEngine = {
         cellSelectionStartDate = null;
         cellSelectionEndDate = null;
         dragElement = null;
-        // Keep highlights visible - FullCalendar's select event will handle opening the modal
+
+        if (hadCustomSelection && selectionStart && selectionEnd) {
+          const startStr = selectionStart < selectionEnd ? selectionStart : selectionEnd;
+          const endStr = selectionStart < selectionEnd ? selectionEnd : selectionStart;
+
+          const selectInfoLike = {
+            startStr,
+            endStr,
+            allDay: true,
+            __inclusiveEnd: true
+          };
+
+          const hasAdminModal = document.getElementById('eventModal');
+          const addModal = document.getElementById('addEventModal');
+
+          window._skipNextFcSelect = true;
+
+          if (hasAdminModal) {
+            CalendarEngine.openEventModal(null, selectInfoLike, calendar, scheduleData);
+          } else if (addModal && typeof window.openAddEventModal === 'function') {
+            window.openAddEventModal(startStr, endStr);
+          }
+        }
       });
       
       // Clear highlights when modal closes or escape is pressed
@@ -1932,21 +1963,28 @@ const CalendarEngine = {
       // Auto-fill start and end times from selected date range
       if (selectInfo?.startStr) {
         try {
-          // Parse the date string from FullCalendar
-          let startDate = new Date(selectInfo.startStr);
-          let endDate = new Date(selectInfo.endStr || selectInfo.startStr);
-          
-          // If dates are invalid, try parsing without timezone
-          if (isNaN(startDate.getTime())) {
-            startDate = new Date(selectInfo.startStr.replace('Z', ''));
+          const shiftDateString = (dateStr, days) => {
+            if (!dateStr) return dateStr;
+            const [yy, mm, dd] = String(dateStr).split('T')[0].split('-').map(Number);
+            if (!yy || !mm || !dd) return dateStr;
+            const dt = new Date(yy, mm - 1, dd);
+            dt.setDate(dt.getDate() + days);
+            const y = dt.getFullYear();
+            const m = String(dt.getMonth() + 1).padStart(2, '0');
+            const d = String(dt.getDate()).padStart(2, '0');
+            return `${y}-${m}-${d}`;
+          };
+
+          const selectedStartDate = String(selectInfo.startStr).split('T')[0];
+          let selectedEndDate = selectInfo.endStr ? String(selectInfo.endStr).split('T')[0] : selectedStartDate;
+
+          const endIsInclusive = !!selectInfo.__inclusiveEnd;
+          if (selectInfo.endStr && !endIsInclusive) {
+            selectedEndDate = shiftDateString(selectedEndDate, -1);
           }
-          if (isNaN(endDate.getTime())) {
-            endDate = new Date((selectInfo.endStr || selectInfo.startStr).replace('Z', ''));
-          }
-          
-          // Set default times: 09:00 to 17:00
-          startDate.setHours(9, 0, 0, 0);
-          endDate.setHours(17, 0, 0, 0);
+
+          const startDate = new Date(`${selectedStartDate}T09:00:00`);
+          const endDate = new Date(`${selectedEndDate}T17:00:00`);
           
           // Convert to datetime-local format (local time) using helper
           const startStr = fmtLocal(startDate);
