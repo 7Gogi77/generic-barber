@@ -542,28 +542,28 @@
 
         /* +more link styling - iOS style */
         #scheduleCalendar.view-daygrid .fc-daygrid-more-link {
-            color: var(--ios-blue);
-            background: rgba(0, 122, 255, 0.08);
-            font-weight: 600;
-            font-size: 12px;
-            padding: 3px 7px;
-            border-radius: 22px;
-            border: 1.5px solid var(--ios-blue);
-            transition: all 0.2s ease;
-            cursor: pointer;
-            display: inline-block;
-            letter-spacing: -0.3px;
-            line-height: 1.4;
+            color: var(--ios-blue) !important;
+            background: rgba(0, 122, 255, 0.08) !important;
+            font-weight: 600 !important;
+            font-size: 12px !important;
+            padding: 3px 7px !important;
+            border-radius: 22px !important;
+            border: 1.5px solid var(--ios-blue) !important;
+            transition: all 0.2s ease !important;
+            cursor: pointer !important;
+            display: inline-block !important;
+            letter-spacing: -0.3px !important;
+            line-height: 1.4 !important;
         }
 
         #scheduleCalendar.view-daygrid .fc-daygrid-more-link:hover {
-            background: rgba(0, 122, 255, 0.12);
-            box-shadow: 0 2px 4px rgba(0, 122, 255, 0.2);
+            background: rgba(0, 122, 255, 0.12) !important;
+            box-shadow: 0 2px 4px rgba(0, 122, 255, 0.2) !important;
         }
         
         #scheduleCalendar.view-daygrid .fc-daygrid-more-link:active {
-            background: rgba(0, 122, 255, 0.15);
-            transform: scale(0.96);
+            background: rgba(0, 122, 255, 0.15) !important;
+            transform: scale(0.96) !important;
         }
 
         /* iOS-Style Popover */
@@ -5091,9 +5091,10 @@
                     document.querySelectorAll('.fc-daygrid-more-link').forEach(link => {
                         if (!link._moreClickAdded) {
                             link.addEventListener('click', (e) => {
-                                console.log('✓ More-link intercepted before dateClick');
+                                console.log('✓ More-link clicked - preventing dateClick modal');
+                                e.preventDefault();
                                 e.stopImmediatePropagation();
-                                // Let the event bubble so FullCalendar's moreLinkClick handler fires
+                                e.stopPropagation();
                             }, true); // capture phase fires first
                             link._moreClickAdded = true;
                         }
