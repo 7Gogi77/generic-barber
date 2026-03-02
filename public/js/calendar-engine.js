@@ -1408,18 +1408,18 @@ const CalendarEngine = {
         allCells.forEach(cell => {
           const cellDate = cell.getAttribute('data-date');
           if (cellDate >= actualStart && cellDate <= actualEnd) {
-            // Apply inline styles for iOS glossy appearance
-            cell.style.border = '2px solid rgba(0, 122, 255, 0.8)';
-            cell.style.borderRadius = '8px';
-            cell.style.boxShadow = '0 2px 8px rgba(0, 122, 255, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.5)';
+            // Apply inline styles to ensure they stick through DOM re-renders
+            cell.style.backgroundColor = 'rgba(0, 122, 255, 0.6)';
+            cell.style.outline = '3px solid #007AFF';
+            cell.style.outlineOffset = '-1px';
             cell.style.position = 'relative';
             cell.style.zIndex = '10';
             cell.classList.add('calendar-cell-selected');
           } else {
             // Clear only if not in range
-            cell.style.border = '';
-            cell.style.borderRadius = '';
-            cell.style.boxShadow = '';
+            cell.style.backgroundColor = '';
+            cell.style.outline = '';
+            cell.style.outlineOffset = '';
             cell.style.position = '';
             cell.style.zIndex = '';
             cell.classList.remove('calendar-cell-selected');
@@ -1570,9 +1570,6 @@ const CalendarEngine = {
           cancelAnimationFrame(highlightRefreshRAF);
           highlightRefreshRAF = null;
         }
-
-        const selectedStartDate = cellSelectionStartDate;
-        const selectedEndDate = cellSelectionEndDate || cellSelectionStartDate;
         
         if (isDraggingCells && dragElement && e.pointerId) {
           try {
@@ -1583,23 +1580,10 @@ const CalendarEngine = {
         }
         isDraggingCells = false;
         window._isDraggingCustomCells = false;
-        
-        if (selectedStartDate && selectedEndDate) {
-          const startDate = selectedStartDate < selectedEndDate ? selectedStartDate : selectedEndDate;
-          const endDate = selectedStartDate < selectedEndDate ? selectedEndDate : selectedStartDate;
-          const endExclusive = new Date(`${endDate}T00:00:00`);
-          endExclusive.setDate(endExclusive.getDate() + 1);
-          const endExclusiveStr = endExclusive.toISOString().split('T')[0];
-          try {
-            calendar.select(startDate, endExclusiveStr);
-          } catch (err) {
-            console.warn('⚠ Failed to trigger calendar.select from custom drag:', err);
-          }
-        }
-
         cellSelectionStartDate = null;
         cellSelectionEndDate = null;
         dragElement = null;
+        // Keep highlights visible - FullCalendar's select event will handle opening the modal
       });
       
       // Clear highlights when modal closes or escape is pressed
