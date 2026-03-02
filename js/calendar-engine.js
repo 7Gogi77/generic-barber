@@ -1393,6 +1393,22 @@ const CalendarEngine = {
         });
       };
       
+      // Helper to find the closest day cell (works even if hovering over child elements)
+      const findDayCell = (elem) => {
+        let current = elem;
+        while (current && current !== document) {
+          if (current.hasAttribute && current.hasAttribute('data-date')) {
+            return current;
+          }
+          // Try FullCalendar's day cell classes as fallback
+          if (current.classList && (current.classList.contains('fc-daygrid-day-cell') || current.classList.contains('fc-daygrid-day'))) {
+            return current;
+          }
+          current = current.parentElement;
+        }
+        return null;
+      };
+      
       // Detect drag-to-select: only if pointerdown is on empty cell/day-top, NOT on an event
       document.addEventListener('pointerdown', (e) => {
         // Only handle events in the calendar
@@ -1405,7 +1421,7 @@ const CalendarEngine = {
         }
         
         // Check if clicking on a day cell or day header (empty area)
-        const dayCell = e.target.closest('[data-date]');
+        const dayCell = findDayCell(e.target);
         if (dayCell) {
           isDraggingCells = true;
           cellSelectionStartDate = dayCell.getAttribute('data-date');
@@ -1418,12 +1434,16 @@ const CalendarEngine = {
       document.addEventListener('pointermove', (e) => {
         if (!isDraggingCells || !cellSelectionStartDate) return;
         
-        const currentCell = e.target.closest('[data-date]');
+        const currentCell = findDayCell(e.target);
         if (!currentCell || !e.target.closest('#scheduleCalendar')) return;
         
         const currentDate = currentCell.getAttribute('data-date');
+        if (!currentDate) return; // No date found
+        
         const startDate = cellSelectionStartDate < currentDate ? cellSelectionStartDate : currentDate;
         const endDate = cellSelectionStartDate < currentDate ? currentDate : cellSelectionStartDate;
+        
+        console.log('🎯 Dragging from', cellSelectionStartDate, 'to', currentDate);
         
         // Highlight all cells in the range
         document.querySelectorAll('[data-date]').forEach(cell => {
