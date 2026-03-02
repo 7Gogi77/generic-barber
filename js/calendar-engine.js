@@ -1511,10 +1511,22 @@ const CalendarEngine = {
         console.log('📊 Total cells with data-date:', allCells.length);
         
         let highlightedCount = 0;
-        allCells.forEach(cell => {
+        allCells.forEach((cell, idx) => {
           const cellDate = cell.getAttribute('data-date');
           if (cellDate >= startDate && cellDate <= endDate) {
             cell.classList.add('calendar-cell-selected');
+            
+            // Detailed logging for first highlighted cell
+            if (highlightedCount === 0) {
+              console.log('🔍 First highlighted cell details:');
+              console.log('   Element tag:', cell.tagName);
+              console.log('   Element class:', cell.className);
+              console.log('   Element ID:', cell.id);
+              console.log('   Has class "calendar-cell-selected":', cell.classList.contains('calendar-cell-selected'));
+              console.log('   Computed style display:', window.getComputedStyle(cell).display);
+              console.log('   Computed style background:', window.getComputedStyle(cell).backgroundColor);
+              console.log('   Element HTML:', cell.outerHTML.substring(0, 200));
+            }
             highlightedCount++;
           } else {
             cell.classList.remove('calendar-cell-selected');
