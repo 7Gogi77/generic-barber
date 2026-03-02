@@ -1381,14 +1381,67 @@ const CalendarEngine = {
       console.log('Calendar is FullCalendar.Calendar:', calendar instanceof FullCalendar.Calendar);
       console.log('Calendar methods:', Object.getOwnPropertyNames(Object.getPrototypeOf(calendar)).slice(0, 10));
 
-      // UNIFIED CELL SELECTION SYSTEM
-      // Only FullCalendar's select handler manages cell highlighting - no duplicate pointerdown/move/up handlers
-      // This prevents interference with appointment dragging
+      // SMART CELL SELECTION SYSTEM
+      // Shows real-time highlighting when dragging to select empty cells
+      // Detects if clicking on an event vs empty cell to avoid interfering with appointment dragging
+      let isDraggingCells = false;
+      let cellSelectionStartDate = null;
+      
       const clearHighlights = () => {
         document.querySelectorAll('[data-date]').forEach(cell => {
           cell.style.backgroundColor = '';
         });
       };
+      
+      // Detect drag-to-select: only if pointerdown is on empty cell/day-top, NOT on an event
+      document.addEventListener('pointerdown', (e) => {
+        // Only handle events in the calendar
+        if (!e.target.closest('#scheduleCalendar')) return;
+        
+        // Check if clicking on an event - if so, let FullCalendar/drag system handle it
+        if (e.target.closest('.fc-event') || e.target.closest('.fc-daygrid-event')) {
+          isDraggingCells = false;
+          return;
+        }
+        
+        // Check if clicking on a day cell or day header (empty area)
+        const dayCell = e.target.closest('[data-date]');
+        if (dayCell) {
+          isDraggingCells = true;
+          cellSelectionStartDate = dayCell.getAttribute('data-date');
+          clearHighlights();
+          console.log('📍 Cell selection drag started on', cellSelectionStartDate);
+        }
+      });
+      
+      // Real-time highlighting as user drags across cells
+      document.addEventListener('pointermove', (e) => {
+        if (!isDraggingCells || !cellSelectionStartDate) return;
+        
+        const currentCell = e.target.closest('[data-date]');
+        if (!currentCell || !e.target.closest('#scheduleCalendar')) return;
+        
+        const currentDate = currentCell.getAttribute('data-date');
+        const startDate = cellSelectionStartDate < currentDate ? cellSelectionStartDate : currentDate;
+        const endDate = cellSelectionStartDate < currentDate ? currentDate : cellSelectionStartDate;
+        
+        // Highlight all cells in the range
+        document.querySelectorAll('[data-date]').forEach(cell => {
+          const cellDate = cell.getAttribute('data-date');
+          if (cellDate >= startDate && cellDate <= endDate) {
+            cell.style.backgroundColor = 'rgba(0, 122, 255, 0.25)';
+          } else {
+            cell.style.backgroundColor = '';
+          }
+        });
+      });
+      
+      // End drag selection
+      document.addEventListener('pointerup', () => {
+        isDraggingCells = false;
+        cellSelectionStartDate = null;
+        // Keep highlights visible - FullCalendar's select event will handle opening the modal
+      });
       
       // Clear highlights when modal closes or escape is pressed
       window.addEventListener('keydown', (e) => {
