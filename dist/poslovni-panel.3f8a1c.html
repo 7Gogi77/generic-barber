@@ -5104,8 +5104,14 @@
                 // Handle single day cell clicks to open add modal (but NOT more-link clicks)
                 calendar.on('dateClick', (info) => {
                     console.log('📅 dateClick fired for:', info.dateStr);
+                    
+                    // Skip if more-link was just clicked (flag set by moreLinkClick)
+                    if (window._moreLinkJustClicked) {
+                        console.log('⏭️ Skipping dateClick because more-link was clicked');
+                        return;
+                    }
+                    
                     // This is a native FullCalendar event that fires ONLY for empty cell clicks
-                    // It does NOT fire when clicking more-links or events
                     openAddEventModal(info.dateStr.split('T')[0]);
                 });
 
