@@ -2273,6 +2273,7 @@
             }
             // Override default openAddEventModal
             window.openAddEventModal = openAddEventModalWithTab;
+            console.log('🔧 OVERRIDE SET: window.openAddEventModal =', typeof window.openAddEventModal, window.openAddEventModal.name || 'unknown');
         // Fallback: Create FullCalendar stub if CDN failed
         if (typeof FullCalendar === 'undefined') {
           console.warn('⚠️ FullCalendar failed to load from CDN');
@@ -3636,15 +3637,26 @@
 
         // Modal functions
         function openAddEventModal(startDate = null, endDate = null) {
+            console.log('🔴 SECOND openAddEventModal CALLED with:', { startDate, endDate });
             const form = document.getElementById('addEventForm');
             if (form) form.reset();
             setEventTab('worker');
 
             const modal = document.getElementById('addEventModal');
             if (startDate) {
-                document.getElementById('eventStartDate').value = startDate;
+                console.log('📅 Setting dates in SECOND function:', { startDate, endDate });
+                const startEl = document.getElementById('eventStartDate');
+                const endEl = document.getElementById('eventEndDate');
+                if (startEl) {
+                    startEl.value = startDate;
+                    console.log('✅ Set eventStartDate:', startDate, '→ actual value:', startEl.value);
+                }
                 // If endDate provided (from drag selection), use it; otherwise default to startDate
-                document.getElementById('eventEndDate').value = endDate || startDate;
+                const actualEndDate = endDate || startDate;
+                if (endEl) {
+                    endEl.value = actualEndDate;
+                    console.log('✅ Set eventEndDate:', actualEndDate, '→ actual value:', endEl.value);
+                }
             }
             modal.classList.add('show');
         }
