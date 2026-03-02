@@ -5117,15 +5117,25 @@
 
                 // Add hover listener for more-links to show popover
                 const setupMoreLinkHover = () => {
-                    const moreLinks = document.querySelectorAll('.fc-daygrid-more-link');
-                    console.log('🔍 Found', moreLinks.length, 'more-links');
+                    // Query for all possible more-link selectors
+                    const moreLinks = document.querySelectorAll('.fc-daygrid-more-link, .fc-more-link, a[class*="more-link"]');
+                    console.log('🔍 setupMoreLinkHover called - Found', moreLinks.length, 'more-links');
                     
-                    moreLinks.forEach(link => {
+                    if (moreLinks.length > 0) {
+                        console.log('📋 More-link elements:', Array.from(moreLinks).map(l => l.className));
+                    }
+                    
+                    moreLinks.forEach((link, index) => {
                         if (!link._hoverListenerAdded) {
                             link._hoverListenerAdded = true;
+                            console.log(`✅ Adding hover listener to more-link ${index + 1}`);
                             
-                            link.addEventListener('mouseenter', () => {
+                            link.addEventListener('mouseenter', (e) => {
                                 console.log('✨ Hovering over more-link, dispatching click event');
+                                // Stop any other event handlers
+                                e.stopPropagation();
+                                e.preventDefault();
+                                
                                 // Create and dispatch a proper click event
                                 const clickEvent = new MouseEvent('click', {
                                     view: window,
@@ -5138,12 +5148,30 @@
                     });
                 };
 
-                // Setup on initial render
-                setupMoreLinkHover();
+                // Setup with multiple retries to catch DOM updates
+                console.log('🚀 Scheduling setupMoreLinkHover retries');
+                setTimeout(() => {
+                    console.log('⏰ First setupMoreLinkHover attempt (200ms)');
+                    setupMoreLinkHover();
+                }, 200);
+                
+                setTimeout(() => {
+                    console.log('⏰ Second setupMoreLinkHover attempt (500ms)');
+                    setupMoreLinkHover();
+                }, 500);
+                
+                setTimeout(() => {
+                    console.log('⏰ Third setupMoreLinkHover attempt (1000ms)');
+                    setupMoreLinkHover();
+                }, 1000);
                 
                 // Setup again when dates change
                 calendar.on('datesSet', () => {
-                    setTimeout(setupMoreLinkHover, 100);
+                    console.log('📅 datesSet fired, scheduling setupMoreLinkHover');
+                    setTimeout(() => {
+                        console.log('⏰ datesSet setupMoreLinkHover attempt');
+                        setupMoreLinkHover();
+                    }, 300);
                 });
 
                 calendar.on('eventClick', (info) => {
