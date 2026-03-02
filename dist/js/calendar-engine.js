@@ -1395,8 +1395,12 @@ const CalendarEngine = {
       let cellSelectionStartDate = null;
       
       const clearHighlights = () => {
-        document.querySelectorAll('[data-date].calendar-cell-selected').forEach(cell => {
+        document.querySelectorAll('[data-date]').forEach(cell => {
+          // Clear both class and inline styles
           cell.classList.remove('calendar-cell-selected');
+          cell.style.backgroundColor = '';
+          cell.style.outline = '';
+          cell.style.outlineOffset = '';
         });
       };
       
@@ -1469,9 +1473,12 @@ const CalendarEngine = {
           console.log('   Target element:', e.target.tagName, e.target.className);
           console.log('   Found dayCell with data-date:', cellSelectionStartDate);
           
-          // Set initial highlight on the start cell using CSS class
+          // Set initial highlight on the start cell using inline styles + class
+          dayCell.style.backgroundColor = 'rgba(0, 122, 255, 0.6)';
+          dayCell.style.outline = '3px solid #007AFF';
+          dayCell.style.outlineOffset = '-1px';
           dayCell.classList.add('calendar-cell-selected');
-          console.log('   Added calendar-cell-selected class to start cell');
+          console.log('   Applied inline styles + class to start cell');
           
           // Capture pointer on the element to ensure we get all move events
           if (dayCell.setPointerCapture && e.pointerId) {
@@ -1513,6 +1520,10 @@ const CalendarEngine = {
         allCells.forEach((cell, idx) => {
           const cellDate = cell.getAttribute('data-date');
           if (cellDate >= startDate && cellDate <= endDate) {
+            // Apply inline styles directly to ensure they stick during drag
+            cell.style.backgroundColor = 'rgba(0, 122, 255, 0.6)';
+            cell.style.outline = '3px solid #007AFF';
+            cell.style.outlineOffset = '-1px';
             cell.classList.add('calendar-cell-selected');
             
             // Detailed logging for first highlighted cell
@@ -1524,10 +1535,15 @@ const CalendarEngine = {
               console.log('   Has class "calendar-cell-selected":', cell.classList.contains('calendar-cell-selected'));
               console.log('   Computed style display:', window.getComputedStyle(cell).display);
               console.log('   Computed style background:', window.getComputedStyle(cell).backgroundColor);
+              console.log('   Inline style bg:', cell.style.backgroundColor);
               console.log('   Element HTML:', cell.outerHTML.substring(0, 200));
             }
             highlightedCount++;
           } else {
+            // Clear inline styles AND class on non-selected cells
+            cell.style.backgroundColor = '';
+            cell.style.outline = '';
+            cell.style.outlineOffset = '';
             cell.classList.remove('calendar-cell-selected');
           }
         });
