@@ -5165,9 +5165,14 @@
                             link._hoverListenerAdded = true;
                             
                             link.addEventListener('mouseenter', () => {
-                                console.log('✨ Hovering over more-link, triggering click');
-                                // Trigger click to show popover
-                                link.click();
+                                console.log('✨ Hovering over more-link, dispatching click event');
+                                // Create and dispatch a proper click event
+                                const clickEvent = new MouseEvent('click', {
+                                    view: window,
+                                    bubbles: true,
+                                    cancelable: true
+                                });
+                                link.dispatchEvent(clickEvent);
                             });
                         }
                     });
