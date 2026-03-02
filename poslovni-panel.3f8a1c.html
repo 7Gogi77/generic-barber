@@ -5114,6 +5114,14 @@
                 debugLog('🎯 Attaching event handlers...');
                 calendar.on('dateClick', (info) => {
                     debugLog('📅 dateClick handler fired');
+                    
+                    // Check if the click was on the "+x more" link - if so, let FullCalendar handle it (show popover)
+                    const clickedElement = info.jsEvent?.target;
+                    if (clickedElement && clickedElement.closest('.fc-daygrid-more-link')) {
+                        console.log('⏭️ Skipping dateClick because clicked on "+more" link (using popover)');
+                        return;
+                    }
+                    
                     // Skip if we just did a custom drag selection
                     if (window._skipNextDateClick) {
                         console.log('⏭️ Skipping dateClick because custom drag just happened');
