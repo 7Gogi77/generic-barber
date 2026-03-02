@@ -1410,9 +1410,7 @@ const CalendarEngine = {
           if (cellDate >= actualStart && cellDate <= actualEnd) {
             // Apply inline styles to ensure they stick through DOM re-renders
             cell.style.backgroundColor = 'rgba(10, 132, 255, 0.24)';
-            cell.style.outline = '2px solid rgba(10, 132, 255, 0.98)';
-            cell.style.outlineOffset = '-2px';
-            cell.style.boxShadow = 'inset 0 0 0 1px rgba(255, 255, 255, 0.65), 0 0 0 1px rgba(10, 132, 255, 0.25), 0 8px 18px rgba(10, 132, 255, 0.2)';
+            cell.style.boxShadow = 'inset 0 0 0 1px rgba(255, 255, 255, 0.65), 0 8px 18px rgba(10, 132, 255, 0.24)';
             cell.style.borderRadius = '10px';
             cell.style.position = 'relative';
             cell.style.zIndex = '10';
@@ -1516,9 +1514,7 @@ const CalendarEngine = {
           
           // Set initial highlight on the start cell using inline styles + class
           dayCell.style.backgroundColor = 'rgba(10, 132, 255, 0.24)';
-          dayCell.style.outline = '2px solid rgba(10, 132, 255, 0.98)';
-          dayCell.style.outlineOffset = '-2px';
-          dayCell.style.boxShadow = 'inset 0 0 0 1px rgba(255, 255, 255, 0.65), 0 0 0 1px rgba(10, 132, 255, 0.25), 0 8px 18px rgba(10, 132, 255, 0.2)';
+          dayCell.style.boxShadow = 'inset 0 0 0 1px rgba(255, 255, 255, 0.65), 0 8px 18px rgba(10, 132, 255, 0.24)';
           dayCell.style.borderRadius = '10px';
           dayCell.style.position = 'relative';
           dayCell.style.zIndex = '10';
