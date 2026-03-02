@@ -1431,19 +1431,25 @@ const CalendarEngine = {
       });
       
       // Real-time highlighting as user drags across cells
-      document.addEventListener('pointermove', (e) => {
+      // Uses mousemove for more responsive feedback than pointermove
+      document.addEventListener('mousemove', (e) => {
         if (!isDraggingCells || !cellSelectionStartDate) return;
         
-        const currentCell = findDayCell(e.target);
-        if (!currentCell || !e.target.closest('#scheduleCalendar')) return;
+        // Use elementFromPoint to reliably find what's under the cursor
+        const elemUnderMouse = document.elementFromPoint(e.clientX, e.clientY);
+        if (!elemUnderMouse) return;
+        
+        // Make sure we're still in the calendar
+        if (!elemUnderMouse.closest('#scheduleCalendar')) return;
+        
+        const currentCell = findDayCell(elemUnderMouse);
+        if (!currentCell) return;
         
         const currentDate = currentCell.getAttribute('data-date');
         if (!currentDate) return; // No date found
         
         const startDate = cellSelectionStartDate < currentDate ? cellSelectionStartDate : currentDate;
         const endDate = cellSelectionStartDate < currentDate ? currentDate : cellSelectionStartDate;
-        
-        console.log('🎯 Dragging from', cellSelectionStartDate, 'to', currentDate);
         
         // Highlight all cells in the range
         document.querySelectorAll('[data-date]').forEach(cell => {
