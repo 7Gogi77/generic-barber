@@ -1409,6 +1409,30 @@ const CalendarEngine = {
         return null;
       };
       
+      // Find cell at cursor position - tries elementFromPoint first, then searches bounding rects
+      const getCellAtCursorPosition = (x, y) => {
+        // First, try direct element at point
+        const elemUnderMouse = document.elementFromPoint(x, y);
+        if (elemUnderMouse) {
+          const cell = findDayCell(elemUnderMouse);
+          if (cell && cell.getAttribute('data-date')) {
+            return cell;
+          }
+        }
+        
+        // Fallback: find cell by checking bounding rectangles
+        // This catches cases where cursor is in whitespace but still over a cell visually
+        const allCells = Array.from(document.querySelectorAll('[data-date]'));
+        for (let cell of allCells) {
+          const rect = cell.getBoundingClientRect();
+          if (x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom) {
+            return cell;
+          }
+        }
+        
+        return null;
+      };
+      
       // Detect drag-to-select: only if pointerdown is on empty cell/day-top, NOT on an event
       document.addEventListener('pointerdown', (e) => {
         // Only handle events in the calendar
@@ -1431,18 +1455,11 @@ const CalendarEngine = {
       });
       
       // Real-time highlighting as user drags across cells
-      // Uses mousemove for more responsive feedback than pointermove
+      // Uses mousemove for more responsive feedback
       document.addEventListener('mousemove', (e) => {
         if (!isDraggingCells || !cellSelectionStartDate) return;
         
-        // Use elementFromPoint to reliably find what's under the cursor
-        const elemUnderMouse = document.elementFromPoint(e.clientX, e.clientY);
-        if (!elemUnderMouse) return;
-        
-        // Make sure we're still in the calendar
-        if (!elemUnderMouse.closest('#scheduleCalendar')) return;
-        
-        const currentCell = findDayCell(elemUnderMouse);
+        const currentCell = getCellAtCursorPosition(e.clientX, e.clientY);
         if (!currentCell) return;
         
         const currentDate = currentCell.getAttribute('data-date');
