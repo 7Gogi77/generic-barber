@@ -5138,11 +5138,13 @@
                 
                 // Prevent click bubbling from more-link to dateClick handler
                 const addMoreLinkListener = () => {
-                    document.querySelectorAll('.fc-daygrid-more-link').forEach(link => {
+                    const links = document.querySelectorAll('.fc-daygrid-more-link');
+                    console.log('🔍 More-links found:', links.length);
+                    links.forEach(link => {
                         if (!link._moreClickAdded) {
                             link.addEventListener('click', (e) => {
                                 console.log('✓ More-link clicked - stopping propagation');
-                                e.stopPropagation(); // Stop bubbling to cell click handler
+                                e.stopPropagation();
                             }, false);
                             link._moreClickAdded = true;
                         }
