@@ -5152,6 +5152,16 @@
                 calendar.on('dateClick', (info) => {
                     debugLog('📅 dateClick handler fired');
                     
+                    // Check what was actually clicked
+                    const clickTarget = info.jsEvent?.target;
+                    console.log('🖱️ Click target:', clickTarget?.className, clickTarget?.tagName);
+                    
+                    // Don't open modal if user clicked on the more-link
+                    if (clickTarget?.closest('.fc-daygrid-more-link')) {
+                        console.log('✓ Click was on more-link, skipping modal');
+                        return;
+                    }
+                    
                     // Skip if we just did a custom drag selection
                     if (window._skipNextDateClick) {
                         console.log('⏭️ Skipping dateClick because custom drag just happened');
