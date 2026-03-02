@@ -5096,23 +5096,34 @@
                 // Calendar interactions
                 debugLog('🎯 Attaching event handlers...');
                 
-                calendar.on('dateClick', (info) => {
-                    debugLog('📅 dateClick handler fired');
-                    
-                    // Check if moreLinkClick just fired
-                    if (window._moreLinkJustClicked) {
-                        console.log('✅ More-link was clicked, skipping modal');
+                // Use DOM click instead of FullCalendar's dateClick to have full control
+                container.addEventListener('click', (e) => {
+                    // Check if click was on more-link - let FullCalendar handle it
+                    if (e.target.closest('.fc-daygrid-more-link')) {
+                        console.log('✓ More-link clicked - FullCalendar will show popover');
                         return;
                     }
                     
-                    // Skip if we just did a custom drag selection
-                    if (window._skipNextDateClick) {
-                        console.log('⏭️ Skipping dateClick because custom drag just happened');
-                        window._skipNextDateClick = false;
+                    // Check if click was on an event - don't open add modal
+                    if (e.target.closest('.fc-event')) {
+                        console.log('✓ Event clicked - will be handled by eventClick');
                         return;
                     }
                     
-                    openAddEventModal(info.dateStr);
+                    // Check if click was on a day cell
+                    const dayCell = e.target.closest('.fc-daygrid-day');
+                    if (dayCell && dayCell.dataset.date) {
+                        console.log('📅 Empty cell clicked:', dayCell.dataset.date);
+                        
+                        // Skip if we just did a custom drag selection
+                        if (window._skipNextDateClick) {
+                            console.log('⏭️ Skipping because custom drag just happened');
+                            window._skipNextDateClick = false;
+                            return;
+                        }
+                        
+                        openAddEventModal(dayCell.dataset.date);
+                    }
                 });
                 addMoreLinkListener();
                 calendar.on('datesSet', () => {
