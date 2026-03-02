@@ -1823,6 +1823,11 @@
 
     <div class="main-content">
         <div class="content-area">
+            <div style="display:flex; justify-content:flex-end; margin-bottom:12px;">
+                <button id="businessSettingsShortcutBtn" class="btn btn-secondary" style="padding:10px 14px; font-size:13px; width:auto; flex:0 0 auto;" onclick="showBusinessSettingsPanel()">
+                    Nastavitve rezervacij
+                </button>
+            </div>
             <div id="scheduleCalendar">
                 <div class="calendar-loading">
                     <div class="calendar-spinner"></div>
@@ -2616,7 +2621,7 @@
                         
                         if (page === 'home') { window.location.href = 'admin-panel.html'; }
                         else if (page === 'settings') {
-                            showBusinessSettingsPanel();
+                            window.location.href = 'admin-panel.html';
                         }
                         else if (page === 'calendar') { 
                             hideAllPanels();
