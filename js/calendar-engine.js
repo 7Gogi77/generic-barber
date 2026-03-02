@@ -1570,6 +1570,9 @@ const CalendarEngine = {
           cancelAnimationFrame(highlightRefreshRAF);
           highlightRefreshRAF = null;
         }
+
+        const selectedStartDate = cellSelectionStartDate;
+        const selectedEndDate = cellSelectionEndDate || cellSelectionStartDate;
         
         if (isDraggingCells && dragElement && e.pointerId) {
           try {
@@ -1580,10 +1583,23 @@ const CalendarEngine = {
         }
         isDraggingCells = false;
         window._isDraggingCustomCells = false;
+        
+        if (selectedStartDate && selectedEndDate) {
+          const startDate = selectedStartDate < selectedEndDate ? selectedStartDate : selectedEndDate;
+          const endDate = selectedStartDate < selectedEndDate ? selectedEndDate : selectedStartDate;
+          const endExclusive = new Date(`${endDate}T00:00:00`);
+          endExclusive.setDate(endExclusive.getDate() + 1);
+          const endExclusiveStr = endExclusive.toISOString().split('T')[0];
+          try {
+            calendar.select(startDate, endExclusiveStr);
+          } catch (err) {
+            console.warn('⚠ Failed to trigger calendar.select from custom drag:', err);
+          }
+        }
+
         cellSelectionStartDate = null;
         cellSelectionEndDate = null;
         dragElement = null;
-        // Keep highlights visible - FullCalendar's select event will handle opening the modal
       });
       
       // Clear highlights when modal closes or escape is pressed
