@@ -278,6 +278,14 @@
 #scheduleCalendar.view-daygrid .fc .fc-daygrid-day-cell {
   z-index: 1 !important;
   position: relative !important;
+  pointer-events: none !important;
+}
+
+/* Allow clicks to pass through to more-link and events */
+#scheduleCalendar.view-daygrid .fc .fc-daygrid-day-cell .fc-daygrid-more-link,
+#scheduleCalendar.view-daygrid .fc .fc-daygrid-day-cell .fc-event,
+#scheduleCalendar.view-daygrid .fc .fc-daygrid-day-cell .fc-daygrid-day-frame {
+  pointer-events: auto !important;
 }
 
 /* Ensure day frame, cell and container are flex columns and allow children to shrink */
