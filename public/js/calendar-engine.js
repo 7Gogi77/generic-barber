@@ -1393,7 +1393,34 @@ const CalendarEngine = {
       // Detects if clicking on an event vs empty cell to avoid interfering with appointment dragging
       let isDraggingCells = false;
       let cellSelectionStartDate = null;
+      let cellSelectionEndDate = null; // Track the current end date during drag
       let dragElement = null; // Track which element started the drag
+      let highlightRefreshInterval = null; // Track interval that reapplies styles
+      
+      const applyHighlights = (startDate, endDate) => {
+        if (!startDate || !endDate) return;
+        
+        const actualStart = startDate < endDate ? startDate : endDate;
+        const actualEnd = startDate < endDate ? endDate : startDate;
+        
+        const allCells = document.querySelectorAll('[data-date]');
+        allCells.forEach(cell => {
+          const cellDate = cell.getAttribute('data-date');
+          if (cellDate >= actualStart && cellDate <= actualEnd) {
+            // Apply inline styles to ensure they stick through DOM re-renders
+            cell.style.backgroundColor = 'rgba(0, 122, 255, 0.6)';
+            cell.style.outline = '3px solid #007AFF';
+            cell.style.outlineOffset = '-1px';
+            cell.classList.add('calendar-cell-selected');
+          } else {
+            // Clear only if not in range
+            cell.style.backgroundColor = '';
+            cell.style.outline = '';
+            cell.style.outlineOffset = '';
+            cell.classList.remove('calendar-cell-selected');
+          }
+        });
+      };
       
       const clearHighlights = () => {
         document.querySelectorAll('[data-date]').forEach(cell => {
@@ -1554,6 +1581,11 @@ const CalendarEngine = {
       
       // End drag selection
       document.addEventListener('pointerup', (e) => {
+        if (highlightRefreshInterval) {
+          clearInterval(highlightRefreshInterval);
+          highlightRefreshInterval = null;
+        }
+        
         if (isDraggingCells && dragElement && e.pointerId) {
           try {
             dragElement.releasePointerCapture(e.pointerId);
@@ -1564,6 +1596,7 @@ const CalendarEngine = {
         isDraggingCells = false;
         window._isDraggingCustomCells = false;
         cellSelectionStartDate = null;
+        cellSelectionEndDate = null;
         dragElement = null;
         // Keep highlights visible - FullCalendar's select event will handle opening the modal
       });

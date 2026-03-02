@@ -1393,6 +1393,40 @@ const CalendarEngine = {
       // Detects if clicking on an event vs empty cell to avoid interfering with appointment dragging
       let isDraggingCells = false;
       let cellSelectionStartDate = null;
+
+      // SMART CELL SELECTION SYSTEM
+      // Shows real-time highlighting when dragging to select empty cells
+      // Detects if clicking on an event vs empty cell to avoid interfering with appointment dragging
+      let isDraggingCells = false;
+      let cellSelectionStartDate = null;
+      let cellSelectionEndDate = null; // Track the current end date during drag
+      let dragElement = null; // Track which element started the drag
+      let highlightRefreshInterval = null; // Track interval that reapplies styles
+      
+      const applyHighlights = (startDate, endDate) => {
+        if (!startDate || !endDate) return;
+        
+        const actualStart = startDate < endDate ? startDate : endDate;
+        const actualEnd = startDate < endDate ? endDate : startDate;
+        
+        const allCells = document.querySelectorAll('[data-date]');
+        allCells.forEach(cell => {
+          const cellDate = cell.getAttribute('data-date');
+          if (cellDate >= actualStart && cellDate <= actualEnd) {
+            // Apply inline styles to ensure they stick through DOM re-renders
+            cell.style.backgroundColor = 'rgba(0, 122, 255, 0.6)';
+            cell.style.outline = '3px solid #007AFF';
+            cell.style.outlineOffset = '-1px';
+            cell.classList.add('calendar-cell-selected');
+          } else {
+            // Clear only if not in range
+            cell.style.backgroundColor = '';
+            cell.style.outline = '';
+            cell.style.outlineOffset = '';
+            cell.classList.remove('calendar-cell-selected');
+          }
+        });
+      };
       
       const clearHighlights = () => {
         document.querySelectorAll('[data-date]').forEach(cell => {
@@ -1491,7 +1525,7 @@ const CalendarEngine = {
       });
       
       // Real-time highlighting as user drags across cells
-      // Uses mousemove for more responsive feedback
+      // Uses mousemove for responsive feedback
       document.addEventListener('mousemove', (e) => {
         if (!isDraggingCells || !cellSelectionStartDate) return;
         
@@ -1507,48 +1541,25 @@ const CalendarEngine = {
           return;
         }
         
-        const startDate = cellSelectionStartDate < currentDate ? cellSelectionStartDate : currentDate;
-        const endDate = cellSelectionStartDate < currentDate ? currentDate : cellSelectionStartDate;
+        // Store the current end date for continuous reapplication
+        cellSelectionEndDate = currentDate;
+        console.log('🎯 Dragging from', cellSelectionStartDate, 'to', currentDate);
         
-        console.log('🎯 Dragging from', startDate, 'to', endDate);
+        // Apply highlights immediately
+        applyHighlights(cellSelectionStartDate, cellSelectionEndDate);
         
-        // Highlight all cells in the range using CSS class (more reliable than inline styles)
-        const allCells = document.querySelectorAll('[data-date]');
-        console.log('📊 Total cells with data-date:', allCells.length);
+        // Clear any existing refresh interval
+        if (highlightRefreshInterval) clearInterval(highlightRefreshInterval);
         
-        let highlightedCount = 0;
-        allCells.forEach((cell, idx) => {
-          const cellDate = cell.getAttribute('data-date');
-          if (cellDate >= startDate && cellDate <= endDate) {
-            // Apply inline styles directly to ensure they stick during drag
-            cell.style.backgroundColor = 'rgba(0, 122, 255, 0.6)';
-            cell.style.outline = '3px solid #007AFF';
-            cell.style.outlineOffset = '-1px';
-            cell.classList.add('calendar-cell-selected');
-            
-            // Detailed logging for first highlighted cell
-            if (highlightedCount === 0) {
-              console.log('🔍 First highlighted cell details:');
-              console.log('   Element tag:', cell.tagName);
-              console.log('   Element class:', cell.className);
-              console.log('   Element ID:', cell.id);
-              console.log('   Has class "calendar-cell-selected":', cell.classList.contains('calendar-cell-selected'));
-              console.log('   Computed style display:', window.getComputedStyle(cell).display);
-              console.log('   Computed style background:', window.getComputedStyle(cell).backgroundColor);
-              console.log('   Inline style bg:', cell.style.backgroundColor);
-              console.log('   Element HTML:', cell.outerHTML.substring(0, 200));
-            }
-            highlightedCount++;
+        // Start interval to continuously reapply styles (in case FullCalendar re-renders)
+        highlightRefreshInterval = setInterval(() => {
+          if (isDraggingCells && cellSelectionStartDate && cellSelectionEndDate) {
+            applyHighlights(cellSelectionStartDate, cellSelectionEndDate);
           } else {
-            // Clear inline styles AND class on non-selected cells
-            cell.style.backgroundColor = '';
-            cell.style.outline = '';
-            cell.style.outlineOffset = '';
-            cell.classList.remove('calendar-cell-selected');
+            clearInterval(highlightRefreshInterval);
+            highlightRefreshInterval = null;
           }
-        });
-        
-        console.log('✨ Highlighted', highlightedCount, 'cells');
+        }, 50); // Reapply every 50ms to keep up with FullCalendar re-renders
       });
       
       // End drag selection
@@ -1560,9 +1571,15 @@ const CalendarEngine = {
             // Ignore if not captured
           }
         }
+        // Clear the highlight refresh interval
+        if (highlightRefreshInterval) {
+          clearInterval(highlightRefreshInterval);
+          highlightRefreshInterval = null;
+        }
         isDraggingCells = false;
         window._isDraggingCustomCells = false;
         cellSelectionStartDate = null;
+        cellSelectionEndDate = null;
         dragElement = null;
         // Keep highlights visible - FullCalendar's select event will handle opening the modal
       });
