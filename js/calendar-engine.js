@@ -1208,19 +1208,19 @@ const CalendarEngine = {
                       row.style.height = '100px';
                       row.style.minHeight = '100px';
                       row.style.maxHeight = '100px';
-                      row.style.overflow = 'hidden';
+                      row.style.overflow = 'visible';
                       row.querySelectorAll('.fc-daygrid-day-cell').forEach(cell => {
                         cell.style.height = '100px';
                         cell.style.minHeight = '100px';
                         cell.style.maxHeight = '100px';
-                        cell.style.overflow = 'hidden';
+                        cell.style.overflow = 'visible';
 
                         // Keep events container within cell bounds
                         const eventsContainer = cell.querySelector('.fc-daygrid-day-events');
                         if (eventsContainer) {
                           eventsContainer.style.height = 'calc(100% - 30px)';
                           eventsContainer.style.maxHeight = 'calc(100% - 30px)';
-                          eventsContainer.style.overflowY = 'hidden';
+                          eventsContainer.style.overflow = 'visible';
                           eventsContainer.style.display = 'flex';
                           eventsContainer.style.flexDirection = 'column';
                           eventsContainer.style.flex = 'none';
@@ -1251,6 +1251,7 @@ const CalendarEngine = {
                         if (eventsContainer) {
                           eventsContainer.style.height = '';
                           eventsContainer.style.maxHeight = '';
+                          eventsContainer.style.overflow = '';
                           eventsContainer.style.overflowY = '';
                           eventsContainer.style.display = '';
                           eventsContainer.style.flex = '';
