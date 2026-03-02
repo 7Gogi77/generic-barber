@@ -1442,12 +1442,18 @@ const CalendarEngine = {
       
       // Detect drag-to-select: only if pointerdown is on empty cell/day-top, NOT on an event
       document.addEventListener('pointerdown', (e) => {
+        isDraggingCells = false;
+        window._isDraggingCustomCells = false;
+        
         // Only handle events in the calendar
-        if (!e.target.closest('#scheduleCalendar')) return;
+        if (!e.target.closest('#scheduleCalendar')) {
+          console.log('📌 Click outside calendar');
+          return;
+        }
         
         // Check if clicking on an event - if so, let FullCalendar/drag system handle it
         if (e.target.closest('.fc-event') || e.target.closest('.fc-daygrid-event')) {
-          isDraggingCells = false;
+          console.log('📌 Clicked on event - skipping');
           return;
         }
         
@@ -1455,9 +1461,25 @@ const CalendarEngine = {
         const dayCell = findDayCell(e.target);
         if (dayCell) {
           isDraggingCells = true;
+          window._isDraggingCustomCells = true;
           cellSelectionStartDate = dayCell.getAttribute('data-date');
+          dragElement = dayCell;
           clearHighlights();
-          console.log('📍 Cell selection drag started on', cellSelectionStartDate);
+          console.log('📍 Cell selection drag STARTED on', cellSelectionStartDate);
+          console.log('   Target element:', e.target.tagName, e.target.className);
+          console.log('   Found dayCell with data-date:', cellSelectionStartDate);
+          
+          // Set initial highlight on the start cell using CSS class
+          dayCell.classList.add('calendar-cell-selected');
+          console.log('   Added calendar-cell-selected class to start cell');
+          
+          // Capture pointer on the element to ensure we get all move events
+          if (dayCell.setPointerCapture && e.pointerId) {
+            dayCell.setPointerCapture(e.pointerId);
+            console.log('   Captured pointer');
+          }
+        } else {
+          console.log('📌 Clicked in calendar but no dayCell found');
         }
       });
       
@@ -1467,23 +1489,38 @@ const CalendarEngine = {
         if (!isDraggingCells || !cellSelectionStartDate) return;
         
         const currentCell = getCellAtCursorPosition(e.clientX, e.clientY);
-        if (!currentCell) return;
+        if (!currentCell) {
+          console.log('⚠️ No cell found at cursor position:', e.clientX, e.clientY);
+          return;
+        }
         
         const currentDate = currentCell.getAttribute('data-date');
-        if (!currentDate) return; // No date found
+        if (!currentDate) {
+          console.log('⚠️ Current cell has no data-date attribute');
+          return;
+        }
         
         const startDate = cellSelectionStartDate < currentDate ? cellSelectionStartDate : currentDate;
         const endDate = cellSelectionStartDate < currentDate ? currentDate : cellSelectionStartDate;
         
+        console.log('🎯 Dragging from', startDate, 'to', endDate);
+        
         // Highlight all cells in the range using CSS class (more reliable than inline styles)
-        document.querySelectorAll('[data-date]').forEach(cell => {
+        const allCells = document.querySelectorAll('[data-date]');
+        console.log('📊 Total cells with data-date:', allCells.length);
+        
+        let highlightedCount = 0;
+        allCells.forEach(cell => {
           const cellDate = cell.getAttribute('data-date');
           if (cellDate >= startDate && cellDate <= endDate) {
             cell.classList.add('calendar-cell-selected');
+            highlightedCount++;
           } else {
             cell.classList.remove('calendar-cell-selected');
           }
         });
+        
+        console.log('✨ Highlighted', highlightedCount, 'cells');
       });
       
       // End drag selection

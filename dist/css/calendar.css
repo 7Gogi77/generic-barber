@@ -71,8 +71,12 @@
 }
 
 /* Custom cell highlighting for drag-to-select feature */
+/* Custom cell highlighting for drag-to-select feature */
 #scheduleCalendar [data-date].calendar-cell-selected {
-  background-color: rgba(0, 122, 255, 0.25) !important;
+  background-color: rgba(0, 122, 255, 0.5) !important;
+  box-shadow: inset 0 0 0 2px rgb(0, 122, 255) !important;
+  position: relative;
+  z-index: 2;
 }
 
 #scheduleCalendar .fc .fc-button-primary {

@@ -290,20 +290,10 @@
 
 /* Custom cell highlighting for drag-to-select feature */
 #scheduleCalendar [data-date].calendar-cell-selected {
-  background-color: rgba(0, 122, 255, 0.25) !important;
+  background-color: rgba(0, 122, 255, 0.5) !important;
+  box-shadow: inset 0 0 0 2px rgb(0, 122, 255) !important;
   position: relative;
-}
-
-#scheduleCalendar [data-date].calendar-cell-selected::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 122, 255, 0.25) !important;
-  pointer-events: none;
-  z-index: 1;
+  z-index: 2;
 }
 
 /* Ensure the background harness doesn't clip highlights */
