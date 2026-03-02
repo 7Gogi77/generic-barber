@@ -70,6 +70,11 @@
   font-size: 14px;
 }
 
+/* Custom cell highlighting for drag-to-select feature */
+#scheduleCalendar [data-date].calendar-cell-selected {
+  background-color: rgba(0, 122, 255, 0.25) !important;
+}
+
 #scheduleCalendar .fc .fc-button-primary {
   background-color: #3498db;
   border-color: #2980b9;

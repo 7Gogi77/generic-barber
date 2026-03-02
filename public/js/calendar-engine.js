@@ -1396,8 +1396,8 @@ const CalendarEngine = {
       let dragElement = null; // Track which element started the drag
       
       const clearHighlights = () => {
-        document.querySelectorAll('[data-date]').forEach(cell => {
-          cell.style.backgroundColor = '';
+        document.querySelectorAll('[data-date].calendar-cell-selected').forEach(cell => {
+          cell.classList.remove('calendar-cell-selected');
         });
       };
       
@@ -1464,8 +1464,8 @@ const CalendarEngine = {
           clearHighlights();
           console.log('📍 Cell selection drag started on', cellSelectionStartDate);
           
-          // Set initial highlight on the start cell
-          dayCell.style.backgroundColor = 'rgba(0, 122, 255, 0.25)';
+          // Set initial highlight on the start cell using CSS class
+          dayCell.classList.add('calendar-cell-selected');
           
           // Capture pointer on the element to ensure we get all move events
           if (dayCell.setPointerCapture && e.pointerId) {
@@ -1491,13 +1491,13 @@ const CalendarEngine = {
         const startDate = cellSelectionStartDate < currentDate ? cellSelectionStartDate : currentDate;
         const endDate = cellSelectionStartDate < currentDate ? currentDate : cellSelectionStartDate;
         
-        // Highlight all cells in the range
+        // Highlight all cells in the range using CSS class (more reliable than inline styles)
         document.querySelectorAll('[data-date]').forEach(cell => {
           const cellDate = cell.getAttribute('data-date');
           if (cellDate >= startDate && cellDate <= endDate) {
-            cell.style.backgroundColor = 'rgba(0, 122, 255, 0.25)';
+            cell.classList.add('calendar-cell-selected');
           } else {
-            cell.style.backgroundColor = '';
+            cell.classList.remove('calendar-cell-selected');
           }
         });
       });

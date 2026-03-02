@@ -1395,8 +1395,8 @@ const CalendarEngine = {
       let cellSelectionStartDate = null;
       
       const clearHighlights = () => {
-        document.querySelectorAll('[data-date]').forEach(cell => {
-          cell.style.backgroundColor = '';
+        document.querySelectorAll('[data-date].calendar-cell-selected').forEach(cell => {
+          cell.classList.remove('calendar-cell-selected');
         });
       };
       
@@ -1475,21 +1475,30 @@ const CalendarEngine = {
         const startDate = cellSelectionStartDate < currentDate ? cellSelectionStartDate : currentDate;
         const endDate = cellSelectionStartDate < currentDate ? currentDate : cellSelectionStartDate;
         
-        // Highlight all cells in the range
+        // Highlight all cells in the range using CSS class (more reliable than inline styles)
         document.querySelectorAll('[data-date]').forEach(cell => {
           const cellDate = cell.getAttribute('data-date');
           if (cellDate >= startDate && cellDate <= endDate) {
-            cell.style.backgroundColor = 'rgba(0, 122, 255, 0.25)';
+            cell.classList.add('calendar-cell-selected');
           } else {
-            cell.style.backgroundColor = '';
+            cell.classList.remove('calendar-cell-selected');
           }
         });
       });
       
       // End drag selection
-      document.addEventListener('pointerup', () => {
+      document.addEventListener('pointerup', (e) => {
+        if (isDraggingCells && dragElement && e.pointerId) {
+          try {
+            dragElement.releasePointerCapture(e.pointerId);
+          } catch (err) {
+            // Ignore if not captured
+          }
+        }
         isDraggingCells = false;
+        window._isDraggingCustomCells = false;
         cellSelectionStartDate = null;
+        dragElement = null;
         // Keep highlights visible - FullCalendar's select event will handle opening the modal
       });
       
@@ -1497,6 +1506,9 @@ const CalendarEngine = {
       window.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
           clearHighlights();
+          isDraggingCells = false;
+          window._isDraggingCustomCells = false;
+          cellSelectionStartDate = null;
         }
       });
       
