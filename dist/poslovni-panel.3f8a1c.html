@@ -5092,6 +5092,11 @@
                 window.calendar = calendar;
                 calendarInitialized = true;
                 debugLog('✓ Business calendar initialized');
+                
+                // DEBUG: Check if dayMaxEvents is set
+                console.log('🔍 dayMaxEvents setting:', calendar.getOption('dayMaxEvents'));
+                console.log('🔍 moreLinkClick setting:', calendar.getOption('moreLinkClick'));
+                console.log('🔍 Current view:', calendar.view.type);
 
                 // Calendar interactions
                 debugLog('🎯 Attaching event handlers...');
