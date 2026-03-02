@@ -271,7 +271,13 @@
 /* Ensure month/dayGrid styling is strictly scoped to .view-daygrid */
 #scheduleCalendar.view-daygrid .fc .fc-daygrid-day {
   overflow: visible !important;
-  z-index: 0;
+  z-index: 0 !important;
+  position: relative !important;
+}
+
+#scheduleCalendar.view-daygrid .fc .fc-daygrid-day-cell {
+  z-index: 1 !important;
+  position: relative !important;
 }
 
 /* Ensure day frame, cell and container are flex columns and allow children to shrink */
