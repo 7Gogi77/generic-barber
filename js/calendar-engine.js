@@ -1397,7 +1397,6 @@ const CalendarEngine = {
       let cellSelectionEndDate = null; // Track the current end date during drag
       let dragElement = null; // Track which element started the drag
       let highlightRefreshRAF = null; // Track requestAnimationFrame for continuous reapplication
-      let mutationObserver = null; // Watch for DOM changes and reapply highlights
       
       const applyHighlights = (startDate, endDate) => {
         if (!startDate || !endDate) return;
@@ -1519,23 +1518,6 @@ const CalendarEngine = {
             dayCell.setPointerCapture(e.pointerId);
             console.log('   Captured pointer');
           }
-          
-          // Create MutationObserver to immediately reapply highlights when FullCalendar modifies DOM
-          const calendarEl = document.getElementById('scheduleCalendar');
-          if (calendarEl) {
-            mutationObserver = new MutationObserver(() => {
-              if (isDraggingCells && cellSelectionStartDate && cellSelectionEndDate) {
-                applyHighlights(cellSelectionStartDate, cellSelectionEndDate);
-              }
-            });
-            mutationObserver.observe(calendarEl, {
-              childList: true,
-              subtree: true,
-              attributes: true,
-              attributeFilter: ['style', 'class']
-            });
-            console.log('   MutationObserver started');
-          }
         } else {
           console.log('📌 Clicked in calendar but no dayCell found');
         }
@@ -1587,13 +1569,6 @@ const CalendarEngine = {
         if (highlightRefreshRAF) {
           cancelAnimationFrame(highlightRefreshRAF);
           highlightRefreshRAF = null;
-        }
-        
-        // Disconnect MutationObserver
-        if (mutationObserver) {
-          mutationObserver.disconnect();
-          mutationObserver = null;
-          console.log('   MutationObserver disconnected');
         }
         
         if (isDraggingCells && dragElement && e.pointerId) {
