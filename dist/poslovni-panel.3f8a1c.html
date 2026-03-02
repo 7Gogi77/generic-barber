@@ -2262,6 +2262,13 @@
                 // Reset form fields if needed
                 const form = document.getElementById('addEventForm');
                 if (form) form.reset();
+                
+                // Set default times for new events
+                const startTimeEl = document.getElementById('eventStartTime');
+                const endTimeEl = document.getElementById('eventEndTime');
+                if (startTimeEl && !startTimeEl.value) startTimeEl.value = '09:00'; // Default to 9:00 AM
+                if (endTimeEl && !endTimeEl.value) endTimeEl.value = '10:00';     // Default to 10:00 AM
+                
                 // Show modal
                 const modal = document.getElementById('addEventModal');
                 console.log('📋 Modal element:', { modalExists: !!modal, hasShowClass: modal?.classList.contains('show') });
@@ -5086,16 +5093,17 @@
                 // Calendar interactions
                 debugLog('🎯 Attaching event handlers...');
                 
-                // Prevent dateClick when clicking the more-link by adding a direct listener
+                let isMoreLinkClicked = false;
+                
+                // Intercept more-link clicks before dateClick fires
                 const addMoreLinkListener = () => {
                     document.querySelectorAll('.fc-daygrid-more-link').forEach(link => {
                         if (!link._moreClickAdded) {
                             link.addEventListener('click', (e) => {
-                                console.log('✓ More-link clicked - preventing dateClick modal');
-                                e.preventDefault();
-                                e.stopImmediatePropagation();
-                                e.stopPropagation();
-                            }, true); // capture phase fires first
+                                console.log('✓ More-link clicked - setting flag');
+                                isMoreLinkClicked = true;
+                                // Don't prevent default - let FullCalendar handle it
+                            }, false);
                             link._moreClickAdded = true;
                         }
                     });
@@ -5104,12 +5112,10 @@
                 calendar.on('dateClick', (info) => {
                     debugLog('📅 dateClick handler fired');
                     
-                    // Also check the target just in case
-                    const clickTarget = info.jsEvent?.target;
-                    const isMoreLink = clickTarget?.closest('.fc-daygrid-more-link') !== null;
-                    
-                    if (isMoreLink) {
-                        console.log('✓ Detected click on more-link, skipping modal');
+                    // Check if we just clicked a more-link
+                    if (isMoreLinkClicked) {
+                        console.log('✓ More-link was clicked, skipping modal');
+                        isMoreLinkClicked = false; // reset flag
                         return;
                     }
                     
@@ -5123,6 +5129,10 @@
                 });
                 
                 // Add more-link listeners on init and after calendar renders
+                addMoreLinkListener();
+                calendar.on('datesSet', () => {
+                    setTimeout(() => addMoreLinkListener(), 50);
+                });
                 addMoreLinkListener();
                 calendar.on('datesSet', () => {
                     setTimeout(() => addMoreLinkListener(), 50);
