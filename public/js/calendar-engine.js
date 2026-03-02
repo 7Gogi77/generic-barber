@@ -1499,6 +1499,12 @@ const CalendarEngine = {
           return;
         }
         
+        // Check if clicking on a more-link ("+x more") - if so, let FullCalendar handle it
+        if (e.target.closest('.fc-daygrid-more-link') || e.target.closest('.fc-more-link')) {
+          console.log('📌 Clicked on more-link - skipping');
+          return;
+        }
+        
         // Check if clicking on a day cell or day header (empty area)
         const dayCell = findDayCell(e.target);
         if (dayCell) {

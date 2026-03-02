@@ -5115,64 +5115,9 @@
                     openAddEventModal(info.dateStr.split('T')[0]);
                 });
 
-                // Add hover listener for more-links to show popover
-                const setupMoreLinkHover = () => {
-                    // Query for all possible more-link selectors
-                    const moreLinks = document.querySelectorAll('.fc-daygrid-more-link, .fc-more-link, a[class*="more-link"]');
-                    console.log('🔍 setupMoreLinkHover called - Found', moreLinks.length, 'more-links');
-                    
-                    if (moreLinks.length > 0) {
-                        console.log('📋 More-link elements:', Array.from(moreLinks).map(l => l.className));
-                    }
-                    
-                    moreLinks.forEach((link, index) => {
-                        if (!link._hoverListenerAdded) {
-                            link._hoverListenerAdded = true;
-                            console.log(`✅ Adding hover listener to more-link ${index + 1}`);
-                            
-                            link.addEventListener('mouseenter', (e) => {
-                                console.log('✨ Hovering over more-link, dispatching click event');
-                                // Stop any other event handlers
-                                e.stopPropagation();
-                                e.preventDefault();
-                                
-                                // Create and dispatch a proper click event
-                                const clickEvent = new MouseEvent('click', {
-                                    view: window,
-                                    bubbles: true,
-                                    cancelable: true
-                                });
-                                link.dispatchEvent(clickEvent);
-                            });
-                        }
-                    });
-                };
-
-                // Setup with multiple retries to catch DOM updates
-                console.log('🚀 Scheduling setupMoreLinkHover retries');
-                setTimeout(() => {
-                    console.log('⏰ First setupMoreLinkHover attempt (200ms)');
-                    setupMoreLinkHover();
-                }, 200);
-                
-                setTimeout(() => {
-                    console.log('⏰ Second setupMoreLinkHover attempt (500ms)');
-                    setupMoreLinkHover();
-                }, 500);
-                
-                setTimeout(() => {
-                    console.log('⏰ Third setupMoreLinkHover attempt (1000ms)');
-                    setupMoreLinkHover();
-                }, 1000);
-                
-                // Setup again when dates change
-                calendar.on('datesSet', () => {
-                    console.log('📅 datesSet fired, scheduling setupMoreLinkHover');
-                    setTimeout(() => {
-                        console.log('⏰ datesSet setupMoreLinkHover attempt');
-                        setupMoreLinkHover();
-                    }, 300);
-                });
+                // FullCalendar's native more-link click handling works now
+                // (cell selection handler ignores clicks on .fc-more-link elements)
+                console.log('✅ More-link click handling: Using FullCalendar native (click to show popover)');
 
                 calendar.on('eventClick', (info) => {
                     debugLog('Event clicked: ' + info.event.title);
