@@ -2237,9 +2237,11 @@
             }
             // Always reload services when opening modal
             function openAddEventModalWithTab(startDate = null, endDate = null, retry = 0, tab = null) {
+                console.log('📍 openAddEventModalWithTab called with:', { startDate, endDate, tab, retry });
                 // Če storitve še niso naložene iz Firebase, počakaj in poskusi znova
                 const ready = window.SITE_CONFIG && window.SITE_CONFIG.servicesSection && Array.isArray(window.SITE_CONFIG.servicesSection.items) && window.SITE_CONFIG.servicesSection.items.length > 0;
                 if (!ready && retry < 10) {
+                    console.log('⏳ Services not ready, retrying... (attempt', retry + 1, ')');
                     setTimeout(() => openAddEventModalWithTab(startDate, retry + 1, tab), 200);
                     return;
                 }
@@ -2249,11 +2251,24 @@
                 if (form) form.reset();
                 // Show modal
                 const modal = document.getElementById('addEventModal');
+                console.log('📋 Modal element:', { modalExists: !!modal, hasShowClass: modal?.classList.contains('show') });
                 if (modal) modal.classList.add('show');
                 if (startDate) {
-                    document.getElementById('eventStartDate').value = startDate;
+                    const startDateEl = document.getElementById('eventStartDate');
+                    const endDateEl = document.getElementById('eventEndDate');
+                    console.log('📅 Setting dates:', { startDateEl: !!startDateEl, endDateEl: !!endDateEl });
+                    if (startDateEl) {
+                        startDateEl.value = startDate;
+                        console.log('✅ Set eventStartDate to:', startDate, '- actual value:', startDateEl.value);
+                    }
                     // If endDate provided, use it; otherwise default to startDate
-                    document.getElementById('eventEndDate').value = endDate || startDate;
+                    const actualEndDate = endDate || startDate;
+                    if (endDateEl) {
+                        endDateEl.value = actualEndDate;
+                        console.log('✅ Set eventEndDate to:', actualEndDate, '- actual value:', endDateEl.value);
+                    }
+                } else {
+                    console.warn('⚠️ No startDate provided to openAddEventModalWithTab');
                 }
             }
             // Override default openAddEventModal

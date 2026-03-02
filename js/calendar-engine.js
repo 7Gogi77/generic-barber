@@ -1605,6 +1605,8 @@ const CalendarEngine = {
           const startStr = selectionStart < selectionEnd ? selectionStart : selectionEnd;
           const endStr = selectionStart < selectionEnd ? selectionEnd : selectionStart;
 
+          console.log('🎯 Custom cell selection detected:', { startStr, endStr, hadCustomSelection });
+
           const selectInfoLike = {
             startStr,
             endStr,
@@ -1615,12 +1617,22 @@ const CalendarEngine = {
           const hasAdminModal = document.getElementById('eventModal');
           const addModal = document.getElementById('addEventModal');
 
+          console.log('📋 Modal check:', { hasAdminModal: !!hasAdminModal, addModal: !!addModal, openAddEventModal: typeof window.openAddEventModal });
+
           window._skipNextFcSelect = true;
 
           if (hasAdminModal) {
+            console.log('🔧 Opening admin modal with dates:', { startStr, endStr });
             CalendarEngine.openEventModal(null, selectInfoLike, calendar, scheduleData);
           } else if (addModal && typeof window.openAddEventModal === 'function') {
-            window.openAddEventModal(startStr, endStr);
+            console.log('📱 Opening poslovni-panel modal with dates:', { startStr, endStr });
+            // Ensure date format is YYYY-MM-DD by extracting just the date part
+            const startDateOnly = String(startStr).split('T')[0];
+            const endDateOnly = String(endStr).split('T')[0];
+            console.log('✅ Calling openAddEventModal with:', { startDateOnly, endDateOnly });
+            window.openAddEventModal(startDateOnly, endDateOnly);
+          } else {
+            console.warn('⚠️ Neither admin modal nor poslovni-panel modal found, or openAddEventModal not a function');
           }
         }
       });
