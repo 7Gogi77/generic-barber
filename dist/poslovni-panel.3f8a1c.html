@@ -2242,7 +2242,7 @@
                 const ready = window.SITE_CONFIG && window.SITE_CONFIG.servicesSection && Array.isArray(window.SITE_CONFIG.servicesSection.items) && window.SITE_CONFIG.servicesSection.items.length > 0;
                 if (!ready && retry < 10) {
                     console.log('⏳ Services not ready, retrying... (attempt', retry + 1, ')');
-                    setTimeout(() => openAddEventModalWithTab(startDate, retry + 1, tab), 200);
+                    setTimeout(() => openAddEventModalWithTab(startDate, endDate, retry + 1, tab), 200);
                     return;
                 }
                 setEventTab(tab || 'worker');
