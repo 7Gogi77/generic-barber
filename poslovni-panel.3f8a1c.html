@@ -5133,16 +5133,13 @@
                 // Calendar interactions
                 debugLog('🎯 Attaching event handlers...');
                 
-                let isMoreLinkClicked = false;
-                
-                // Intercept more-link clicks before dateClick fires
+                // Prevent click bubbling from more-link to dateClick handler
                 const addMoreLinkListener = () => {
                     document.querySelectorAll('.fc-daygrid-more-link').forEach(link => {
                         if (!link._moreClickAdded) {
                             link.addEventListener('click', (e) => {
-                                console.log('✓ More-link clicked - setting flag');
-                                isMoreLinkClicked = true;
-                                // Don't prevent default - let FullCalendar handle it
+                                console.log('✓ More-link clicked - stopping propagation');
+                                e.stopPropagation(); // Stop bubbling to cell click handler
                             }, false);
                             link._moreClickAdded = true;
                         }
@@ -5151,13 +5148,6 @@
                 
                 calendar.on('dateClick', (info) => {
                     debugLog('📅 dateClick handler fired');
-                    
-                    // Check if we just clicked a more-link
-                    if (isMoreLinkClicked) {
-                        console.log('✓ More-link was clicked, skipping modal');
-                        isMoreLinkClicked = false; // reset flag
-                        return;
-                    }
                     
                     // Skip if we just did a custom drag selection
                     if (window._skipNextDateClick) {
