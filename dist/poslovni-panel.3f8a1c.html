@@ -5096,20 +5096,13 @@
                 // Calendar interactions
                 debugLog('🎯 Attaching event handlers...');
                 
-                // Prevent click bubbling from more-link to dateClick handler
-                const addMoreLinkListener = () => {
-                    const links = document.querySelectorAll('.fc-daygrid-more-link');
-                    console.log('🔍 More-links found:', links.length);
-                    links.forEach(link => {
-                        if (!link._moreClickAdded) {
-                            link.addEventListener('click', (e) => {
-                                console.log('✓ More-link clicked - stopping propagation');
-                                e.stopPropagation();
-                            }, false);
-                            link._moreClickAdded = true;
-                        }
-                    });
-                };
+                calendar.on('moreLinkClick', (info) => {
+                    console.log('✓ moreLinkClick fired - popover should show');
+                    // Just log it - FullCalendar handles the popover automatically
+                    info.jsEvent?.preventDefault?.();
+                    info.jsEvent?.stopPropagation?.();
+                    return false;
+                });
                 
                 calendar.on('dateClick', (info) => {
                     debugLog('📅 dateClick handler fired');
@@ -5131,12 +5124,6 @@
                         return;
                     }
                     openAddEventModal(info.dateStr);
-                });
-                
-                // Add more-link listeners on init and after calendar renders
-                addMoreLinkListener();
-                calendar.on('datesSet', () => {
-                    setTimeout(() => addMoreLinkListener(), 50);
                 });
                 addMoreLinkListener();
                 calendar.on('datesSet', () => {
