@@ -425,10 +425,10 @@
         }
 
         .fc-daygrid-row {
-            height: 100px !important;
-            min-height: 100px !important;
-            max-height: 100px !important;
-            flex: 0 0 100px !important;
+            height: auto !important;
+            min-height: auto !important;
+            max-height: none !important;
+            flex: 0 0 auto !important;
             position: relative;
             overflow: visible !important;
         }
@@ -436,9 +436,9 @@
         .fc-daygrid-day-cell {
             background: var(--ios-bg-secondary);
             transition: background 0.15s ease;
-            height: 100px !important;
+            height: auto !important;
             min-height: 100px !important;
-            max-height: 100px !important;
+            max-height: none !important;
             overflow: visible !important;
             flex: 1 !important;
             position: relative;
@@ -447,9 +447,9 @@
         .fc-daygrid-day {
             background: var(--ios-bg-secondary);
             transition: background 0.15s ease;
-            height: 100px !important;
+            height: auto !important;
             min-height: 100px !important;
-            max-height: 100px !important;
+            max-height: none !important;
             overflow: visible !important;
             flex: 1 1 auto !important;
             position: relative;
@@ -545,7 +545,7 @@
             flex-direction: column !important;
             gap: 2px !important;
             padding-top: 4px !important;
-            height: calc(100% - 40px) !important;
+            height: auto !important;
             overflow: visible !important;
         }
 
