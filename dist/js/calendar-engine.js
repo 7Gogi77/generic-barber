@@ -786,86 +786,124 @@ const CalendarEngine = {
 
         eventContent: (arg) => {
           try {
-            const isMobile = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(max-width: 480px)').matches;
-            if (!isMobile) return undefined;
-
-            const type = arg.event.extendedProps?.type || arg.event.type || null;
-            const typeCfg = (typeof ScheduleRules !== 'undefined' && ScheduleRules.TYPE_CONFIG && type) ? ScheduleRules.TYPE_CONFIG[type] : null;
-            const isBooking = arg.event.extendedProps?.isBooking || arg.event.extendedProps?.tab === 'customer' || arg.event.extendedProps?.customer || arg.event.type === 'booking';
-            let emoji = typeCfg && typeCfg.icon ? typeCfg.icon : null;
-            if (!emoji && isBooking) emoji = '👤';
-            if (!emoji) emoji = '📌';
-
-            return { html: `<span class="mobile-event-emoji" aria-label="${emoji}" title="${emoji}">${emoji}</span>` };
-          } catch (_) {
+            const isBooking = arg.event.extendedProps?.isBooking || arg.event.extendedProps?.tab === 'customer' || arg.event.extendedProps?.customer;
+            const type = arg.event.extendedProps?.type || arg.event.type || 'unknown';
+            
+            // Get customer/worker name
+            let displayName = '';
+            if (isBooking) {
+              displayName = (arg.event.extendedProps?.customer || arg.event.title || 'Anonimni Termin').trim();
+            } else {
+              displayName = arg.event.title || 'Termin';
+            }
+            
+            // Get time
+            const startTime = arg.event.start ? new Date(arg.event.start).toLocaleTimeString('sl-SI', {hour: '2-digit', minute: '2-digit'}) : '';
+            const endTime = arg.event.end ? new Date(arg.event.end).toLocaleTimeString('sl-SI', {hour: '2-digit', minute: '2-digit'}) : '';
+            const timeText = startTime && endTime ? `${startTime} - ${endTime}` : startTime;
+            
+            // Select Bootstrap icon based on event type
+            let iconClass = 'bi-calendar-event';
+            if (isBooking) {
+              iconClass = 'bi-person-check';
+            } else if (type === 'vacation') {
+              iconClass = 'bi-palmtree';
+            } else if (type === 'break' || type === 'lunch') {
+              iconClass = 'bi-cup-hot';
+            } else if (type === 'sick_leave') {
+              iconClass = 'bi-bandaid';
+            } else if (type === 'day_off') {
+              iconClass = 'bi-calendar-x';
+            } else if (type === 'working_hours') {
+              iconClass = 'bi-briefcase';
+            }
+            
+            // Determine view type
+            const view = arg.view?.type || '';
+            const isMobileView = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(max-width: 768px)').matches;
+            
+            // For short events in week view, show compact format
+            const duration = arg.event.start && arg.event.end ? 
+              Math.round((new Date(arg.event.end) - new Date(arg.event.start)) / (1000 * 60)) : 0;
+            
+            if (view === 'timeGridWeek' && duration < 60 && duration > 0) {
+              return {
+                html: `<div style="display: flex; align-items: center; gap: 4px; padding: 1px 3px; font-size: 11px; line-height: 1.2;">
+                  <i class="bi ${iconClass}" style="font-size: 10px; flex-shrink: 0;"></i>
+                  <span style="font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${startTime}</span>
+                </div>`
+              };
+            }
+            
+            // Full format for day/month views or longer events
+            return {
+              html: `<div style="display: flex; flex-direction: column; gap: 3px; padding: 3px; height: 100%;">
+                <div style="display: flex; align-items: flex-start; gap: 4px; min-height: 16px;">
+                  <i class="bi ${iconClass}" style="font-size: 12px; flex-shrink: 0; margin-top: 1px;"></i>
+                  <div style="flex: 1; font-size: 12px; font-weight: 600; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; max-lines: 2;">
+                    ${displayName}
+                  </div>
+                </div>
+                ${timeText ? `<div style="font-size: 10px; color: rgba(0,0,0,0.6); padding-left: 16px; line-height: 1.2;">${timeText}</div>` : ''}
+              </div>`
+            };
+          } catch (e) {
+            console.warn('eventContent error:', e);
             return undefined;
           }
         },
         
         eventDidMount: (info) => {
           try {
-            // Always log mounting details for diagnostics
-            const inTimeGrid = info.el && !!info.el.closest('.fc-timegrid');
-            console.log('eventDidMount:', { id: info.event.id, title: info.event.title, allDay: info.event.allDay, inTimeGrid });
-
-            // Ensure event nodes are visible (in case of stray CSS)
-            if (info.el) {
-              info.el.style.visibility = 'visible';
-              info.el.style.opacity = 1;
-              info.el.style.zIndex = 3;
+            const isBooking = info.event.extendedProps?.isBooking || info.event.extendedProps?.tab === 'customer' || info.event.extendedProps?.customer;
+            const type = info.event.extendedProps?.type || info.event.type || 'unknown';
+            
+            if (!info.el) return;
+            
+            // Define color schemes for different event types
+            const colorSchemes = {
+              booking: { bg: 'rgba(52, 152, 219, 0.15)', border: '#3498db', text: '#2c3e50' },           // Blue - Customer booking
+              working_hours: { bg: 'rgba(46, 204, 113, 0.15)', border: '#27ae60', text: '#1e5631' },    // Green - Working hours
+              vacation: { bg: 'rgba(241, 196, 15, 0.15)', border: '#f39c12', text: '#7d5f0f' },         // Yellow - Vacation
+              break: { bg: 'rgba(155, 89, 182, 0.15)', border: '#8e44ad', text: '#5a2e7f' },            // Purple - Break
+              lunch: { bg: 'rgba(230, 126, 34, 0.15)', border: '#d35400', text: '#7a2f09' },            // Orange - Lunch
+              sick_leave: { bg: 'rgba(231, 76, 60, 0.15)', border: '#e74c3c', text: '#a02f1f' },        // Red - Sick leave
+              day_off: { bg: 'rgba(189, 195, 199, 0.15)', border: '#95a5a6', text: '#52585c' }         // Gray - Day off
+            };
+            
+            // Select color scheme
+            let scheme = colorSchemes.working_hours; // Default
+            if (isBooking) {
+              scheme = colorSchemes.booking;
+            } else if (colorSchemes[type]) {
+              scheme = colorSchemes[type];
             }
-
-            // Style booking events (respect explicit per-event coloring when present)
-            if (info.event.extendedProps?.isBooking || info.event.id?.startsWith('apt_')) {
-              if (info.el) {
-                if (!info.event.backgroundColor && !info.event.color) info.el.style.backgroundColor = 'rgba(52, 152, 219, 0.2)';
-                if (!info.event.borderColor) info.el.style.borderColor = '#3498db';
-                info.el.style.borderWidth = '1px';
-                if (!info.event.textColor) info.el.style.color = '#2c3e50';
-              }
-            }
-
-            // General fallback: if an event (any type) lacks explicit colors, apply TYPE_CONFIG values
-            try {
-              const evt = info.event || {};
-              const el = info.el;
-              const type = evt.extendedProps && evt.extendedProps.type ? evt.extendedProps.type : (evt.extendedProps && evt.extendedProps.worker ? 'worker_event' : (evt.type || null));
-              const typeCfg = (typeof ScheduleRules !== 'undefined' && ScheduleRules.TYPE_CONFIG && type) ? ScheduleRules.TYPE_CONFIG[type] : null;
-
-              if (el) {
-                // Only apply if computed background is transparent or no explicit background provided
-                const cs = window.getComputedStyle(el);
-                const isTransparentBg = cs && (cs.background === 'rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box' || cs.backgroundColor === 'rgba(0, 0, 0, 0)');
-
-                if ((!evt.backgroundColor && typeCfg && typeCfg.backgroundColor) || isTransparentBg) {
-                  try { el.style.backgroundColor = (evt.backgroundColor || typeCfg.backgroundColor || typeCfg && typeCfg.color || 'rgba(52, 152, 219, 0.2)'); } catch(_){}
-                }
-                if ((!evt.borderColor && typeCfg && typeCfg.borderColor) || (cs && (!cs.borderColor || cs.borderColor === 'transparent'))) {
-                  try { el.style.borderColor = (evt.borderColor || typeCfg.borderColor || '#3498db'); el.style.borderWidth = el.style.borderWidth || '1px'; } catch(_){}
-                }
-                if ((!evt.textColor && typeCfg && typeCfg.color) || (cs && (!cs.color || cs.color === 'rgba(0, 0, 0, 0)')) ) {
-                  try { el.style.color = (evt.textColor || typeCfg.color || '#2c3e50'); } catch(_){}
-                }
-              }
-            } catch (fbErr) { /* ignore fallback failures */ }
-
-            // Mobile-only: render a single emoji indicator for each event (replace content)
-            try {
-              const isMobile = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(max-width: 480px)').matches;
-              if (isMobile && info.el) {
-                const type = info.event.extendedProps?.type || info.event.type || null;
-                const typeCfg = (typeof ScheduleRules !== 'undefined' && ScheduleRules.TYPE_CONFIG && type) ? ScheduleRules.TYPE_CONFIG[type] : null;
-                const isBooking = info.event.extendedProps?.isBooking || info.event.extendedProps?.tab === 'customer' || info.event.extendedProps?.customer || info.event.type === 'booking';
-                let emoji = typeCfg && typeCfg.icon ? typeCfg.icon : null;
-                if (!emoji && isBooking) emoji = '👤';
-                if (!emoji) emoji = '📌';
-
-                info.el.innerHTML = `<span class="mobile-event-emoji" aria-label="${emoji}" title="${emoji}">${emoji}</span>`;
-                info.el.classList.add('mobile-emoji-only');
-              }
-            } catch (_) { /* ignore */ }
-
-          } catch (err) { console.warn('eventDidMount hook failed', err); }
+            
+            // Apply styling
+            info.el.style.backgroundColor = scheme.bg;
+            info.el.style.borderColor = scheme.border;
+            info.el.style.borderWidth = '2px';
+            info.el.style.borderStyle = 'solid';
+            info.el.style.borderRadius = '6px';
+            info.el.style.color = scheme.text;
+            info.el.style.overflow = 'hidden';
+            info.el.style.fontWeight = '500';
+            info.el.style.boxShadow = `0 1px 3px ${scheme.border}40`;
+            info.el.style.transition = 'all 0.2s ease';
+            
+            // Hover effect
+            info.el.addEventListener('mouseenter', () => {
+              info.el.style.boxShadow = `0 2px 8px ${scheme.border}60`;
+              info.el.style.transform = 'translateY(-1px)';
+            });
+            info.el.addEventListener('mouseleave', () => {
+              info.el.style.boxShadow = `0 1px 3px ${scheme.border}40`;
+              info.el.style.transform = 'translateY(0px)';
+            });
+            
+          } catch (err) { 
+            console.warn('eventDidMount hook failed', err); 
+          }
         },
 
         // Hook fired after the events array is applied to the view
@@ -884,60 +922,6 @@ const CalendarEngine = {
           } catch (err) { console.warn('eventsSet hook failed', err); }
         },
         
-        eventContent: (arg) => {
-          // Calculate event duration in minutes
-          const durationMinutes = arg.event.start && arg.event.end ? 
-            Math.round((new Date(arg.event.end) - new Date(arg.event.start)) / (1000 * 60)) : 0;
-          
-          const startTime = arg.event.start ? new Date(arg.event.start).toLocaleTimeString('sl-SI', {hour: '2-digit', minute: '2-digit'}) : '';
-          const endTime = arg.event.end ? new Date(arg.event.end).toLocaleTimeString('sl-SI', {hour: '2-digit', minute: '2-digit'}) : '';
-          const timeText = startTime ? (endTime ? `${startTime} - ${endTime}` : startTime) : '';
-          
-          // Determine emoji based on event type
-          let emoji = '📌';
-          const type = arg.event.extendedProps?.type || arg.event.type;
-          const isBooking = arg.event.extendedProps?.isBooking || arg.event.id?.startsWith('apt_') || arg.event.extendedProps?.tab === 'customer';
-          if (isBooking) emoji = '👤'; // Customer booking
-          else if (type === 'worker' || arg.event.extendedProps?.worker) emoji = '👨‍💼'; // Worker event
-          
-          // Check current view type
-          const currentView = arg.view?.type || '';
-          
-          // In WEEK view only: if duration < 45 minutes, show only time + emoji to prevent text overflow
-          if (currentView === 'timeGridWeek' && durationMinutes < 45 && durationMinutes > 0) {
-            return {
-              html: `<div style="display: flex; align-items: center; justify-content: space-between; width: 100%; height: 100%; padding: 1px 3px; font-size: 11px; font-weight: 600;" title="${arg.event.title}"><span>${startTime}</span><span>${emoji}</span></div>`
-            };
-          }
-          
-          // For longer appointments (>= 45 min) OR in month/day views, show full content
-          if (arg.event.extendedProps?.isBooking || arg.event.id?.startsWith('apt_')) {
-            try {
-              const customerName = arg.event.extendedProps?.customer || arg.event.extendedProps?.worker || arg.event.title || 'Rezervacija';
-              return {
-                html: `<div style="padding: 2px; font-size: 12px; font-weight: bold;">${customerName}</div><div style="padding: 2px; font-size: 10px;">${timeText}</div>`
-              };
-            } catch (err) { /* fallback to default booking rendering */ }
-          }
-
-          // Custom rendering for multi-day events
-          if (arg.event.extendedProps?.isMultiDay && arg.event.allDay) {
-            return {
-              html: `<div style="width: 100%; padding: 4px 6px; white-space: normal; overflow: visible;">${arg.event.title}</div>`
-            };
-          }
-          
-          // Default rendering for schedule events - show title with time range when available
-          if (arg.event.title) {
-            const title = arg.event.title.length > 20 ? arg.event.title.substring(0, 20) + '...' : arg.event.title;
-            return {
-              html: `<div style="padding: 1px 2px; font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><div style=\"font-weight:600; font-size:12px;\">${timeText}</div><div>${title}</div></div>`
-            };
-          }
-          
-          return false; // Use default rendering
-        },
-
         eventDrop: async (dropInfo) => {
           console.log('📅 Event dropped:', dropInfo.event.title, 'ID:', dropInfo.event.id);
           
