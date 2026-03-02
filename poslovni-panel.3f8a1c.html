@@ -5136,24 +5136,21 @@
                 // Calendar interactions
                 debugLog('🎯 Attaching event handlers...');
                 
+                let wasMoreLinkClicked = false;
+                
                 calendar.on('moreLinkClick', (info) => {
-                    console.log('✓ moreLinkClick fired - popover should show');
-                    // Just log it - FullCalendar handles the popover automatically
-                    info.jsEvent?.preventDefault?.();
-                    info.jsEvent?.stopPropagation?.();
-                    return false;
+                    console.log('✓ moreLinkClick fired - setting flag to prevent dateClick modal');
+                    wasMoreLinkClicked = true;
+                    // FullCalendar will show the popover automatically
                 });
                 
                 calendar.on('dateClick', (info) => {
                     debugLog('📅 dateClick handler fired');
                     
-                    // Check what was actually clicked
-                    const clickTarget = info.jsEvent?.target;
-                    console.log('🖱️ Click target:', clickTarget?.className, clickTarget?.tagName);
-                    
-                    // Don't open modal if user clicked on the more-link
-                    if (clickTarget?.closest('.fc-daygrid-more-link')) {
-                        console.log('✓ Click was on more-link, skipping modal');
+                    // If moreLinkClick just fired, don't open the modal
+                    if (wasMoreLinkClicked) {
+                        console.log('✓ More-link was clicked, skipping modal');
+                        wasMoreLinkClicked = false;
                         return;
                     }
                     
