@@ -1409,9 +1409,11 @@ const CalendarEngine = {
           const cellDate = cell.getAttribute('data-date');
           if (cellDate >= actualStart && cellDate <= actualEnd) {
             // Apply inline styles to ensure they stick through DOM re-renders
-            cell.style.backgroundColor = 'rgba(0, 122, 255, 0.6)';
-            cell.style.outline = '3px solid #007AFF';
-            cell.style.outlineOffset = '-1px';
+            cell.style.backgroundColor = 'rgba(10, 132, 255, 0.24)';
+            cell.style.outline = '2px solid rgba(10, 132, 255, 0.98)';
+            cell.style.outlineOffset = '-2px';
+            cell.style.boxShadow = 'inset 0 0 0 1px rgba(255, 255, 255, 0.65), 0 0 0 1px rgba(10, 132, 255, 0.25), 0 8px 18px rgba(10, 132, 255, 0.2)';
+            cell.style.borderRadius = '10px';
             cell.style.position = 'relative';
             cell.style.zIndex = '10';
             cell.classList.add('calendar-cell-selected');
@@ -1420,6 +1422,8 @@ const CalendarEngine = {
             cell.style.backgroundColor = '';
             cell.style.outline = '';
             cell.style.outlineOffset = '';
+            cell.style.boxShadow = '';
+            cell.style.borderRadius = '';
             cell.style.position = '';
             cell.style.zIndex = '';
             cell.classList.remove('calendar-cell-selected');
@@ -1434,6 +1438,10 @@ const CalendarEngine = {
           cell.style.backgroundColor = '';
           cell.style.outline = '';
           cell.style.outlineOffset = '';
+          cell.style.boxShadow = '';
+          cell.style.borderRadius = '';
+          cell.style.position = '';
+          cell.style.zIndex = '';
         });
       };
       
@@ -1507,9 +1515,13 @@ const CalendarEngine = {
           console.log('   Found dayCell with data-date:', cellSelectionStartDate);
           
           // Set initial highlight on the start cell using inline styles + class
-          dayCell.style.backgroundColor = 'rgba(0, 122, 255, 0.6)';
-          dayCell.style.outline = '3px solid #007AFF';
-          dayCell.style.outlineOffset = '-1px';
+          dayCell.style.backgroundColor = 'rgba(10, 132, 255, 0.24)';
+          dayCell.style.outline = '2px solid rgba(10, 132, 255, 0.98)';
+          dayCell.style.outlineOffset = '-2px';
+          dayCell.style.boxShadow = 'inset 0 0 0 1px rgba(255, 255, 255, 0.65), 0 0 0 1px rgba(10, 132, 255, 0.25), 0 8px 18px rgba(10, 132, 255, 0.2)';
+          dayCell.style.borderRadius = '10px';
+          dayCell.style.position = 'relative';
+          dayCell.style.zIndex = '10';
           dayCell.classList.add('calendar-cell-selected');
           console.log('   Applied inline styles + class to start cell');
           
