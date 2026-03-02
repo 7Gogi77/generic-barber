@@ -12,6 +12,12 @@ const CalendarEngine = {
     const events = [];
     const today = new Date();
     today.setHours(0, 0, 0, 0);
+    const toLocalDateString = (d) => {
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${y}-${m}-${day}`;
+    };
 
     // Generate events for next 6 months
     const endDate = new Date(today);
@@ -57,8 +63,8 @@ const CalendarEngine = {
             const startTimeUse = timeStr || '09:00';
             const endTimeUse = endTimeStr || '17:00';
 
-            recurrenceEvent.start = current.toISOString().split('T')[0] + 'T' + startTimeUse;
-            recurrenceEvent.end = current.toISOString().split('T')[0] + 'T' + endTimeUse;
+            recurrenceEvent.start = toLocalDateString(current) + 'T' + startTimeUse;
+            recurrenceEvent.end = toLocalDateString(current) + 'T' + endTimeUse;
 
             try {
               const formattedEvent = this.formatCalendarEvent(recurrenceEvent);
@@ -339,9 +345,15 @@ const CalendarEngine = {
       };
     }
 
-    // Use ISO date-only strings for all-day events
-    const startIso = startDate.toISOString().split('T')[0];
-    const endIso = endDate.toISOString().split('T')[0];
+    // Use local date-only strings for all-day events (avoid UTC day-shift)
+    const toLocalDateString = (d) => {
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${y}-${m}-${day}`;
+    };
+    const startIso = toLocalDateString(startDate);
+    const endIso = toLocalDateString(endDate);
 
     return {
       id: event.id,
@@ -672,15 +684,24 @@ const CalendarEngine = {
         // Only used in admin-panel.html - check if modal exists before calling
         select: (selectInfo) => {
           console.log('📅 Date selected:', selectInfo.startStr, '→', selectInfo.endStr);
+          const shiftDateString = (dateStr, days) => {
+            if (!dateStr) return dateStr;
+            const [yy, mm, dd] = String(dateStr).split('T')[0].split('-').map(Number);
+            if (!yy || !mm || !dd) return dateStr;
+            const dt = new Date(yy, mm - 1, dd);
+            dt.setDate(dt.getDate() + days);
+            const y = dt.getFullYear();
+            const m = String(dt.getMonth() + 1).padStart(2, '0');
+            const d = String(dt.getDate()).padStart(2, '0');
+            return `${y}-${m}-${d}`;
+          };
           
           // Parse start and end dates (handle both with and without time)
           let startDate = selectInfo.startStr.split('T')[0]; // "2026-02-16"
           let endDate = selectInfo.endStr ? selectInfo.endStr.split('T')[0] : startDate; // "2026-02-21"
           
           // FullCalendar's end is exclusive, so subtract 1 day
-          const ed = new Date(endDate);
-          ed.setDate(ed.getDate() - 1);
-          endDate = ed.toISOString().split('T')[0]; // "2026-02-20"
+          endDate = shiftDateString(endDate, -1); // "2026-02-20"
           
           console.log('🎯 Highlighting range:', startDate, 'to', endDate);
           
@@ -716,10 +737,7 @@ const CalendarEngine = {
 
               // If endStr is present and selection was all-day, FullCalendar gives exclusive end — subtract one day
               if (selectInfo.endStr) {
-                const ed = new Date(selectInfo.endStr);
-                // subtract 1 day
-                ed.setDate(ed.getDate() - 1);
-                endStr = ed.toISOString().split('T')[0];
+                endStr = shiftDateString(selectInfo.endStr, -1);
               }
 
               console.log('📤 Opening Add Event modal with range:', startStr, '→', endStr);
@@ -931,11 +949,24 @@ const CalendarEngine = {
               let newStart = dropInfo.event.startStr;
               let newEnd = dropInfo.event.endStr;
 
+              const shiftDateString = (dateStr, days) => {
+                if (!dateStr) return dateStr;
+                const [yy, mm, dd] = String(dateStr).split('T')[0].split('-').map(Number);
+                if (!yy || !mm || !dd) return dateStr;
+                const dt = new Date(yy, mm - 1, dd);
+                dt.setDate(dt.getDate() + days);
+                const y = dt.getFullYear();
+                const m = String(dt.getMonth() + 1).padStart(2, '0');
+                const d = String(dt.getDate()).padStart(2, '0');
+                return `${y}-${m}-${d}`;
+              };
+
               if (isAllDay) {
+                if (newStart) {
+                  newStart = String(newStart).split('T')[0];
+                }
                 if (newEnd) {
-                  const endDate = new Date(newEnd);
-                  endDate.setDate(endDate.getDate() - 1);
-                  newEnd = endDate.toISOString().split('T')[0];
+                  newEnd = shiftDateString(newEnd, -1);
                 } else if (newStart) {
                   newEnd = newStart;
                 }
@@ -1006,11 +1037,24 @@ const CalendarEngine = {
               let newStart = resizeInfo.event.startStr;
               let newEnd = resizeInfo.event.endStr;
 
+              const shiftDateString = (dateStr, days) => {
+                if (!dateStr) return dateStr;
+                const [yy, mm, dd] = String(dateStr).split('T')[0].split('-').map(Number);
+                if (!yy || !mm || !dd) return dateStr;
+                const dt = new Date(yy, mm - 1, dd);
+                dt.setDate(dt.getDate() + days);
+                const y = dt.getFullYear();
+                const m = String(dt.getMonth() + 1).padStart(2, '0');
+                const d = String(dt.getDate()).padStart(2, '0');
+                return `${y}-${m}-${d}`;
+              };
+
               if (isAllDay) {
+                if (newStart) {
+                  newStart = String(newStart).split('T')[0];
+                }
                 if (newEnd) {
-                  const endDate = new Date(newEnd);
-                  endDate.setDate(endDate.getDate() - 1);
-                  newEnd = endDate.toISOString().split('T')[0];
+                  newEnd = shiftDateString(newEnd, -1);
                 } else if (newStart) {
                   newEnd = newStart;
                 }
@@ -2139,7 +2183,10 @@ async function createWorkingHoursEvents(startTime, endTime) {
     for (let i = 0; i < 365; i++) {
       const date = new Date(today);
       date.setDate(date.getDate() + i);
-      const dateStr = date.toISOString().split('T')[0];
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, '0');
+      const d = String(date.getDate()).padStart(2, '0');
+      const dateStr = `${y}-${m}-${d}`;
       
       // Create working hours event for this day
       const event = {
