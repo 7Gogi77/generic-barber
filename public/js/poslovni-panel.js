@@ -411,25 +411,36 @@
                             localStorage.setItem('sidebarExpanded', 'false');
                         }
                         
-                        // Always reset all panels and calendar before switching
-                        hideAllPanels();
+                        // Hide calendar whenever leaving calendar page
                         const _cal = document.getElementById('scheduleCalendar');
-                        if (_cal) _cal.style.display = 'none';
 
                         if (page === 'home') { window.location.href = 'admin-panel.html'; }
                         else if (page === 'settings') {
                             window.location.href = 'admin-panel.html';
                         }
                         else if (page === 'booking-settings') {
+                            // Close the other two panels only — not the one we're opening
+                            if (_cal) _cal.style.display = 'none';
+                            closeCustomerPanel();
+                            closeAnalyticsPanel();
                             showBusinessSettingsPanel();
                         }
-                        else if (page === 'calendar') { 
+                        else if (page === 'calendar') {
+                            closeCustomerPanel();
+                            closeAnalyticsPanel();
+                            closeBusinessSettingsPanel();
                             if (_cal) _cal.style.display = 'block';
                         }
                         else if (page === 'customers') {
+                            if (_cal) _cal.style.display = 'none';
+                            closeAnalyticsPanel();
+                            closeBusinessSettingsPanel();
                             showCustomerListPanel();
                         }
                         else if (page === 'analytics') {
+                            if (_cal) _cal.style.display = 'none';
+                            closeCustomerPanel();
+                            closeBusinessSettingsPanel();
                             showAnalyticsPanel();
                         }
                         else { alert(`${page} page not yet implemented`); }
