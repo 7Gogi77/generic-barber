@@ -1479,20 +1479,23 @@ const CalendarEngine = {
           const hasAdminModal = document.getElementById('eventModal');
           const addModal = document.getElementById('addEventModal');
 
-
-          // Skip both FullCalendar select handler AND dateClick handler
+          // Set skip-flags synchronously so FC's select/dateClick (which fire
+          // before our pointerup in the same tick) are blocked.
           window._skipNextFcSelect = true;
           window._skipNextDateClick = true;
 
-          if (hasAdminModal) {
-            CalendarEngine.openEventModal(null, selectInfoLike, calendar, scheduleData);
-          } else if (addModal && typeof window.openAddEventModal === 'function') {
-            // Ensure date format is YYYY-MM-DD by extracting just the date part
-            const startDateOnly = String(startStr).split('T')[0];
-            const endDateOnly = String(endStr).split('T')[0];
-            window.openAddEventModal(startDateOnly, endDateOnly);
-          } else {
-          }
+          // Defer the actual modal open so it runs AFTER all of FC's synchronous
+          // callbacks (select, dateClick) have fired, ensuring our correct
+          // start+end dates are the final values written to the form.
+          setTimeout(() => {
+            if (hasAdminModal) {
+              CalendarEngine.openEventModal(null, selectInfoLike, calendar, scheduleData);
+            } else if (addModal && typeof window.openAddEventModal === 'function') {
+              const startDateOnly = String(startStr).split('T')[0];
+              const endDateOnly = String(endStr).split('T')[0];
+              window.openAddEventModal(startDateOnly, endDateOnly);
+            }
+          }, 0);
         }
       });
       
