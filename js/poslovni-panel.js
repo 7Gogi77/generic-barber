@@ -3676,16 +3676,20 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                     document.addEventListener('touchmove', (e) => {
                         const dy = Math.abs(e.touches[0].clientY - _touchStartY);
                         const dx = Math.abs(e.touches[0].clientX - _touchStartX);
-                        if (dy > 8 || dx > 8) window._calTouchScrolled = true;
+                        if (dy > 8 || dx > 8) {
+                            window._calTouchScrolled = true;
+                            // Immediately clear any FullCalendar selection highlight
+                            try { calendar.unselect(); } catch(e) {}
+                            // Also clear any inline backgroundColor set during selection
+                            document.querySelectorAll('[data-date]').forEach(c => { c.style.backgroundColor = ''; });
+                        }
                     }, { passive: true });
                 }
 
                 // Handle single day cell clicks to open add modal (but NOT more-link clicks)
                 calendar.on('dateClick', (info) => {
                     
-                    // On mobile the FAB (+) is the only way to add events
-                    // Also skip if the user was scrolling (finger moved before lifting)
-                    if (window.innerWidth <= 768) return;
+                    // Skip if the user was scrolling (finger moved >8px before lifting)
                     if (window._calTouchScrolled) { window._calTouchScrolled = false; return; }
 
                     // Skip if more-link was just clicked (flag set by moreLinkClick)

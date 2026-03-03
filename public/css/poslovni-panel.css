@@ -2240,4 +2240,15 @@
     #scheduleCalendar.view-daygrid .fc .fc-daygrid-day:hover {
         background: transparent !important;
     }
+    /* Remove native browser tap highlight on calendar cells */
+    .fc .fc-daygrid-day,
+    .fc .fc-daygrid-day * {
+        -webkit-tap-highlight-color: transparent !important;
+    }
+    /* Smaller "+X more" link text on mobile */
+    .fc .fc-daygrid-more-link {
+        font-size: 10px !important;
+        padding: 1px 3px !important;
+        line-height: 1.2 !important;
+    }
 }
