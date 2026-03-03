@@ -599,7 +599,7 @@ const CalendarEngine = {
         // Hide the all-day slot so week/day views don't show a separate all-day row
         allDaySlot: false,
         views: {
-          dayGridMonth: { type: 'dayGridMonth' },
+          dayGridMonth: { type: 'dayGridMonth', height: 'auto' }, // auto-size so last row is never clipped
           // Force full 24-hour rendering for timeGrid week/day views
           timeGridWeek: { type: 'timeGrid', slotMinTime: '00:00:00', slotMaxTime: '24:00:00', slotDuration: '00:30:00' },
           timeGridDay: { type: 'timeGrid', slotMinTime: '00:00:00', slotMaxTime: '24:00:00' }
@@ -636,7 +636,7 @@ const CalendarEngine = {
 
 
         // Interactions
-        selectable: true,
+        selectable: !_isMobile, // disable drag-to-select on mobile; use FAB (+) instead
         selectMirror: false, // Disable FullCalendar's visual feedback during selection
         selectOverlap: true,
         editable: true,
@@ -745,6 +745,11 @@ const CalendarEngine = {
             // Determine view type
             const view = arg.view?.type || '';
             const isMobileView = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(max-width: 768px)').matches;
+            
+            // On mobile: render only the icon — user taps event to see details
+            if (isMobileView) {
+              return { html: `<div style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;padding:1px;"><i class="bi ${iconClass}" style="font-size:13px;line-height:1;"></i></div>` };
+            }
             
             // For short events in week view, show compact format
             const duration = arg.event.start && arg.event.end ? 
