@@ -3549,6 +3549,13 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                     if (window._moreLinkJustClicked) {
                         return;
                     }
+
+                    // Skip if a custom multi-day drag just completed (flag set by pointerup handler)
+                    // Without this, dateClick fires after drag release and overwrites the end date
+                    if (window._skipNextDateClick) {
+                        window._skipNextDateClick = false;
+                        return;
+                    }
                     
                     // This is a native FullCalendar event that fires for empty cell clicks
                     openAddEventModal(info.dateStr.split('T')[0]);
