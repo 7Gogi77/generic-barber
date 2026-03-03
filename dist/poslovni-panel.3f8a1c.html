@@ -3477,57 +3477,156 @@
         }
 
         function exportAnalyticsReport() {
-            const rangeDays = document.getElementById('analyticsRange')?.value || '30';
-            const totalEarnings = document.getElementById('totalEarnings')?.textContent || '0€';
-            const upcomingRevenue = document.getElementById('upcomingRevenue')?.textContent || '0€';
-            const avgPerDay = document.getElementById('avgPerDay')?.textContent || '0€';
+            const rangeDays = parseInt(document.getElementById('analyticsRange')?.value || '30');
+            const shopName = (window.SITE_CONFIG && window.SITE_CONFIG.shopName) ? window.SITE_CONFIG.shopName : 'Podjetje';
+            const currency = (window.SITE_CONFIG && window.SITE_CONFIG.currency) ? window.SITE_CONFIG.currency : '€';
+            const now = new Date();
+            const rangeStart = new Date(now.getTime() - (rangeDays * 24 * 60 * 60 * 1000));
+            const exportDate = now.toLocaleDateString('sl-SI', { day: '2-digit', month: '2-digit', year: 'numeric' });
+            const rangeLabel = rangeStart.toLocaleDateString('sl-SI') + ' \u2013 ' + now.toLocaleDateString('sl-SI');
 
-            // Extract numeric values from currency strings
-            const parseAmount = (str) => parseFloat((str || '0€').replace(/[^0-9.-]/g, '')) || 0;
+            const allEvents = (scheduleData && Array.isArray(scheduleData.events)) ? scheduleData.events : [];
+            const completedEvents = allEvents.filter(e => {
+                if (!e.end) return false;
+                const endDate = new Date(e.end);
+                return endDate < now && endDate >= rangeStart && (e.extendedProps?.isBooking || e.isBooking || e.extendedProps?.tab === 'customer');
+            });
+            const upcomingEvents = allEvents.filter(e => {
+                if (!e.start) return false;
+                return new Date(e.start) > now && (e.extendedProps?.isBooking || e.isBooking || e.extendedProps?.tab === 'customer');
+            });
 
-            // Create arrays for CSV/Excel
-            let csvContent = 'sep=,\n'; // Excel separator declaration
+            const apptEarnings = completedEvents.reduce((s, e) => s + parseFloat(e.extendedProps?.price || 0), 0);
+            const manualInRange = manualEarningsData.filter(m => { const d = new Date(m.date); return d >= rangeStart && d <= now; });
+            const manualSum = manualInRange.reduce((s, m) => s + parseFloat(m.amount || 0), 0);
+            const totalEarnings = apptEarnings + manualSum;
+            const upcomingRevenue = upcomingEvents.reduce((s, e) => s + parseFloat(e.extendedProps?.price || 0), 0);
+            const avgPerDay = rangeDays > 0 ? totalEarnings / rangeDays : 0;
 
-            // Header section
-            csvContent += 'POSLOVNO POROČILO (Business Report),,\n';
-            csvContent += ',,\n';
-            csvContent += 'Obdobje (Period),' + rangeDays + ' dni (days),\n';
-            csvContent += 'Datum (Date),' + new Date().toLocaleDateString('sl-SI') + ',\n';
-            csvContent += ',,\n';
+            const custSet = new Set();
+            completedEvents.forEach(e => {
+                const k = (e.extendedProps?.customer||'')+'|'+(e.extendedProps?.email||'')+'|'+(e.extendedProps?.phone||'');
+                if (k !== '||') custSet.add(k.toLowerCase());
+            });
 
-            // Summary section
-            csvContent += 'PREGLED ZASLUŽKA (Earnings Overview),,\n';
-            csvContent += 'Skupaj zasluženo (Total Earned),' + totalEarnings + ',\n';
-            csvContent += 'Prihodnji prilivi (Upcoming Revenue),' + upcomingRevenue + ',\n';
-            csvContent += 'Povprečje na dan (Daily Average),' + avgPerDay + ',\n';
-            csvContent += ',,\n';
+            const fmt  = n => parseFloat(n || 0).toFixed(2) + ' ' + currency;
+            const fmtD = d => { try { return new Date(d).toLocaleDateString('sl-SI'); } catch(_){ return ''; } };
+            const fmtT = d => { try { return new Date(d).toLocaleTimeString('sl-SI', {hour:'2-digit',minute:'2-digit'}); } catch(_){ return ''; } };
+            const esc  = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 
-            // Manual earnings section
-            csvContent += 'ROČNI VNOSI (Manual Earnings),,\n';
-            csvContent += 'Opis (Description),Znesek (Amount),Datum (Date)\n';
-            
-            if (manualEarningsData && manualEarningsData.length > 0) {
-                manualEarningsData.forEach(m => {
-                    const desc = String(m.description || '').replace(/,/g, ';'); // Escape commas
-                    const amount = String(m.amount || '0').replace(/,/g, '.');
-                    const date = new Date(m.date).toLocaleDateString('sl-SI');
-                    csvContent += `"${desc}","${amount}€","${date}"\n`;
-                });
-            }
+            let rowsCompleted = '';
+            [...completedEvents].sort((a,b) => new Date(a.start)-new Date(b.start)).forEach((e,i) => {
+                const svc = Array.isArray(e.extendedProps?.services) ? e.extendedProps.services.join(', ') : (e.extendedProps?.services || '\u2013');
+                const dur = e.extendedProps?.duration ? e.extendedProps.duration + ' min' : '\u2013';
+                rowsCompleted += `<tr>
+                    <td style="text-align:center;color:#888">${i+1}</td>
+                    <td>${fmtD(e.start)}</td>
+                    <td>${fmtT(e.start)} \u2013 ${fmtT(e.end)}</td>
+                    <td><b>${esc(e.extendedProps?.customer||e.title||'\u2013')}</b></td>
+                    <td>${esc(e.extendedProps?.phone||'\u2013')}</td>
+                    <td>${esc(e.extendedProps?.email||'\u2013')}</td>
+                    <td>${esc(svc)}</td>
+                    <td style="text-align:center">${dur}</td>
+                    <td style="text-align:right;font-weight:bold">${fmt(e.extendedProps?.price)}</td>
+                </tr>`;
+            });
+            if (rowsCompleted) rowsCompleted += `<tr style="background:#eef2ff;font-weight:bold;border-top:2px solid #4361ee">
+                <td colspan="8" style="text-align:right">SKUPAJ</td>
+                <td style="text-align:right">${fmt(apptEarnings)}</td></tr>`;
 
-            csvContent += ',,\n';
-            csvContent += 'Skupaj ročnih vnosov (Total Manual),"' + 
-                (manualEarningsData.reduce((sum, m) => sum + parseFloat(m.amount || 0), 0).toFixed(2)) + 
-                '€",\n';
+            let rowsUpcoming = '';
+            [...upcomingEvents].sort((a,b) => new Date(a.start)-new Date(b.start)).forEach((e,i) => {
+                const svc = Array.isArray(e.extendedProps?.services) ? e.extendedProps.services.join(', ') : (e.extendedProps?.services || '\u2013');
+                rowsUpcoming += `<tr>
+                    <td style="text-align:center;color:#888">${i+1}</td>
+                    <td>${fmtD(e.start)}</td>
+                    <td>${fmtT(e.start)} \u2013 ${fmtT(e.end)}</td>
+                    <td><b>${esc(e.extendedProps?.customer||e.title||'\u2013')}</b></td>
+                    <td>${esc(e.extendedProps?.phone||'\u2013')}</td>
+                    <td>${esc(e.extendedProps?.email||'\u2013')}</td>
+                    <td>${esc(svc)}</td>
+                    <td style="text-align:right;font-weight:bold">${fmt(e.extendedProps?.price)}</td>
+                </tr>`;
+            });
+            if (rowsUpcoming) rowsUpcoming += `<tr style="background:#eef2ff;font-weight:bold;border-top:2px solid #4361ee">
+                <td colspan="7" style="text-align:right">SKUPAJ PRIČAKOVANO</td>
+                <td style="text-align:right">${fmt(upcomingRevenue)}</td></tr>`;
 
-            // Create download as Excel file
-            const blob = new Blob([csvContent], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+            let rowsManual = '';
+            [...manualEarningsData].sort((a,b) => new Date(a.date)-new Date(b.date)).forEach((m,i) => {
+                rowsManual += `<tr>
+                    <td style="text-align:center;color:#888">${i+1}</td>
+                    <td>${fmtD(m.date)}</td>
+                    <td>${esc(m.description||'\u2013')}</td>
+                    <td style="text-align:right;font-weight:bold">${fmt(m.amount)}</td>
+                </tr>`;
+            });
+            if (rowsManual) rowsManual += `<tr style="background:#eef2ff;font-weight:bold;border-top:2px solid #4361ee">
+                <td colspan="3" style="text-align:right">SKUPAJ</td>
+                <td style="text-align:right">${fmt(manualSum)}</td></tr>`;
+
+            const sectionTitle = (title, count) =>
+                `<h2 style="font-size:13pt;color:#16213e;background:#eef2ff;padding:7px 12px;margin:24px 0 6px 0;border-left:4px solid #4361ee;font-family:Calibri,Arial,sans-serif">${title} <span style="font-weight:normal;color:#666">(${count})</span></h2>`;
+
+            const html = `<!DOCTYPE html>
+<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+<head><meta charset="UTF-8">
+<style>
+body{font-family:Calibri,Arial,sans-serif;font-size:11pt;color:#1a1a2e;margin:24px}
+table{border-collapse:collapse;width:100%;margin-bottom:8px}
+th{background:#4361ee;color:#fff;font-weight:bold;padding:7px 10px;text-align:left;font-size:10pt;border:1px solid #3451d1}
+td{padding:6px 10px;font-size:10pt;border:1px solid #dde2f0;vertical-align:top}
+tr:nth-child(even) td{background:#f8f9ff}
+</style></head>
+<body>
+<div style="display:flex;align-items:center;margin-bottom:6px">
+  <div style="width:6px;height:48px;background:#4361ee;margin-right:14px;border-radius:3px"></div>
+  <div>
+    <div style="font-size:20pt;font-weight:bold;color:#1a1a2e">${esc(shopName)}</div>
+    <div style="font-size:10pt;color:#666;margin-top:2px">Poslovno poroč\u010dilo &nbsp;&bull;&nbsp; Obdobje: ${rangeLabel} &nbsp;&bull;&nbsp; Izvoz: ${exportDate}</div>
+  </div>
+</div>
+<hr style="border:none;border-top:2px solid #4361ee;margin:10px 0 18px 0">
+
+${sectionTitle('Povzetek', '')}
+<table>
+  <tr><td style="font-weight:bold;width:260px">Skupaj zasluženo</td><td style="font-weight:bold;color:#22c55e;font-size:13pt">${fmt(totalEarnings)}</td></tr>
+  <tr><td style="font-weight:bold">Zaslužek iz terminov</td><td>${fmt(apptEarnings)}</td></tr>
+  <tr><td style="font-weight:bold">Ročni vnosi skupaj</td><td>${fmt(manualSum)}</td></tr>
+  <tr><td style="font-weight:bold">Prihodnji prihodek (pričakovan)</td><td style="color:#f59e0b;font-weight:bold">${fmt(upcomingRevenue)}</td></tr>
+  <tr><td style="font-weight:bold">Povprečje na dan</td><td>${fmt(avgPerDay)}</td></tr>
+  <tr><td style="font-weight:bold">Opravljeni termini</td><td>${completedEvents.length}</td></tr>
+  <tr><td style="font-weight:bold">Prihajajoči termini</td><td>${upcomingEvents.length}</td></tr>
+  <tr><td style="font-weight:bold">Aktivne stranke</td><td>${custSet.size}</td></tr>
+</table>
+
+${sectionTitle('Opravljeni termini', completedEvents.length)}
+${completedEvents.length > 0 ? `<table><thead><tr>
+  <th>#</th><th>Datum</th><th>Čas</th><th>Stranka</th><th>Telefon</th><th>Email</th><th>Storitve</th><th>Trajanje</th><th>Znesek</th>
+</tr></thead><tbody>${rowsCompleted}</tbody></table>` : '<p style="color:#888;font-style:italic">Ni opravljenih terminov v izbranem obdobju.</p>'}
+
+${sectionTitle('Prihajajoči termini', upcomingEvents.length)}
+${upcomingEvents.length > 0 ? `<table><thead><tr>
+  <th>#</th><th>Datum</th><th>Čas</th><th>Stranka</th><th>Telefon</th><th>Email</th><th>Storitve</th><th>Pričakovan znesek</th>
+</tr></thead><tbody>${rowsUpcoming}</tbody></table>` : '<p style="color:#888;font-style:italic">Ni prihodnjih terminov.</p>'}
+
+${sectionTitle('Ročni vnosi', manualEarningsData.length)}
+${manualEarningsData.length > 0 ? `<table><thead><tr>
+  <th>#</th><th>Datum</th><th>Opis</th><th>Znesek</th>
+</tr></thead><tbody>${rowsManual}</tbody></table>` : '<p style="color:#888;font-style:italic">Ni ročnih vnosov.</p>'}
+
+<hr style="border:none;border-top:1px solid #ddd;margin:28px 0 8px 0">
+<div style="font-size:9pt;color:#aaa">Generirano: ${now.toLocaleString('sl-SI')} &nbsp;&bull;&nbsp; ${esc(shopName)}</div>
+</body></html>`;
+
+            const blob = new Blob([html], { type: 'application/vnd.ms-excel;charset=UTF-8' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `porocilo_${new Date().toISOString().split('T')[0]}.csv`;
+            a.download = `porocilo_${shopName.replace(/\s+/g,'_')}_${now.toISOString().split('T')[0]}.xls`;
+            document.body.appendChild(a);
             a.click();
-            URL.revokeObjectURL(url);
+            setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 200);
         }
 
         // ===== CUSTOMER BASE HELPERS =====
