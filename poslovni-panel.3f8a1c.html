@@ -1073,11 +1073,108 @@
         }
         #maxDaysRow { padding: 14px 18px; border-top: 1px solid #f2f2f7; }
         .bsp-footer-note { font-size: 12px; color: #8e8e93; text-align: center; padding: 0 16px; }
+        /* ─── BSP Tab Bar ─────────────────────────────────────── */
+        .bsp-tab-bar {
+            display: flex; overflow-x: auto; background: #fff;
+            border-bottom: 1px solid #e5e5ea; position: sticky; top: 60px;
+            z-index: 9; scrollbar-width: none; flex-shrink: 0;
+        }
+        .bsp-tab-bar::-webkit-scrollbar { display: none; }
+        .bsp-tab {
+            flex-shrink: 0; padding: 11px 16px; font-size: 13px; font-weight: 500;
+            color: #8e8e93; background: none; border: none; cursor: pointer;
+            border-bottom: 2px solid transparent; transition: color .2s, border-color .2s;
+            white-space: nowrap;
+        }
+        .bsp-tab.active { color: #007aff; border-bottom-color: #007aff; }
+        .bsp-tab-panel { display: none; }
+        .bsp-tab-panel.active { display: block; }
+        /* ─── Reusable row/input helpers ─────────────────────── */
+        .bsp-row {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 12px 18px; gap: 14px; border-bottom: 1px solid #f2f2f7;
+        }
+        .bsp-row:last-child { border-bottom: none; }
+        .bsp-row-label { font-size: 14px; color: #1c1c1e; font-weight: 500; line-height: 1.3; }
+        .bsp-row-hint { font-size: 12px; color: #8e8e93; margin-top: 2px; }
+        .bsp-input {
+            padding: 7px 10px; border: 1.5px solid #e5e5ea; border-radius: 10px;
+            font-size: 14px; color: #1c1c1e; background: #fff; min-width: 72px;
+        }
+        .bsp-input:focus { border-color: #007aff; outline: none; }
+        .bsp-select {
+            padding: 7px 10px; border: 1.5px solid #e5e5ea; border-radius: 10px;
+            font-size: 14px; color: #1c1c1e; background: #fff;
+        }
+        .bsp-toggle {
+            width: 20px; height: 20px; accent-color: #007aff;
+            cursor: pointer; flex-shrink: 0;
+        }
+        /* ─── Time block builder ─────────────────────────────── */
+        .time-block-row {
+            display: flex; align-items: center; gap: 8px;
+            padding: 7px 18px; border-bottom: 1px solid #f5f5f7;
+        }
+        .time-block-row:last-of-type { border-bottom: none; }
+        .time-block-row input[type="time"] {
+            padding: 5px 8px; border: 1.5px solid #e5e5ea; border-radius: 8px;
+            font-size: 13px; color: #1c1c1e; background: #fff; min-width: 78px;
+        }
+        .time-block-del {
+            background: none; border: none; color: #ff3b30; cursor: pointer;
+            font-size: 17px; padding: 2px 6px; line-height: 1; flex-shrink: 0;
+        }
+        .time-block-add {
+            background: none; border: none; color: #007aff; cursor: pointer;
+            font-size: 12px; font-weight: 600; padding: 7px 18px;
+            display: flex; align-items: center; gap: 5px;
+        }
+        /* ─── List items (exceptions, employees, locations) ──── */
+        .bsp-list-item {
+            display: flex; align-items: center; gap: 10px;
+            padding: 10px 18px; border-bottom: 1px solid #f2f2f7;
+        }
+        .bsp-list-item:last-child { border-bottom: none; }
+        .bsp-list-item-label { font-size: 14px; color: #1c1c1e; font-weight: 500; flex: 1; }
+        .bsp-list-item-sub { font-size: 12px; color: #8e8e93; }
+        .bsp-list-del {
+            background: none; border: none; color: #ff3b30; cursor: pointer;
+            font-size: 17px; padding: 2px 6px; flex-shrink: 0;
+        }
+        .bsp-badge {
+            font-size: 11px; font-weight: 600; padding: 2px 8px;
+            border-radius: 20px; flex-shrink: 0;
+        }
+        .bsp-badge-green { background: #34c75920; color: #1a8a3c; }
+        .bsp-badge-orange { background: #ff950020; color: #b36a00; }
+        .bsp-badge-red { background: #ff3b3020; color: #cc1a14; }
+        .bsp-badge-blue { background: #007aff20; color: #005fcc; }
+        .bsp-add-btn {
+            display: flex; align-items: center; gap: 6px;
+            background: none; border: none; color: #007aff; cursor: pointer;
+            font-size: 13px; font-weight: 600; padding: 10px 18px;
+        }
+        /* ─── Section heading inside tab panel ───────────────── */
+        .bsp-section-title {
+            font-size: 11px; font-weight: 600; color: #8e8e93; text-transform: uppercase;
+            letter-spacing: .5px; padding: 16px 18px 6px; }
+        /* ─── Employee color dot ─────────────────────────────── */
+        .emp-dot {
+            width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+        /* ─── Inline form rows inside card (no bottom border on last) ─ */
+        .bsp-inline-form { padding: 12px 18px; display: flex; flex-wrap: wrap; gap: 10px; }
+        .bsp-inline-form input, .bsp-inline-form select {
+            padding: 7px 10px; border: 1.5px solid #e5e5ea; border-radius: 10px;
+            font-size: 13px; color: #1c1c1e; background: #fff;
+        }
+        .bsp-inline-form label { font-size: 12px; color: #8e8e93; }
+        .bsp-inline-form .fg { display: flex; flex-direction: column; gap: 3px; }
         @media (max-width: 768px) {
             #businessSettingsPanel { left: 0 !important; width: 100% !important; z-index: 1100 !important; }
-            .bsp-body { padding: 16px 16px 40px; }
+            .bsp-body { padding: 0 0 40px; }
             .day-name { min-width: 80px; font-size: 13px; }
             .day-times input[type="time"] { font-size: 12px; padding: 5px 6px; min-width: 68px; }
+            .bsp-row { padding: 11px 14px; }
         }
 
         #analyticsPanel .panel-header {
@@ -2055,50 +2152,374 @@
                 <h3 style="margin:0;font-size:17px;font-weight:600;color:#1c1c1e;">Nastavitve rezervacij</h3>
                 <button id="saveBusinessSettingsBtn" class="btn btn-primary" style="padding:8px 18px;font-size:14px;border-radius:10px;flex:none;width:fit-content;">Shrani</button>
             </div>
-            <div class="bsp-body">
-                <!-- Delovni čas -->
-                <div class="bsp-card">
-                    <div class="bsp-card-header">
-                        <div class="bsp-card-icon" style="background:#007aff1a;">
-                            <i class="bi bi-clock" style="color:#007aff;font-size:15px;"></i>
-                        </div>
-                        <div>
-                            <div class="bsp-card-title">Delovni čas</div>
-                            <div class="bsp-card-subtitle">Nastavi ure in delovne dni za vsak dan posebej</div>
-                        </div>
-                    </div>
-                    <div id="workingDaysGrid"></div>
-                </div>
-                <!-- Večdnevne rezervacije -->
-                <div class="bsp-card">
-                    <div class="bsp-card-header">
-                        <div class="bsp-card-icon" style="background:#34c75920;">
-                            <i class="bi bi-calendar-range" style="color:#34c759;font-size:15px;"></i>
-                        </div>
-                        <div>
-                            <div class="bsp-card-title">Večdnevne rezervacije</div>
-                            <div class="bsp-card-subtitle">Termini, ki trajajo čez več dni</div>
-                        </div>
-                    </div>
-                    <label class="bsp-toggle-row">
-                        <div>
-                            <div class="bsp-row-label">Omogoči večdnevne termine</div>
-                            <div class="bsp-row-hint">Npr. avto-detailing, ki traja 2+ dni</div>
-                        </div>
-                        <input type="checkbox" id="allowMultiDayAppointments" style="width:20px;height:20px;accent-color:#007aff;cursor:pointer;flex-shrink:0;">
-                    </label>
-                    <div id="maxDaysRow" style="display:none;">
-                        <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;">
-                            <div>
-                                <div class="bsp-row-label">Največ dni</div>
-                                <div class="bsp-row-hint">Maksimalno trajanje rezervacije (1–14 dni)</div>
-                            </div>
-                            <input type="number" id="maxAppointmentDays" min="1" max="14" value="4" class="bsp-number-input">
-                        </div>
-                    </div>
-                </div>
-                <p class="bsp-footer-note">Termini vedno spoštujejo delovni čas in zaprte dni.</p>
+
+            <!-- Tab bar -->
+            <div class="bsp-tab-bar" id="bspTabBar">
+                <button class="bsp-tab active" data-tab="hours">🕐 Delovni čas</button>
+                <button class="bsp-tab" data-tab="exceptions">📅 Izjeme & Sezone</button>
+                <button class="bsp-tab" data-tab="capacity">👥 Kapaciteta & Viri</button>
+                <button class="bsp-tab" data-tab="rules">📋 Pravila</button>
+                <button class="bsp-tab" data-tab="pricing">💰 Cenovanje</button>
+                <button class="bsp-tab" data-tab="smart">🤖 Pametne funkcije</button>
             </div>
+
+            <div class="bsp-body" style="padding:16px 24px 60px;">
+
+                <!-- ══════════ TAB 1: DELOVNI ČAS ══════════ -->
+                <div class="bsp-tab-panel active" id="bspPanel-hours">
+
+                    <!-- Per-day schedule -->
+                    <div class="bsp-card">
+                        <div class="bsp-card-header">
+                            <div class="bsp-card-icon" style="background:#007aff1a;"><i class="bi bi-clock" style="color:#007aff;font-size:15px;"></i></div>
+                            <div><div class="bsp-card-title">Delovni čas po dnevih</div><div class="bsp-card-subtitle">Vklopi dan in nastavi ure ali več časovnih blokov</div></div>
+                        </div>
+                        <div id="workingDaysGrid"></div>
+                    </div>
+
+                    <!-- Auto break -->
+                    <div class="bsp-card">
+                        <div class="bsp-card-header">
+                            <div class="bsp-card-icon" style="background:#ff950020;"><i class="bi bi-cup-hot" style="color:#ff9500;font-size:15px;"></i></div>
+                            <div><div class="bsp-card-title">Avtomatska malica (break)</div><div class="bsp-card-subtitle">Vsak delovni dan se doda zaklenjen odmor</div></div>
+                        </div>
+                        <label class="bsp-row">
+                            <div><div class="bsp-row-label">Omogoči avtomatski odmor</div><div class="bsp-row-hint">Blokira termin za malico vsak dan</div></div>
+                            <input type="checkbox" id="autoBreakEnabled" class="bsp-toggle">
+                        </label>
+                        <div id="autoBreakDetails" style="display:none;">
+                            <div class="bsp-row">
+                                <div><div class="bsp-row-label">Naziv odmora</div></div>
+                                <input type="text" id="autoBreakLabel" class="bsp-input" style="max-width:130px;" value="Malica">
+                            </div>
+                            <div class="bsp-row">
+                                <div><div class="bsp-row-label">Od – Do</div></div>
+                                <div style="display:flex;align-items:center;gap:8px;">
+                                    <input type="time" id="autoBreakStart" class="bsp-input" value="13:00">
+                                    <span style="color:#8e8e93;font-size:12px;">–</span>
+                                    <input type="time" id="autoBreakEnd" class="bsp-input" value="14:00">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Multi-day -->
+                    <div class="bsp-card">
+                        <div class="bsp-card-header">
+                            <div class="bsp-card-icon" style="background:#34c75920;"><i class="bi bi-calendar-range" style="color:#34c759;font-size:15px;"></i></div>
+                            <div><div class="bsp-card-title">Večdnevne rezervacije</div><div class="bsp-card-subtitle">Termini, ki trajajo čez več dni</div></div>
+                        </div>
+                        <label class="bsp-row">
+                            <div><div class="bsp-row-label">Omogoči večdnevne termine</div><div class="bsp-row-hint">Npr. servis vozila, ki traja 2+ dni</div></div>
+                            <input type="checkbox" id="allowMultiDayAppointments" class="bsp-toggle">
+                        </label>
+                        <div id="maxDaysRow" style="display:none;">
+                            <div class="bsp-row">
+                                <div><div class="bsp-row-label">Največ dni</div><div class="bsp-row-hint">Maks. trajanje (1–14)</div></div>
+                                <input type="number" id="maxAppointmentDays" min="1" max="14" value="4" class="bsp-input" style="width:72px;text-align:center;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ══════════ TAB 2: IZJEME & SEZONE ══════════ -->
+                <div class="bsp-tab-panel" id="bspPanel-exceptions">
+
+                    <!-- Seasonal schedule -->
+                    <div class="bsp-card">
+                        <div class="bsp-card-header">
+                            <div class="bsp-card-icon" style="background:#af52de20;"><i class="bi bi-sun" style="color:#af52de;font-size:15px;"></i></div>
+                            <div><div class="bsp-card-title">Sezonski urnik</div><div class="bsp-card-subtitle">Poletni / zimski urnik z drugačnimi urami</div></div>
+                        </div>
+                        <label class="bsp-row">
+                            <div><div class="bsp-row-label">Omogoči sezonski urnik</div><div class="bsp-row-hint">Avtomatsko preklopi ure glede na datum</div></div>
+                            <input type="checkbox" id="seasonalEnabled" class="bsp-toggle">
+                        </label>
+                        <div id="seasonalDetails" style="display:none;">
+                            <div class="bsp-row">
+                                <div><div class="bsp-row-label">Poletna sezona od</div></div>
+                                <input type="date" id="seasonSummerStart" class="bsp-input" value="2026-06-01">
+                            </div>
+                            <div class="bsp-row">
+                                <div><div class="bsp-row-label">Poletna sezona do</div></div>
+                                <input type="date" id="seasonSummerEnd" class="bsp-input" value="2026-08-31">
+                            </div>
+                            <div class="bsp-row">
+                                <div><div class="bsp-row-label">Poletni delovni čas</div><div class="bsp-row-hint">Hiter vnos za vse delovne dni (pon–pet)</div></div>
+                                <div style="display:flex;align-items:center;gap:8px;">
+                                    <input type="time" id="seasonSummerStart_h" class="bsp-input" value="08:00">
+                                    <span style="color:#8e8e93;font-size:12px;">–</span>
+                                    <input type="time" id="seasonSummerEnd_h" class="bsp-input" value="20:00">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Date exceptions (holidays, collective leave) -->
+                    <div class="bsp-card">
+                        <div class="bsp-card-header">
+                            <div class="bsp-card-icon" style="background:#ff3b3020;"><i class="bi bi-calendar-x" style="color:#ff3b30;font-size:15px;"></i></div>
+                            <div><div class="bsp-card-title">Zaprti dnevi & prazniki</div><div class="bsp-card-subtitle">Datumi, ko ne sprejemate rezervacij</div></div>
+                        </div>
+                        <div id="dateExceptionsList"></div>
+                        <div class="bsp-inline-form" id="addExceptionForm">
+                            <div class="fg"><label>Datum</label><input type="date" id="newExceptionDate" class="bsp-input"></div>
+                            <div class="fg"><label>Naziv</label><input type="text" id="newExceptionLabel" class="bsp-input" placeholder="Npr. Novo leto" style="width:150px;"></div>
+                            <div class="fg"><label>Tip</label>
+                                <select id="newExceptionType" class="bsp-select">
+                                    <option value="closed">Zaprt</option>
+                                    <option value="holiday">Praznik</option>
+                                    <option value="leave">Kolektivni dopust</option>
+                                </select>
+                            </div>
+                            <div class="fg" style="justify-content:flex-end;">
+                                <button class="bsp-add-btn" onclick="bspAddException()"><i class="bi bi-plus-circle"></i> Dodaj</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Date-specific overrides -->
+                    <div class="bsp-card">
+                        <div class="bsp-card-header">
+                            <div class="bsp-card-icon" style="background:#5ac8fa20;"><i class="bi bi-pencil-square" style="color:#5ac8fa;font-size:15px;"></i></div>
+                            <div><div class="bsp-card-title">Override za specifičen datum</div><div class="bsp-card-subtitle">Poseben delovni čas za določen dan</div></div>
+                        </div>
+                        <div id="dateOverridesList"></div>
+                        <div class="bsp-inline-form" id="addOverrideForm">
+                            <div class="fg"><label>Datum</label><input type="date" id="newOverrideDate" class="bsp-input"></div>
+                            <div class="fg"><label>Od</label><input type="time" id="newOverrideStart" class="bsp-input" value="09:00"></div>
+                            <div class="fg"><label>Do</label><input type="time" id="newOverrideEnd" class="bsp-input" value="14:00"></div>
+                            <div class="fg"><label>Opomba</label><input type="text" id="newOverrideNote" class="bsp-input" placeholder="Opcijsko" style="width:130px;"></div>
+                            <div class="fg" style="justify-content:flex-end;">
+                                <button class="bsp-add-btn" onclick="bspAddOverride()"><i class="bi bi-plus-circle"></i> Dodaj</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ══════════ TAB 3: KAPACITETA & VIRI ══════════ -->
+                <div class="bsp-tab-panel" id="bspPanel-capacity">
+
+                    <!-- Parallel + max per day -->
+                    <div class="bsp-card">
+                        <div class="bsp-card-header">
+                            <div class="bsp-card-icon" style="background:#34c75920;"><i class="bi bi-people" style="color:#34c759;font-size:15px;"></i></div>
+                            <div><div class="bsp-card-title">Kapaciteta</div><div class="bsp-card-subtitle">Koliko terminov poteka hkrati</div></div>
+                        </div>
+                        <div class="bsp-row">
+                            <div><div class="bsp-row-label">Paralelne stranke (stoli)</div><div class="bsp-row-hint">Koliko rezervacij se lahko dogaja hkrati</div></div>
+                            <input type="number" id="parallelClients" min="1" max="20" value="1" class="bsp-input" style="width:72px;text-align:center;">
+                        </div>
+                        <div class="bsp-row">
+                            <div><div class="bsp-row-label">Maks. rezervacij na dan</div><div class="bsp-row-hint">0 = brez omejitve</div></div>
+                            <input type="number" id="maxBookingsPerDay" min="0" max="999" value="0" class="bsp-input" style="width:72px;text-align:center;">
+                        </div>
+                    </div>
+
+                    <!-- Employees -->
+                    <div class="bsp-card">
+                        <div class="bsp-card-header">
+                            <div class="bsp-card-icon" style="background:#007aff1a;"><i class="bi bi-person-badge" style="color:#007aff;font-size:15px;"></i></div>
+                            <div><div class="bsp-card-title">Zaposleni (Resource-based)</div><div class="bsp-card-subtitle">Stranke izberejo zaposlenega ali sistem dodeli</div></div>
+                        </div>
+                        <label class="bsp-row">
+                            <div><div class="bsp-row-label">Avtomatska dodelitev</div><div class="bsp-row-hint">Sistem sam dodeli razpoložljivega zaposlenega</div></div>
+                            <input type="checkbox" id="autoAssignEmployee" class="bsp-toggle" checked>
+                        </label>
+                        <div id="employeesList"></div>
+                        <button class="bsp-add-btn" onclick="bspAddEmployee()"><i class="bi bi-person-plus"></i> Dodaj zaposlenega</button>
+                    </div>
+                </div>
+
+                <!-- ══════════ TAB 4: PRAVILA ══════════ -->
+                <div class="bsp-tab-panel" id="bspPanel-rules">
+
+                    <div class="bsp-card">
+                        <div class="bsp-card-header">
+                            <div class="bsp-card-icon" style="background:#ff950020;"><i class="bi bi-shield-check" style="color:#ff9500;font-size:15px;"></i></div>
+                            <div><div class="bsp-card-title">Časovna pravila</div><div class="bsp-card-subtitle">Kdaj in kako dolgo se lahko rezervira</div></div>
+                        </div>
+                        <div class="bsp-row">
+                            <div><div class="bsp-row-label">Buffer pred terminom</div><div class="bsp-row-hint">Minut pred vsakim terminom bo zaklenjen (prihod)</div></div>
+                            <div style="display:flex;align-items:center;gap:4px;">
+                                <input type="number" id="bufferBefore" min="0" max="120" value="0" class="bsp-input" style="width:65px;text-align:center;">
+                                <span style="font-size:12px;color:#8e8e93;">min</span>
+                            </div>
+                        </div>
+                        <div class="bsp-row">
+                            <div><div class="bsp-row-label">Buffer po terminu</div><div class="bsp-row-hint">Čas čiščenja / priprave po terminu</div></div>
+                            <div style="display:flex;align-items:center;gap:4px;">
+                                <input type="number" id="bufferAfter" min="0" max="120" value="0" class="bsp-input" style="width:65px;text-align:center;">
+                                <span style="font-size:12px;color:#8e8e93;">min</span>
+                            </div>
+                        </div>
+                        <div class="bsp-row">
+                            <div><div class="bsp-row-label">Minimalni čas pred rezervacijo</div><div class="bsp-row-hint">Ne sprejme rezervacij bližje kot X minut</div></div>
+                            <div style="display:flex;align-items:center;gap:4px;">
+                                <input type="number" id="minLeadTime" min="0" max="10080" value="120" class="bsp-input" style="width:72px;text-align:center;">
+                                <span style="font-size:12px;color:#8e8e93;">min</span>
+                            </div>
+                        </div>
+                        <div class="bsp-row">
+                            <div><div class="bsp-row-label">Maksimalno vnaprej</div><div class="bsp-row-hint">Ne sprejme rezervacij več kot X dni vnaprej</div></div>
+                            <div style="display:flex;align-items:center;gap:4px;">
+                                <input type="number" id="maxAdvanceDays" min="1" max="365" value="60" class="bsp-input" style="width:72px;text-align:center;">
+                                <span style="font-size:12px;color:#8e8e93;">dni</span>
+                            </div>
+                        </div>
+                        <div class="bsp-row">
+                            <div><div class="bsp-row-label">Blokada konca delovnika</div><div class="bsp-row-hint">Zadnjih X minut dneva ni mogoče rezervirati</div></div>
+                            <div style="display:flex;align-items:center;gap:4px;">
+                                <input type="number" id="blockLastMinutes" min="0" max="120" value="0" class="bsp-input" style="width:65px;text-align:center;">
+                                <span style="font-size:12px;color:#8e8e93;">min</span>
+                            </div>
+                        </div>
+                        <div class="bsp-row">
+                            <div><div class="bsp-row-label">Minimalna dolžina termina</div><div class="bsp-row-hint">Krajšega termina ni mogoče rezervirati</div></div>
+                            <div style="display:flex;align-items:center;gap:4px;">
+                                <input type="number" id="minDuration" min="5" max="480" value="15" class="bsp-input" style="width:65px;text-align:center;">
+                                <span style="font-size:12px;color:#8e8e93;">min</span>
+                            </div>
+                        </div>
+                        <div class="bsp-row">
+                            <div><div class="bsp-row-label">Maks. aktivnih rezervacij na stranko</div><div class="bsp-row-hint">0 = brez omejitve</div></div>
+                            <input type="number" id="maxActivePerClient" min="0" max="50" value="0" class="bsp-input" style="width:65px;text-align:center;">
+                        </div>
+                    </div>
+                    <div class="bsp-card" style="padding:14px 18px;">
+                        <p style="font-size:12px;color:#8e8e93;margin:0;">💡 Buffer čas se pri <b>rezervacija.html</b> upošteva pri izračunu prostih terminov. Minimalni čas pred rezervacijo se preverja ob oddaji.</p>
+                    </div>
+                </div>
+
+                <!-- ══════════ TAB 5: CENOVANJE ══════════ -->
+                <div class="bsp-tab-panel" id="bspPanel-pricing">
+
+                    <!-- Peak hour pricing -->
+                    <div class="bsp-card">
+                        <div class="bsp-card-header">
+                            <div class="bsp-card-icon" style="background:#ff3b3020;"><i class="bi bi-graph-up-arrow" style="color:#ff3b30;font-size:15px;"></i></div>
+                            <div><div class="bsp-card-title">Koničasta cena (Peak hours)</div><div class="bsp-card-subtitle">Višja cena v prometnih urah</div></div>
+                        </div>
+                        <label class="bsp-row">
+                            <div><div class="bsp-row-label">Omogoči peak-hour ceno</div></div>
+                            <input type="checkbox" id="peakPricingEnabled" class="bsp-toggle">
+                        </label>
+                        <div id="peakPricingDetails" style="display:none;">
+                            <div class="bsp-row">
+                                <div><div class="bsp-row-label">Množitelj cene</div><div class="bsp-row-hint">1.2 = +20%</div></div>
+                                <input type="number" id="peakMultiplier" min="1" max="5" step="0.05" value="1.2" class="bsp-input" style="width:80px;text-align:center;">
+                            </div>
+                            <div class="bsp-row">
+                                <div><div class="bsp-row-label">Peak ure (Od – Do)</div></div>
+                                <div style="display:flex;align-items:center;gap:8px;">
+                                    <input type="time" id="peakStart" class="bsp-input" value="12:00">
+                                    <span style="color:#8e8e93;font-size:12px;">–</span>
+                                    <input type="time" id="peakEnd" class="bsp-input" value="14:00">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Weekend pricing -->
+                    <div class="bsp-card">
+                        <div class="bsp-card-header">
+                            <div class="bsp-card-icon" style="background:#af52de20;"><i class="bi bi-calendar-week" style="color:#af52de;font-size:15px;"></i></div>
+                            <div><div class="bsp-card-title">Vikend / delavnik cena</div><div class="bsp-card-subtitle">Različna cena za vikend</div></div>
+                        </div>
+                        <label class="bsp-row">
+                            <div><div class="bsp-row-label">Omogoči vikend doplačilo</div></div>
+                            <input type="checkbox" id="weekendPricingEnabled" class="bsp-toggle">
+                        </label>
+                        <div id="weekendPricingDetails" style="display:none;">
+                            <div class="bsp-row">
+                                <div><div class="bsp-row-label">Vikend množitelj</div><div class="bsp-row-hint">1.1 = +10%</div></div>
+                                <input type="number" id="weekendMultiplier" min="1" max="5" step="0.05" value="1.1" class="bsp-input" style="width:80px;text-align:center;">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Promo intervals -->
+                    <div class="bsp-card">
+                        <div class="bsp-card-header">
+                            <div class="bsp-card-icon" style="background:#34c75920;"><i class="bi bi-tag" style="color:#34c759;font-size:15px;"></i></div>
+                            <div><div class="bsp-card-title">Akcijski intervali</div><div class="bsp-card-subtitle">Popust v specifičnem časovnem oknu</div></div>
+                        </div>
+                        <div id="promoIntervalsList"></div>
+                        <div class="bsp-inline-form">
+                            <div class="fg"><label>Od datuma</label><input type="date" id="newPromoFrom" class="bsp-input"></div>
+                            <div class="fg"><label>Do datuma</label><input type="date" id="newPromoTo" class="bsp-input"></div>
+                            <div class="fg"><label>Popust %</label><input type="number" id="newPromoDiscount" min="1" max="99" value="10" class="bsp-input" style="width:72px;"></div>
+                            <div class="fg"><label>Opis</label><input type="text" id="newPromoLabel" class="bsp-input" placeholder="Npr. Black Friday" style="width:140px;"></div>
+                            <div class="fg" style="justify-content:flex-end;">
+                                <button class="bsp-add-btn" onclick="bspAddPromo()"><i class="bi bi-plus-circle"></i> Dodaj</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ══════════ TAB 6: PAMETNE FUNKCIJE ══════════ -->
+                <div class="bsp-tab-panel" id="bspPanel-smart">
+
+                    <div class="bsp-card">
+                        <div class="bsp-card-header">
+                            <div class="bsp-card-icon" style="background:#007aff1a;"><i class="bi bi-list-ol" style="color:#007aff;font-size:15px;"></i></div>
+                            <div><div class="bsp-card-title">Čakalna vrsta (Waitlist)</div><div class="bsp-card-subtitle">Stranke se vpišejo na čakalni seznam</div></div>
+                        </div>
+                        <label class="bsp-row">
+                            <div><div class="bsp-row-label">Omogoči čakalno vrsto</div><div class="bsp-row-hint">Stranka se prijavi, če ni prostega termina</div></div>
+                            <input type="checkbox" id="waitlistEnabled" class="bsp-toggle">
+                        </label>
+                        <label class="bsp-row">
+                            <div><div class="bsp-row-label">Auto-ponudba ob odpovedi</div><div class="bsp-row-hint">Sistem samodejno obvesti naslednjega v vrsti</div></div>
+                            <input type="checkbox" id="autoOfferOnCancel" class="bsp-toggle">
+                        </label>
+                    </div>
+
+                    <div class="bsp-card">
+                        <div class="bsp-card-header">
+                            <div class="bsp-card-icon" style="background:#34c75920;"><i class="bi bi-magic" style="color:#34c759;font-size:15px;"></i></div>
+                            <div><div class="bsp-card-title">Optimizacija urnika</div><div class="bsp-card-subtitle">Inteligentno razporejanje terminov</div></div>
+                        </div>
+                        <label class="bsp-row">
+                            <div><div class="bsp-row-label">Auto-fill prostih terminov</div><div class="bsp-row-hint">Sistem predlaga polnjenje lukenj v urniku</div></div>
+                            <input type="checkbox" id="autoFillEnabled" class="bsp-toggle">
+                        </label>
+                        <label class="bsp-row">
+                            <div><div class="bsp-row-label">Preprečevanje fragmentacije</div><div class="bsp-row-hint">Izogibaj se kratkim luknjicam med termini</div></div>
+                            <input type="checkbox" id="preventFragmentation" class="bsp-toggle">
+                        </label>
+                        <label class="bsp-row">
+                            <div><div class="bsp-row-label">Prednostni termini za zasedenost</div><div class="bsp-row-hint">Prikazuj termine, ki optimizirajo zasedenost</div></div>
+                            <input type="checkbox" id="optimizeOccupancy" class="bsp-toggle">
+                        </label>
+                        <label class="bsp-row">
+                            <div><div class="bsp-row-label">Grupiranje daljših storitev</div><div class="bsp-row-hint">Daljše storitve se združi v zaporedne bloke</div></div>
+                            <input type="checkbox" id="groupServices" class="bsp-toggle">
+                        </label>
+                        <div class="bsp-row" id="fragmentGapRow" style="display:none;">
+                            <div><div class="bsp-row-label">Min. luknjica (za preprečevanje)</div></div>
+                            <div style="display:flex;align-items:center;gap:4px;">
+                                <input type="number" id="fragmentGapMinutes" min="5" max="120" value="30" class="bsp-input" style="width:65px;text-align:center;">
+                                <span style="font-size:12px;color:#8e8e93;">min</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Locations -->
+                    <div class="bsp-card">
+                        <div class="bsp-card-header">
+                            <div class="bsp-card-icon" style="background:#ff950020;"><i class="bi bi-geo-alt" style="color:#ff9500;font-size:15px;"></i></div>
+                            <div><div class="bsp-card-title">Poslovalnice</div><div class="bsp-card-subtitle">Ločen urnik, cenik in zaposleni po lokaciji</div></div>
+                        </div>
+                        <div id="locationsList"></div>
+                        <button class="bsp-add-btn" onclick="bspAddLocation()"><i class="bi bi-plus-circle"></i> Dodaj poslovalnico</button>
+                        <div style="padding:10px 18px 14px;">
+                            <p style="font-size:12px;color:#8e8e93;margin:0;">💡 Vsaka poslovalnica ima ločene zaposlene, delovni čas in cenik. Centralna analitika združuje podatke vseh lokacij.</p>
+                        </div>
+                    </div>
+
+                </div>
+            </div><!-- end bsp-body -->
         </div>
     </div>
 
@@ -3081,178 +3502,470 @@
             }
         }
 
+        // ─── Booking Settings: in-memory state ───────────────────────────────────
+        let _bspData = null; // loaded once per panel open
+
+        function loadBookingSettings() {
+            const DAY_DEFAULTS = {
+                1: { enabled: true,  start: '09:00', end: '19:00' },
+                2: { enabled: true,  start: '09:00', end: '19:00' },
+                3: { enabled: true,  start: '09:00', end: '19:00' },
+                4: { enabled: true,  start: '09:00', end: '19:00' },
+                5: { enabled: true,  start: '09:00', end: '19:00' },
+                6: { enabled: false, start: '09:00', end: '15:00' },
+                0: { enabled: false, start: '09:00', end: '15:00' },
+            };
+            const def = {
+                workingHoursByDay: {},
+                autoBreak: { enabled: false, start: '13:00', end: '14:00', label: 'Malica' },
+                seasonalSchedule: { enabled: false, summerStart: '2026-06-01', summerEnd: '2026-08-31', summerHoursStart: '08:00', summerHoursEnd: '20:00' },
+                dateExceptions: [],
+                dateOverrides: [],
+                parallelClients: 1,
+                maxBookingsPerDay: 0,
+                employees: [],
+                autoAssignEmployee: true,
+                bufferBefore: 0,
+                bufferAfter: 0,
+                minLeadTime: 120,
+                maxAdvanceDays: 60,
+                blockLastMinutes: 0,
+                minDuration: 15,
+                maxActiveBookingsPerClient: 0,
+                allowMultiDayAppointments: false,
+                maxAppointmentDays: 4,
+                peakHourPricing: { enabled: false, multiplier: 1.2, start: '12:00', end: '14:00' },
+                weekendPricing: { enabled: false, multiplier: 1.1 },
+                promoIntervals: [],
+                waitlistEnabled: false,
+                autoOfferOnCancel: false,
+                autoFillEnabled: false,
+                preventFragmentation: false,
+                fragmentGapMinutes: 30,
+                optimizeOccupancy: false,
+                groupServices: false,
+                locations: []
+            };
+            let raw = {};
+            try { raw = JSON.parse(localStorage.getItem('bookingSettings') || '{}'); } catch (_) {}
+            const s = Object.assign({}, def, raw);
+            // deep merge sub-objects
+            s.autoBreak         = Object.assign({}, def.autoBreak,         raw.autoBreak         || {});
+            s.seasonalSchedule  = Object.assign({}, def.seasonalSchedule,  raw.seasonalSchedule  || {});
+            s.peakHourPricing   = Object.assign({}, def.peakHourPricing,   raw.peakHourPricing   || {});
+            s.weekendPricing    = Object.assign({}, def.weekendPricing,     raw.weekendPricing    || {});
+            // per-day: merge with DAY_DEFAULTS then saved
+            const savedDays = raw.workingHoursByDay || {};
+            const legacyDays = (() => { try { return JSON.parse(localStorage.getItem('workingHoursByDay') || '{}'); } catch(_){return {};} })();
+            s.workingHoursByDay = {};
+            [1,2,3,4,5,6,0].forEach(k => {
+                const fromSaved   = savedDays[k];
+                const fromLegacy  = legacyDays[k];
+                const fromDefault = DAY_DEFAULTS[k];
+                s.workingHoursByDay[k] = fromSaved || fromLegacy || { ...fromDefault };
+            });
+            // ensure arrays
+            if (!Array.isArray(s.dateExceptions))  s.dateExceptions  = [];
+            if (!Array.isArray(s.dateOverrides))   s.dateOverrides   = [];
+            if (!Array.isArray(s.promoIntervals))  s.promoIntervals  = [];
+            if (!Array.isArray(s.employees))       s.employees       = [];
+            if (!Array.isArray(s.locations))       s.locations       = [];
+            return s;
+        }
+
         function loadBusinessSettingsForm() {
+            _bspData = loadBookingSettings();
+            const s = _bspData;
             const DAYS = [
-                { key: 1, name: 'Ponedeljek', defaultEnabled: true,  defaultStart: '09:00', defaultEnd: '19:00' },
-                { key: 2, name: 'Torek',      defaultEnabled: true,  defaultStart: '09:00', defaultEnd: '19:00' },
-                { key: 3, name: 'Sreda',      defaultEnabled: true,  defaultStart: '09:00', defaultEnd: '19:00' },
-                { key: 4, name: 'Četrtek',    defaultEnabled: true,  defaultStart: '09:00', defaultEnd: '19:00' },
-                { key: 5, name: 'Petek',      defaultEnabled: true,  defaultStart: '09:00', defaultEnd: '19:00' },
-                { key: 6, name: 'Sobota',     defaultEnabled: false, defaultStart: '09:00', defaultEnd: '15:00' },
-                { key: 0, name: 'Nedelja',    defaultEnabled: false, defaultStart: '09:00', defaultEnd: '15:00' },
+                { key: 1, name: 'Ponedeljek' },
+                { key: 2, name: 'Torek'      },
+                { key: 3, name: 'Sreda'      },
+                { key: 4, name: 'Četrtek'    },
+                { key: 5, name: 'Petek'      },
+                { key: 6, name: 'Sobota'     },
+                { key: 0, name: 'Nedelja'    },
             ];
-            const bookingCfg = (window.SITE_CONFIG && window.SITE_CONFIG.booking) ? window.SITE_CONFIG.booking : {};
 
-            // Load per-day saved data
-            let savedDays = {};
-            try { savedDays = JSON.parse(localStorage.getItem('workingHoursByDay') || '{}'); } catch (_) {}
-
-            // Legacy global hours as fallback
-            let legacyStart = '09:00', legacyEnd = '19:00';
-            try {
-                const legacy = JSON.parse(localStorage.getItem('workingHours') || 'null');
-                if (legacy?.start) legacyStart = legacy.start;
-                if (legacy?.end) legacyEnd = legacy.end;
-            } catch (_) {}
-
-            // Build day rows
+            // ── Tab 1: Working days grid ──────────────────────────
             const grid = document.getElementById('workingDaysGrid');
             if (grid) {
                 grid.innerHTML = '';
                 DAYS.forEach(day => {
-                    const saved = savedDays[day.key];
-                    const enabled = saved ? !!saved.enabled : day.defaultEnabled;
-                    const start = (saved && saved.start) ? saved.start : (day.defaultEnabled ? legacyStart : day.defaultStart);
-                    const end   = (saved && saved.end)   ? saved.end   : (day.defaultEnabled ? legacyEnd   : day.defaultEnd);
-
+                    const d = s.workingHoursByDay[day.key] || { enabled: false, start: '09:00', end: '19:00' };
                     const row = document.createElement('div');
-                    row.className = 'day-row' + (enabled ? '' : ' day-disabled');
+                    row.className = 'day-row' + (d.enabled ? '' : ' day-disabled');
                     row.innerHTML = `
-                        <input type="checkbox" id="dayEnabled_${day.key}" ${enabled ? 'checked' : ''}>
+                        <input type="checkbox" id="dayEnabled_${day.key}" ${d.enabled ? 'checked' : ''}>
                         <span class="day-name">${day.name}</span>
                         <div class="day-times">
-                            <input type="time" id="dayStart_${day.key}" value="${start}">
+                            <input type="time" id="dayStart_${day.key}" value="${d.start}">
                             <span style="color:#8e8e93;font-size:12px;flex-shrink:0;">–</span>
-                            <input type="time" id="dayEnd_${day.key}" value="${end}">
+                            <input type="time" id="dayEnd_${day.key}" value="${d.end}">
                         </div>`;
-                    row.querySelector(`#dayEnabled_${day.key}`).addEventListener('change', (e) => {
-                        row.classList.toggle('day-disabled', !e.target.checked);
-                    });
+                    row.querySelector(`#dayEnabled_${day.key}`).addEventListener('change', e => row.classList.toggle('day-disabled', !e.target.checked));
                     grid.appendChild(row);
                 });
             }
 
-            // Multi-day toggles
-            const allowMultiVal = !!bookingCfg.allowMultiDayAppointments;
-            const allowMulti = document.getElementById('allowMultiDayAppointments');
-            const maxDays = document.getElementById('maxAppointmentDays');
-            const maxDaysRow = document.getElementById('maxDaysRow');
-            if (allowMulti) allowMulti.checked = allowMultiVal;
-            if (maxDaysRow) maxDaysRow.style.display = allowMultiVal ? 'block' : 'none';
-            if (maxDays) maxDays.value = parseInt(bookingCfg.maxAppointmentDays, 10) || 4;
+            // ── Auto break ───────────────────────────────────────
+            const setVal = (id, v) => { const el = document.getElementById(id); if (el) el.value = v; };
+            const setChk = (id, v) => { const el = document.getElementById(id); if (el) el.checked = !!v; };
+            const showHide = (id, show) => { const el = document.getElementById(id); if (el) el.style.display = show ? 'block' : 'none'; };
+            setChk('autoBreakEnabled',   s.autoBreak.enabled);
+            setVal('autoBreakLabel',     s.autoBreak.label);
+            setVal('autoBreakStart',     s.autoBreak.start);
+            setVal('autoBreakEnd',       s.autoBreak.end);
+            showHide('autoBreakDetails', s.autoBreak.enabled);
+
+            // ── Multi-day ─────────────────────────────────────────
+            setChk('allowMultiDayAppointments', s.allowMultiDayAppointments);
+            setVal('maxAppointmentDays',         s.maxAppointmentDays);
+            showHide('maxDaysRow', s.allowMultiDayAppointments);
+
+            // ── Tab 2: Exceptions & Seasons ───────────────────────
+            setChk('seasonalEnabled',       s.seasonalSchedule.enabled);
+            setVal('seasonSummerStart',     s.seasonalSchedule.summerStart);
+            setVal('seasonSummerEnd',       s.seasonalSchedule.summerEnd);
+            setVal('seasonSummerStart_h',   s.seasonalSchedule.summerHoursStart);
+            setVal('seasonSummerEnd_h',     s.seasonalSchedule.summerHoursEnd);
+            showHide('seasonalDetails', s.seasonalSchedule.enabled);
+            bspRenderExceptions();
+            bspRenderOverrides();
+
+            // ── Tab 3: Capacity ───────────────────────────────────
+            setVal('parallelClients',    s.parallelClients);
+            setVal('maxBookingsPerDay',  s.maxBookingsPerDay);
+            setChk('autoAssignEmployee', s.autoAssignEmployee);
+            bspRenderEmployees();
+
+            // ── Tab 4: Rules ──────────────────────────────────────
+            setVal('bufferBefore',           s.bufferBefore);
+            setVal('bufferAfter',            s.bufferAfter);
+            setVal('minLeadTime',            s.minLeadTime);
+            setVal('maxAdvanceDays',         s.maxAdvanceDays);
+            setVal('blockLastMinutes',       s.blockLastMinutes);
+            setVal('minDuration',            s.minDuration);
+            setVal('maxActivePerClient',     s.maxActiveBookingsPerClient);
+
+            // ── Tab 5: Pricing ────────────────────────────────────
+            setChk('peakPricingEnabled',     s.peakHourPricing.enabled);
+            setVal('peakMultiplier',         s.peakHourPricing.multiplier);
+            setVal('peakStart',              s.peakHourPricing.start);
+            setVal('peakEnd',                s.peakHourPricing.end);
+            showHide('peakPricingDetails',   s.peakHourPricing.enabled);
+            setChk('weekendPricingEnabled',  s.weekendPricing.enabled);
+            setVal('weekendMultiplier',      s.weekendPricing.multiplier);
+            showHide('weekendPricingDetails',s.weekendPricing.enabled);
+            bspRenderPromos();
+
+            // ── Tab 6: Smart features ─────────────────────────────
+            setChk('waitlistEnabled',        s.waitlistEnabled);
+            setChk('autoOfferOnCancel',      s.autoOfferOnCancel);
+            setChk('autoFillEnabled',        s.autoFillEnabled);
+            setChk('preventFragmentation',   s.preventFragmentation);
+            setChk('optimizeOccupancy',      s.optimizeOccupancy);
+            setChk('groupServices',          s.groupServices);
+            setVal('fragmentGapMinutes',     s.fragmentGapMinutes);
+            showHide('fragmentGapRow', s.preventFragmentation);
+            bspRenderLocations();
         }
 
+        // ── Dynamic list renderers ────────────────────────────────────────────────
+        function bspRenderExceptions() {
+            const el = document.getElementById('dateExceptionsList');
+            if (!el || !_bspData) return;
+            const typeLabel = { closed: 'Zaprt', holiday: 'Praznik', leave: 'Kolekt. dopust' };
+            el.innerHTML = _bspData.dateExceptions.map((ex, i) => `
+                <div class="bsp-list-item">
+                    <div style="flex:1;min-width:0;">
+                        <div style="font-size:14px;font-weight:500;">${ex.label || ex.date}</div>
+                        <div style="font-size:12px;color:#8e8e93;">${ex.date} &nbsp;·&nbsp; <span class="bsp-badge" style="background:#ff3b301a;color:#ff3b30;">${typeLabel[ex.type]||ex.type}</span></div>
+                    </div>
+                    <button class="bsp-list-del" onclick="bspDelException(${i})"><i class="bi bi-trash3"></i></button>
+                </div>`).join('') || '<p style="font-size:13px;color:#8e8e93;padding:8px 0;">Ni vnesenih izjem.</p>';
+        }
+        function bspDelException(i) { if (_bspData) { _bspData.dateExceptions.splice(i, 1); bspRenderExceptions(); } }
+        function bspAddException() {
+            if (!_bspData) return;
+            const date = document.getElementById('newExceptionDate')?.value;
+            const label = document.getElementById('newExceptionLabel')?.value?.trim() || date;
+            const type  = document.getElementById('newExceptionType')?.value || 'closed';
+            if (!date) { alert('Vnesi datum.'); return; }
+            _bspData.dateExceptions.push({ date, label, type });
+            _bspData.dateExceptions.sort((a,b) => a.date.localeCompare(b.date));
+            bspRenderExceptions();
+            document.getElementById('newExceptionDate').value = '';
+            document.getElementById('newExceptionLabel').value = '';
+        }
+
+        function bspRenderOverrides() {
+            const el = document.getElementById('dateOverridesList');
+            if (!el || !_bspData) return;
+            el.innerHTML = _bspData.dateOverrides.map((ov, i) => `
+                <div class="bsp-list-item">
+                    <div style="flex:1;min-width:0;">
+                        <div style="font-size:14px;font-weight:500;">${ov.date} &nbsp; ${ov.start}–${ov.end}</div>
+                        <div style="font-size:12px;color:#8e8e93;">${ov.note || '(brez opombe)'}</div>
+                    </div>
+                    <button class="bsp-list-del" onclick="bspDelOverride(${i})"><i class="bi bi-trash3"></i></button>
+                </div>`).join('') || '<p style="font-size:13px;color:#8e8e93;padding:8px 0;">Ni vnesenih override-ov.</p>';
+        }
+        function bspDelOverride(i) { if (_bspData) { _bspData.dateOverrides.splice(i, 1); bspRenderOverrides(); } }
+        function bspAddOverride() {
+            if (!_bspData) return;
+            const date  = document.getElementById('newOverrideDate')?.value;
+            const start = document.getElementById('newOverrideStart')?.value;
+            const end   = document.getElementById('newOverrideEnd')?.value;
+            const note  = document.getElementById('newOverrideNote')?.value?.trim() || '';
+            if (!date || !start || !end) { alert('Vnesi datum in ure.'); return; }
+            _bspData.dateOverrides.push({ date, start, end, note });
+            _bspData.dateOverrides.sort((a,b) => a.date.localeCompare(b.date));
+            bspRenderOverrides();
+            document.getElementById('newOverrideDate').value = '';
+            document.getElementById('newOverrideNote').value = '';
+        }
+
+        function bspRenderPromos() {
+            const el = document.getElementById('promoIntervalsList');
+            if (!el || !_bspData) return;
+            el.innerHTML = _bspData.promoIntervals.map((p, i) => `
+                <div class="bsp-list-item">
+                    <div style="flex:1;min-width:0;">
+                        <div style="font-size:14px;font-weight:500;">${p.label || 'Akcija'} &nbsp;<span class="bsp-badge" style="background:#34c75920;color:#34c759;">-${p.discount}%</span></div>
+                        <div style="font-size:12px;color:#8e8e93;">${p.from} – ${p.to}</div>
+                    </div>
+                    <button class="bsp-list-del" onclick="bspDelPromo(${i})"><i class="bi bi-trash3"></i></button>
+                </div>`).join('') || '<p style="font-size:13px;color:#8e8e93;padding:8px 0;">Ni vnesenih akcij.</p>';
+        }
+        function bspDelPromo(i) { if (_bspData) { _bspData.promoIntervals.splice(i, 1); bspRenderPromos(); } }
+        function bspAddPromo() {
+            if (!_bspData) return;
+            const from     = document.getElementById('newPromoFrom')?.value;
+            const to       = document.getElementById('newPromoTo')?.value;
+            const discount = parseInt(document.getElementById('newPromoDiscount')?.value, 10) || 10;
+            const label    = document.getElementById('newPromoLabel')?.value?.trim() || 'Akcija';
+            if (!from || !to) { alert('Vnesi datuma od/do.'); return; }
+            _bspData.promoIntervals.push({ from, to, discount, label });
+            _bspData.promoIntervals.sort((a,b) => a.from.localeCompare(b.from));
+            bspRenderPromos();
+            document.getElementById('newPromoFrom').value = '';
+            document.getElementById('newPromoTo').value = '';
+            document.getElementById('newPromoLabel').value = '';
+        }
+
+        // Colour palette for employees
+        const _EMP_COLORS = ['#007aff','#34c759','#ff9500','#ff3b30','#af52de','#5ac8fa','#ff2d55','#a2845e'];
+        function bspRenderEmployees() {
+            const el = document.getElementById('employeesList');
+            if (!el || !_bspData) return;
+            el.innerHTML = _bspData.employees.map((emp, i) => `
+                <div class="bsp-list-item">
+                    <span class="emp-dot" style="background:${emp.color || _EMP_COLORS[i % _EMP_COLORS.length]};"></span>
+                    <div style="flex:1;min-width:0;">
+                        <div style="font-size:14px;font-weight:500;">${emp.name}</div>
+                        <div style="font-size:12px;color:#8e8e93;">${emp.services ? emp.services.join(', ') : 'Vse storitve'}</div>
+                    </div>
+                    <button class="bsp-list-del" onclick="bspDelEmployee(${i})"><i class="bi bi-trash3"></i></button>
+                </div>`).join('') || '<p style="font-size:13px;color:#8e8e93;padding:8px 0;">Ni dodanih zaposlenih.</p>';
+        }
+        function bspDelEmployee(i) { if (_bspData) { _bspData.employees.splice(i, 1); bspRenderEmployees(); } }
+        function bspAddEmployee() {
+            if (!_bspData) return;
+            const name = prompt('Ime zaposlenega:');
+            if (!name || !name.trim()) return;
+            const color = _EMP_COLORS[_bspData.employees.length % _EMP_COLORS.length];
+            _bspData.employees.push({ id: Date.now().toString(36), name: name.trim(), color, services: [], autoAssign: true });
+            bspRenderEmployees();
+        }
+
+        function bspRenderLocations() {
+            const el = document.getElementById('locationsList');
+            if (!el || !_bspData) return;
+            el.innerHTML = _bspData.locations.map((loc, i) => `
+                <div class="bsp-list-item">
+                    <div style="flex:1;min-width:0;">
+                        <div style="font-size:14px;font-weight:500;">${loc.name}</div>
+                        <div style="font-size:12px;color:#8e8e93;">${loc.address || ''} ${loc.phone ? '· ' + loc.phone : ''}</div>
+                    </div>
+                    <button class="bsp-list-del" onclick="bspDelLocation(${i})"><i class="bi bi-trash3"></i></button>
+                </div>`).join('') || '<p style="font-size:13px;color:#8e8e93;padding:8px 0;">Ni dodanih poslovalnic. Privzeto je ena lokacija.</p>';
+        }
+        function bspDelLocation(i) { if (_bspData) { _bspData.locations.splice(i, 1); bspRenderLocations(); } }
+        function bspAddLocation() {
+            if (!_bspData) return;
+            const name    = prompt('Naziv poslovalnice:');
+            if (!name || !name.trim()) return;
+            const address = prompt('Naslov (opcijsko):') || '';
+            const phone   = prompt('Telefon (opcijsko):') || '';
+            _bspData.locations.push({ id: Date.now().toString(36), name: name.trim(), address, phone });
+            bspRenderLocations();
+        }
+
+        // ── Show panel ────────────────────────────────────────────────────────────
         function showBusinessSettingsPanel() {
             const panel = document.getElementById('businessSettingsPanel');
             if (!panel) return;
-
-            // Close other panels individually — do NOT call hideAllPanels() here because
-            // that calls closeBusinessSettingsPanel() which schedules display:none after 320ms
-            // causing the panel to disappear right after opening (race condition).
             closeCustomerPanel();
             closeAnalyticsPanel();
-
-            // Position panel to the right of the sidebar (keep sidebar visible)
             const sidebarW = document.getElementById('sidebar')?.classList.contains('expanded') ? 260 : 72;
-            panel.style.left = sidebarW + 'px';
+            panel.style.left  = sidebarW + 'px';
             panel.style.width = `calc(100% - ${sidebarW}px)`;
-
-            // Cancel any pending close animation and immediately show
             panel.classList.remove('open');
             panel.style.display = 'block';
             loadBusinessSettingsForm();
+            // Activate first tab
+            document.querySelectorAll('.bsp-tab').forEach((t,i) => t.classList.toggle('active', i === 0));
+            document.querySelectorAll('.bsp-tab-panel').forEach((p,i) => p.classList.toggle('active', i === 0));
             setTimeout(() => panel.classList.add('open'), 10);
         }
 
+        // ── Save all settings ─────────────────────────────────────────────────────
         async function saveBusinessSettings() {
-            const DAYS_KEYS = [1, 2, 3, 4, 5, 6, 0];
-            const daysByKey = {};
-            let allValid = true;
+            if (!_bspData) { alert('Najprej odpri nastavitve.'); return; }
+            const s = _bspData;
+            const get  = id => { const el = document.getElementById(id); return el ? el.value : ''; };
+            const getN = (id, def) => { const v = parseInt(get(id), 10); return isNaN(v) ? def : v; };
+            const getF = (id, def) => { const v = parseFloat(get(id)); return isNaN(v) ? def : v; };
+            const getC = id => { const el = document.getElementById(id); return el ? el.checked : false; };
 
-            for (const key of DAYS_KEYS) {
-                const enabledEl = document.getElementById(`dayEnabled_${key}`);
-                const startEl   = document.getElementById(`dayStart_${key}`);
-                const endEl     = document.getElementById(`dayEnd_${key}`);
+            // ── Tab 1: Days ───────────────────────────────────────
+            const DAYS_KEYS = [1, 2, 3, 4, 5, 6, 0];
+            let allValid = true;
+            const daysByKey = {};
+            for (const k of DAYS_KEYS) {
+                const enabledEl = document.getElementById(`dayEnabled_${k}`);
                 if (!enabledEl) continue;
                 const enabled = enabledEl.checked;
-                const start = startEl ? startEl.value : '09:00';
-                const end   = endEl   ? endEl.value   : '19:00';
+                const start = get(`dayStart_${k}`) || '09:00';
+                const end   = get(`dayEnd_${k}`)   || '19:00';
                 if (enabled) {
-                    const [sh, sm] = start.split(':').map(Number);
-                    const [eh, em] = end.split(':').map(Number);
-                    if ((eh * 60 + em) <= (sh * 60 + sm)) {
-                        const dayNames = ['Nedelja','Ponedeljek','Torek','Sreda','Četrtek','Petek','Sobota'];
-                        alert(`Konec delovnega časa mora biti po začetku (${dayNames[key]}).`);
-                        allValid = false;
-                        break;
+                    const [sh,sm] = start.split(':').map(Number);
+                    const [eh,em] = end.split(':').map(Number);
+                    if ((eh*60+em) <= (sh*60+sm)) {
+                        const names = ['Nedelja','Ponedeljek','Torek','Sreda','Četrtek','Petek','Sobota'];
+                        alert(`Konec mora biti po začetku (${names[k]}).`);
+                        allValid = false; break;
                     }
                 }
-                daysByKey[key] = { enabled, start, end };
+                daysByKey[k] = { enabled, start, end };
             }
             if (!allValid) return;
 
-            // Derive global hours from Mon–Fri for backward compatibility
-            const enabledWeekdays = DAYS_KEYS.filter(k => k >= 1 && k <= 5 && daysByKey[k]?.enabled);
-            const startHour = enabledWeekdays.length > 0
-                ? Math.min(...enabledWeekdays.map(k => parseInt(daysByKey[k].start, 10)))
-                : 9;
-            const endHour = enabledWeekdays.length > 0
-                ? Math.max(...enabledWeekdays.map(k => parseInt(daysByKey[k].end, 10)))
-                : 19;
+            s.workingHoursByDay   = daysByKey;
+            s.autoBreak           = { enabled: getC('autoBreakEnabled'), start: get('autoBreakStart') || '13:00', end: get('autoBreakEnd') || '14:00', label: get('autoBreakLabel') || 'Malica' };
+            s.allowMultiDayAppointments = getC('allowMultiDayAppointments');
+            s.maxAppointmentDays  = Math.max(1, Math.min(14, getN('maxAppointmentDays', 4)));
 
-            const allowMulti = document.getElementById('allowMultiDayAppointments');
-            const maxDays    = document.getElementById('maxAppointmentDays');
-            const allowMultiDay     = !!(allowMulti && allowMulti.checked);
-            const maxAppointmentDays = Math.max(1, Math.min(14, parseInt(maxDays?.value, 10) || 4));
+            // ── Tab 2: Exceptions & Seasons ───────────────────────
+            s.seasonalSchedule    = { enabled: getC('seasonalEnabled'), summerStart: get('seasonSummerStart'), summerEnd: get('seasonSummerEnd'), summerHoursStart: get('seasonSummerStart_h'), summerHoursEnd: get('seasonSummerEnd_h') };
+            // dateExceptions & dateOverrides already in _bspData (managed in-memory)
 
-            if (!window.SITE_CONFIG || typeof window.SITE_CONFIG !== 'object') window.SITE_CONFIG = {};
-            if (!window.SITE_CONFIG.booking || typeof window.SITE_CONFIG.booking !== 'object') window.SITE_CONFIG.booking = {};
+            // ── Tab 3: Capacity ───────────────────────────────────
+            s.parallelClients     = Math.max(1, getN('parallelClients', 1));
+            s.maxBookingsPerDay   = Math.max(0, getN('maxBookingsPerDay', 0));
+            s.autoAssignEmployee  = getC('autoAssignEmployee');
+            // employees already in _bspData
 
-            window.SITE_CONFIG.booking.businessHours = { start: startHour, end: endHour };
-            window.SITE_CONFIG.booking.allowMultiDayAppointments = allowMultiDay;
-            window.SITE_CONFIG.booking.maxAppointmentDays = maxAppointmentDays;
+            // ── Tab 4: Rules ──────────────────────────────────────
+            s.bufferBefore              = Math.max(0, getN('bufferBefore', 0));
+            s.bufferAfter               = Math.max(0, getN('bufferAfter', 0));
+            s.minLeadTime               = Math.max(0, getN('minLeadTime', 120));
+            s.maxAdvanceDays            = Math.max(1, getN('maxAdvanceDays', 60));
+            s.blockLastMinutes          = Math.max(0, getN('blockLastMinutes', 0));
+            s.minDuration               = Math.max(5, getN('minDuration', 15));
+            s.maxActiveBookingsPerClient = Math.max(0, getN('maxActivePerClient', 0));
 
+            // ── Tab 5: Pricing ────────────────────────────────────
+            s.peakHourPricing    = { enabled: getC('peakPricingEnabled'), multiplier: getF('peakMultiplier', 1.2), start: get('peakStart') || '12:00', end: get('peakEnd') || '14:00' };
+            s.weekendPricing     = { enabled: getC('weekendPricingEnabled'), multiplier: getF('weekendMultiplier', 1.1) };
+            // promoIntervals already in _bspData
+
+            // ── Tab 6: Smart features ─────────────────────────────
+            s.waitlistEnabled       = getC('waitlistEnabled');
+            s.autoOfferOnCancel     = getC('autoOfferOnCancel');
+            s.autoFillEnabled       = getC('autoFillEnabled');
+            s.preventFragmentation  = getC('preventFragmentation');
+            s.fragmentGapMinutes    = Math.max(5, getN('fragmentGapMinutes', 30));
+            s.optimizeOccupancy     = getC('optimizeOccupancy');
+            s.groupServices         = getC('groupServices');
+            // locations already in _bspData
+
+            // ── Persist ───────────────────────────────────────────
+            try { localStorage.setItem('bookingSettings', JSON.stringify(s)); } catch(e) { console.warn('⚠ localStorage error', e); }
+
+            // Derive global hours for backward compat
+            const enabledWD = DAYS_KEYS.filter(k => k >= 1 && k <= 5 && daysByKey[k]?.enabled);
+            const startHour = enabledWD.length > 0 ? Math.min(...enabledWD.map(k => parseInt(daysByKey[k].start, 10))) : 9;
+            const endHour   = enabledWD.length > 0 ? Math.max(...enabledWD.map(k => parseInt(daysByKey[k].end, 10)))   : 19;
             try {
                 localStorage.setItem('workingHoursByDay', JSON.stringify(daysByKey));
-                localStorage.setItem('workingHours', JSON.stringify({
-                    start: `${String(startHour).padStart(2,'0')}:00`,
-                    end:   `${String(endHour).padStart(2,'0')}:00`
-                }));
-                localStorage.setItem('site_config_backup', JSON.stringify(window.SITE_CONFIG));
-            } catch (e) { console.warn('⚠ Failed to save settings to localStorage', e); }
+                localStorage.setItem('workingHours', JSON.stringify({ start: `${String(startHour).padStart(2,'0')}:00`, end: `${String(endHour).padStart(2,'0')}:00` }));
+            } catch(e) {}
 
+            // Update runtime SITE_CONFIG
+            if (!window.SITE_CONFIG || typeof window.SITE_CONFIG !== 'object') window.SITE_CONFIG = {};
+            if (!window.SITE_CONFIG.booking) window.SITE_CONFIG.booking = {};
+            window.SITE_CONFIG.booking.businessHours           = { start: startHour, end: endHour };
+            window.SITE_CONFIG.booking.allowMultiDayAppointments = s.allowMultiDayAppointments;
+            window.SITE_CONFIG.booking.maxAppointmentDays      = s.maxAppointmentDays;
+            window.SITE_CONFIG.booking.parallelClients         = s.parallelClients;
+            window.SITE_CONFIG.booking.bufferBefore            = s.bufferBefore;
+            window.SITE_CONFIG.booking.bufferAfter             = s.bufferAfter;
+            window.SITE_CONFIG.booking.minLeadTime             = s.minLeadTime;
+            window.SITE_CONFIG.booking.maxAdvanceDays          = s.maxAdvanceDays;
+            try { localStorage.setItem('site_config_backup', JSON.stringify(window.SITE_CONFIG)); } catch(e) {}
+
+            // Cloud sync
             try {
                 if (window.CloudSync && typeof window.CloudSync.saveToCloud === 'function') {
                     await window.CloudSync.saveToCloud(window.SITE_CONFIG);
                 }
-            } catch (e) { console.warn('⚠ Failed to sync booking settings to cloud', e); }
+            } catch(e) { console.warn('⚠ Cloud sync failed', e); }
 
-            // Update FullCalendar business hours with per-day schedule
+            // Update FullCalendar live
             try {
                 if (window.calendar && typeof window.calendar.setOption === 'function') {
                     const bHoursArr = Object.entries(daysByKey)
-                        .filter(([, d]) => d.enabled)
-                        .map(([k, d]) => ({ daysOfWeek: [parseInt(k, 10)], startTime: d.start, endTime: d.end }));
+                        .filter(([,d]) => d.enabled)
+                        .map(([k,d]) => ({ daysOfWeek: [parseInt(k,10)], startTime: d.start, endTime: d.end }));
                     window.calendar.setOption('businessHours', bHoursArr);
                     window.calendar.setOption('slotMinTime', `${String(startHour).padStart(2,'0')}:00:00`);
                     window.calendar.setOption('slotMaxTime', `${String(endHour).padStart(2,'0')}:00:00`);
                     if (typeof window.calendar.updateSize === 'function') window.calendar.updateSize();
                 }
-            } catch (e) { console.warn('⚠ Failed to apply calendar business-hours options', e); }
+            } catch(e) { console.warn('⚠ Calendar update failed', e); }
 
-            alert('Nastavitve rezervacij so shranjene.');
+            // Show feedback toast if available, else alert
+            if (typeof showToast === 'function') {
+                showToast('✅ Nastavitve rezervacij shranjene!');
+            } else {
+                alert('Nastavitve rezervacij so shranjene.');
+            }
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            // allowMultiDayAppointments checkbox is rendered dynamically; use delegation
-            document.addEventListener('change', (e) => {
-                if (e.target.id === 'allowMultiDayAppointments') {
-                    const maxDaysRow = document.getElementById('maxDaysRow');
-                    if (maxDaysRow) maxDaysRow.style.display = e.target.checked ? 'block' : 'none';
+            // Tab switching
+            document.addEventListener('click', e => {
+                const tab = e.target.closest('.bsp-tab');
+                if (tab && tab.closest('#bspTabBar')) {
+                    const key = tab.dataset.tab;
+                    document.querySelectorAll('.bsp-tab').forEach(t => t.classList.toggle('active', t === tab));
+                    document.querySelectorAll('.bsp-tab-panel').forEach(p => p.classList.toggle('active', p.id === 'bspPanel-' + key));
                 }
             });
-            // Wire save button via delegation (it may be rendered before DOMContentLoaded fires)
-            document.addEventListener('click', (e) => {
+            // Toggle visibility of dependent sections via event delegation
+            document.addEventListener('change', e => {
+                const id = e.target.id;
+                const v  = e.target.checked;
+                if (id === 'allowMultiDayAppointments')  { const el = document.getElementById('maxDaysRow');            if (el) el.style.display = v ? 'block' : 'none'; }
+                if (id === 'autoBreakEnabled')           { const el = document.getElementById('autoBreakDetails');       if (el) el.style.display = v ? 'block' : 'none'; }
+                if (id === 'seasonalEnabled')            { const el = document.getElementById('seasonalDetails');        if (el) el.style.display = v ? 'block' : 'none'; }
+                if (id === 'peakPricingEnabled')         { const el = document.getElementById('peakPricingDetails');     if (el) el.style.display = v ? 'block' : 'none'; }
+                if (id === 'weekendPricingEnabled')      { const el = document.getElementById('weekendPricingDetails');  if (el) el.style.display = v ? 'block' : 'none'; }
+                if (id === 'preventFragmentation')       { const el = document.getElementById('fragmentGapRow');         if (el) el.style.display = v ? 'block' : 'none'; }
+            });
+            // Save button
+            document.addEventListener('click', e => {
                 if (e.target.id === 'saveBusinessSettingsBtn' || e.target.closest('#saveBusinessSettingsBtn')) {
                     saveBusinessSettings();
                 }
