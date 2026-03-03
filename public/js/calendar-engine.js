@@ -553,7 +553,7 @@ const CalendarEngine = {
         locale: 'sl',
         firstDay: 1,
         nowIndicator: true,
-        dayMaxEvents: 2, // Limit to 2 events per day cell, rest shown in +more link
+        dayMaxEvents: _isMobile ? 1 : 2, // On mobile show max 1 event per cell; rest shown as +X more
         dayMaxEventRows: 2, // Limit rows to prevent overlap
         moreLinkClick: function(info) {
           window._moreLinkJustClicked = true;

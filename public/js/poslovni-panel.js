@@ -3666,6 +3666,9 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                 // Handle single day cell clicks to open add modal (but NOT more-link clicks)
                 calendar.on('dateClick', (info) => {
                     
+                    // On mobile the FAB (+) is the only way to add events
+                    if (window.innerWidth <= 768) return;
+
                     // Skip if more-link was just clicked (flag set by moreLinkClick)
                     if (window._moreLinkJustClicked) {
                         return;
