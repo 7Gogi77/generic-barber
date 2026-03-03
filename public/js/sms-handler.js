@@ -21,11 +21,25 @@ const SMS_CONFIG = {
 
 // ========== TEMPLATE HELPERS ==========
 
+// Read shop name from SITE_CONFIG (config.js) or its localStorage backup (set by admin-panel)
+function getBusinessName() {
+  try {
+    const backup = localStorage.getItem('site_config_backup');
+    if (backup) {
+      const cfg = JSON.parse(backup);
+      if (cfg && cfg.shopName) return cfg.shopName;
+    }
+  } catch (_) {}
+  // Fall back to in-memory SITE_CONFIG if present, then hardcoded value
+  if (window.SITE_CONFIG && window.SITE_CONFIG.shopName) return window.SITE_CONFIG.shopName;
+  return SMS_CONFIG.businessName;
+}
+
 // Substitute {ime}, {posel}, {datum}, {cas}, {link} in a template string
 function applyTemplate(template, vars) {
   return template
     .replace(/\{ime\}/g,   vars.ime   || '')
-    .replace(/\{posel\}/g, vars.posel || SMS_CONFIG.businessName)
+    .replace(/\{posel\}/g, vars.posel || getBusinessName())
     .replace(/\{datum\}/g, vars.datum || '')
     .replace(/\{cas\}/g,   vars.cas   || '')
     .replace(/\{link\}/g,  vars.link  || '');
@@ -105,7 +119,7 @@ async function sendAppointmentConfirmation(appointment) {
   const defaultMsg = 'Hvala za vaše naročilo na termin pri {posel}! Upravljanje: {link}';
   const message = applyTemplate(tmpl.confirmationMessage || defaultMsg, {
     ime:   appointment.customer || '',
-    posel: SMS_CONFIG.businessName,
+    posel: getBusinessName(),
     link:  manageLink,
     datum: '',
     cas:   '',
@@ -133,7 +147,7 @@ async function sendAppointmentReminder(appointment) {
   const defaultMsg = '{ime}, jutri ob {cas} imate termin pri {posel}. Se vidimo!';
   const message = applyTemplate(tmpl.reminderMessage || defaultMsg, {
     ime:   appointment.customer || '',
-    posel: SMS_CONFIG.businessName,
+    posel: getBusinessName(),
     datum: dateStr,
     cas:   timeStr,
     link:  '',
