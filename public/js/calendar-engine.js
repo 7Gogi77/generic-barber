@@ -927,6 +927,8 @@ const CalendarEngine = {
           } catch (err) { console.warn('eventsSet hook failed', err); }
         },
         
+        },
+
         eventDrop: async (dropInfo) => {
           console.log('📅 Event dropped:', dropInfo.event.title, 'ID:', dropInfo.event.id);
           
@@ -1246,25 +1248,25 @@ const CalendarEngine = {
               if (rows.length > 0) {
                 try {
                   if (isMonthView) {
-                    // MONTH VIEW: Set fixed 120px height on all rows and cells
+                    // MONTH VIEW: Set fixed 100px height on all rows and cells
                     daygridBody.style.overflowY = 'auto';
                     daygridBody.style.webkitOverflowScrolling = 'touch';
                     rows.forEach((row) => {
-                      row.style.height = '140px';
-                      row.style.minHeight = '140px';
-                      row.style.maxHeight = '140px';
+                      row.style.height = '100px';
+                      row.style.minHeight = '100px';
+                      row.style.maxHeight = '100px';
                       row.style.overflow = 'visible';
                       row.querySelectorAll('.fc-daygrid-day-cell').forEach(cell => {
-                        cell.style.height = '140px';
-                        cell.style.minHeight = '140px';
-                        cell.style.maxHeight = '140px';
+                        cell.style.height = '100px';
+                        cell.style.minHeight = '100px';
+                        cell.style.maxHeight = '100px';
                         cell.style.overflow = 'visible';
 
                         // Keep events container within cell bounds
                         const eventsContainer = cell.querySelector('.fc-daygrid-day-events');
                         if (eventsContainer) {
-                          eventsContainer.style.height = 'calc(100% - 40px)';
-                          eventsContainer.style.maxHeight = 'calc(100% - 40px)';
+                          eventsContainer.style.height = 'calc(100% - 30px)';
+                          eventsContainer.style.maxHeight = 'calc(100% - 30px)';
                           eventsContainer.style.overflow = 'visible';
                           eventsContainer.style.display = 'flex';
                           eventsContainer.style.flexDirection = 'column';
@@ -1277,7 +1279,7 @@ const CalendarEngine = {
                         if (moreEl) { moreEl.style.marginBottom = ''; moreEl.style.paddingBottom = ''; }
                       });
                     });
-                    console.log(`✅ Month view mount: fixed 140px cell heights (${rows.length} rows)`);
+                    console.log(`✅ Month view mount: fixed 100px cell heights (${rows.length} rows)`);
                   } else {
                     // Other views: clear forced sizing to allow natural heights
                     daygridBody.style.overflowY = 'auto';

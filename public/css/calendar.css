@@ -1,0 +1,1885 @@
+/* Merged calendar styles — combined from styles/calendar.css and css/calendar.css */
+/* Source: styles/calendar.css (general layout, modals, forms, responsive)
+   then css/calendar.css (scoped schedule-specific overrides)
+   This file replaces the previous duplicates; keep only this file as canonical calendar CSS.
+*/
+
+/* ====== START: styles/calendar.css content ====== */
+/**
+ * Schedule Calendar Styles
+ * Custom FullCalendar overrides and schedule UI styles
+ */
+
+/* ============================================
+   CALENDAR CONTAINER
+   ============================================ */
+
+#calendar {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto Oxide',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  max-width: 1200px;
+  margin: 20px auto;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+/* ============================================
+   CALENDAR CONTAINER - FIXED HEIGHT
+   ============================================ */
+
+#scheduleCalendar {
+  display: block !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  max-height: 550px !important;
+  overflow-y: auto !important;
+  overflow-x: clip !important;
+}
+
+#scheduleCalendar .fc {
+  width: 100% !important;
+  box-sizing: border-box !important;
+  overflow-x: clip !important;
+}
+
+#scheduleCalendar .fc-root {
+  width: 100% !important;
+  overflow-x: clip !important;
+}
+
+#scheduleCalendar .fc-scroller {
+  overflow-x: clip !important;
+}
+
+#scheduleCalendar .fc-scrollgrid {
+  width: 100% !important;
+  table-layout: fixed !important;
+}
+
+#scheduleCalendar .fc-scrollgrid table {
+  width: 100% !important;
+  table-layout: fixed !important;
+}
+
+/* Month-only column widths (do not affect timeGrid week/day) */
+#scheduleCalendar.view-daygrid .fc .fc-col {
+  width: 14.28% !important;
+}
+
+/* ============================================
+   FULLCALENDAR OVERRIDES
+   ============================================ */
+
+.fc {
+  font-size: 14px;
+}
+
+#scheduleCalendar .fc .fc-button-primary {
+  background-color: #3498db;
+  border-color: #2980b9;
+  color: white;
+}
+
+#scheduleCalendar .fc .fc-button-primary:hover {
+  background-color: #2980b9;
+  border-color: #1f618d;
+}
+
+#scheduleCalendar .fc .fc-button-primary.fc-button-active {
+  background-color: #2c3e50;
+  border-color: #1a252f;
+}
+
+#scheduleCalendar .fc .fc-button-primary:disabled {
+  background-color: #95a5a6;
+  border-color: #7f8c8d;
+}
+
+#scheduleCalendar.view-daygrid .fc .fc-daygrid-day {
+  border: 1px solid #ecf0f1;
+}
+
+#scheduleCalendar.view-daygrid .fc .fc-daygrid-day.fc-day-other {
+  background-color: #f8fafb;
+}
+
+#scheduleCalendar.view-daygrid .fc .fc-daygrid-day.fc-day-today {
+  background-color: #e8f5e9;
+}
+
+#scheduleCalendar.view-daygrid .fc .fc-daygrid-day.fc-day-today .fc-daygrid-day-number {
+  color: #27ae60;
+}
+
+/* Event styling (scoped to calendar container) */
+#scheduleCalendar .fc .fc-event {
+  border-radius: 4px;
+  padding: 2px;
+  border: none;
+}
+
+#scheduleCalendar .fc .fc-event-main {
+  padding: 4px;
+}
+
+/* Month view event title */
+#scheduleCalendar.view-daygrid .fc .fc-event-title {
+  font-weight: 600;
+  font-size: 12px;
+}
+
+/* Week/Day view event title */
+#scheduleCalendar.view-timegrid-week .fc .fc-event-title,
+#scheduleCalendar.view-timegrid-day .fc .fc-event-title {
+  font-weight: 600;
+  font-size: 12px;
+}
+
+/* Background events (vacation, sick leave, day off) - Month */
+#scheduleCalendar.view-daygrid .fc .fc-event.event-blocking {
+  opacity: 0.7;
+}
+/* Background events (vacation, sick leave, day off) - Week/Day */
+#scheduleCalendar.view-timegrid-week .fc .fc-event.event-blocking,
+#scheduleCalendar.view-timegrid-day .fc .fc-event.event-blocking {
+  opacity: 0.7;
+}
+
+#scheduleCalendar.view-daygrid .fc .fc-daygrid-block-event .fc-event-title {
+  font-weight: 500;
+}
+
+/* ============================================
+   EVENT TYPE COLORS
+   ============================================ */
+
+.event-type-working_hours {
+  background-color: rgba(39, 174, 96, 0.35) !important;
+  border: 2px solid #229954 !important;
+  color: #229954 !important;
+}
+
+.event-type-break {
+  background-color: rgba(243, 156, 18, 0.2) !important;
+  border-color: #d68910 !important;
+  color: #d68910 !important;
+}
+
+.event-type-lunch {
+  background-color: rgba(230, 126, 34, 0.2) !important;
+  border-color: #ca6f1e !important;
+  color: #ca6f1e !important;
+}
+
+.event-type-vacation {
+  background-color: rgba(52, 152, 219, 0.2) !important;
+  border-color: #2980b9 !important;
+  color: #2980b9 !important;
+}
+
+.event-type-sick_leave {
+  background-color: rgba(155, 89, 182, 0.2) !important;
+  border-color: #8e44ad !important;
+  color: #8e44ad !important;
+}
+
+.event-type-day_off {
+  background-color: rgba(231, 76, 60, 0.2) !important;
+  border-color: #c0392b !important;
+  color: #c0392b !important;
+}
+
+/* Booking events (customer appointments) */
+.event-type-booking,
+.fc-event.event-type-booking {
+  background-color: rgba(52, 152, 219, 0.4) !important;
+  border: 2px solid #2980b9 !important;
+  color: #2c3e50 !important;
+}
+
+.fc-event.event-type-booking .fc-event-title {
+  color: #2c3e50 !important;
+  font-weight: 600 !important;
+}
+
+/* ============================================
+   BUSINESS HOURS OVERLAY
+   ============================================ */
+
+#scheduleCalendar.view-timegrid-week .fc .fc-col-time-frame,
+#scheduleCalendar.view-timegrid-day .fc .fc-col-time-frame {
+  background-color: #f9f9f9;
+}
+
+#scheduleCalendar.view-timegrid-week .fc .fc-timegrid-slot,
+#scheduleCalendar.view-timegrid-day .fc .fc-timegrid-slot {
+  min-height: 2.5em;
+  height: auto;
+}
+
+#scheduleCalendar.view-timegrid-week .fc .fc-timegrid,
+#scheduleCalendar.view-timegrid-day .fc .fc-timegrid {
+  overflow-y: auto !important;
+}
+
+#scheduleCalendar.view-timegrid-week .fc .fc-timegrid-slot.fc-non-business,
+#scheduleCalendar.view-timegrid-day .fc .fc-timegrid-slot.fc-non-business {
+  background-color: #f0f0f0;
+}
+
+/* ============================================
+   TIMEGRID (WEEK/DAY) - SEPARATE FROM MONTH
+   These rules ensure Week/Day views have their own scrolling and layout
+   ============================================ */
+#scheduleCalendar.view-timegrid-week .fc, #scheduleCalendar.view-timegrid-day .fc {
+  height: 100% !important;
+  box-sizing: border-box;
+}
+
+#scheduleCalendar.view-timegrid-week .fc .fc-view-harness,
+#scheduleCalendar.view-timegrid-day .fc .fc-view-harness {
+  height: 100% !important;
+  min-height: 520px !important;
+  position: relative !important;
+  overflow: visible !important;
+}
+
+#scheduleCalendar.view-timegrid-week .fc .fc-timegrid,
+#scheduleCalendar.view-timegrid-day .fc .fc-timegrid {
+  position: relative !important;
+  height: auto !important;
+  min-height: 520px !important;
+  overflow: visible !important;
+}
+
+#scheduleCalendar.view-timegrid-week .fc .fc-timegrid .fc-scrollgrid-section-body,
+#scheduleCalendar.view-timegrid-day .fc .fc-timegrid .fc-scrollgrid-section-body {
+  max-height: calc(100vh - 220px) !important;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+}
+
+#scheduleCalendar.view-timegrid-week .fc .fc-timegrid .fc-timegrid-slots,
+#scheduleCalendar.view-timegrid-day .fc .fc-timegrid .fc-timegrid-slots {
+  display: block !important;
+  min-height: 0;
+}
+
+/* Ensure month/dayGrid styling is strictly scoped to .view-daygrid */
+#scheduleCalendar.view-daygrid .fc .fc-daygrid-day {
+  overflow: visible !important;
+  z-index: 0 !important;
+  position: relative !important;
+}
+
+#scheduleCalendar.view-daygrid .fc .fc-daygrid-day-cell {
+  z-index: 1 !important;
+  position: relative !important;
+}
+
+/* Ensure day frame, cell and container are flex columns and allow children to shrink */
+#scheduleCalendar.view-daygrid .fc .fc-daygrid-day-frame,
+#scheduleCalendar.view-daygrid .fc .fc-daygrid-day-cell,
+#scheduleCalendar.view-daygrid .fc .fc-daygrid-day-container {
+  display: flex !important;
+  flex-direction: column !important;
+  min-height: 0 !important; /* critical for flex children to be able to shrink */
+}
+
+/* Override FullCalendar's default highlight color - use only JS inline styles */
+.fc . fc-highlight {
+  background: none !important;
+}
+
+/* Custom cell highlighting for drag-to-select feature */
+#scheduleCalendar td[data-date].calendar-cell-selected {
+  background: rgba(10, 132, 255, 0.24) !important;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.65),
+    0 8px 18px rgba(10, 132, 255, 0.24) !important;
+  border-radius: 10px !important;
+  z-index: 10 !important;
+  position: relative !important;
+  pointer-events: auto !important;
+}
+
+#scheduleCalendar [data-date].calendar-cell-selected {
+  background: rgba(10, 132, 255, 0.24) !important;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.65),
+    0 8px 18px rgba(10, 132, 255, 0.24) !important;
+  border-radius: 10px !important;
+  position: relative !important;
+  z-index: 10 !important;
+  pointer-events: auto !important;
+}
+
+/* Ensure the background harness doesn't clip highlights */
+#scheduleCalendar.view-daygrid .fc-daygrid-bg-harness {
+  overflow: visible !important;
+}
+
+#scheduleCalendar.view-daygrid .fc-daygrid-day-bg {
+  overflow: visible !important;
+}
+
+#scheduleCalendar.view-daygrid .fc .fc-daygrid-day-events {
+  /* Events container: flex column, allow multi-day bars to spill across cells */
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  box-sizing: border-box !important;
+  overflow: visible !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+#scheduleCalendar.view-daygrid .fc .fc-daygrid-day-bg {
+  overflow: visible !important;
+}
+
+#scheduleCalendar.view-daygrid .fc .fc-daygrid-day-top {
+  overflow: visible !important;
+}
+
+#scheduleCalendar.view-daygrid .fc .fc-daygrid-event-harness-abs {
+  z-index: 4 !important;
+  overflow: visible !important;
+}
+
+/* Ensure direct row columns can shrink if necessary */
+#scheduleCalendar.view-daygrid .fc .fc-daygrid-row > div { min-height: 0 !important; }
+/* Remove any bottom gap from the "+n more" and events */
+#scheduleCalendar.view-daygrid .fc .fc-daygrid-day-more {
+  margin-bottom: 0 !important;
+  padding-bottom: 0 !important;
+}
+#scheduleCalendar.view-daygrid .fc .fc-daygrid-day-more a {
+  display: inline-block;
+  margin-bottom: 0 !important;
+}
+#scheduleCalendar.view-daygrid .fc .fc-daygrid-event {
+  margin-bottom: 4px !important;
+  padding-bottom: 0 !important;
+}
+/* Ensure the timeGrid scrollable section allows vertical scrolling when content exceeds available height (week/day only) */
+#scheduleCalendar.view-timegrid-week .fc .fc-timegrid .fc-scrollgrid-section-body,
+#scheduleCalendar.view-timegrid-day .fc .fc-timegrid .fc-scrollgrid-section-body,
+#scheduleCalendar.view-timegrid-week .fc .fc-scrollgrid-section-body,
+#scheduleCalendar.view-timegrid-day .fc .fc-scrollgrid-section-body {
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch;
+}
+/* ============================================
+   MODAL STYLES
+   ============================================ */
+
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.modal-content {
+  background-color: white;
+  margin: 5% auto;
+  padding: 30px;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 500px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.modal-content h2 {
+  margin: 0 0 20px 0;
+  color: #2c3e50;
+  font-size: 24px;
+}
+
+.close {
+  color: #7f8c8d;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.close:hover,
+.close:focus {
+  color: #2c3e50;
+}
+
+/* ============================================
+   FORM STYLES
+   ============================================ */
+
+#eventForm {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 8px;
+  font-size: 13px;
+}
+
+.form-group input,
+.form-group select {
+  padding: 10px 12px;
+  border: 1px solid #ecf0f1;
+  border-radius: 4px;
+  font-size: 14px;
+  font-family: inherit;
+  transition: border-color 0.2s;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: #3498db;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+.form-group textarea {
+  padding: 10px 12px;
+  border: 1px solid #ecf0f1;
+  border-radius: 4px;
+  font-size: 14px;
+  font-family: inherit;
+  resize: vertical;
+  min-height: 80px;
+}
+
+/* ============================================
+   BUTTON STYLES
+   ============================================ */
+
+.btn-primary,
+.btn-secondary {
+  padding: 12px 20px;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-primary {
+  background-color: #3498db;
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: #2980b9;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.btn-secondary {
+  background-color: #95a5a6;
+  color: white;
+}
+
+.btn-secondary:hover {
+  background-color: #7f8c8d;
+}
+
+/* ============================================
+   CALENDAR TOOLBAR (scoped to our calendar)
+   ============================================ */
+
+#scheduleCalendar .fc .fc-toolbar {
+  padding: 15px 20px !important;
+  gap: 10px !important;
+  flex-wrap: wrap;
+}
+
+#scheduleCalendar .fc .fc-toolbar.fc-header-toolbar {
+  border-bottom: 1px solid #ecf0f1;
+}
+
+#scheduleCalendar .fc .fc-toolbar.fc-footer-toolbar {
+  border-top: 1px solid #ecf0f1;
+  margin-top: 15px;
+}
+
+#scheduleCalendar .fc .fc-toolbar-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #2c3e50;
+}
+
+/* ============================================
+   RESPONSIVE DESIGN
+   ============================================ */
+
+@media (max-width: 768px) {
+  .modal-content {
+    width: 95%;
+    margin: 20% auto;
+    padding: 20px;
+  }
+
+  #scheduleCalendar .fc .fc-toolbar {
+    flex-direction: column;
+  }
+
+  #scheduleCalendar .fc .fc-toolbar-title {
+    font-size: 18px;
+  }
+
+  #scheduleCalendar .fc .fc-button-group {
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+
+  #scheduleCalendar.view-timegrid-week .fc .fc-timegrid-slot,
+  #scheduleCalendar.view-timegrid-day .fc .fc-timegrid-slot {
+    min-height: 2.5em;
+    height: auto;
+  }
+}
+
+/* ============================================
+   ACCESSIBILITY
+   ============================================ */
+
+#scheduleCalendar .fc .fc-button:focus {
+  outline: 2px solid #3498db;
+  outline-offset: 2px;
+}
+
+#scheduleCalendar .fc .fc-event:focus {
+  outline: 2px solid #3498db;
+  outline-offset: 1px;
+}
+
+/* ============================================
+   PRINTING
+   ============================================ */
+
+@media print {
+  #scheduleCalendar .fc .fc-toolbar,
+  .modal {
+    display: none !important;
+  }
+
+  #calendar {
+    max-width: 100%;
+    box-shadow: none;
+  }
+
+  #scheduleCalendar .fc .fc-event {
+    page-break-inside: avoid;
+  }
+}
+
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+
+#scheduleCalendar .schedule-event {
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Loading state */
+.calendar-loading::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 40px;
+  height: 40px;
+  border: 4px solid #ecf0f1;
+  border-top-color: #3498db;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+/* Notification/Toast */
+.toast {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background-color: #27ae60;
+  color: white;
+  padding: 15px 20px;
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  animation: slideUp 0.3s ease-out;
+  z-index: 9999;
+}
+
+.toast.error {
+  background-color: #e74c3c;
+}
+
+.toast.warning {
+  background-color: #f39c12;
+}
+
+/* ============================================
+   EVENT LEGEND
+   ============================================ */
+
+.calendar-wrapper {
+  display: block !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+.event-legend {
+  margin-top: 20px !important;
+  padding: 15px !important;
+  background: #f8f9fa !important;
+  border-radius: 8px !important;
+  border-left: 4px solid #3498db !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  display: block !important;
+  visibility: visible !important;
+  position: relative !important;
+  z-index: 1 !important;
+  opacity: 1 !important;
+}
+
+.event-legend-title {
+  font-weight: 600 !important;
+  color: #2c3e50 !important;
+  margin-bottom: 10px !important;
+  font-size: 14px !important;
+  display: block !important;
+}
+
+.event-legend-grid {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 15px !important;
+  font-size: 13px !important;
+}
+
+.event-legend-item {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  color: #555 !important;
+}
+
+.event-legend-emoji {
+  font-size: 16px !important;
+  min-width: 24px !important;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ====== END: styles/calendar.css content ====== */
+
+
+/* ====== START: css/calendar.css content (scoped overrides) ====== */
+
+/* FullCalendar Custom Styling - Minimal overrides to preserve structure */
+
+/* Allow FullCalendar CSS to load from CDN first, then apply selective overrides */
+#scheduleCalendar {
+  font-family: inherit;
+  background: white;
+  border: 1px solid #ecf0f1;
+  border-radius: 8px;
+}
+
+/* Container setup */
+#scheduleCalendar .fc {
+  border: 1px solid #ecf0f1;
+  border-radius: 8px;
+}
+
+#scheduleCalendar .fc-header-toolbar {
+  padding: 12px;
+  background: #f8fafb;
+  border-bottom: 1px solid #ecf0f1;
+}
+
+#scheduleCalendar .fc-toolbar-title {
+  font-size: 1.75em;
+  color: #2c3e50;
+  font-weight: 600;
+}
+
+#scheduleCalendar .fc-button-primary {
+  background-color: #3498db !important;
+  border-color: #2980b9 !important;
+  color: white !important;
+}
+
+#scheduleCalendar .fc-button-primary:hover {
+  background-color: #2980b9 !important;
+}
+
+#scheduleCalendar .fc-button-primary:not(:disabled).fc-button-active {
+  background-color: #2471a3 !important;
+  border-color: #1f618d !important;
+}
+
+/* Day cells */
+#scheduleCalendar .fc-daygrid-day {
+  border-color: #ecf0f1;
+  background: white !important;
+}
+
+#scheduleCalendar .fc-daygrid-day:hover {
+  background: #f0f8ff !important;
+}
+
+#scheduleCalendar .fc-daygrid-day.fc-day-today {
+  background: #fffacd !important;
+}
+
+#scheduleCalendar .fc-col-header-cell {
+  background: #f8fafb !important;
+  font-weight: 600 !important;
+  color: #34495e !important;
+  padding: 12px 8px !important;
+}
+
+/* Fallback styles if FullCalendar CSS fails to load */
+#scheduleCalendar table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+#scheduleCalendar th,
+#scheduleCalendar td {
+  border: 1px solid #ecf0f1;
+  padding: 8px;
+  text-align: center;
+}
+
+#scheduleCalendar button {
+  padding: 8px 16px;
+  margin: 5px;
+  border: 1px solid #bdc3c7;
+  border-radius: 4px;
+  background: #3498db;
+  color: white;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+#scheduleCalendar button:hover {
+  background: #2980b9;
+}
+
+/* Calendar Container */
+#scheduleCalendar .fc {
+  font-family: inherit;
+  font-size: 14px;
+}
+
+#scheduleCalendar .fc-button-primary {
+  background-color: #3498db;
+  border-color: #2980b9;
+}
+
+#scheduleCalendar .fc-button-primary:hover {
+  background-color: #2980b9;
+  border-color: #2471a3;
+}
+
+#scheduleCalendar .fc-button-primary:not(:disabled).fc-button-active {
+  background-color: #2471a3;
+  border-color: #1f618d;
+}
+
+#scheduleCalendar .fc-button-primary:disabled {
+  background-color: #95a5a6;
+  border-color: #7f8c8d;
+}
+
+/* Header */
+#scheduleCalendar .fc-toolbar-title {
+  font-size: 1.75em;
+  color: #2c3e50;
+  font-weight: 600;
+  margin: 0.5em 0;
+}
+
+#scheduleCalendar .fc-daygrid-day {
+  border-color: #ecf0f1;
+}
+
+#scheduleCalendar .fc-col-header-cell {
+  background-color: #f8fafb;
+  border-color: #ecf0f1;
+  color: #2c3e50;
+  font-weight: 600;
+  padding: 12px 4px;
+}
+
+/* Days */
+#scheduleCalendar .fc-daygrid-day-number {
+  padding: 8px 4px;
+  color: #2c3e50;
+}
+
+#scheduleCalendar .fc-daygrid-day-frame {
+  min-height: 100px;
+}
+
+/* Events */
+#scheduleCalendar .fc-event {
+  border: 1px solid #ddd !important;
+  border-radius: 4px !important;
+  padding: 4px 6px !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  min-height: 24px !important;
+  font-family: 'Poppins', sans-serif !important;
+}
+
+#scheduleCalendar .fc-event:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+  transform: translateY(-2px) !important;
+}
+
+
+#scheduleCalendar .fc-event-title {
+  font-weight: 600 !important;
+  font-size: 13px !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  white-space: normal !important;
+  line-height: 1.3 !important;
+  word-break: break-word !important;
+  font-family: 'Poppins', sans-serif !important;
+}
+
+/* Per-type event colors (use event-type-<type> classes added by CalendarEngine) */
+#scheduleCalendar .fc-event.event-type-working_hours { background: linear-gradient(180deg,#27ae60,#229954) !important; color: #fff !important; border-color: #229954 !important; }
+#scheduleCalendar .fc-event.event-type-break { background: linear-gradient(180deg,#f39c12,#d68910) !important; color: #fff !important; border-color: #d68910 !important; }
+#scheduleCalendar .fc-event.event-type-lunch { background: linear-gradient(180deg,#e67e22,#ca6f1e) !important; color: #fff !important; border-color: #ca6f1e !important; }
+#scheduleCalendar .fc-event.event-type-vacation { background: linear-gradient(180deg,#3498db,#2980b9) !important; color: #fff !important; border-color: #2980b9 !important; }
+#scheduleCalendar .fc-event.event-type-sick_leave { background: linear-gradient(180deg,#9b59b6,#8e44ad) !important; color: #fff !important; border-color: #8e44ad !important; }
+#scheduleCalendar .fc-event.event-type-day_off { background: linear-gradient(180deg,#e74c3c,#c0392b) !important; color: #fff !important; border-color: #c0392b !important; }
+#scheduleCalendar .fc-event.event-type-booking { background: linear-gradient(180deg,#3498db,#2980b9) !important; color: #fff !important; border-color: #2980b9 !important; }
+
+
+/* Hover */
+#scheduleCalendar .fc-daygrid-day:hover {
+  background-color: #f8fafb;
+  cursor: pointer;
+}
+
+/* Ensure event text displays properly */
+#scheduleCalendar .fc-event-main {
+  padding: 0 !important;
+}
+
+#scheduleCalendar .fc-event-title-container {
+  padding: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  min-height: 20px !important;
+}
+
+#scheduleCalendar .fc-daygrid-event {
+  margin-bottom: 3px !important;
+}
+
+#scheduleCalendar .fc-daygrid-event-harness {
+  margin-bottom: 2px !important;
+}
+
+/* Multi-day events should span across days */
+#scheduleCalendar .event-multiday {
+  min-height: 24px !important;
+  flex-grow: 1 !important;
+}
+
+#scheduleCalendar .fc-daygrid-day-frame .event-multiday {
+  margin: 1px 0 !important;
+  padding: 4px 6px !important;
+  font-size: 12px !important;
+  line-height: 1.4 !important;
+}
+
+/* All-day event rows */
+#scheduleCalendar .fc-daygrid-day-all-day {
+  min-height: 40px;
+}
+
+#scheduleCalendar .fc-daygrid-all-day-row {
+  border-bottom: 1px solid #ecf0f1;
+}
+
+/* All-day events in daygrid */
+#scheduleCalendar .fc-daygrid-all-day-frame {
+  min-height: 30px;
+}
+
+/* Multi-day events should span across days */
+#scheduleCalendar .event-multiday {
+  min-height: 24px;
+}
+
+#scheduleCalendar .fc-daygrid-day-frame .event-multiday {
+  margin: 1px 0;
+  padding: 4px 6px;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+/* Ensure all-day events display as continuous blocks */
+#scheduleCalendar .fc-daygrid-block-event {
+  pointer-events: auto;
+  display: block;
+}
+
+/* All-day event harness - the container for the event */
+#scheduleCalendar .fc-daygrid-event-harness {
+  display: block;
+}
+
+/* All-day event containers should not have overflow hidden */
+#scheduleCalendar .fc-scrollgrid-sync-table {
+  overflow: visible;
+}
+
+/* Note: .fc-scroller overflow is controlled in poslovni-panel.html for timegrid views */
+
+#scheduleCalendar .fc-daygrid-day-frame {
+  overflow: visible;
+}
+
+/* Today highlight */
+#scheduleCalendar .fc-daygrid-day.fc-day-today {
+  background-color: #e8f4f8;
+}
+
+#scheduleCalendar .fc-daygrid-day-number.fc-daygrid-day-today {
+  color: #3498db;
+  font-weight: 700;
+}
+
+/* Time Grid View */
+#scheduleCalendar .fc-timegrid-slot {
+  height: 3em;
+}
+
+#scheduleCalendar .fc-timegrid-cell {
+  border-color: #ecf0f1;
+}
+
+#scheduleCalendar .fc-col-time-cell {
+  color: #7f8c8d;
+  font-size: 12px;
+}
+
+#scheduleCalendar .fc-timegrid .fc-event {
+  border: 1px solid rgba(0, 0, 0, 0.2);
+}
+
+/* Modal Dialogs */
+.schedule-modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  animation: fadeIn 0.3s ease;
+}
+
+.schedule-modal.show {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.schedule-modal-content {
+  background-color: white;
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  max-width: 500px;
+  width: 90%;
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.schedule-modal-header {
+  font-size: 18px;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #ecf0f1;
+  padding-bottom: 15px;
+}
+
+/* ====== END: css/calendar.css content ====== */
+/* FullCalendar Custom Styling - Minimal overrides to preserve structure */
+
+/* Allow FullCalendar CSS to load from CDN first, then apply selective overrides */
+#scheduleCalendar {
+  font-family: inherit;
+  background: white;
+  border: 1px solid #ecf0f1;
+  border-radius: 8px;
+}
+
+/* Container setup */
+#scheduleCalendar .fc {
+  border: 1px solid #ecf0f1;
+  border-radius: 8px;
+}
+
+#scheduleCalendar .fc-header-toolbar {
+  padding: 12px;
+  background: #f8fafb;
+  border-bottom: 1px solid #ecf0f1;
+}
+
+#scheduleCalendar .fc-toolbar-title {
+  font-size: 1.75em;
+  color: #2c3e50;
+  font-weight: 600;
+}
+
+#scheduleCalendar .fc-button-primary {
+  background-color: #3498db !important;
+  border-color: #2980b9 !important;
+  color: white !important;
+}
+
+#scheduleCalendar .fc-button-primary:hover {
+  background-color: #2980b9 !important;
+}
+
+#scheduleCalendar .fc-button-primary:not(:disabled).fc-button-active {
+  background-color: #2471a3 !important;
+  border-color: #1f618d !important;
+}
+
+/* Day cells */
+#scheduleCalendar .fc-daygrid-day {
+  border-color: #ecf0f1;
+  background: white !important;
+}
+
+#scheduleCalendar .fc-daygrid-day:hover {
+  background: #f0f8ff !important;
+}
+
+#scheduleCalendar .fc-daygrid-day.fc-day-today {
+  background: #fffacd !important;
+}
+
+#scheduleCalendar .fc-col-header-cell {
+  background: #f8fafb !important;
+  font-weight: 600 !important;
+  color: #34495e !important;
+  padding: 12px 8px !important;
+}
+
+/* Fallback styles if FullCalendar CSS fails to load */
+#scheduleCalendar table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+#scheduleCalendar th,
+#scheduleCalendar td {
+  border: 1px solid #ecf0f1;
+  padding: 8px;
+  text-align: center;
+}
+
+#scheduleCalendar button {
+  padding: 8px 16px;
+  margin: 5px;
+  border: 1px solid #bdc3c7;
+  border-radius: 4px;
+  background: #3498db;
+  color: white;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+#scheduleCalendar button:hover {
+  background: #2980b9;
+}
+
+/* Calendar Container */
+#scheduleCalendar .fc {
+  font-family: inherit;
+  font-size: 14px;
+}
+
+#scheduleCalendar .fc-button-primary {
+  background-color: #3498db;
+  border-color: #2980b9;
+}
+
+#scheduleCalendar .fc-button-primary:hover {
+  background-color: #2980b9;
+  border-color: #2471a3;
+}
+
+#scheduleCalendar .fc-button-primary:not(:disabled).fc-button-active {
+  background-color: #2471a3;
+  border-color: #1f618d;
+}
+
+#scheduleCalendar .fc-button-primary:disabled {
+  background-color: #95a5a6;
+  border-color: #7f8c8d;
+}
+
+/* Header */
+#scheduleCalendar .fc-toolbar-title {
+  font-size: 1.75em;
+  color: #2c3e50;
+  font-weight: 600;
+  margin: 0.5em 0;
+}
+
+#scheduleCalendar .fc-daygrid-day {
+  border-color: #ecf0f1;
+}
+
+#scheduleCalendar .fc-col-header-cell {
+  background-color: #f8fafb;
+  border-color: #ecf0f1;
+  color: #2c3e50;
+  font-weight: 600;
+  padding: 12px 4px;
+}
+
+/* Days */
+#scheduleCalendar .fc-daygrid-day-number {
+  padding: 8px 4px;
+  color: #2c3e50;
+}
+
+#scheduleCalendar .fc-daygrid-day-frame {
+  min-height: 100px;
+}
+
+/* Events */
+#scheduleCalendar .fc-event {
+  border: 1px solid #ddd !important;
+  border-radius: 4px !important;
+  padding: 4px 6px !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  min-height: 24px !important;
+  font-family: 'Poppins', sans-serif !important;
+}
+
+#scheduleCalendar .fc-event:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+  transform: translateY(-2px) !important;
+}
+
+
+#scheduleCalendar .fc-event-title {
+  font-weight: 600 !important;
+  font-size: 13px !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  white-space: normal !important;
+  line-height: 1.3 !important;
+  word-break: break-word !important;
+  font-family: 'Poppins', sans-serif !important;
+}
+
+/* Per-type event colors (use event-type-<type> classes added by CalendarEngine) */
+#scheduleCalendar .fc-event.event-type-working_hours { background: linear-gradient(180deg,#27ae60,#229954) !important; color: #fff !important; border-color: #229954 !important; }
+#scheduleCalendar .fc-event.event-type-break { background: linear-gradient(180deg,#f39c12,#d68910) !important; color: #fff !important; border-color: #d68910 !important; }
+#scheduleCalendar .fc-event.event-type-lunch { background: linear-gradient(180deg,#e67e22,#ca6f1e) !important; color: #fff !important; border-color: #ca6f1e !important; }
+#scheduleCalendar .fc-event.event-type-vacation { background: linear-gradient(180deg,#3498db,#2980b9) !important; color: #fff !important; border-color: #2980b9 !important; }
+#scheduleCalendar .fc-event.event-type-sick_leave { background: linear-gradient(180deg,#9b59b6,#8e44ad) !important; color: #fff !important; border-color: #8e44ad !important; }
+#scheduleCalendar .fc-event.event-type-day_off { background: linear-gradient(180deg,#e74c3c,#c0392b) !important; color: #fff !important; border-color: #c0392b !important; }
+#scheduleCalendar .fc-event.event-type-booking { background: linear-gradient(180deg,#3498db,#2980b9) !important; color: #fff !important; border-color: #2980b9 !important; }
+
+
+/* Hover */
+#scheduleCalendar .fc-daygrid-day:hover {
+  background-color: #f8fafb;
+  cursor: pointer;
+}
+
+/* Ensure event text displays properly */
+#scheduleCalendar .fc-event-main {
+  padding: 0 !important;
+}
+
+#scheduleCalendar .fc-event-title-container {
+  padding: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  min-height: 20px !important;
+}
+
+#scheduleCalendar .fc-daygrid-event {
+  margin-bottom: 3px !important;
+}
+
+#scheduleCalendar .fc-daygrid-event-harness {
+  margin-bottom: 2px !important;
+}
+
+/* Multi-day events should span across days */
+#scheduleCalendar .event-multiday {
+  min-height: 24px !important;
+  flex-grow: 1 !important;
+}
+
+#scheduleCalendar .fc-daygrid-day-frame .event-multiday {
+  margin: 1px 0 !important;
+  padding: 4px 6px !important;
+  font-size: 12px !important;
+  line-height: 1.4 !important;
+}
+
+/* All-day event rows */
+#scheduleCalendar .fc-daygrid-day-all-day {
+  min-height: 40px;
+}
+
+#scheduleCalendar .fc-daygrid-all-day-row {
+  border-bottom: 1px solid #ecf0f1;
+}
+
+/* All-day events in daygrid */
+#scheduleCalendar .fc-daygrid-all-day-frame {
+  min-height: 30px;
+}
+
+/* Multi-day events should span across days */
+#scheduleCalendar .event-multiday {
+  min-height: 24px;
+}
+
+#scheduleCalendar .fc-daygrid-day-frame .event-multiday {
+  margin: 1px 0;
+  padding: 4px 6px;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+/* Ensure all-day events display as continuous blocks */
+#scheduleCalendar .fc-daygrid-block-event {
+  pointer-events: auto;
+  display: block;
+}
+
+/* All-day event harness - the container for the event */
+#scheduleCalendar .fc-daygrid-event-harness {
+  display: block;
+}
+
+/* All-day event containers should not have overflow hidden */
+#scheduleCalendar .fc-scrollgrid-sync-table {
+  overflow: visible;
+}
+
+/* Note: .fc-scroller overflow is controlled in poslovni-panel.html for timegrid views */
+
+#scheduleCalendar .fc-daygrid-day-frame {
+  overflow: visible;
+}
+
+/* Today highlight */
+#scheduleCalendar .fc-daygrid-day.fc-day-today {
+  background-color: #e8f4f8;
+}
+
+#scheduleCalendar .fc-daygrid-day-number.fc-daygrid-day-today {
+  color: #3498db;
+  font-weight: 700;
+}
+
+/* Time Grid View */
+#scheduleCalendar .fc-timegrid-slot {
+  height: 3em;
+}
+
+#scheduleCalendar .fc-timegrid-cell {
+  border-color: #ecf0f1;
+}
+
+#scheduleCalendar .fc-col-time-cell {
+  color: #7f8c8d;
+  font-size: 12px;
+}
+
+#scheduleCalendar .fc-timegrid .fc-event {
+  border: 1px solid rgba(0, 0, 0, 0.2);
+}
+
+/* Modal Dialogs */
+.schedule-modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  animation: fadeIn 0.3s ease;
+}
+
+.schedule-modal.show {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.schedule-modal-content {
+  background-color: white;
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  max-width: 500px;
+  width: 90%;
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.schedule-modal-header {
+  font-size: 18px;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #ecf0f1;
+  padding-bottom: 15px;
+}
+
+.schedule-form-group {
+  margin-bottom: 18px;
+}
+
+.schedule-form-label {
+  display: block;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 6px;
+  font-size: 14px;
+}
+
+.schedule-form-input,
+.schedule-form-select,
+.schedule-form-textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #bdc3c7;
+  border-radius: 4px;
+  font-family: inherit;
+  font-size: 14px;
+  color: #2c3e50;
+  transition: border-color 0.2s ease;
+}
+
+.schedule-form-input:focus,
+.schedule-form-select:focus,
+.schedule-form-textarea:focus {
+  outline: none;
+  border-color: #3498db;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+.schedule-form-textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.schedule-modal-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 25px;
+  padding-top: 20px;
+  border-top: 1px solid #ecf0f1;
+}
+
+.schedule-btn-save {
+  background-color: #27ae60;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  transition: background-color 0.2s ease;
+}
+
+.schedule-btn-save:hover {
+  background-color: #229954;
+}
+
+.schedule-btn-cancel {
+  background-color: #95a5a6;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  transition: background-color 0.2s ease;
+}
+
+.schedule-btn-cancel:hover {
+  background-color: #7f8c8d;
+}
+
+.schedule-btn-delete {
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  transition: background-color 0.2s ease;
+}
+
+.schedule-btn-delete:hover {
+  background-color: #c0392b;
+}
+
+/* Validation Messages */
+.schedule-error {
+  color: #e74c3c;
+  font-size: 12px;
+  margin-top: 4px;
+  display: none;
+}
+
+.schedule-error.show {
+  display: block;
+}
+
+.schedule-success {
+  background-color: #d4edda;
+  color: #155724;
+  padding: 12px;
+  border-radius: 4px;
+  margin-bottom: 15px;
+  border: 1px solid #c3e6cb;
+  display: none;
+}
+
+.schedule-success.show {
+  display: block;
+  animation: fadeIn 0.3s ease;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .schedule-modal-content {
+    width: 95%;
+  }
+
+  #scheduleCalendar .fc-toolbar {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  #scheduleCalendar .fc-toolbar-chunk {
+    margin: 5px 0;
+  }
+
+  #scheduleCalendar .fc-toolbar-title {
+    font-size: 1.25em;
+  }
+
+  #scheduleCalendar .fc-button {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .schedule-modal {
+    display: none !important;
+  }
+
+  #scheduleCalendar .fc-button {
+    display: none;
+  }
+
+  #scheduleCalendar .fc-event {
+    page-break-inside: avoid;
+  }
+}
+
+/* Mobile Responsive Design */
+@media (max-width: 1024px) {
+  #scheduleCalendar .fc-header-toolbar {
+    padding: 10px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  #scheduleCalendar .fc-toolbar-title {
+    font-size: 1.25em;
+    flex-basis: 100%;
+  }
+
+  #scheduleCalendar .fc-daygrid-day {
+    min-height: 70px;
+  }
+
+  #scheduleCalendar .fc-event {
+    font-size: 0.8em;
+    padding: 3px 4px;
+  }
+}
+
+@media (max-width: 768px) {
+  #scheduleCalendar {
+    font-size: 13px;
+  }
+
+  #scheduleCalendar .fc-header-toolbar {
+    padding: 8px;
+    gap: 5px;
+  }
+
+  #scheduleCalendar .fc-toolbar-title {
+    font-size: 1.1em;
+    flex-basis: 100%;
+    order: -1;
+  }
+
+  #scheduleCalendar .fc-button {
+    padding: 5px 8px !important;
+    font-size: 0.8em !important;
+  }
+
+  #scheduleCalendar .fc-col-header-cell {
+    padding: 6px 2px !important;
+    font-size: 0.85em !important;
+  }
+
+  #scheduleCalendar .fc-daygrid-day-number {
+    padding: 3px 2px !important;
+    font-size: 0.9em !important;
+  }
+
+  #scheduleCalendar .fc-daygrid-day {
+    min-height: 60px;
+  }
+
+  #scheduleCalendar .fc-daygrid-day-frame {
+    min-height: 60px;
+  }
+
+  #scheduleCalendar .fc-event {
+    font-size: 0.75em;
+    padding: 2px 3px;
+    margin: 1px 1px 0 1px !important;
+  }
+
+  #scheduleCalendar .fc-event-title {
+    font-size: 0.75em;
+    line-height: 1.2 !important;
+  }
+}
+
+@media (max-width: 600px) {
+  #scheduleCalendar {
+    font-size: 12px;
+    border-radius: 4px;
+  }
+
+  #scheduleCalendar .fc {
+    border-radius: 4px;
+  }
+
+  #scheduleCalendar .fc-header-toolbar {
+    padding: 6px;
+    gap: 4px;
+  }
+
+  #scheduleCalendar .fc-toolbar-title {
+    font-size: 1em;
+    margin: 0;
+  }
+
+  #scheduleCalendar .fc-button {
+    padding: 4px 6px !important;
+    font-size: 0.7em !important;
+    min-width: auto;
+  }
+
+  #scheduleCalendar .fc-button-group {
+    flex-wrap: wrap;
+  }
+
+  #scheduleCalendar .fc-col-header-cell {
+    padding: 4px 1px !important;
+    font-size: 0.8em !important;
+  }
+
+  #scheduleCalendar .fc-daygrid-day-number {
+    padding: 2px 1px !important;
+    font-size: 0.8em !important;
+  }
+
+  #scheduleCalendar .fc-daygrid-day {
+    min-height: 50px;
+    position: relative;
+  }
+
+  #scheduleCalendar .fc-daygrid-day-frame {
+    min-height: 50px;
+  }
+
+  #scheduleCalendar .fc-event {
+    font-size: 0.65em;
+    padding: 1px 2px;
+    margin: 0.5px 0.5px 0 0.5px !important;
+    border-radius: 2px;
+  }
+
+  #scheduleCalendar .fc-event-title {
+    font-size: 0.65em;
+    line-height: 1.1 !important;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* Modal adjustments for mobile */
+  .schedule-modal-content {
+    width: 95% !important;
+    max-height: 90vh;
+    border-radius: 8px;
+  }
+
+  .schedule-form-group {
+    margin-bottom: 12px;
+  }
+
+  .schedule-form-label {
+    font-size: 12px;
+    margin-bottom: 4px;
+  }
+
+  .schedule-form-input {
+    padding: 8px;
+    font-size: 12px;
+  }
+
+  .schedule-btn {
+    padding: 10px 16px;
+    font-size: 12px;
+  }
+
+  .schedule-type-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .schedule-type-btn {
+    padding: 8px;
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 480px) {
+  #scheduleCalendar {
+    font-size: 11px;
+  }
+
+  #scheduleCalendar .fc {
+    border: none;
+    border-radius: 0;
+  }
+
+  #scheduleCalendar .fc-header-toolbar {
+    padding: 4px;
+    gap: 2px;
+    border-radius: 0;
+  }
+
+  #scheduleCalendar .fc-toolbar-title {
+    font-size: 0.9em;
+  }
+
+  #scheduleCalendar .fc-button {
+    padding: 3px 4px !important;
+    font-size: 0.6em !important;
+  }
+
+  #scheduleCalendar .fc-col-header-cell {
+    padding: 2px 0 !important;
+    font-size: 0.75em !important;
+  }
+
+  #scheduleCalendar .fc-daygrid-day-number {
+    padding: 1px !important;
+    font-size: 0.75em !important;
+  }
+
+  #scheduleCalendar .fc-daygrid-day {
+    min-height: 45px;
+  }
+
+  #scheduleCalendar .fc-daygrid-day-frame {
+    min-height: 45px;
+  }
+
+  #scheduleCalendar .fc-event {
+    font-size: 0.6em;
+    padding: 1px;
+    margin: 0 !important;
+    border: none;
+    border-left: 2px solid currentColor;
+  }
+
+  #scheduleCalendar .fc-event-title {
+    display: none;
+  }
+
+  /* Full-width modal on small phones */
+  .schedule-modal {
+    padding: 0;
+  }
+
+  .schedule-modal-content {
+    width: 100% !important;
+    max-height: 100vh;
+    border-radius: 0;
+    max-width: 100%;
+  }
+
+  .schedule-form-group {
+    margin-bottom: 10px;
+  }
+
+  .schedule-form-label {
+    font-size: 11px;
+  }
+
+  .schedule-form-input {
+    padding: 6px;
+    font-size: 11px;
+  }
+
+  .schedule-type-buttons {
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+
+  .schedule-type-btn {
+    padding: 6px;
+    font-size: 10px;
+  }
+}
