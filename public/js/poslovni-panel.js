@@ -164,11 +164,11 @@
                 const form = document.getElementById('addEventForm');
                 if (form) form.reset();
                 
-                // Set default times for new events
+                // Always set default times after reset (browsers may reset time inputs to '00:00')
                 const startTimeEl = document.getElementById('eventStartTime');
                 const endTimeEl = document.getElementById('eventEndTime');
-                if (startTimeEl && !startTimeEl.value) startTimeEl.value = '09:00'; // Default to 9:00 AM
-                if (endTimeEl && !endTimeEl.value) endTimeEl.value = '10:00';     // Default to 10:00 AM
+                if (startTimeEl) startTimeEl.value = '09:00';
+                if (endTimeEl) endTimeEl.value = '10:00';
                 
                 // Show modal
                 const modal = document.getElementById('addEventModal');
