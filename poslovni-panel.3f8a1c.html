@@ -2161,7 +2161,7 @@
                 <button class="bsp-tab" data-tab="rules"><i class="bi bi-clipboard-check"></i> Pravila</button>
                 <button class="bsp-tab" data-tab="pricing"><i class="bi bi-currency-euro"></i> Cenovanje</button>
                 <button class="bsp-tab" data-tab="smart"><i class="bi bi-stars"></i> Pametne funkcije</button>
-                <button class="bsp-tab" data-tab="services"><i class="bi bi-scissors"></i> Storitve</button>
+                <button class="bsp-tab" data-tab="services"><i class="bi bi-bag"></i> Storitve</button>
                 <button class="bsp-tab" data-tab="team"><i class="bi bi-people-fill"></i> Ekipa</button>
             </div>
 
@@ -2524,14 +2524,11 @@
                 <div class="bsp-tab-panel" id="bspPanel-services">
                     <div class="bsp-card">
                         <div class="bsp-card-header">
-                            <div class="bsp-card-icon" style="background:#ff950020;"><i class="bi bi-scissors" style="color:#ff9500;font-size:15px;"></i></div>
+                            <div class="bsp-card-icon" style="background:#ff950020;"><i class="bi bi-bag" style="color:#ff9500;font-size:15px;"></i></div>
                             <div><div class="bsp-card-title">Storitve in Cene</div><div class="bsp-card-subtitle">Upravljaj s ponudbo in cenami storitev</div></div>
                         </div>
                         <div id="bspServicesList"></div>
                         <button class="bsp-add-btn" onclick="bspAddServiceItem()"><i class="bi bi-plus-circle"></i> Dodaj storitev</button>
-                        <div style="padding:10px 4px 4px;">
-                            <button onclick="bspSaveServicesToConfig()" style="width:100%;padding:11px;background:#007aff;color:white;border:none;border-radius:10px;font-weight:600;font-size:14px;cursor:pointer;">Shrani storitve</button>
-                        </div>
                     </div>
                 </div>
 
@@ -2544,9 +2541,6 @@
                         </div>
                         <div id="bspTeamList"></div>
                         <button class="bsp-add-btn" onclick="bspAddTeamMember()"><i class="bi bi-person-plus"></i> Dodaj člana</button>
-                        <div style="padding:10px 4px 4px;">
-                            <button onclick="bspSaveTeamToConfig()" style="width:100%;padding:11px;background:#007aff;color:white;border:none;border-radius:10px;font-weight:600;font-size:14px;cursor:pointer;">Shrani ekipo</button>
-                        </div>
                     </div>
                 </div>
 
@@ -3714,7 +3708,7 @@
                         <div style="font-size:12px;color:#8e8e93;">${ex.date} &nbsp;·&nbsp; <span class="bsp-badge" style="background:#ff3b301a;color:#ff3b30;">${typeLabel[ex.type]||ex.type}</span></div>
                     </div>
                     <button class="bsp-list-del" onclick="bspDelException(${i})"><i class="bi bi-trash3"></i></button>
-                </div>`).join('') || '<p style="font-size:13px;color:#8e8e93;padding:8px 0;">Ni vnesenih izjem.</p>';
+                </div>`).join('') || '<p style="font-size:13px;color:#8e8e93;padding:8px 0;margin:0;width:100%;">Ni vnesenih izjem.</p>';
         }
         function bspDelException(i) { if (_bspData) { _bspData.dateExceptions.splice(i, 1); bspRenderExceptions(); } }
         function bspAddException() {
@@ -3740,7 +3734,7 @@
                         <div style="font-size:12px;color:#8e8e93;">${ov.note || '(brez opombe)'}</div>
                     </div>
                     <button class="bsp-list-del" onclick="bspDelOverride(${i})"><i class="bi bi-trash3"></i></button>
-                </div>`).join('') || '<p style="font-size:13px;color:#8e8e93;padding:8px 0;">Ni vnesenih override-ov.</p>';
+                </div>`).join('') || '<p style="font-size:13px;color:#8e8e93;padding:8px 0;margin:0;width:100%;">Ni vnesenih override-ov.</p>';
         }
         function bspDelOverride(i) { if (_bspData) { _bspData.dateOverrides.splice(i, 1); bspRenderOverrides(); } }
         function bspAddOverride() {
@@ -3767,7 +3761,7 @@
                         <div style="font-size:12px;color:#8e8e93;">${p.from} – ${p.to}</div>
                     </div>
                     <button class="bsp-list-del" onclick="bspDelPromo(${i})"><i class="bi bi-trash3"></i></button>
-                </div>`).join('') || '<p style="font-size:13px;color:#8e8e93;padding:8px 0;">Ni vnesenih akcij.</p>';
+                </div>`).join('') || '<p style="font-size:13px;color:#8e8e93;padding:8px 0;margin:0;width:100%;">Ni vnesenih akcij.</p>';
         }
         function bspDelPromo(i) { if (_bspData) { _bspData.promoIntervals.splice(i, 1); bspRenderPromos(); } }
         function bspAddPromo() {
@@ -3789,6 +3783,10 @@
         function _escH(s) { return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
         // ── Services management (syncs with SITE_CONFIG.servicesSection.items) ──
+        let _bspSvcTimer = null, _bspTeamTimer = null;
+        function _bspSvcAutoSave()  { clearTimeout(_bspSvcTimer);  _bspSvcTimer  = setTimeout(bspSaveServicesToConfig, 900); }
+        function _bspTeamAutoSave() { clearTimeout(_bspTeamTimer); _bspTeamTimer = setTimeout(bspSaveTeamToConfig, 900); }
+
         function bspRenderServices() {
             const el = document.getElementById('bspServicesList');
             if (!el) return;
@@ -3828,6 +3826,8 @@
                     </div>
                 </div>`;
             }).join('');
+            el.oninput  = _bspSvcAutoSave;
+            el.onchange = _bspSvcAutoSave;
         }
         function bspCollectServices() {
             const items = [];
@@ -3892,6 +3892,8 @@
                     <div><label style="font-size:11px;color:#8e8e93;display:block;margin-bottom:3px;">URL slike</label>
                     <input type="text" class="bsp-input team-img" value="${_escH(m.img&&m.img!=='https://via.placeholder.com/300'?m.img:'')}" style="width:100%;box-sizing:border-box;" placeholder="https://..."></div>
                 </div>`).join('');
+            el.oninput  = _bspTeamAutoSave;
+            el.onchange = _bspTeamAutoSave;
         }
         function bspCollectTeam() {
             const items = [];
@@ -4086,6 +4088,15 @@
                 }
             } catch(e) { console.warn('⚠ Calendar update failed', e); }
 
+            // Also collect and persist services + team from their tab forms
+            try {
+                if (window.SITE_CONFIG) {
+                    if (window.SITE_CONFIG.servicesSection) window.SITE_CONFIG.servicesSection.items = bspCollectServices();
+                    if (window.SITE_CONFIG.barbersSection)  window.SITE_CONFIG.barbersSection.list   = bspCollectTeam();
+                    if (window.StorageManager) await StorageManager.save('site_config', window.SITE_CONFIG);
+                    if (window.CloudSync?.saveToCloud) await window.CloudSync.saveToCloud(window.SITE_CONFIG);
+                }
+            } catch(e) { console.warn('⚠ Could not save services/team:', e); }
             // Show feedback toast if available, else alert
             if (typeof showToast === 'function') {
                 showToast('✅ Nastavitve rezervacij shranjene!');
