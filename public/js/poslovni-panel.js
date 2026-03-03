@@ -411,6 +411,11 @@
                             localStorage.setItem('sidebarExpanded', 'false');
                         }
                         
+                        // Always reset all panels and calendar before switching
+                        hideAllPanels();
+                        const _cal = document.getElementById('scheduleCalendar');
+                        if (_cal) _cal.style.display = 'none';
+
                         if (page === 'home') { window.location.href = 'admin-panel.html'; }
                         else if (page === 'settings') {
                             window.location.href = 'admin-panel.html';
@@ -419,8 +424,7 @@
                             showBusinessSettingsPanel();
                         }
                         else if (page === 'calendar') { 
-                            hideAllPanels();
-                            document.getElementById('scheduleCalendar').style.display = 'block';
+                            if (_cal) _cal.style.display = 'block';
                         }
                         else if (page === 'customers') {
                             showCustomerListPanel();
