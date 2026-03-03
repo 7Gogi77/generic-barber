@@ -1136,45 +1136,129 @@
             console.log('✅ Theme colors applied from config');
         }
         
+        // ===== GET BOOKING SETTINGS (from poslovni-panel localStorage) =====
+        function getBookingSettings() {
+            try {
+                const raw = localStorage.getItem('bookingSettings');
+                if (raw) {
+                    const s = JSON.parse(raw);
+                    if (s && s.workingHoursByDay) return s;
+                }
+            } catch(e) {}
+            return null;
+        }
+
+        // ===== FORMAT DATE AS dd/mm/yyyy =====
+        function formatDateSlash(dateOrStr) {
+            // Accepts a Date object or a 'yyyy-mm-dd' string
+            if (dateOrStr instanceof Date) {
+                const d = dateOrStr;
+                return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
+            }
+            const parts = String(dateOrStr).split('-');
+            if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
+            return dateOrStr;
+        }
+
         // ===== UPDATE BUSINESS HOURS DISPLAY =====
         function updateBusinessHoursDisplay() {
+            const bs = getBookingSettings();
+            const dayNames = ['Ned', 'Pon', 'Tor', 'Sre', 'Čet', 'Pet', 'Sob'];
+
+            const hoursText = document.getElementById('businessHoursText');
+            const workingDaysInfo = document.getElementById('workingDaysInfo');
+
+            if (bs && bs.workingHoursByDay) {
+                // Find representative hours (use Monday or first open day)
+                let repHours = null;
+                for (let i = 1; i <= 6; i++) {
+                    const d = bs.workingHoursByDay[i];
+                    if (d && d.enabled) { repHours = d; break; }
+                }
+                if (!repHours && bs.workingHoursByDay[0] && bs.workingHoursByDay[0].enabled) {
+                    repHours = bs.workingHoursByDay[0];
+                }
+                if (hoursText && repHours) {
+                    hoursText.textContent = `${repHours.start} - ${repHours.end}`;
+                }
+                if (workingDaysInfo) {
+                    const openDays = [];
+                    for (let i = 0; i < 7; i++) {
+                        const d = bs.workingHoursByDay[i];
+                        if (d && d.enabled) openDays.push(dayNames[i]);
+                    }
+                    workingDaysInfo.textContent = openDays.join(', ') || 'Ni nastavljeno';
+                }
+                return;
+            }
+
+            // Fallback to SITE_CONFIG
             const businessHours = window.SITE_CONFIG?.booking?.businessHours || { start: 9, end: 19 };
             const workingDays = window.SITE_CONFIG?.booking?.workingDays || {};
             const daysClosed = window.SITE_CONFIG?.booking?.daysClosed || [0];
-            const hoursPerDay = window.SITE_CONFIG?.booking?.hours || {};
-            
-            const hoursText = document.getElementById('businessHoursText');
+
             if (hoursText) {
                 hoursText.textContent = `${businessHours.start}:00 - ${businessHours.end}:00`;
             }
-            
-            // Update working days info if element exists
-            const workingDaysInfo = document.getElementById('workingDaysInfo');
             if (workingDaysInfo) {
-                const dayNames = ['Ned', 'Pon', 'Tor', 'Sre', 'Čet', 'Pet', 'Sob'];
                 const openDays = [];
                 for (let i = 0; i < 7; i++) {
-                    if (workingDays[i] || !daysClosed.includes(i)) {
-                        openDays.push(dayNames[i]);
-                    }
+                    if (workingDays[i] || !daysClosed.includes(i)) openDays.push(dayNames[i]);
                 }
                 workingDaysInfo.textContent = openDays.join(', ') || 'Pon - Pet';
             }
         }
         
         // ===== GET BUSINESS HOURS FOR SPECIFIC DAY =====
-        function getBusinessHoursForDay(dayOfWeek) {
+        // date param is optional - enables dateOverride and seasonal schedule support
+        function getBusinessHoursForDay(dayOfWeek, date) {
+            const bs = getBookingSettings();
+            if (bs) {
+                // 1. Date override has highest priority
+                if (date && bs.dateOverrides && bs.dateOverrides.length > 0) {
+                    const dateStr = getLocalDateStr(date);
+                    const ov = bs.dateOverrides.find(o => o.date === dateStr);
+                    if (ov && ov.start && ov.end) {
+                        const [sh, sm] = ov.start.split(':').map(Number);
+                        const [eh, em] = ov.end.split(':').map(Number);
+                        return { start: sh + sm/60, end: eh + em/60, startStr: ov.start, endStr: ov.end };
+                    }
+                }
+                // 2. Seasonal schedule
+                if (date && bs.seasonalSchedule && bs.seasonalSchedule.enabled) {
+                    const ss = bs.seasonalSchedule;
+                    const m = date.getMonth() + 1;
+                    const d2 = date.getDate();
+                    if (ss.summerStart && ss.summerEnd) {
+                        const [ssM, ssD] = ss.summerStart.split('-').map(Number);
+                        const [seM, seD] = ss.summerEnd.split('-').map(Number);
+                        const inSeason = (m > ssM || (m === ssM && d2 >= ssD)) &&
+                                         (m < seM || (m === seM && d2 <= seD));
+                        if (inSeason && ss.summerHoursStart && ss.summerHoursEnd) {
+                            const [sh, sm2] = ss.summerHoursStart.split(':').map(Number);
+                            const [eh, em] = ss.summerHoursEnd.split(':').map(Number);
+                            return { start: sh + sm2/60, end: eh + em/60, startStr: ss.summerHoursStart, endStr: ss.summerHoursEnd };
+                        }
+                    }
+                }
+                // 3. Per-day working hours
+                const dayData = bs.workingHoursByDay[dayOfWeek];
+                if (dayData !== undefined) {
+                    if (!dayData.enabled) return null; // day is closed
+                    const [sh, sm] = dayData.start.split(':').map(Number);
+                    const [eh, em] = dayData.end.split(':').map(Number);
+                    return { start: sh + sm/60, end: eh + em/60, startStr: dayData.start, endStr: dayData.end };
+                }
+            }
+            // Fallback to SITE_CONFIG
             const defaultHours = window.SITE_CONFIG?.booking?.businessHours || { start: 9, end: 19 };
             const hoursPerDay = window.SITE_CONFIG?.booking?.hours || {};
-            
-            // Check if there are custom hours for this day
             if (hoursPerDay[dayOfWeek]) {
                 return {
                     start: hoursPerDay[dayOfWeek].start ?? defaultHours.start,
                     end: hoursPerDay[dayOfWeek].end ?? defaultHours.end
                 };
             }
-            
             return defaultHours;
         }
 
@@ -1401,15 +1485,32 @@
         // ===== CHECK IF DATE IS CLOSED =====
         function isDateClosed(date) {
             const dayOfWeek = date.getDay(); // 0 = Sunday
+            const bs = getBookingSettings();
+
+            if (bs) {
+                const dateStr = getLocalDateStr(date);
+
+                // Check dateExceptions (public holidays / forced closed days)
+                if (bs.dateExceptions && bs.dateExceptions.length > 0) {
+                    if (bs.dateExceptions.some(ex => ex.date === dateStr)) return true;
+                }
+
+                // Check dateOverrides (a specific date with custom hours → open)
+                if (bs.dateOverrides && bs.dateOverrides.length > 0) {
+                    if (bs.dateOverrides.some(ov => ov.date === dateStr)) return false;
+                }
+
+                // Check workingHoursByDay per-day enabled flag
+                const dayData = bs.workingHoursByDay[dayOfWeek];
+                if (dayData !== undefined) return !dayData.enabled;
+
+                return false; // no data → assume open
+            }
+
+            // Fallback to SITE_CONFIG
             const workingDays = window.SITE_CONFIG?.booking?.workingDays || {};
             const daysClosed = window.SITE_CONFIG?.booking?.daysClosed || [0];
-            
-            // If workingDays is defined, use it (day is closed if NOT in workingDays)
-            if (Object.keys(workingDays).length > 0) {
-                return !workingDays[dayOfWeek];
-            }
-            
-            // Fallback to daysClosed array
+            if (Object.keys(workingDays).length > 0) return !workingDays[dayOfWeek];
             return daysClosed.includes(dayOfWeek);
         }
 
@@ -1420,10 +1521,21 @@
         }
 
         function getBookingRules() {
+            const bs = getBookingSettings();
             const bookingCfg = window.SITE_CONFIG?.booking || {};
+            if (bs) {
+                return {
+                    allowMultiDayAppointments: !!bs.allowMultiDayAppointments,
+                    maxAppointmentDays: Math.max(1, parseInt(bs.maxAppointmentDays, 10) || 4),
+                    bufferBefore: parseInt(bs.bufferBefore, 10) || 0,
+                    bufferAfter: parseInt(bs.bufferAfter, 10) || 0
+                };
+            }
             return {
                 allowMultiDayAppointments: !!bookingCfg.allowMultiDayAppointments,
-                maxAppointmentDays: Math.max(1, parseInt(bookingCfg.maxAppointmentDays, 10) || 4)
+                maxAppointmentDays: Math.max(1, parseInt(bookingCfg.maxAppointmentDays, 10) || 4),
+                bufferBefore: 0,
+                bufferAfter: 0
             };
         }
 
@@ -1441,29 +1553,43 @@
 
             while (remaining > 0) {
                 const dayStart = new Date(cursor);
+                dayStart.setHours(0, 0, 0, 0);
                 const dayOfWeek = dayStart.getDay();
-                const dayHours = getBusinessHoursForDay(dayOfWeek);
+                const dayHours = getBusinessHoursForDay(dayOfWeek, dayStart);
 
-                const openAt = new Date(dayStart);
-                openAt.setHours(dayHours.start, 0, 0, 0);
-
-                const closeAt = new Date(dayStart);
-                closeAt.setHours(dayHours.end, 0, 0, 0);
-
-                let effectiveStart = new Date(cursor);
-                if (effectiveStart < openAt) effectiveStart = new Date(openAt);
-
-                const isClosed = isDateClosed(dayStart);
-                const hasNoWorkingWindow = closeAt <= openAt;
-
-                if (isClosed || hasNoWorkingWindow || effectiveStart >= closeAt) {
+                // Day is closed (null hours or isDateClosed)
+                if (!dayHours || isDateClosed(dayStart)) {
                     const nextDay = new Date(dayStart);
                     nextDay.setDate(nextDay.getDate() + 1);
                     nextDay.setHours(0, 0, 0, 0);
-
                     visitedDays.add(toLocalDateKey(nextDay));
-                    if (visitedDays.size > rules.maxAppointmentDays) return null;
+                    if (visitedDays.size > rules.maxAppointmentDays + 1) return null;
+                    cursor = nextDay;
+                    continue;
+                }
 
+                const openAt = new Date(dayStart);
+                const openHour = Math.floor(dayHours.start);
+                const openMin = Math.round((dayHours.start - openHour) * 60);
+                openAt.setHours(openHour, openMin, 0, 0);
+
+                const closeAt = new Date(dayStart);
+                const closeHour = Math.floor(dayHours.end);
+                const closeMin = Math.round((dayHours.end - closeHour) * 60);
+                closeAt.setHours(closeHour, closeMin, 0, 0);
+
+                // effectiveStart is set from cursor (slot start) but at least openAt
+                let effectiveStart = new Date(cursor);
+                if (effectiveStart < openAt) effectiveStart = new Date(openAt);
+
+                const hasNoWorkingWindow = closeAt <= openAt;
+
+                if (hasNoWorkingWindow || effectiveStart >= closeAt) {
+                    const nextDay = new Date(dayStart);
+                    nextDay.setDate(nextDay.getDate() + 1);
+                    nextDay.setHours(0, 0, 0, 0);
+                    visitedDays.add(toLocalDateKey(nextDay));
+                    if (visitedDays.size > rules.maxAppointmentDays + 1) return null;
                     cursor = nextDay;
                     continue;
                 }
@@ -1484,11 +1610,11 @@
                 const nextDay = new Date(dayStart);
                 nextDay.setDate(nextDay.getDate() + 1);
                 nextDay.setHours(0, 0, 0, 0);
-
                 visitedDays.add(toLocalDateKey(nextDay));
-                if (visitedDays.size > rules.maxAppointmentDays) return null;
+                if (visitedDays.size > rules.maxAppointmentDays + 1) return null;
 
                 if (!rules.allowMultiDayAppointments) return null;
+                // Next day: cursor starts from midnight (will be clamped to openAt)
                 cursor = nextDay;
             }
 
@@ -1502,8 +1628,14 @@
             const dayOfWeek = date.getDay();
             const rules = getBookingRules();
             
-            // Get business hours for this specific day
-            const businessHours = getBusinessHoursForDay(dayOfWeek);
+            // Get business hours for this specific day (with date overrides + seasonal)
+            const businessHours = getBusinessHoursForDay(dayOfWeek, date);
+
+            // Day is closed
+            if (!businessHours || isDateClosed(date)) {
+                return [];
+            }
+
             const slotDuration = window.SITE_CONFIG?.booking?.slotDuration || 15;
             const serviceDuration = BookingState.totalDuration || 30;
             
@@ -1519,42 +1651,60 @@
             
             // Generate all possible slots
             const allSlots = [];
-            for (let hour = businessHours.start; hour <= businessHours.end; hour++) {
-                const maxMin = (hour === businessHours.end) ? 0 : 59;
-                for (let min = 0; min <= maxMin; min += slotDuration) {
-                    const slotStart = new Date(date);
-                    slotStart.setHours(hour, min, 0, 0);
+            // Build openAt/closeAt from business hours (supports fractional hours like 9.5 = 09:30)
+            const openAtBase = new Date(date);
+            const openHour = Math.floor(businessHours.start);
+            const openMin = Math.round((businessHours.start - openHour) * 60);
+            openAtBase.setHours(openHour, openMin, 0, 0);
 
-                    const openAt = new Date(date);
-                    openAt.setHours(businessHours.start, 0, 0, 0);
+            const closeAtBase = new Date(date);
+            const closeHour = Math.floor(businessHours.end);
+            const closeMin = Math.round((businessHours.end - closeHour) * 60);
+            closeAtBase.setHours(closeHour, closeMin, 0, 0);
 
-                    const closeAt = new Date(date);
-                    closeAt.setHours(businessHours.end, 0, 0, 0);
+            for (let t = new Date(openAtBase); t < closeAtBase; t.setMinutes(t.getMinutes() + slotDuration)) {
+                const slotStart = new Date(t);
+                if (slotStart < openAtBase || slotStart >= closeAtBase) continue;
+                
+                const slotEnd = calculateAppointmentEnd(slotStart, serviceDuration);
+                if (!slotEnd) continue;
 
-                    if (slotStart < openAt || slotStart >= closeAt) continue;
-                    
-                    const slotEnd = calculateAppointmentEnd(slotStart, serviceDuration);
-                    if (!slotEnd) continue;
-
-                    // In single-day mode, keep strict same-day behavior
-                    if (!rules.allowMultiDayAppointments && getLocalDateStr(slotEnd) !== dateStr) continue;
-                    
-                    allSlots.push({
-                        start: slotStart,
-                        end: slotEnd,
-                        timeStr: `${String(hour).padStart(2, '0')}:${String(min).padStart(2, '0')}`
-                    });
-                }
+                // In single-day mode, keep strict same-day behavior
+                if (!rules.allowMultiDayAppointments && getLocalDateStr(slotEnd) !== dateStr) continue;
+                
+                allSlots.push({
+                    start: slotStart,
+                    end: slotEnd,
+                    timeStr: `${String(slotStart.getHours()).padStart(2, '0')}:${String(slotStart.getMinutes()).padStart(2, '0')}`
+                });
             }
             
             console.log('📅 Generated', allSlots.length, 'potential slots, checking against', BookingState.events.length, 'events');
             
             // Filter out slots that conflict with existing events
-            const availableSlots = allSlots.filter(slot => {
+            let availableSlots = allSlots.filter(slot => {
                 return !hasConflict(slot.start, slot.end);
             });
             
             console.log('📅 Available slots after conflict check:', availableSlots.length, '(blocked:', allSlots.length - availableSlots.length, ')');
+
+            // Filter out slots that overlap with auto-break
+            const bs = getBookingSettings();
+            if (bs && bs.autoBreak && bs.autoBreak.enabled && bs.autoBreak.start && bs.autoBreak.end) {
+                const [bsh, bsm] = bs.autoBreak.start.split(':').map(Number);
+                const [beh, bem] = bs.autoBreak.end.split(':').map(Number);
+                availableSlots = availableSlots.filter(slot => {
+                    const slotDate = new Date(slot.start);
+                    slotDate.setHours(0, 0, 0, 0);
+                    const breakStart = new Date(slotDate);
+                    breakStart.setHours(bsh, bsm, 0, 0);
+                    const breakEnd = new Date(slotDate);
+                    breakEnd.setHours(beh, bem, 0, 0);
+                    // Slot overlaps break if slot.start < breakEnd AND slot.end > breakStart
+                    return !(slot.start < breakEnd && slot.end > breakStart);
+                });
+                console.log('📅 After auto-break filter:', availableSlots.length, 'slots');
+            }
             
             return availableSlots;
         }
@@ -1652,21 +1802,24 @@
             // Get available slots
             const slots = getAvailableSlotsForDate(date);
             const dayOfWeek = date.getDay();
-            const businessHours = getBusinessHoursForDay(dayOfWeek);
-            const totalWorkMinutes = (businessHours.end - businessHours.start) * 60;
+            const businessHours = getBusinessHoursForDay(dayOfWeek, date);
+            const totalWorkMinutes = businessHours ? (businessHours.end - businessHours.start) * 60 : 0;
             const serviceDuration = BookingState.totalDuration || 30;
             const bookingRules = getBookingRules();
             
             if (slots.length === 0) {
                 // Check if service is too long for business hours
-                if (!bookingRules.allowMultiDayAppointments && serviceDuration > totalWorkMinutes) {
+                if (businessHours && !bookingRules.allowMultiDayAppointments && serviceDuration > totalWorkMinutes) {
                     const hours = Math.floor(serviceDuration / 60);
                     const mins = serviceDuration % 60;
+                    const hoursLabel = businessHours.startStr
+                        ? `${businessHours.startStr} - ${businessHours.endStr}`
+                        : `${businessHours.start}:00 - ${businessHours.end}:00`;
                     grid.innerHTML = `
                         <div class="no-slots-message" style="grid-column: 1 / -1;">
                             <div class="icon">⏰</div>
                             <p>Izbrane storitve trajajo <strong>${hours}h ${mins}min</strong>, 
-                            kar presega delovni čas (${businessHours.start}:00 - ${businessHours.end}:00).</p>
+                            kar presega delovni čas (${hoursLabel}).</p>
                             <p style="margin-top: 10px; font-size: 13px;">Prosimo, izberite manj storitev ali nas kontaktirajte za posebno rezervacijo.</p>
                         </div>
                     `;
@@ -1686,13 +1839,11 @@
             const svcMins = serviceDuration % 60;
             const durationStr = svcHours > 0 ? `${svcHours}h ${svcMins}min` : `${svcMins} min`;
             
-            // Add duration info header
+            // Add duration info header (no "Večdnevno" text)
             const infoDiv = document.createElement('div');
             infoDiv.className = 'slots-info';
             infoDiv.style.cssText = 'grid-column: 1 / -1; margin-bottom: 12px; padding: 10px; background: rgba(0, 122, 255, 0.1); border-radius: 8px; font-size: 13px; color: var(--ios-blue);';
-            infoDiv.innerHTML = bookingRules.allowMultiDayAppointments
-                ? `<strong>Trajanje:</strong> ${durationStr} • <strong>Večdnevno:</strong> omogočeno (max ${bookingRules.maxAppointmentDays} dni)`
-                : `<strong>Trajanje:</strong> ${durationStr} • <strong>Konec do:</strong> ${businessHours.end}:00`;
+            infoDiv.innerHTML = `<strong>Trajanje:</strong> ${durationStr}`;
             grid.appendChild(infoDiv);
             
             // Render slots with end time tooltip
@@ -1705,9 +1856,10 @@
                 const endMin = slot.end.getMinutes();
                 const endTimeStr = `${String(endHour).padStart(2, '0')}:${String(endMin).padStart(2, '0')}`;
                 const endDateStr = getLocalDateStr(slot.end);
+                // Use dd/mm/yyyy for end date if it spans to a different day
                 const endLabel = (endDateStr === getLocalDateStr(slot.start))
                     ? `→ ${endTimeStr}`
-                    : `→ ${endDateStr} ${endTimeStr}`;
+                    : `→ ${formatDateSlash(endDateStr)} ${endTimeStr}`;
                 
                 btn.innerHTML = `
                     <div class="slot-time">${slot.timeStr}</div>
@@ -1798,8 +1950,7 @@
             // Date
             if (BookingState.selectedDate) {
                 const d = BookingState.selectedDate;
-                document.getElementById('summaryDate').textContent = 
-                    `${d.getDate()}. ${MONTHS_SL[d.getMonth()]} ${d.getFullYear()}`;
+                document.getElementById('summaryDate').textContent = formatDateSlash(d);
             }
             
             // Time
@@ -1816,7 +1967,7 @@
                 const startDateStr = BookingState.selectedDate ? getLocalDateStr(BookingState.selectedDate) : endDateStr;
                 document.getElementById('summaryTime').textContent = 
                     (endDateStr !== startDateStr)
-                        ? `${BookingState.selectedTime.timeStr} - ${endDateStr} ${endStr}`
+                        ? `${BookingState.selectedTime.timeStr} - ${formatDateSlash(endDateStr)} ${endStr}`
                         : `${BookingState.selectedTime.timeStr} - ${endStr}`;
             }
             

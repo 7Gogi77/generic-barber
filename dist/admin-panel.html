@@ -1537,51 +1537,16 @@
                         </div>
                     </div>
                     
-                    <!-- Working Days Selection -->
-                    <div style="margin-bottom: 22px;">
-                        <label class="form-label-admin">Delovni Dnevi:</label>
-                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-top: 12px;">
-                            <label style="display: flex; align-items: center; gap: 10px; font-size: 13px; cursor: pointer; padding: 10px; background: #f8fafb; border-radius: 6px; border: 1.5px solid #ecf0f1; transition: all 0.2s;">
-                                <input type="checkbox" id="dayMonday" class="working-day-checkbox" onchange="updateWorkingDays()" style="cursor: pointer; width: 18px; height: 18px;"> <span style="font-weight: 500;">Ponedeljek</span>
-                            </label>
-                            <label style="display: flex; align-items: center; gap: 10px; font-size: 13px; cursor: pointer; padding: 10px; background: #f8fafb; border-radius: 6px; border: 1.5px solid #ecf0f1; transition: all 0.2s;">
-                                <input type="checkbox" id="dayTuesday" class="working-day-checkbox" onchange="updateWorkingDays()" style="cursor: pointer; width: 18px; height: 18px;"> <span style="font-weight: 500;">Torek</span>
-                            </label>
-                            <label style="display: flex; align-items: center; gap: 10px; font-size: 13px; cursor: pointer; padding: 10px; background: #f8fafb; border-radius: 6px; border: 1.5px solid #ecf0f1; transition: all 0.2s;">
-                                <input type="checkbox" id="dayWednesday" class="working-day-checkbox" onchange="updateWorkingDays()" style="cursor: pointer; width: 18px; height: 18px;"> <span style="font-weight: 500;">Sreda</span>
-                            </label>
-                            <label style="display: flex; align-items: center; gap: 10px; font-size: 13px; cursor: pointer; padding: 10px; background: #f8fafb; border-radius: 6px; border: 1.5px solid #ecf0f1; transition: all 0.2s;">
-                                <input type="checkbox" id="dayThursday" class="working-day-checkbox" onchange="updateWorkingDays()" style="cursor: pointer; width: 18px; height: 18px;"> <span style="font-weight: 500;">Četrtek</span>
-                            </label>
-                            <label style="display: flex; align-items: center; gap: 10px; font-size: 13px; cursor: pointer; padding: 10px; background: #f8fafb; border-radius: 6px; border: 1.5px solid #ecf0f1; transition: all 0.2s;">
-                                <input type="checkbox" id="dayFriday" class="working-day-checkbox" onchange="updateWorkingDays()" style="cursor: pointer; width: 18px; height: 18px;"> <span style="font-weight: 500;">Petek</span>
-                            </label>
-                            <label style="display: flex; align-items: center; gap: 10px; font-size: 13px; cursor: pointer; padding: 10px; background: #f8fafb; border-radius: 6px; border: 1.5px solid #ecf0f1; transition: all 0.2s;">
-                                <input type="checkbox" id="daySaturday" class="working-day-checkbox" onchange="updateWorkingDays()" style="cursor: pointer; width: 18px; height: 18px;"> <span style="font-weight: 500;">Sobota</span>
-                            </label>
-                            <label style="display: flex; align-items: center; gap: 10px; font-size: 13px; cursor: pointer; padding: 10px; background: #f8fafb; border-radius: 6px; border: 1.5px solid #ecf0f1; transition: all 0.2s;">
-                                <input type="checkbox" id="daySunday" class="working-day-checkbox" onchange="updateWorkingDays()" style="cursor: pointer; width: 18px; height: 18px;"> <span style="font-weight: 500;">Nedelja</span>
-                            </label>
-                        </div>
-                    </div>
-
-                    <!-- Business Hours per Day -->
-                    <div style="margin-bottom: 22px;">
-                        <label class="form-label-admin">Delovni Čas po Dnevih:</label>
-                        <div id="workingHoursContainer" class="working-hours-container"></div>
+                    <!-- Working Days & Hours managed in Poslovni Panel -->
+                    <div style="margin-bottom: 22px; padding: 14px; background: rgba(0,122,255,0.07); border-radius: 8px; border-left: 4px solid #007AFF;">
+                        <p style="margin: 0; font-size: 13px; color: #007AFF;">
+                            <i class="bi bi-info-circle"></i>
+                            <strong>Delovni čas in delovni dnevi</strong> se nastavljajo v
+                            <a href="poslovni-panel.3f8a1c.html" style="color:#007AFF;">Poslovnem Panelu → Delovni čas</a>.
+                        </p>
                     </div>
 
                     <!-- Default Business Hours -->
-                    <div class="form-row">
-                        <div class="form-group-admin">
-                            <label class="form-label-admin">Privzeti Začetek Časa (ura)</label>
-                            <input id="businessStart" type="number" min="0" max="23" class="form-input-admin">
-                        </div>
-                        <div class="form-group-admin">
-                            <label class="form-label-admin">Privzeti Konec Časa (ura)</label>
-                            <input id="businessEnd" type="number" min="0" max="23" class="form-input-admin">
-                        </div>
-                    </div>
                     <div class="form-row">
                         <div class="form-group-admin">
                             <label class="form-label-admin">E-pošta Lasnika</label>
@@ -1606,35 +1571,6 @@
                     <div class="section-title"><i class="bi bi-tools"></i> Debug Info</div>
                     <div id="debugOutput" style="font-size: 12px; color: #333; line-height: 1.6; font-family: monospace; white-space: pre-wrap; word-break: break-all; max-height: 300px; overflow-y: auto; background: white; padding: 10px; border-radius: 4px;">
                         Učitavanje...
-                    </div>
-                </div>
-
-                <!-- WORKING HOURS SETUP -->
-                <div class="admin-section">
-                    <div class="section-title">⏰ Obavezni Radni Sati</div>
-                    <p style="font-size: 13px; color: #7f8c8d; margin-bottom: 18px;">Postavi svoje redovne radne sate. Automatski će se puniti kao "Delo" događaj za sve dane.</p>
-                    
-                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
-                        <!-- Start Time -->
-                        <div style="display: flex; flex-direction: column;">
-                            <label style="font-weight: 600; color: #34495e; margin-bottom: 8px; font-size: 13px;">⏰ Početak rada</label>
-                            <input type="time" id="workStartTime" value="09:00" style="padding: 10px; border: 1.5px solid #ecf0f1; border-radius: 6px; font-size: 13px; font-family: inherit;">
-                        </div>
-                        
-                        <!-- End Time -->
-                        <div style="display: flex; flex-direction: column;">
-                            <label style="font-weight: 600; color: #34495e; margin-bottom: 8px; font-size: 13px;">⏰ Kraj rada</label>
-                            <input type="time" id="workEndTime" value="17:00" style="padding: 10px; border: 1.5px solid #ecf0f1; border-radius: 6px; font-size: 13px; font-family: inherit;">
-                        </div>
-                        
-                        <!-- Save Button -->
-                        <div style="display: flex; align-items: flex-end;">
-                            <button onclick="saveWorkingHours()" style="width: 100%; padding: 10px; background: var(--ios-green, #34C759); color: white; border: none; border-radius: var(--ios-radius-sm, 8px); font-weight: 600; cursor: pointer; transition: all 0.3s;"><i class="bi bi-save"></i> Spremi Sate</button>
-                        </div>
-                    </div>
-                    
-                    <div id="workingHoursInfo" style="margin-top: 15px; padding: 12px; background: rgba(52, 199, 89, 0.1); border-radius: var(--ios-radius-sm, 8px); border-left: 4px solid var(--ios-green, #34C759); display: none;">
-                        <p style="margin: 0; color: #2e7d32; font-size: 13px;">✓ Radni sati postavljeni: <strong id="workingHoursDisplay"></strong></p>
                     </div>
                 </div>
 
@@ -2614,6 +2550,13 @@
             const container = document.getElementById('servicesContainer');
             container.innerHTML = '';
             SITE_CONFIG.servicesSection.items.forEach((service, idx) => {
+                // Decompose total minutes into val + unit for the picker
+                const dur = service.duration || 30;
+                let durVal, durUnit;
+                if (dur % 1440 === 0 && dur >= 1440) { durVal = dur / 1440; durUnit = 'dni'; }
+                else if (dur % 60 === 0 && dur >= 60) { durVal = dur / 60; durUnit = 'ure'; }
+                else { durVal = dur; durUnit = 'min'; }
+
                 container.innerHTML += `
                     <div class="service-item">
                         <div class="form-row">
@@ -2621,7 +2564,17 @@
                             <input type="text" class="form-input-admin service-price-${idx}" value="${service.price}" placeholder="Cena">
                         </div>
                         <div class="form-row">
-                            <input type="number" class="form-input-admin service-duration-${idx}" value="${service.duration || 0}" placeholder="Trajanje (minut)" min="1" max="180">
+                            <div class="form-group-admin">
+                                <label class="form-label-admin">Trajanje</label>
+                                <div style="display:flex;gap:6px;align-items:center;">
+                                    <input type="number" class="form-input-admin service-dur-val-${idx}" value="${durVal}" min="1" style="width:75px;">
+                                    <select class="form-input-admin service-dur-unit-${idx}" style="width:85px;">
+                                        <option value="min" ${durUnit==='min'?'selected':''}>min</option>
+                                        <option value="ure" ${durUnit==='ure'?'selected':''}>ure</option>
+                                        <option value="dni" ${durUnit==='dni'?'selected':''}>dni</option>
+                                    </select>
+                                </div>
+                            </div>
                         </div>
                         <div class="form-row full">
                             <input type="text" class="form-input-admin service-desc-${idx}" value="${service.desc}" placeholder="Opis">
@@ -2636,12 +2589,18 @@
             SITE_CONFIG.servicesSection.items.forEach((service, idx) => {
                 const nameEl = document.querySelector('.service-name-' + idx);
                 const priceEl = document.querySelector('.service-price-' + idx);
-                const durationEl = document.querySelector('.service-duration-' + idx);
+                const durValEl = document.querySelector('.service-dur-val-' + idx);
+                const durUnitEl = document.querySelector('.service-dur-unit-' + idx);
                 const descEl = document.querySelector('.service-desc-' + idx);
                 
                 if (nameEl) service.name = nameEl.value;
                 if (priceEl) service.price = priceEl.value;
-                if (durationEl) service.duration = parseInt(durationEl.value) || 0;
+                if (durValEl && durUnitEl) {
+                    const durVal = parseInt(durValEl.value) || 1;
+                    const durUnit = durUnitEl.value || 'min';
+                    const multiplier = durUnit === 'dni' ? 1440 : durUnit === 'ure' ? 60 : 1;
+                    service.duration = durVal * multiplier;
+                }
                 if (descEl) service.desc = descEl.value;
             });
             saveConfig();
