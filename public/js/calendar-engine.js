@@ -1978,7 +1978,7 @@ const CalendarEngine = {
             try { await loadAppointmentsToCalendarNow(); } catch (e) {}
           } else if (calendar) {
             // Fallback: add the single formatted event
-            try { calendar.addEvent(formattedEvent)'); } catch (e) {}
+            try { calendar.addEvent(formattedEvent); } catch (e) {}
           }
         } catch (err) {}
       }

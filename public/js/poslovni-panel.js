@@ -3674,7 +3674,7 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                     map[k] = map[k] || [];
                     map[k].push(e);
                 });
-                Object.entries(map).forEach(([k, arr]) => { if (arr.length > 1)  });
+                Object.entries(map).forEach(([k, arr]) => { if (arr.length > 1) {} });
             },
             // Developer utilities: force layout recalculation and dump diagnostics
             fixLayout: () => {
