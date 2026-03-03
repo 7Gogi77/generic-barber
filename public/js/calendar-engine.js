@@ -637,13 +637,6 @@ const CalendarEngine = {
 
         // Event handling - NOTE: These are overridden by poslovni-panel.html
         // Only used in admin-panel.html - check if modal exists before calling
-        selectStart: (selectInfo) => {
-          // Prevent FullCalendar's default selection behavior during our custom cell drag
-          if (window._isDraggingCustomCells) {
-            return false;
-          }
-        },
-
         select: (selectInfo) => {
           if (window._skipNextFcSelect) {
             window._skipNextFcSelect = false;
@@ -691,26 +684,11 @@ const CalendarEngine = {
           }
 
           // Otherwise, if we're in the business panel, open the Add Event modal
-          // and prefill with the selected date range. FullCalendar's select end
-          // is exclusive for all-day selections, so subtract one day for display.
+          // and prefill with the selected date range. startDate/endDate already
+          // have FullCalendar's exclusive-end adjusted (shifted -1 day above).
           const addModal = document.getElementById('addEventModal');
           if (addModal && typeof window.openAddEventModal === 'function') {
-            try {
-              const startStr = selectInfo.startStr ? selectInfo.startStr.split('T')[0] : null;
-              let endStr = selectInfo.endStr ? selectInfo.endStr.split('T')[0] : startStr;
-
-              // If endStr is present and selection was all-day, FullCalendar gives exclusive end — subtract one day
-              if (selectInfo.endStr) {
-                endStr = shiftDateString(selectInfo.endStr, -1);
-              }
-
-              // openAddEventModalWithTab accepts (startDate, endDate)
-              window.openAddEventModal(startStr, endStr);
-            } catch (err) {
-              // Fallback: open with start only
-              window.openAddEventModal(selectInfo.startStr ? selectInfo.startStr.split('T')[0] : null);
-            }
-          } else {
+            window.openAddEventModal(startDate, endDate);
           }
         },
         
