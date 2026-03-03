@@ -2195,7 +2195,21 @@
 }
 
 /* ===== MOBILE CALENDAR HEIGHT + HIGHLIGHT FIX ===== */
+#calendarMobileHeader { display: none; }
+
 @media (max-width: 768px) {
+    /* Calendar mobile header bar */
+    #calendarMobileHeader {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 6px 4px 2px 4px;
+    }
+    .calendar-mobile-title {
+        font-size: 17px;
+        font-weight: 600;
+        color: var(--ios-text-primary, #1c1c1e);
+    }
     /* Let layout scroll naturally so month view shows all rows */
     .main-content {
         height: auto !important;
