@@ -1387,6 +1387,9 @@ const CalendarEngine = {
       
       // Detect drag-to-select: only if pointerdown is on empty cell/day-top, NOT on an event
       document.addEventListener('pointerdown', (e) => {
+        // Disable entire drag-select on mobile — FAB (+) is the only add trigger
+        if (_isMobile) return;
+
         isDraggingCells = false;
         window._isDraggingCustomCells = false;
         
@@ -1475,6 +1478,9 @@ const CalendarEngine = {
       
       // End drag selection
       document.addEventListener('pointerup', (e) => {
+        // Disable entire drag-select on mobile
+        if (_isMobile) return;
+
         const hadCustomSelection = !!(cellSelectionStartDate && cellSelectionEndDate);
         const selectionStart = cellSelectionStartDate;
         const selectionEnd = cellSelectionEndDate || cellSelectionStartDate;
