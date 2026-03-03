@@ -926,8 +926,6 @@ const CalendarEngine = {
             }
           } catch (err) { console.warn('eventsSet hook failed', err); }
         },
-        
-        },
 
         eventDrop: async (dropInfo) => {
           console.log('📅 Event dropped:', dropInfo.event.title, 'ID:', dropInfo.event.id);
