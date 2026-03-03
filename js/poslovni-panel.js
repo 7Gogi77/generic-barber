@@ -3684,13 +3684,27 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                             document.querySelectorAll('[data-date]').forEach(c => { c.style.backgroundColor = ''; });
                         }
                     }, { passive: true });
+                    // On finger-lift: if it was a scroll, stamp a timestamp so that
+                    // dateClick fired by FC on the *next* tap is also blocked.
+                    // (touchstart resets _calTouchScrolled before dateClick fires, so
+                    //  we need a time-based guard that survives the next touchstart.)
+                    document.addEventListener('touchend', () => {
+                        if (window._calTouchScrolled) {
+                            window._scrollEndedAt = Date.now();
+                            try { calendar.unselect(); } catch(e) {}
+                            document.querySelectorAll('[data-date]').forEach(c => { c.style.backgroundColor = ''; });
+                        }
+                    }, { passive: true });
                 }
 
                 // Handle single day cell clicks to open add modal (but NOT more-link clicks)
                 calendar.on('dateClick', (info) => {
                     
-                    // Skip if the user was scrolling (finger moved >8px before lifting)
+                    // Block if the touch that ended most recently was a scroll gesture.
+                    // We check both the live flag AND a 500 ms cooldown timestamp —
+                    // the flag alone gets wiped by the *next* touchstart before FC fires dateClick.
                     if (window._calTouchScrolled) { window._calTouchScrolled = false; return; }
+                    if (window._scrollEndedAt && Date.now() - window._scrollEndedAt < 500) { return; }
 
                     // Skip if more-link was just clicked (flag set by moreLinkClick)
                     if (window._moreLinkJustClicked) {
