@@ -483,11 +483,13 @@ const CalendarEngine = {
       // Calculate responsive height based on screen size - use a pixel height so timeGrid has space
       const topOffset = 140; // header + toolbars + margins
       const viewportH = window.innerHeight || document.documentElement.clientHeight || 800;
-      const calcHeight = Math.max(520, viewportH - topOffset);
+      const _isMobileHeight = window.innerWidth <= 768;
+      // On mobile use 'auto' so the month grid can grow to show all rows without clipping
+      const calcHeight = _isMobileHeight ? 'auto' : Math.max(520, viewportH - topOffset);
 
       // Store on window object so it can be accessed in other functions
       window._calendarHeight = calcHeight;
-      window._minCalendarHeight = 520;
+      window._minCalendarHeight = _isMobileHeight ? 400 : 520;
 
 
       // Set container dimensions - give it a fixed height in px so FullCalendar can render timeGrid
@@ -499,7 +501,7 @@ const CalendarEngine = {
       containerElement.style.maxWidth = '100%';
       containerElement.style.minWidth = '100%';
       containerElement.style.minHeight = `${window._minCalendarHeight}px`;
-      containerElement.style.height = `${calcHeight}px`;
+      containerElement.style.height = _isMobileHeight ? 'auto' : `${calcHeight}px`;
       containerElement.style.overflow = 'visible';
 
 
@@ -606,7 +608,7 @@ const CalendarEngine = {
         },
         // Initial vertical scroll position in timeGrid views
         scrollTime: initialScrollTime,
-        height: calcHeight,
+        height: _isMobile ? 'auto' : calcHeight,
         // Remove contentHeight: 'auto' to enable scrolling in timegrid views
 
         // Load events - always fetch fresh from storage to avoid duplicates
@@ -641,12 +643,22 @@ const CalendarEngine = {
         selectOverlap: true,
         editable: true,
         eventDurationEditable: true,
+        // Require a long deliberate press before triggering a selection (prevents accidental
+        // selections when scrolling on touch devices)
+        longPressDelay: 1500,
+        eventLongPressDelay: 300,
+        selectLongPressDelay: 1500,
 
         // Event handling - NOTE: These are overridden by poslovni-panel.html
         // Only used in admin-panel.html - check if modal exists before calling
         select: (selectInfo) => {
           if (window._skipNextFcSelect) {
             window._skipNextFcSelect = false;
+            return false;
+          }
+          // Block selections triggered by a scroll gesture (touch moved before lifting)
+          if (window._calTouchScrolled) {
+            window._calTouchScrolled = false;
             return false;
           }
           // Prevent FullCalendar's select handler if we're doing custom cell dragging

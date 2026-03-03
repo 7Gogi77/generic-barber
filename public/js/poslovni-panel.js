@@ -3663,11 +3663,30 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                 // Let FullCalendar's native handlers work - they handle more-link and dateClick properly
                 calendar.setOption('navLinks', false);
 
+                // Track touch scroll so we don't open the add-modal when user was scrolling
+                // Attach to document so we catch scrolls that start outside the calendar
+                {
+                    let _touchStartY = 0;
+                    let _touchStartX = 0;
+                    document.addEventListener('touchstart', (e) => {
+                        _touchStartY = e.touches[0].clientY;
+                        _touchStartX = e.touches[0].clientX;
+                        window._calTouchScrolled = false;
+                    }, { passive: true });
+                    document.addEventListener('touchmove', (e) => {
+                        const dy = Math.abs(e.touches[0].clientY - _touchStartY);
+                        const dx = Math.abs(e.touches[0].clientX - _touchStartX);
+                        if (dy > 8 || dx > 8) window._calTouchScrolled = true;
+                    }, { passive: true });
+                }
+
                 // Handle single day cell clicks to open add modal (but NOT more-link clicks)
                 calendar.on('dateClick', (info) => {
                     
                     // On mobile the FAB (+) is the only way to add events
+                    // Also skip if the user was scrolling (finger moved before lifting)
                     if (window.innerWidth <= 768) return;
+                    if (window._calTouchScrolled) { window._calTouchScrolled = false; return; }
 
                     // Skip if more-link was just clicked (flag set by moreLinkClick)
                     if (window._moreLinkJustClicked) {
