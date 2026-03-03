@@ -183,6 +183,7 @@
                 <button class="bsp-tab" data-tab="smart"><i class="bi bi-stars"></i> Pametne funkcije</button>
                 <button class="bsp-tab" data-tab="services"><i class="bi bi-bag"></i> Storitve</button>
                 <button class="bsp-tab" data-tab="team"><i class="bi bi-people-fill"></i> Ekipa</button>
+                <button class="bsp-tab" data-tab="sms"><i class="bi bi-chat-dots"></i> SMS</button>
             </div>
 
             <div class="bsp-body" style="padding:16px 24px 60px;">
@@ -562,6 +563,45 @@
                         <div id="bspTeamList"></div>
                         <button class="bsp-add-btn" onclick="bspAddTeamMember()"><i class="bi bi-person-plus"></i> Dodaj člana</button>
                     </div>
+                </div>
+
+                <!-- ══════════ TAB 9: SMS ══════════ -->
+                <div class="bsp-tab-panel" id="bspPanel-sms">
+
+                    <div class="bsp-card">
+                        <div class="bsp-card-header">
+                            <div class="bsp-card-icon" style="background:#34c75920;"><i class="bi bi-check-circle" style="color:#34c759;font-size:15px;"></i></div>
+                            <div><div class="bsp-card-title">Potrditveni SMS</div><div class="bsp-card-subtitle">Sporočilo, ki ga stranka prejme ob naročilu</div></div>
+                        </div>
+                        <label class="bsp-row">
+                            <div><div class="bsp-row-label">Pošlji potrditveni SMS</div><div class="bsp-row-hint">Samodejno ob vsaki novi rezervaciji z veljavno telefonsko številko</div></div>
+                            <input type="checkbox" id="smsConfirmEnabled" class="bsp-toggle" checked>
+                        </label>
+                        <div class="bsp-row" style="align-items:flex-start;flex-direction:column;gap:6px;padding-top:10px;">
+                            <div class="bsp-row-label">Besedilo SMS</div>
+                            <div class="bsp-row-hint" style="margin-bottom:4px;">Spremenljivke: <b>{ime}</b> ime stranke &nbsp;·&nbsp; <b>{posel}</b> naziv podjetja &nbsp;·&nbsp; <b>{datum}</b> datum &nbsp;·&nbsp; <b>{cas}</b> ura &nbsp;·&nbsp; <b>{link}</b> link za upravljanje</div>
+                            <textarea id="smsConfirmTemplate" class="bsp-input" style="width:100%;min-height:80px;font-size:13px;padding:8px;resize:vertical;box-sizing:border-box;"></textarea>
+                            <div style="font-size:12px;color:#8e8e93;">Znakov: <span id="smsConfirmCharCount">0</span></div>
+                        </div>
+                    </div>
+
+                    <div class="bsp-card">
+                        <div class="bsp-card-header">
+                            <div class="bsp-card-icon" style="background:#ff950020;"><i class="bi bi-bell" style="color:#ff9500;font-size:15px;"></i></div>
+                            <div><div class="bsp-card-title">Opomnik SMS (24h pred terminom)</div><div class="bsp-card-subtitle">Stranka prejme opozorilno sporočilo dan pred terminom</div></div>
+                        </div>
+                        <label class="bsp-row">
+                            <div><div class="bsp-row-label">Pošlji opomnik SMS</div><div class="bsp-row-hint">Ob naslednjem odprtju admin strani se pošljejo vsi opomniki, ki so dozoreli</div></div>
+                            <input type="checkbox" id="smsReminderEnabled" class="bsp-toggle">
+                        </label>
+                        <div class="bsp-row" style="align-items:flex-start;flex-direction:column;gap:6px;padding-top:10px;">
+                            <div class="bsp-row-label">Besedilo opomnika</div>
+                            <div class="bsp-row-hint" style="margin-bottom:4px;">Spremenljivke: <b>{ime}</b> ime stranke &nbsp;·&nbsp; <b>{posel}</b> naziv podjetja &nbsp;·&nbsp; <b>{datum}</b> datum &nbsp;·&nbsp; <b>{cas}</b> ura</div>
+                            <textarea id="smsReminderTemplate" class="bsp-input" style="width:100%;min-height:80px;font-size:13px;padding:8px;resize:vertical;box-sizing:border-box;"></textarea>
+                            <div style="font-size:12px;color:#8e8e93;">Znakov: <span id="smsReminderCharCount">0</span></div>
+                        </div>
+                    </div>
+
                 </div>
 
             </div><!-- end bsp-body -->

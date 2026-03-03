@@ -793,7 +793,13 @@
                 fragmentGapMinutes: 30,
                 optimizeOccupancy: false,
                 groupServices: false,
-                locations: []
+                locations: [],
+                smsTemplates: {
+                    confirmationEnabled: true,
+                    confirmationMessage: 'Hvala za vaše naročilo na termin pri {posel}! Upravljanje: {link}',
+                    reminderEnabled: false,
+                    reminderMessage: '{ime}, jutri ob {cas} imate termin pri {posel}. Se vidimo!'
+                }
             };
             let raw = {};
             try { raw = JSON.parse(localStorage.getItem('bookingSettings') || '{}'); } catch (_) {}
@@ -803,6 +809,7 @@
             s.seasonalSchedule  = Object.assign({}, def.seasonalSchedule,  raw.seasonalSchedule  || {});
             s.peakHourPricing   = Object.assign({}, def.peakHourPricing,   raw.peakHourPricing   || {});
             s.weekendPricing    = Object.assign({}, def.weekendPricing,     raw.weekendPricing    || {});
+            s.smsTemplates      = Object.assign({}, def.smsTemplates,          raw.smsTemplates       || {});
             // per-day: merge with DAY_DEFAULTS then saved
             const savedDays = raw.workingHoursByDay || {};
             const legacyDays = (() => { try { return JSON.parse(localStorage.getItem('workingHoursByDay') || '{}'); } catch(_){return {};} })();
@@ -918,6 +925,25 @@
             bspRenderLocations();
             bspRenderServices();
             bspRenderTeam();
+
+            // ── Tab 9: SMS ────────────────────────────────────────
+            const smsT = s.smsTemplates || {};
+            setChk('smsConfirmEnabled', smsT.confirmationEnabled !== false);
+            const smsConfEl = document.getElementById('smsConfirmTemplate');
+            if (smsConfEl) {
+                smsConfEl.value = smsT.confirmationMessage || 'Hvala za vaše naročilo na termin pri {posel}! Upravljanje: {link}';
+                const smsConfCnt = document.getElementById('smsConfirmCharCount');
+                if (smsConfCnt) smsConfCnt.textContent = smsConfEl.value.length;
+                smsConfEl.oninput = () => { if (smsConfCnt) smsConfCnt.textContent = smsConfEl.value.length; };
+            }
+            setChk('smsReminderEnabled', !!smsT.reminderEnabled);
+            const smsRemEl = document.getElementById('smsReminderTemplate');
+            if (smsRemEl) {
+                smsRemEl.value = smsT.reminderMessage || '{ime}, jutri ob {cas} imate termin pri {posel}. Se vidimo!';
+                const smsRemCnt = document.getElementById('smsReminderCharCount');
+                if (smsRemCnt) smsRemCnt.textContent = smsRemEl.value.length;
+                smsRemEl.oninput = () => { if (smsRemCnt) smsRemCnt.textContent = smsRemEl.value.length; };
+            }
         }
 
         // ── Dynamic list renderers ────────────────────────────────────────────────
@@ -1267,6 +1293,14 @@
             s.groupServices         = getC('groupServices');
             // locations already in _bspData
 
+            // ── Tab 9: SMS ────────────────────────────────────────
+            s.smsTemplates = {
+                confirmationEnabled: getC('smsConfirmEnabled'),
+                confirmationMessage: (document.getElementById('smsConfirmTemplate')?.value || '').trim() || 'Hvala za vaše naročilo na termin pri {posel}! Upravljanje: {link}',
+                reminderEnabled: getC('smsReminderEnabled'),
+                reminderMessage: (document.getElementById('smsReminderTemplate')?.value || '').trim() || '{ime}, jutri ob {cas} imate termin pri {posel}. Se vidimo!'
+            };
+
             // ── Persist ───────────────────────────────────────────
             try { localStorage.setItem('bookingSettings', JSON.stringify(s)); } catch (e) {}
 
@@ -1356,6 +1390,32 @@
                     saveBusinessSettings();
                 }
             });
+        });
+
+        // On page load: send any pending 24h SMS reminders that have come due
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const _smsS = loadBookingSettings();
+                if (!_smsS.smsTemplates?.reminderEnabled) return;
+                let _rems = [];
+                try { _rems = JSON.parse(localStorage.getItem('sms_reminders') || '[]'); } catch (_) {}
+                const _now = new Date();
+                let _changed = false;
+                for (const _r of _rems) {
+                    if (!_r.sent && new Date(_r.reminderTime) <= _now) {
+                        if (window.SMSHandler?.sendAppointmentReminder) {
+                            await window.SMSHandler.sendAppointmentReminder({
+                                phoneNumber: _r.phoneNumber,
+                                start:       _r.appointmentStart,
+                                customer:    _r.customer
+                            });
+                        }
+                        _r.sent = true;
+                        _changed = true;
+                    }
+                }
+                if (_changed) localStorage.setItem('sms_reminders', JSON.stringify(_rems));
+            } catch (_) {}
         });
 
         async function loadManualEarnings() {
@@ -2744,6 +2804,29 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                         if (window.SMSHandler && typeof window.SMSHandler.sendAppointmentConfirmation === 'function') {
                             window.SMSHandler.sendAppointmentConfirmation(appointmentForSMS);
                         }
+                        // Schedule 24h reminder in localStorage if enabled
+                        try {
+                            const _smsS = loadBookingSettings();
+                            if (_smsS.smsTemplates?.reminderEnabled) {
+                                const _apptStart  = new Date(eventPayload.start);
+                                const _reminderAt = new Date(_apptStart.getTime() - 24 * 60 * 60 * 1000);
+                                if (_reminderAt > new Date()) {
+                                    let _rems = [];
+                                    try { _rems = JSON.parse(localStorage.getItem('sms_reminders') || '[]'); } catch (_) {}
+                                    if (!_rems.find(r => r.id === eventPayload.id)) {
+                                        _rems.push({
+                                            id:               eventPayload.id,
+                                            phoneNumber:      eventPayload.extendedProps.phone,
+                                            appointmentStart: eventPayload.start,
+                                            customer:         eventPayload.extendedProps.customer,
+                                            reminderTime:     _reminderAt.toISOString(),
+                                            sent:             false
+                                        });
+                                        localStorage.setItem('sms_reminders', JSON.stringify(_rems));
+                                    }
+                                }
+                            }
+                        } catch (_smsErr) {}
                     } catch (smsError) {}
                 }
 

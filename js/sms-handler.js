@@ -19,6 +19,26 @@ const SMS_CONFIG = {
   productionUrl: 'https://demo-stran.vercel.app', // Production/public URL for SMS links
 };
 
+// ========== TEMPLATE HELPERS ==========
+
+// Substitute {ime}, {posel}, {datum}, {cas}, {link} in a template string
+function applyTemplate(template, vars) {
+  return template
+    .replace(/\{ime\}/g,   vars.ime   || '')
+    .replace(/\{posel\}/g, vars.posel || SMS_CONFIG.businessName)
+    .replace(/\{datum\}/g, vars.datum || '')
+    .replace(/\{cas\}/g,   vars.cas   || '')
+    .replace(/\{link\}/g,  vars.link  || '');
+}
+
+// Load editable SMS templates saved from nastavitve rezervacij
+function getSmsTemplates() {
+  try {
+    const s = JSON.parse(localStorage.getItem('bookingSettings') || '{}');
+    return s.smsTemplates || {};
+  } catch (_) { return {}; }
+}
+
 // ========== SMS SENDING FUNCTION ==========
 
 /**
@@ -75,24 +95,23 @@ async function sendSMS(phoneNumber, message) {
  * @returns {Promise<Object>} Result object
  */
 async function sendAppointmentConfirmation(appointment) {
-  const phoneNumber = appointment.phoneNumber;
+  const tmpl = getSmsTemplates();
+  if (tmpl.confirmationEnabled === false) return { success: false, error: 'Disabled' };
+
+  const phoneNumber   = appointment.phoneNumber;
   const appointmentId = appointment.id;
+  const manageLink    = `${SMS_CONFIG.productionUrl}/manage-appointment.html?id=${appointmentId}`;
 
-  // Generate management link with appointment ID
-  const manageLink = `${SMS_CONFIG.productionUrl}/manage-appointment.html?id=${appointmentId}`;
+  const defaultMsg = 'Hvala za vaše naročilo na termin pri {posel}! Upravljanje: {link}';
+  const message = applyTemplate(tmpl.confirmationMessage || defaultMsg, {
+    ime:   appointment.customer || '',
+    posel: SMS_CONFIG.businessName,
+    link:  manageLink,
+    datum: '',
+    cas:   '',
+  });
 
-  // Compose message with link
-  const message = `Hvala za vaše naročilo na termin pri ${SMS_CONFIG.businessName}! Upravljanje: ${manageLink}`;
-
-  // Send SMS
-  const result = await sendSMS(phoneNumber, message);
-
-  // Log to console
-  if (result.success) {
-  } else {
-  }
-
-  return result;
+  return await sendSMS(phoneNumber, message);
 }
 
 // ========== APPOINTMENT REMINDER SMS ==========
@@ -103,26 +122,24 @@ async function sendAppointmentConfirmation(appointment) {
  * @returns {Promise<Object>} Result object
  */
 async function sendAppointmentReminder(appointment) {
+  const tmpl      = getSmsTemplates();
   const phoneNumber = appointment.phoneNumber;
-  const startTime = new Date(appointment.start);
-
-  // Format time (e.g., "14:30")
-  const hours = startTime.getHours().toString().padStart(2, '0');
+  const startTime   = new Date(appointment.start);
+  const hours   = startTime.getHours().toString().padStart(2, '0');
   const minutes = startTime.getMinutes().toString().padStart(2, '0');
   const timeStr = `${hours}:${minutes}`;
+  const dateStr = `${startTime.getDate()}. ${startTime.getMonth() + 1}. ${startTime.getFullYear()}`;
 
-  // Compose message
-  const message = `Pozdravljeni, jutri ob ${timeStr} imate termin pri ${SMS_CONFIG.businessName}.`;
+  const defaultMsg = '{ime}, jutri ob {cas} imate termin pri {posel}. Se vidimo!';
+  const message = applyTemplate(tmpl.reminderMessage || defaultMsg, {
+    ime:   appointment.customer || '',
+    posel: SMS_CONFIG.businessName,
+    datum: dateStr,
+    cas:   timeStr,
+    link:  '',
+  });
 
-  // Send SMS
-  const result = await sendSMS(phoneNumber, message);
-
-  // Log to console
-  if (result.success) {
-  } else {
-  }
-
-  return result;
+  return await sendSMS(phoneNumber, message);
 }
 
 // ========== GET TOMORROW'S APPOINTMENTS ==========
