@@ -1699,7 +1699,7 @@
             .main-content {
                 margin-left: 0;
                 width: 100%;
-                padding-top: 48px;
+                padding-top: 0;
             }
 
             .sidebar.expanded ~ .main-content {
