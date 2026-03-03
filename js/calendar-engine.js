@@ -1,4 +1,4 @@
-/**
+﻿/**
  * FullCalendar Integration - Event generation and configuration
  * Converts schedule data into FullCalendar events
  */
@@ -31,14 +31,10 @@ const CalendarEngine = {
         try {
           const formattedEvent = this.formatCalendarEvent(event);
           if (!formattedEvent) {
-            console.warn('⚠ Skipping event due to format error:', event?.id || event?.title);
           } else {
-            console.log('📌 Adding single event:', formattedEvent);
             events.push(formattedEvent);
           }
-        } catch (err) {
-          console.warn('⚠ formatCalendarEvent threw for event:', event?.id || event?.title, err);
-        }
+        } catch (err) {}
       }
 
       // Weekly recurring events
@@ -69,14 +65,10 @@ const CalendarEngine = {
             try {
               const formattedEvent = this.formatCalendarEvent(recurrenceEvent);
               if (!formattedEvent) {
-                console.warn('⚠ Skipping recurring event due to format error:', recurrenceEvent?.id || recurrenceEvent?.title);
               } else {
-                console.log('🔁 Adding recurring event:', formattedEvent);
                 events.push(formattedEvent);
               }
-            } catch (err) {
-              console.warn('⚠ formatCalendarEvent threw for recurring event:', recurrenceEvent?.id || recurrenceEvent?.title, err);
-            }
+            } catch (err) {}
           }
 
           current.setDate(current.getDate() + 1);
@@ -84,16 +76,13 @@ const CalendarEngine = {
       }
     });
 
-    console.log('✅ Total formatted events:', events.length);
     try {
       const timedCount = events.filter(ev => !ev.allDay).length;
       const allDayCount = events.length - timedCount;
-      console.log(`🔎 Formatted events breakdown — timed=${timedCount}, allDay=${allDayCount}`);
       // Log any suspicious events (timed but start/end strings look like dates only)
       events.forEach(ev => {
         try {
           if (!ev.allDay && ev.start && typeof ev.start === 'string') {
-            console.warn('⚠ Suspicious formatted timed event with string start:', ev);
           }
         } catch (inner) { /* ignore */ }
       });
@@ -147,7 +136,6 @@ const CalendarEngine = {
       if (e.id) {
         const existingById = unique.findIndex(u => u.id === e.id);
         if (existingById !== -1) {
-          console.log('⏭️ Skipping duplicate event by ID:', e.id, '(already exists)');
           return;
         }
       }
@@ -171,11 +159,9 @@ const CalendarEngine = {
         // Decide which to keep
         const keepExisting = prefer(u, e);
         if (!keepExisting) {
-          console.log('🔁 Replacing event due to preference (keep incoming):', e, 'replacing', u);
           unique[conflictIdx] = e; // prefer incoming
           return; // replaced existing, skip further processing
         } else {
-          console.log('⏭️ Skipping near-duplicate event (kept existing):', e);
           return; // keep existing, skip incoming
         }
       }
@@ -183,7 +169,6 @@ const CalendarEngine = {
       unique.push(e);
     });
 
-    console.log('✅ Events after dedupe:', unique.length);
     return unique;
   },
 
@@ -238,7 +223,6 @@ const CalendarEngine = {
         displayEnd = endDate.toISOString().split('T')[0] + 'T00:00:00';
       }
     } catch (err) {
-      console.warn('⚠ formatCalendarEvent parsing fallback', err);
       // Fallback to attempt gentle parsing; do not throw — return null when unfixable
       startDate = new Date(event.start || Date.now());
       endDate = new Date(event.end || event.start || Date.now());
@@ -256,7 +240,6 @@ const CalendarEngine = {
 
       // Final check; if still invalid, log and skip this event safely
       if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
-        console.warn('⚠ formatCalendarEvent: invalid dates for event, skipping:', event?.id || event?.title, { start: event.start, end: event.end, startDateField: event.startDate, startTimeField: event.startTime, endDateField: event.endDate, endTimeField: event.endTime });
         return null;
       }
     }
@@ -274,15 +257,6 @@ const CalendarEngine = {
       isAllDay = true;
     }
 
-    console.log(`🔍 Formatting event "${event.title}":`, {
-      originalStart: event.start,
-      originalEnd: event.end,
-      isMultiDay: isMultiDay,
-      durationDays: Number.isFinite(durationMs) ? Math.floor(durationMs / (24 * 60 * 60 * 1000)) : 0,
-      startDate: startDate.toISOString(),
-      endDate: endDate.toISOString(),
-      isAllDay: isAllDay
-    });
 
     // Decide display mode for blocking types: render blocking events visibly by default
     // (previously vacation/day_off used 'background' which hid them; show all blocking types as visible)
@@ -414,14 +388,11 @@ const CalendarEngine = {
    */
   limitEventsPerDay(maxEvents) {
     try {
-      console.log(`🔍 limitEventsPerDay called with maxEvents=${maxEvents}`);
       
       // Get all event elements
       const allEvents = Array.from(document.querySelectorAll('.fc-daygrid-event'));
-      console.log(`📍 Found ${allEvents.length} total event elements`);
       
       if (allEvents.length === 0) {
-        console.log('⚠️ No events found');
         return;
       }
       
@@ -449,17 +420,13 @@ const CalendarEngine = {
             eventsByDay.set(key, []);
           }
           eventsByDay.get(key).push(eventEl);
-        } catch (e) {
-          console.warn(`⚠️ Error processing event ${idx}:`, e);
-        }
+        } catch (e) {}
       });
       
-      console.log(`📊 Grouped into ${eventsByDay.size} days`);
       
       // Process each day
       eventsByDay.forEach((dayEvents, dayKey) => {
         if (dayEvents.length > maxEvents) {
-          console.log(`   Day: ${dayEvents.length} events → hiding ${dayEvents.length - maxEvents}`);
           
           // Hide events beyond max
           for (let i = maxEvents; i < dayEvents.length; i++) {
@@ -492,22 +459,16 @@ const CalendarEngine = {
         }
       });
       
-    } catch (error) {
-      console.error('❌ Error in limitEventsPerDay:', error);
-    }
+    } catch (error) {}
   },
 
   initializeCalendar(containerElement, scheduleData, options = {}) {
     // Check if FullCalendar is available
     if (typeof FullCalendar === 'undefined') {
-      console.error('❌ FullCalendar library not loaded');
       containerElement.innerHTML = '<p style="color: #e74c3c; padding: 20px;">Calendar library failed to load. Please check your internet connection and refresh the page.</p>';
       return null;
     }
 
-    console.log('📅 Initializing FullCalendar...');
-    console.log('📅 Container element:', containerElement);
-    console.log('📅 Schedule data:', scheduleData);
 
     // Store for later reference
     this.currentScheduleData = scheduleData;
@@ -518,7 +479,6 @@ const CalendarEngine = {
       
       // Get actual available width
       const parentWidth = containerElement.parentElement?.offsetWidth || window.innerWidth;
-      console.log('Parent width:', parentWidth);
       
       // Calculate responsive height based on screen size - use a pixel height so timeGrid has space
       const topOffset = 140; // header + toolbars + margins
@@ -529,7 +489,6 @@ const CalendarEngine = {
       window._calendarHeight = calcHeight;
       window._minCalendarHeight = 520;
 
-      console.log('Using calendar pixel height:', calcHeight);
 
       // Set container dimensions - give it a fixed height in px so FullCalendar can render timeGrid
       containerElement.style.padding = '0';
@@ -543,12 +502,6 @@ const CalendarEngine = {
       containerElement.style.height = `${calcHeight}px`;
       containerElement.style.overflow = 'visible';
 
-      console.log('Container after style:', {
-        width: containerElement.style.width,
-        height: containerElement.style.height,
-        offsetWidth: containerElement.offsetWidth,
-        offsetHeight: containerElement.offsetHeight
-      });
 
       // Ensure parent can hold the height and width
       if (containerElement.parentElement) {
@@ -568,7 +521,6 @@ const CalendarEngine = {
       // Compute slot duration from SITE_CONFIG if present
       const slotMinutes = (window.SITE_CONFIG && window.SITE_CONFIG.booking && window.SITE_CONFIG.booking.slotDuration) ? window.SITE_CONFIG.booking.slotDuration : 30;
       const slotDurationStr = `00:${('0' + slotMinutes).slice(-2)}:00`;
-      console.log(`📅 Calendar slot duration: ${slotMinutes} minutes (${slotDurationStr})`);
 
       // Compute commonly used slot min/max strings and allow timeGrid views to show the full day (scrollable)
       const slotMinTimeVal = (window.SITE_CONFIG && window.SITE_CONFIG.booking && window.SITE_CONFIG.booking.businessHours) ? (('0' + window.SITE_CONFIG.booking.businessHours.start).slice(-2) + ':00:00') : '06:00:00';
@@ -597,7 +549,6 @@ const CalendarEngine = {
         dayMaxEvents: 2, // Limit to 2 events per day cell, rest shown in +more link
         dayMaxEventRows: 2, // Limit rows to prevent overlap
         moreLinkClick: function(info) {
-          console.log('📌 moreLinkClick handler called - setting flag and returning popover');
           window._moreLinkJustClicked = true;
           setTimeout(() => { window._moreLinkJustClicked = false; }, 100);
           return 'popover'; // Show popover when clicking more-link
@@ -664,9 +615,7 @@ const CalendarEngine = {
             if (typeof StorageManager !== 'undefined' && StorageManager.load) {
               try {
                 freshScheduleData = await StorageManager.load('schedule');
-              } catch (e) {
-                console.warn('⚠ Could not load fresh schedule, using initial data');
-              }
+              } catch (e) {}
             }
             
             // Generate events with deletion filter applied
@@ -693,7 +642,6 @@ const CalendarEngine = {
           if (window._isDraggingCustomCells) {
             return false;
           }
-          console.log('🖱️ Selection started:', selectInfo.startStr);
         },
 
         select: (selectInfo) => {
@@ -705,7 +653,6 @@ const CalendarEngine = {
           if (window._isDraggingCustomCells) {
             return false;
           }
-          console.log('📅 Date selected:', selectInfo.startStr, '→', selectInfo.endStr);
           const shiftDateString = (dateStr, days) => {
             if (!dateStr) return dateStr;
             const [yy, mm, dd] = String(dateStr).split('T')[0].split('-').map(Number);
@@ -725,25 +672,20 @@ const CalendarEngine = {
           // FullCalendar's end is exclusive, so subtract 1 day
           endDate = shiftDateString(endDate, -1); // "2026-02-20"
           
-          console.log('🎯 Highlighting range:', startDate, 'to', endDate);
           
           // Get all day cells and highlight those within range
           document.querySelectorAll('[data-date]').forEach(cell => {
             const cellDate = cell.getAttribute('data-date'); // "2026-02-17"
             if (cellDate >= startDate && cellDate <= endDate) {
               cell.style.backgroundColor = 'rgba(0, 122, 255, 0.2)'; // Blue highlight
-              console.log('  ✓ Highlighted', cellDate);
             } else {
               cell.style.backgroundColor = ''; // Clear previous highlight
             }
           });
           
-          console.log('📋 Checking for eventModal...');
           const hasAdminModal = document.getElementById('eventModal');
-          console.log('📋 Admin modal exists?', !!hasAdminModal);
           // If admin modal exists (admin-panel.html), use the admin modal flow
           if (hasAdminModal) {
-            console.log('📋 Calling CalendarEngine.openEventModal from calendar-engine.js (select)');
             CalendarEngine.openEventModal(null, selectInfo, calendar, scheduleData);
             return;
           }
@@ -762,30 +704,22 @@ const CalendarEngine = {
                 endStr = shiftDateString(selectInfo.endStr, -1);
               }
 
-              console.log('📤 Opening Add Event modal with range:', startStr, '→', endStr);
               // openAddEventModalWithTab accepts (startDate, endDate)
               window.openAddEventModal(startStr, endStr);
             } catch (err) {
-              console.warn('⚠ Failed to open Add Event modal from select handler:', err);
               // Fallback: open with start only
               window.openAddEventModal(selectInfo.startStr ? selectInfo.startStr.split('T')[0] : null);
             }
           } else {
-            console.log('📋 Skipping - no Add Event modal present');
           }
         },
         
         eventClick: (clickInfo) => {
-          console.log('📅 Event clicked:', clickInfo.event.title);
-          console.log('📋 Checking for eventModal...');
           const hasAdminModal = document.getElementById('eventModal');
-          console.log('📋 Admin modal exists?', !!hasAdminModal);
           // Only call if the admin modal exists (admin-panel.html context)
           if (hasAdminModal) {
-            console.log('📋 Calling CalendarEngine.openEventModal from calendar-engine.js');
             CalendarEngine.openEventModal(clickInfo.event, null, calendar, scheduleData);
           } else {
-            console.log('📋 Skipping - not in admin context (no eventModal found)');
           }
         },
 
@@ -853,7 +787,6 @@ const CalendarEngine = {
               </div>`
             };
           } catch (e) {
-            console.warn('eventContent error:', e);
             return undefined;
           }
         },
@@ -906,9 +839,7 @@ const CalendarEngine = {
               info.el.style.transform = 'translateY(0px)';
             });
             
-          } catch (err) { 
-            console.warn('eventDidMount hook failed', err); 
-          }
+          } catch (err) {}
         },
 
         // Hook fired after the events array is applied to the view
@@ -916,7 +847,6 @@ const CalendarEngine = {
           try {
             const timed = events.filter(e => !e.allDay).length;
             const allDay = events.length - timed;
-            console.log('eventsSet: total=', events.length, 'timed=', timed, 'allDay=', allDay);
             // If there are timed events but no timeGrid DOM presence, escalate
             const timegrid = document.querySelector('.fc-timegrid');
             const timegridEventEls = document.querySelectorAll('.fc-timegrid .fc-event');
@@ -924,11 +854,10 @@ const CalendarEngine = {
               // Remediation disabled: do not attempt automatic remakes or repairs from eventsSet
               // This avoids any automatic DOM manipulation or forced re-initialization.
             }
-          } catch (err) { console.warn('eventsSet hook failed', err); }
+          } catch (err) {}
         },
 
         eventDrop: async (dropInfo) => {
-          console.log('📅 Event dropped:', dropInfo.event.title, 'ID:', dropInfo.event.id);
           
           try {
             // CRITICAL: Reload fresh data from storage to avoid using stale copies
@@ -936,9 +865,7 @@ const CalendarEngine = {
             if (typeof StorageManager !== 'undefined' && StorageManager.load) {
               try {
                 currentData = await StorageManager.load('schedule');
-              } catch (e) {
-                console.warn('⚠ Could not load fresh schedule, using initial data');
-              }
+              } catch (e) {}
             }
             
             // Find the event by ID
@@ -981,7 +908,6 @@ const CalendarEngine = {
               currentData.events[eventIndex].start = newStart;
               currentData.events[eventIndex].end = newEnd;
               
-              console.log('✅ Updated event:', currentData.events[eventIndex].id, 'old:', originalStart, '→', 'new:', dropInfo.event.startStr);
               
               // Remove ALL duplicates with same ID, worker, date, and time combination
               const cleanedEvents = currentData.events.filter((evt, idx) => {
@@ -989,7 +915,6 @@ const CalendarEngine = {
                 if (idx === eventIndex) return true;
                 // Remove if same ID
                 if (evt.id === dropInfo.event.id) {
-                  console.log('🗑️ Removing duplicate event:', evt.id, 'at', evt.start, '→', evt.end);
                   return false;
                 }
                 // Remove if same worker + client + time (different ID but same slot)
@@ -997,7 +922,6 @@ const CalendarEngine = {
                     evt.clientName === clientName && 
                     evt.start === originalStart && 
                     evt.end === originalEnd) {
-                  console.log('🗑️ Removing duplicate by slot:', evt.id, evt.workerName, evt.clientName);
                   return false;
                 }
                 return true;
@@ -1010,28 +934,22 @@ const CalendarEngine = {
               
               // Save to storage
               await StorageManager.save('schedule', currentData);
-              console.log('💾 Saved to storage after drop (total events:', currentData.events.length, ')');
               
               // Force calendar to refetch from storage
               setTimeout(() => {
                 if (calendar && typeof calendar.refetchEvents === 'function') {
-                  console.log('🔄 Refetching events after drop');
                   calendar.refetchEvents();
                 }
               }, 300);
             } else {
-              console.warn('⚠ Event not found in scheduleData:', dropInfo.event.id);
-              console.warn('Available event IDs:', currentData.events.map(e => e.id));
               dropInfo.revert();
             }
           } catch (error) {
-            console.error('❌ Error in eventDrop:', error);
             dropInfo.revert();
           }
         },
 
         eventResize: async (resizeInfo) => {
-          console.log('📅 Event resized:', resizeInfo.event.title, 'ID:', resizeInfo.event.id);
           
           try {
             // Find and update the event in scheduleData
@@ -1069,31 +987,25 @@ const CalendarEngine = {
               scheduleData.events[eventIndex].start = newStart;
               scheduleData.events[eventIndex].end = newEnd;
               
-              console.log('✅ Updated event:', scheduleData.events[eventIndex].id, 'new times:', resizeInfo.event.startStr, '→', resizeInfo.event.endStr);
               
               // Save to storage
               await StorageManager.save('schedule', scheduleData);
-              console.log('💾 Saved to storage');
               
               // Force calendar to refetch events after a brief delay
               setTimeout(() => {
                 if (calendar && typeof calendar.refetchEvents === 'function') {
-                  console.log('🔄 Refetching events after resize');
                   calendar.refetchEvents();
                 }
               }, 300);
             } else {
-              console.warn('⚠ Event not found in scheduleData:', resizeInfo.event.id);
               resizeInfo.revert();
             }
           } catch (error) {
-            console.error('❌ Error in eventResize:', error);
             resizeInfo.revert();
           }
         },
 
         datesSet: (arg) => {
-          console.log('📅 Dates set');
 
           // Update view-specific classes so styles can be scoped (dayGrid vs timeGrid)
           // Restore granular classes so week and day can have separate CSS
@@ -1152,12 +1064,10 @@ const CalendarEngine = {
           // After view renders, limit timed events to 3 per day
           setTimeout(() => {
             if (arg.view.type === 'dayGridMonth') {
-              console.log('� Month view rendered - using FullCalendar dayMaxEvents:true for auto height');
             }
             
             // For timeGridWeek only, ensure timegrid and scroll bodies are sized (skip Day to avoid fallbacks there)
             if (arg.view.type === 'timeGridWeek') {
-              console.log('🔧 Sizing timeGridWeek view:', arg.view.type);
               setTimeout(() => {
                 try {
                   const containerElement = document.getElementById('scheduleCalendar');
@@ -1173,7 +1083,6 @@ const CalendarEngine = {
                   const headerH = headerRow ? Math.ceil(headerRow.getBoundingClientRect().height) : 0;
                   const avail = Math.max(520, containerElement.clientHeight - toolbarH - headerH - 8);
 
-                  console.log(`timeGrid sizing: avail=${avail}px, timegrid found? ${!!timegrid}, scrollBodies=${scrollBodies.length}`);
 
                   if (fcRoot) { fcRoot.style.height = avail + 'px'; fcRoot.style.minHeight = avail + 'px'; fcRoot.style.overflow = 'visible'; }
                   if (viewHarness) { viewHarness.style.height = avail + 'px'; viewHarness.style.minHeight = avail + 'px'; }
@@ -1191,7 +1100,6 @@ const CalendarEngine = {
                     try {
                       const slotsEl = containerElement.querySelector('.fc-timegrid .fc-timegrid-slots');
                       const hasSlots = slotsEl && slotsEl.querySelectorAll('*').length > 0;
-                      console.log('ensureTimeGridSlots: attempt', attempt, 'hasSlots?', !!hasSlots);
 
                       if (hasSlots) {
                         // Slots present - good
@@ -1207,13 +1115,13 @@ const CalendarEngine = {
                       // Not yet present - try again with exponential backoff
                       const retryDelays = [120, 240, 480, 800];
                       setTimeout(() => {
-                        try { if (calendar && typeof calendar.updateSize === 'function') calendar.updateSize(); } catch(e){}
+                        try { if (calendar && typeof calendar.updateSize === 'function') calendar.updateSize(); } catch (e) {}
                         ensureTimeGridSlots(attempt + 1);
                       }, retryDelays[attempt] || 400);
-                    } catch (err) { console.warn('⚠ ensureTimeGridSlots failed', err); }
+                    } catch (err) {}
                   })(0);
 
-                } catch (err) { console.warn('⚠ timeGrid sizing in datesSet failed', err); }
+                } catch (err) {}
               }, 100);
             }
             
@@ -1224,7 +1132,6 @@ const CalendarEngine = {
         },
 
         viewDidMount: (arg) => {
-          console.log('📅 View mounted');
           setTimeout(() => {
             if (calendar.updateSize) {
               calendar.updateSize();
@@ -1277,7 +1184,6 @@ const CalendarEngine = {
                         if (moreEl) { moreEl.style.marginBottom = ''; moreEl.style.paddingBottom = ''; }
                       });
                     });
-                    console.log(`✅ Month view mount: fixed 100px cell heights (${rows.length} rows)`);
                   } else {
                     // Other views: clear forced sizing to allow natural heights
                     daygridBody.style.overflowY = 'auto';
@@ -1310,7 +1216,6 @@ const CalendarEngine = {
                         if (moreEl) { moreEl.style.marginBottom = ''; moreEl.style.paddingBottom = ''; }
                       });
                     });
-                    console.log(`✅ Daygrid mount: cleared forced row sizing (${rows.length} rows)`);
                   }
                 } catch (e) { /* ignore */ }
               }
@@ -1325,7 +1230,6 @@ const CalendarEngine = {
                   calendar.setOption('slotMinTime', '00:00:00');
                   calendar.setOption('slotMaxTime', '24:00:00');
                   calendar.setOption('scrollTime', initialScrollTime);
-                  console.log('🔧 Applied timeGrid full-day options:', { slotMinTime: '00:00:00', slotMaxTime: '24:00:00', scrollTime: initialScrollTime });
 
                   // Note: we avoid DOM overrides to prevent fallback side-effects. If slots do not render properly, investigate CSS/FullCalendar options instead.
 
@@ -1336,7 +1240,6 @@ const CalendarEngine = {
                     const timedEvents = (calendar && typeof calendar.getEvents === 'function') ? calendar.getEvents().filter(e => !e.allDay) : [];
                     const timegridEventEls = containerElement.querySelectorAll('.fc-timegrid .fc-event');
                     const slots = containerElement.querySelectorAll('.fc-timegrid .fc-timegrid-slot');
-                    console.log('viewDidMount sanity (timeGrid):', { view: v, timedEvents: timedEvents.length, timegridEventEls: timegridEventEls.length, slots: slots.length });
 
                     // If there are timed events but nothing rendered in the timeGrid, it's likely FullCalendar DOM failed to create time slot or event nodes
                     if (timedEvents.length > 0 && timegridEventEls.length === 0) {
@@ -1354,12 +1257,10 @@ const CalendarEngine = {
                       const slotsContainer = containerElement.querySelector('.fc-timegrid .fc-timegrid-slots');
                       const scrollBody = containerElement.querySelector('.fc-timegrid .fc-scrollgrid-section-body') || containerElement.querySelector('.fc-scrollgrid-section-body');
                       if (slotsContainer && slots && slots.length && scrollBody) {
-                        console.log('ℹ timeGrid slots detected:', { slots: slots.length, slotsContainerClientH: slotsContainer.clientHeight, scrollBodyClientH: scrollBody.clientHeight });
                       } else {
-                        console.log('ℹ timeGrid slots or scroll body missing or insufficient:', { slots: slots.length, hasSlotsContainer: !!slotsContainer, hasScrollBody: !!scrollBody });
                       }
-                    } catch (e) { console.warn('ℹ timeGrid slot check failed', e); }
-                  } catch (err) { console.warn('viewDidMount sanity check failed', err); }
+                    } catch (e) {}
+                  } catch (err) {}
                 }, 220);
               }
             } catch (err) { /* ignore */ }
@@ -1377,10 +1278,6 @@ const CalendarEngine = {
         contentHeight: 'parent'
       });
 
-      console.log('✅ Calendar object created:', calendar);
-      console.log('Calendar constructor type:', typeof calendar);
-      console.log('Calendar is FullCalendar.Calendar:', calendar instanceof FullCalendar.Calendar);
-      console.log('Calendar methods:', Object.getOwnPropertyNames(Object.getPrototypeOf(calendar)).slice(0, 10));
 
       // SMART CELL SELECTION SYSTEM
       // Shows real-time highlighting when dragging to select empty cells
@@ -1483,25 +1380,21 @@ const CalendarEngine = {
         
         // Only handle events in the calendar
         if (!e.target.closest('#scheduleCalendar')) {
-          console.log('📌 Click outside calendar');
           return;
         }
         
         // Check if clicking on an event - if so, let FullCalendar/drag system handle it
         if (e.target.closest('.fc-event') || e.target.closest('.fc-daygrid-event')) {
-          console.log('📌 Clicked on event - skipping');
           return;
         }
         
         // Check if clicking on a popover (more events popup) - if so, let FullCalendar handle it
         if (e.target.closest('.fc-popover') || e.target.closest('.fc-more-popover')) {
-          console.log('📌 Clicked on popover - skipping');
           return;
         }
         
         // Check if clicking on a more-link ("+x more") - if so, let FullCalendar handle it
         if (e.target.closest('.fc-daygrid-more-link') || e.target.closest('.fc-more-link')) {
-          console.log('📌 Clicked on more-link - skipping');
           return;
         }
         
@@ -1514,9 +1407,6 @@ const CalendarEngine = {
           cellSelectionEndDate = cellSelectionStartDate;
           dragElement = dayCell;
           clearHighlights();
-          console.log('📍 Cell selection drag STARTED on', cellSelectionStartDate);
-          console.log('   Target element:', e.target.tagName, e.target.className);
-          console.log('   Found dayCell with data-date:', cellSelectionStartDate);
           
           // Set initial highlight on the start cell using inline styles + class
           dayCell.style.backgroundColor = 'rgba(10, 132, 255, 0.24)';
@@ -1525,15 +1415,12 @@ const CalendarEngine = {
           dayCell.style.position = 'relative';
           dayCell.style.zIndex = '10';
           dayCell.classList.add('calendar-cell-selected');
-          console.log('   Applied inline styles + class to start cell');
           
           // Capture pointer on the element to ensure we get all move events
           if (dayCell.setPointerCapture && e.pointerId) {
             dayCell.setPointerCapture(e.pointerId);
-            console.log('   Captured pointer');
           }
         } else {
-          console.log('📌 Clicked in calendar but no dayCell found');
         }
       });
       
@@ -1547,19 +1434,16 @@ const CalendarEngine = {
         
         const currentCell = getCellAtCursorPosition(e.clientX, e.clientY);
         if (!currentCell) {
-          console.log('⚠️ No cell found at cursor position:', e.clientX, e.clientY);
           return;
         }
         
         const currentDate = currentCell.getAttribute('data-date');
         if (!currentDate) {
-          console.log('⚠️ Current cell has no data-date attribute');
           return;
         }
         
         // Store the current end date for continuous reapplication
         cellSelectionEndDate = currentDate;
-        console.log('🎯 Dragging from', cellSelectionStartDate, 'to', currentDate);
         
         // Apply highlights immediately
         applyHighlights(cellSelectionStartDate, cellSelectionEndDate);
@@ -1606,7 +1490,6 @@ const CalendarEngine = {
           const startStr = selectionStart < selectionEnd ? selectionStart : selectionEnd;
           const endStr = selectionStart < selectionEnd ? selectionEnd : selectionStart;
 
-          console.log('🎯 Custom cell selection detected:', { startStr, endStr, hadCustomSelection });
 
           const selectInfoLike = {
             startStr,
@@ -1618,25 +1501,19 @@ const CalendarEngine = {
           const hasAdminModal = document.getElementById('eventModal');
           const addModal = document.getElementById('addEventModal');
 
-          console.log('📋 Modal check:', { hasAdminModal: !!hasAdminModal, addModal: !!addModal, openAddEventModal: typeof window.openAddEventModal });
 
           // Skip both FullCalendar select handler AND dateClick handler
           window._skipNextFcSelect = true;
           window._skipNextDateClick = true;
-          console.log('🚫 Set skip flags: _skipNextFcSelect=true, _skipNextDateClick=true');
 
           if (hasAdminModal) {
-            console.log('🔧 Opening admin modal with dates:', { startStr, endStr });
             CalendarEngine.openEventModal(null, selectInfoLike, calendar, scheduleData);
           } else if (addModal && typeof window.openAddEventModal === 'function') {
-            console.log('📱 Opening poslovni-panel modal with dates:', { startStr, endStr });
             // Ensure date format is YYYY-MM-DD by extracting just the date part
             const startDateOnly = String(startStr).split('T')[0];
             const endDateOnly = String(endStr).split('T')[0];
-            console.log('✅ Calling openAddEventModal with:', { startDateOnly, endDateOnly });
             window.openAddEventModal(startDateOnly, endDateOnly);
           } else {
-            console.warn('⚠️ Neither admin modal nor poslovni-panel modal found, or openAddEventModal not a function');
           }
         }
       });
@@ -1655,14 +1532,9 @@ const CalendarEngine = {
       window.clearCalendarHighlights = clearHighlights;
 
       // Render the calendar
-      console.log('📅 About to call calendar.render()...');
-      console.log('Calendar object:', calendar);
-      console.log('Calendar._component:', calendar._component);
       
       try {
-        console.log('Calling render...');
         const renderResult = calendar.render();
-        console.log('✅ FullCalendar rendered successfully, result:', renderResult);
         // Expose calendar globally for debug helpers
         try { window.calendar = calendar; } catch (err) { /* ignore */ }
 
@@ -1691,9 +1563,8 @@ const CalendarEngine = {
                 };
               };
               const res = { timeEvent: describe(firstTimeEvent), dayEvent: describe(firstDayEvent) };
-              console.log('🔬 calendarDebug.logEventStyles result:', res);
               return res;
-            } catch (e) { console.warn('calendarDebug.logEventStyles failed', e); return null; }
+            } catch (e) {  return null; }
           };
         } catch (e) { /* ignore diagnostic helper failure */ }
 
@@ -1720,7 +1591,6 @@ const CalendarEngine = {
               const timegrid = containerElement.querySelector('.fc-timegrid');
               const scrollBodies = containerElement.querySelectorAll('.fc-scrollgrid-section-body');
 
-              console.log('applySizing: timegrid found?', !!timegrid, 'scrollBodies count', scrollBodies.length);
 
               if (fcRoot) { fcRoot.style.height = avail + 'px'; fcRoot.style.minHeight = avail + 'px'; fcRoot.style.overflow = 'visible'; }
               if (viewHarness) { viewHarness.style.height = avail + 'px'; viewHarness.style.minHeight = avail + 'px'; }
@@ -1734,7 +1604,7 @@ const CalendarEngine = {
               // Also set calendar options so FullCalendar knows the explicit height
               try { if (calendar && typeof calendar.setOption === 'function') { calendar.setOption('height', avail); calendar.setOption('contentHeight', 'parent'); } } catch (err) { /* ignore */ }
               if (calendar && typeof calendar.updateSize === 'function') calendar.updateSize();
-            } catch (err) { console.warn('⚠ applySizing failed', err); }
+            } catch (err) {}
           }
 
           function attempt(n) {
@@ -1745,7 +1615,6 @@ const CalendarEngine = {
               const headerH = headerRow ? Math.ceil(headerRow.getBoundingClientRect().height) : 0;
               const avail = Math.max(520, containerElement.clientHeight - toolbarH - headerH - 8);
 
-              console.log(`sizing attempt #${n + 1}/${maxAttempts} — computed avail=${avail}px`, { toolbarH, headerH, containerH: containerElement.clientHeight });
               applySizing(avail);
 
               // Check for collapsed sections
@@ -1753,22 +1622,19 @@ const CalendarEngine = {
               const timegrid = containerElement.querySelector('.fc-timegrid');
               const timegridCollapsed = timegrid && timegrid.getBoundingClientRect().height < 6;
 
-              console.log('collapsed scrollBodies:', collapsed.length, 'timegrid collapsed?', timegridCollapsed);
 
               if (collapsed.length === 0 && !timegridCollapsed) {
-                console.log('✅ Sizing successful — no collapsed sections');
                 return;
               }
 
               if (n + 1 < maxAttempts) {
                 const delay = delays[n + 1];
-                console.log(`⚠ Detected ${collapsed.length} collapsed sections; retrying in ${delay}ms`);
                 setTimeout(() => attempt(n + 1), delay);
               } else {
                 // Sizing attempts exhausted. No automatic DOM fallbacks will be applied here to avoid unexpected layout changes.
                 // The caller/view may opt to handle layout issues explicitly. (No-op)
               }
-            } catch (err) { console.warn('⚠ sizing attempt failed', err); }
+            } catch (err) {}
           }
 
           // Run first attempt after a short delay
@@ -1784,7 +1650,6 @@ const CalendarEngine = {
               if (allEventEls.length > 3) {
                 const dateEl = dayCell.querySelector('.fc-daygrid-day-number');
                 const dayNum = dateEl ? dateEl.textContent : '?';
-                console.log(`%c📅 FEB ${dayNum}: ${allEventEls.length} events found`, 'color: blue; font-weight: bold; font-size: 13px');
 
                 let timedCount = 0;
                 allEventEls.forEach((el) => {
@@ -1795,7 +1660,6 @@ const CalendarEngine = {
                     timedCount++;
                     if (timedCount > 3) {
                       el.style.display = 'none';
-                      console.log(`%c  ❌ HIDING #${timedCount}: ${text.substring(0, 35)}`, 'color: red; font-weight: bold');
                     }
                   }
                 });
@@ -1813,22 +1677,17 @@ const CalendarEngine = {
                   if (dayCells && dayCells.length > 0) {
                     Array.from(dayCells).forEach(processDayCell);
                   } else {
-                    console.log('⚠ No .fc-daygrid-day-cell elements found after retry.');
                   }
-                } catch (err) { console.warn('⚠ Error processing dayCells on retry', err); }
+                } catch (err) {}
               }, 250);
               return;
             }
 
             Array.from(dayCells).forEach(processDayCell);
-          } catch (err) {
-            console.warn('⚠ Error processing dayCells', err);
-          }
+          } catch (err) {}
         })();
 
       } catch (renderError) {
-        console.error('❌ Error calling calendar.render():', renderError);
-        console.error('Error stack:', renderError.stack);
         throw renderError;
       }
       
@@ -1849,7 +1708,6 @@ const CalendarEngine = {
       window.addEventListener('resize', () => {
         clearTimeout(resizeTimeout);
         resizeTimeout = setTimeout(() => {
-          console.log('📱 Window resized, recalculating calendar height');
           
           // Always use 100% - no fixed heights
           const newCalendarHeight = '100%';
@@ -1878,14 +1736,11 @@ const CalendarEngine = {
             calendar.updateSize();
           }
           
-          console.log('✅ Calendar resized to: 100%');
         }, 250); // Debounce resize events
       });
 
       return calendar;
     } catch (error) {
-      console.error('❌ Error in initializeCalendar:', error);
-      console.error(error.stack);
       containerElement.innerHTML = '<p style="color: #e74c3c; padding: 20px;">Error: ' + error.message + '</p>';
       return null;
     }
@@ -1915,7 +1770,6 @@ const CalendarEngine = {
     const endInput = document.getElementById('eventEnd');
 
     if (!modal || !form) {
-      console.error('❌ Modal or form not found');
       return;
     }
 
@@ -1972,9 +1826,6 @@ const CalendarEngine = {
       typeInput.value = 'working_hours';
       
       // Debug: log what we received
-      console.log('selectInfo:', selectInfo);
-      console.log('startStr:', selectInfo?.startStr);
-      console.log('endStr:', selectInfo?.endStr);
       
       // Auto-fill start and end times from selected date range
       if (selectInfo?.startStr) {
@@ -2006,13 +1857,10 @@ const CalendarEngine = {
           const startStr = fmtLocal(startDate);
           const endStr = fmtLocal(endDate);
 
-          console.log('Formatted start (local):', startStr);
-          console.log('Formatted end (local):', endStr);
 
           startInput.value = startStr;
           endInput.value = endStr;
         } catch (err) {
-          console.error('Error parsing dates:', err);
           // Fallback: set default times for today
           const now = new Date();
           now.setHours(9, 0, 0, 0);
@@ -2052,12 +1900,6 @@ const CalendarEngine = {
       const start = startInput.value;
       const end = endInput.value;
 
-      console.log('🔍 SAVE EVENT - User input from modal:', {
-        title,
-        type,
-        start,
-        end
-      });
 
       if (!start || !end) {
         alert('Vnesite datum in čas početka in konca');
@@ -2093,17 +1935,16 @@ const CalendarEngine = {
               event.setStart(start);
               event.setEnd(end);
             }
-          } catch (updateErr) { console.warn('⚠ Failed to update EventApi instance', updateErr); }
+          } catch (updateErr) {}
 
           // Persist update to storage/DB
           try {
             if (typeof window.saveScheduleData === 'function') {
               await window.saveScheduleData();
-              console.log('✓ Event update persisted');
             } else {
-              try { localStorage.setItem('schedule', JSON.stringify(scheduleData)); console.log('✓ Event update saved to localStorage'); } catch(e){}
+              try { localStorage.setItem('schedule', JSON.stringify(scheduleData)); } catch (e) {}
             }
-          } catch (saveErr) { console.warn('⚠ Failed to persist event update', saveErr); }
+          } catch (saveErr) {}
         }
       } else {
         // Create new event
@@ -2118,34 +1959,28 @@ const CalendarEngine = {
         };
 
         try {
-          console.log('📌 Creating new event:', newEvent);
           scheduleData.events.push(newEvent);
           
           // Format event for FullCalendar before adding
           const formattedEvent = CalendarEngine.formatCalendarEvent(newEvent);
-          console.log('📌 Formatted event for calendar:', formattedEvent);
 
           // Persist creation to storage/DB first so we treat scheduleData as canonical
           try {
             if (typeof window.saveScheduleData === 'function') {
               await window.saveScheduleData();
-              console.log('✓ New event persisted');
             } else {
-              try { localStorage.setItem('schedule', JSON.stringify(scheduleData)); console.log('✓ New event saved to localStorage'); } catch(e){}
+              try { localStorage.setItem('schedule', JSON.stringify(scheduleData)); } catch (e) {}
             }
-          } catch (saveErr) { console.warn('⚠ Failed to persist new event', saveErr); }
+          } catch (saveErr) {}
 
           // Refresh calendar from canonical schedule to avoid duplicates
           if (typeof loadAppointmentsToCalendarNow === 'function') {
-            try { await loadAppointmentsToCalendarNow(); } catch (e) { console.warn('⚠ loadAppointmentsToCalendarNow failed', e); }
+            try { await loadAppointmentsToCalendarNow(); } catch (e) {}
           } else if (calendar) {
             // Fallback: add the single formatted event
-            try { calendar.addEvent(formattedEvent); console.log('📌 Event added to calendar (fallback add)'); } catch(e) { console.warn('⚠ calendar.addEvent fallback failed', e); }
+            try { calendar.addEvent(formattedEvent)'); } catch (e) {}
           }
-        } catch (err) {
-          console.error('❌ Error adding event to calendar:', err);
-          console.error('Error stack:', err.stack);
-        }
+        } catch (err) {}
       }
 
       // Save to storage
@@ -2165,98 +2000,66 @@ const CalendarEngine = {
 
       const eventId = event && (event.id || event.extendedProps?.eventId);
       if (!eventId) {
-        console.error('❌ Cannot delete: No event ID found');
         modal.style.display = 'none';
         return;
       }
 
       alert(`🗑️  DELETING (calendar-engine): ${eventId}`);
-      console.log(`🗑️  DELETING EVENT: ${eventId}`);
-      console.log(`📋 Deletion Tracker Size BEFORE: ${window.deletedEventIds?.size || 0}`);
 
       // STEP 1: Mark as deleted FIRST
-      console.log(`⏳ Step 1: Calling markEventDeleted(${eventId})...`);
       if (typeof window.markEventDeleted === 'function') {
         window.markEventDeleted(eventId);
-        console.log(`✓ Step 1 COMPLETE: ${eventId} marked as deleted`);
-        console.log(`📋 Deletion Tracker Size AFTER markEventDeleted: ${window.deletedEventIds?.size || 0}`);
         if (typeof window.isEventDeleted === 'function') {
-          console.log(`✓ Step 1 VERIFIED: isEventDeleted returns ${window.isEventDeleted(eventId)}`);
         }
       } else {
-        console.error('❌ Step 1 FAILED: markEventDeleted not available');
       }
 
       // STEP 2: Remove from memory
-      console.log(`⏳ Step 2: Removing from scheduleData...`);
       scheduleData.events = scheduleData.events.filter(ev => ev.id !== eventId);
-      console.log('✓ Step 2 COMPLETE: Removed from scheduleData');
 
       // STEP 3: Save to localStorage
-      console.log(`⏳ Step 3: Saving to localStorage...`);
       try {
         const saved = JSON.stringify(scheduleData);
         localStorage.setItem('schedule', saved);
-        console.log('✓ Step 3 COMPLETE: Saved to localStorage');
-      } catch (e) {
-        console.error('❌ Step 3 FAILED: localStorage error:', e);
-      }
+      } catch (e) {}
 
       // STEP 4: Remove from DOM
-      console.log(`⏳ Step 4: Removing from DOM...`);
       try {
         if (event && typeof event.remove === 'function') {
           event.remove();
-          console.log('✓ Step 4 COMPLETE: Removed from DOM');
         }
-      } catch (err) {
-        console.warn('⚠ Step 4 FAILED:', err);
-      }
+      } catch (err) {}
 
       // STEP 5: Remove all calendar instances
-      console.log(`⏳ Step 5: Removing calendar instances...`);
       if (calendar) {
         try {
           calendar.getEvents().forEach(ev => {
             if (ev.id === eventId) ev.remove();
           });
-          console.log('✓ Step 5 COMPLETE: Removed all instances');
-        } catch (err) {
-          console.warn('⚠ Step 5 FAILED:', err);
-        }
+        } catch (err) {}
       }
 
       modal.style.display = 'none';
 
       // STEP 6: Reload deletion tracker
-      console.log(`⏳ Step 6: Reloading deletion tracker...`);
       if (typeof window.loadDeletedEventIds === 'function') {
         window.loadDeletedEventIds();
-        console.log('✓ Step 6 COMPLETE: Reloaded deletion tracker from localStorage');
       }
 
       // STEP 7: Refetch calendar
-      console.log(`⏳ Step 7: Refetching calendar...`);
       if (calendar && typeof calendar.refetchEvents === 'function') {
         try {
           await Promise.resolve(calendar.refetchEvents());
-          console.log('✓ Step 7 COMPLETE: Calendar refetched - deletion filter applied');
-        } catch (err) {
-          console.warn('⚠ Step 7 FAILED:', err);
-        }
+        } catch (err) {}
       }
 
       // STEP 8: Sync to Firebase in background
-      console.log(`⏳ Step 8: Syncing to Firebase...`);
       if (typeof StorageManager !== 'undefined' && StorageManager.save) {
         StorageManager.save('schedule', scheduleData).then(result => {
-          console.log('✓ Step 8 COMPLETE: Firebase synced');
         }).catch(err => {
-          console.warn('⚠ Step 8 PARTIAL: Firebase sync failed (OK if offline):', err.message);
         });
       }
 
-      console.log(`✅ DELETION COMPLETE: Event ${eventId} PERMANENTLY deleted`);
     };
 
     // Handle cancel
@@ -2358,17 +2161,14 @@ function saveWorkingHours() {
   
   // Create or update "Delo" events for working hours
   createWorkingHoursEvents(startTime, endTime).catch(err => {
-    console.error('Greška pri kreiranju radnih sati:', err);
   });
   
-  console.log(`✓ Radni sati postavljeni: ${startTime} - ${endTime}`);
 }
 
 // Helper za debug output
 function debugLog(msg) {
   const timestamp = new Date().toLocaleTimeString();
   const fullMsg = `[${timestamp}] ${msg}`;
-  console.log(fullMsg);
   // Write to either internal debugOutput (older) or the visible debug-panel
   const debugDiv = document.getElementById('debugOutput') || document.getElementById('debug-panel');
   if (debugDiv) {
@@ -2441,7 +2241,7 @@ async function createWorkingHoursEvents(startTime, endTime) {
     
     // Refresh calendar from canonical schedule so rendering is consistent
     if (typeof loadAppointmentsToCalendarNow === 'function') {
-      try { await loadAppointmentsToCalendarNow(); } catch (e) { console.warn('⚠ loadAppointmentsToCalendarNow failed', e); }
+      try { await loadAppointmentsToCalendarNow(); } catch (e) {}
     } else if (window.calendar) {
       // Fallback: clear and add working hours manually
       window.calendar.getEvents().forEach(event => {
@@ -2454,12 +2254,8 @@ async function createWorkingHoursEvents(startTime, endTime) {
         window.calendar.addEvent(formatted);
       });
     }
-  } catch (error) {
-    console.error('❌ Greška u createWorkingHoursEvents:', error);
-  }
+  } catch (error) {}
 }
 
 // Export CalendarEngine to window so it can be accessed globally
 window.CalendarEngine = CalendarEngine;
-console.log('✅ CalendarEngine exported to window:', typeof window.CalendarEngine);
-console.log('✅ CalendarEngine.initializeCalendar exists:', typeof window.CalendarEngine?.initializeCalendar);

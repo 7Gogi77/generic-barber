@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ADMIN PANEL - AUTHENTICATION & CONFIG MANAGEMENT
  * ================================================
  * 
@@ -144,7 +144,6 @@ const AdminManager = {
                 const env = await window.ADMIN_ENV_PROMISE;
                 return env;
             } catch (error) {
-                console.warn('Admin environment fetch failed', error);
             }
         }
 
@@ -228,7 +227,6 @@ const AdminManager = {
             localStorage.setItem('site_config_backup', JSON.stringify(SITE_CONFIG));
             this.showNotification('Configuration saved', 'success');
         } catch (e) {
-            console.error('Failed to persist config:', e);
             this.showNotification('Error saving configuration', 'error');
         }
     },
@@ -244,10 +242,8 @@ const AdminManager = {
                 const parsed = JSON.parse(backup);
                 // Merge persisted config with defaults
                 Object.assign(SITE_CONFIG, parsed);
-                console.log('Configuration restored from backup');
             }
         } catch (e) {
-            console.error('Failed to load persisted config:', e);
         }
     },
     

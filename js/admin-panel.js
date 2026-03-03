@@ -100,9 +100,7 @@
             if (window.ADMIN_ENV_PROMISE) {
                 try {
                     return await window.ADMIN_ENV_PROMISE;
-                } catch (error) {
-                    console.warn('Admin environment fetch failed', error);
-                }
+                } catch (error) {}
             }
             return null;
         }
@@ -154,7 +152,6 @@
                     errorEl.textContent = 'Napaka pri prijavi';
                     errorEl.style.display = 'block';
                 }
-                console.error('Login error', err);
             }
         }
 
@@ -179,7 +176,6 @@
                     setTimeout(() => { el.textContent = 'Koraki: 1) Če prvič, ustvarite geslo spodaj → 2) Prijavite se → 3) Uredite vsebine → 4) Kliknite "Shrani vse"'; }, 3000);
                 }
             } catch (err) {
-                console.error('SaveAll failed', err);
                 alert('Prišlo je do napake pri shranjevanju. Preverite konzolo.');
             }
         }
@@ -832,9 +828,7 @@
                             }
                         }
                     });
-                } catch (e) {
-                    console.error('Error rendering services chart:', e);
-                }
+                } catch (e) {}
             }
             
             // Appointments by day chart
@@ -889,9 +883,7 @@
                             }
                         }
                     });
-                } catch (e) {
-                    console.error('Error rendering appointments chart:', e);
-                }
+                } catch (e) {}
             }
         }
 
@@ -1827,9 +1819,7 @@
                 try {
                     const config = JSON.parse(saved);
                     Object.assign(SITE_CONFIG, config);
-                } catch (e) {
-                    console.log('Could not load saved config');
-                }
+                } catch (e) {}
             }
             
             // Ensure default values exist
@@ -1868,15 +1858,14 @@
                         // Fallback to legacy localStorage if no bookings found
                         const savedAppts = localStorage.getItem('appointments');
                         if (savedAppts) {
-                            try { SITE_CONFIG.appointments = JSON.parse(savedAppts); } catch (e) { console.log('Could not load appointments'); }
+                            try { SITE_CONFIG.appointments = JSON.parse(savedAppts); } catch (e) {}
                         }
                     }
                 }
             } catch (e) {
-                console.warn('⚠ Could not load bookings from StorageManager, falling back to localStorage', e);
                 const savedAppts = localStorage.getItem('appointments');
                 if (savedAppts) {
-                    try { SITE_CONFIG.appointments = JSON.parse(savedAppts); } catch (err) { console.log('Could not load appointments'); }
+                    try { SITE_CONFIG.appointments = JSON.parse(savedAppts); } catch (err) {}
                 }
             }
         }
@@ -1914,10 +1903,7 @@
 
                 schedule.events.push(...mapped);
                 await StorageManager.save('schedule', schedule);
-                console.log('✓ Appointments synced to StorageManager schedule');
-            } catch (e) {
-                console.warn('⚠ syncAppointmentsToSchedule failed', e);
-            }
+            } catch (e) {}
         }
 
         // Upload Hero Image
@@ -2046,13 +2032,9 @@
                     if (typeof StorageManager !== 'undefined' && StorageManager.load) {
                         const schedule = await StorageManager.load('schedule');
                         SITE_CONFIG.schedule = schedule || { events: [] };
-                        console.log('📥 Attached StorageManager schedule to SITE_CONFIG (events):', SITE_CONFIG.schedule.events ? SITE_CONFIG.schedule.events.length : 0);
                     } else {
-                        console.log('⚠ StorageManager not available when saving config; skipping schedule attach');
                     }
-                } catch (err) {
-                    console.warn('⚠ Failed to load schedule for attaching to SITE_CONFIG:', err);
-                } finally {
+                } catch (err) {} finally {
                     // Sync to Firebase REST API (simpler, no module issues)
                     syncToFirebase(SITE_CONFIG);
                     showNotification('✅ Spremembe so bile shranjene in sinhronizirane', 'success');
@@ -2070,9 +2052,7 @@
                 const adminScheduleEntries = config && config.adminSchedule && Array.isArray(config.adminSchedule.entries)
                     ? config.adminSchedule.entries.length
                     : 0;
-                console.log('📤 syncToFirebase sending payload. adminSchedule.entries:', adminScheduleEntries);
                 const body = JSON.stringify(config);
-                console.log('📦 Payload size (bytes):', new Blob([body]).size);
 
                 fetch(dbUrl, {
                     method: 'PUT',
@@ -2080,22 +2060,15 @@
                     body: body
                 })
                 .then(async response => {
-                    console.log('🔁 Firebase response status:', response.status, response.statusText);
                     let txt = null;
                     try { txt = await response.text(); } catch(e) { txt = '<no body>'; }
-                    console.log('🔁 Firebase response body:', txt);
                     if (response.ok) {
-                        console.log('✅ Synced to Firebase');
                     } else {
-                        console.warn('⚠️ Firebase sync failed');
                     }
                 })
                 .catch(error => {
-                    console.warn('⚠️ Firebase sync error:', error);
                 });
-            } catch (err) {
-                console.warn('⚠️ syncToFirebase error preparing payload:', err);
-            }
+            } catch (err) {}
         }
 
         // Sync color picker and text inputs
@@ -2452,8 +2425,6 @@
             };
 
             SITE_CONFIG.adminSchedule.entries.push(entry);
-            console.log('➕ addScheduleEntry pushed entry:', entry);
-            console.log('📊 adminSchedule now has', SITE_CONFIG.adminSchedule.entries.length, 'entries');
             saveConfig();
             
             // Clear form

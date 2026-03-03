@@ -10,7 +10,6 @@
                     Object.assign(SITE_CONFIG, config);
                     applyThemeColors();
                 } catch (e) {
-                    console.log('Using default config');
                 }
             }
         }
@@ -129,16 +128,12 @@
                         Object.assign(SITE_CONFIG, cloudConfig);
                         window.SITE_CONFIG = SITE_CONFIG;
                         localStorage.setItem('site_config_backup', JSON.stringify(SITE_CONFIG));
-                        console.log('✅ Loaded config from Firebase (REST)');
                         return true;
                     }
                 } else {
-                    console.warn(`⚠️ Firebase REST fetch failed: ${response.status} ${response.statusText}`);
                 }
             } catch (error) {
-                console.log('⚠️ Firebase unavailable, using local config', error);
                 if (error && error.message) {
-                    console.warn('Firebase error detail:', error.message);
                 }
             }
             return false;

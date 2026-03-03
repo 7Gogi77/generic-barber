@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Admin Environment Configuration
  * This file provides admin credentials for the admin panel login
  * Password: admin123 (default - CHANGE THIS IN PRODUCTION!)

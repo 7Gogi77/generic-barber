@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Confetti Effect - Booking Success Celebration
  */
 window.fireConfetti = function() {

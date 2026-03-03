@@ -1,4 +1,4 @@
-/**
+﻿/**
  * manage-appointment.js
  * Handles appointment search, reschedule and cancellation.
  * Depends on: config.js, storage-manager.js, sms-handler.js

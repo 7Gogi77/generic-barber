@@ -132,7 +132,6 @@
                 const response = await fetch(`${FIREBASE_DB_URL}/site_config.json`);
                 if (response.ok) {
                     const config = await response.json();
-                    console.log('✅ Loaded config from Firebase:', config);
                     
                     // Store globally
                     window.SITE_CONFIG = config;
@@ -147,7 +146,6 @@
                             // Convert object with numeric keys to array
                             servicesData = Object.values(items).filter(item => item !== null);
                         }
-                        console.log('✅ Services loaded:', servicesData.length, servicesData);
                     }
                     
                     // Update business hours display
@@ -157,10 +155,8 @@
                     applyThemeColors();
                     
                 } else {
-                    console.warn('⚠ Firebase response not OK:', response.status);
                 }
             } catch (err) {
-                console.error('❌ Failed to load config from Firebase:', err);
                 // Fallback to local config.js if available
                 if (typeof SITE_CONFIG !== 'undefined' && SITE_CONFIG.servicesSection) {
                     servicesData = SITE_CONFIG.servicesSection.items || [];
@@ -188,7 +184,6 @@
                 // Used in button text
             }
             
-            console.log('✅ Theme colors applied from config');
         }
         
         // ===== GET BOOKING SETTINGS (from poslovni-panel localStorage) =====
@@ -330,19 +325,15 @@
                 
                 if (scheduleData && Array.isArray(scheduleData.events)) {
                     BookingState.events = scheduleData.events;
-                    console.log('✅ Loaded', BookingState.events.length, 'events from schedule');
                 } else {
                     BookingState.events = [];
-                    console.log('📋 No events found in schedule');
                 }
                 
                 // Debug: log event details
                 if (BookingState.events.length > 0) {
-                    console.log('📋 Sample events:', BookingState.events.slice(0, 3));
                 }
                 
             } catch (err) {
-                console.warn('⚠ Could not load events:', err);
                 BookingState.events = [];
             }
         }
@@ -355,7 +346,6 @@
             // Use servicesData loaded from Firebase
             const services = servicesData;
             
-            console.log('🔍 Services found:', services.length, services);
             
             if (services.length === 0) {
                 grid.innerHTML = '<p style="text-align: center; color: var(--ios-text-tertiary);">Ni razpoložljivih storitev</p>';
@@ -420,8 +410,6 @@
             // Enable/disable next button
             document.getElementById('toStep2Btn').disabled = BookingState.selectedServices.length === 0;
             
-            console.log('Selected services:', BookingState.selectedServices);
-            console.log('Total duration:', BookingState.totalDuration, 'min');
         }
         
         // ===== UPDATE SELECTION SUMMARY =====
@@ -694,13 +682,11 @@
             const slotDuration = window.SITE_CONFIG?.booking?.slotDuration || 15;
             const serviceDuration = BookingState.totalDuration || 30;
             
-            console.log('📅 Generating slots for:', dateStr, '(day:', dayOfWeek, ') Business hours:', businessHours.start, '-', businessHours.end, 'Service:', serviceDuration, 'min');
             
             const totalWorkMinutes = Math.max(0, (businessHours.end - businessHours.start) * 60);
 
             // If service is too long to fit in a day and multi-day is disabled, show no slots
             if (!rules.allowMultiDayAppointments && serviceDuration > totalWorkMinutes) {
-                console.log('⚠️ Service too long for business hours!');
                 return [];
             }
             
@@ -734,14 +720,12 @@
                 });
             }
             
-            console.log('📅 Generated', allSlots.length, 'potential slots, checking against', BookingState.events.length, 'events');
             
             // Filter out slots that conflict with existing events
             let availableSlots = allSlots.filter(slot => {
                 return !hasConflict(slot.start, slot.end);
             });
             
-            console.log('📅 Available slots after conflict check:', availableSlots.length, '(blocked:', allSlots.length - availableSlots.length, ')');
 
             // Filter out slots that overlap with auto-break
             const bs = getBookingSettings();
@@ -758,7 +742,6 @@
                     // Slot overlaps break if slot.start < breakEnd AND slot.end > breakStart
                     return !(slot.start < breakEnd && slot.end > breakStart);
                 });
-                console.log('📅 After auto-break filter:', availableSlots.length, 'slots');
             }
             
             return availableSlots;
@@ -810,11 +793,9 @@
                     
                     // Check for overlap: (slotStart < eventEnd) && (slotEnd > eventStart)
                     if (slotStart < eventEnd && slotEnd > eventStart) {
-                        console.log('🚫 Conflict found:', event.title, eventStart.toISOString(), '-', eventEnd.toISOString(), 'vs slot', slotStart.toISOString());
                         return true; // Conflict found
                     }
                 } catch (err) {
-                    console.warn('Error checking event conflict:', err);
                 }
             }
             return false;
@@ -1093,12 +1074,10 @@
                 // Save
                 await StorageManager.save('schedule', scheduleData);
                 
-                console.log('✅ Booking saved:', appointment);
                 const manageBaseUrl = (window.SMSHandler && window.SMSHandler.config && window.SMSHandler.config.productionUrl)
                     ? window.SMSHandler.config.productionUrl
                     : window.location.origin;
                 const manageLink = `${manageBaseUrl}/manage-appointment.html?id=${appointment.id}`;
-                console.log('Manage appointment link:', manageLink);
                 
                 // Send SMS confirmation if phone number provided
                 if (BookingState.customerInfo.phone) {
@@ -1113,10 +1092,8 @@
                         
                         if (window.SMSHandler && typeof window.SMSHandler.sendAppointmentConfirmation === 'function') {
                             window.SMSHandler.sendAppointmentConfirmation(appointmentForSMS);
-                            console.log('📱 SMS confirmation sent to:', appointmentForSMS.phoneNumber);
                         }
                     } catch (smsError) {
-                        console.warn('⚠️ SMS confirmation failed (not critical):', smsError.message);
                     }
                 }
                 
@@ -1129,7 +1106,6 @@
                 }
                 
             } catch (err) {
-                console.error('❌ Error saving booking:', err);
                 alert('Prišlo je do napake. Prosimo, poskusite znova.');
             }
             

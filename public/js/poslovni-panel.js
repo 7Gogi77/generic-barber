@@ -153,11 +153,9 @@
             }
             // Always reload services when opening modal
             function openAddEventModalWithTab(startDate = null, endDate = null, retry = 0, tab = null) {
-                console.log('📍 openAddEventModalWithTab called with:', { startDate, endDate, tab, retry });
                 // Če storitve še niso naložene iz Firebase, počakaj in poskusi znova
                 const ready = window.SITE_CONFIG && window.SITE_CONFIG.servicesSection && Array.isArray(window.SITE_CONFIG.servicesSection.items) && window.SITE_CONFIG.servicesSection.items.length > 0;
                 if (!ready && retry < 10) {
-                    console.log('⏳ Services not ready, retrying... (attempt', retry + 1, ')');
                     setTimeout(() => openAddEventModalWithTab(startDate, endDate, retry + 1, tab), 200);
                     return;
                 }
@@ -174,39 +172,31 @@
                 
                 // Show modal
                 const modal = document.getElementById('addEventModal');
-                console.log('📋 Modal element:', { modalExists: !!modal, hasShowClass: modal?.classList.contains('show') });
                 if (modal) modal.classList.add('show');
                 if (startDate) {
                     const startDateEl = document.getElementById('eventStartDate');
                     const endDateEl = document.getElementById('eventEndDate');
-                    console.log('📅 Setting dates:', { startDateEl: !!startDateEl, endDateEl: !!endDateEl });
                     if (startDateEl) {
                         startDateEl.value = startDate;
-                        console.log('✅ Set eventStartDate to:', startDate, '- actual value:', startDateEl.value);
                     }
                     // If endDate provided, use it; otherwise default to startDate
                     const actualEndDate = endDate || startDate;
                     if (endDateEl) {
                         endDateEl.value = actualEndDate;
-                        console.log('✅ Set eventEndDate to:', actualEndDate, '- actual value:', endDateEl.value);
                     }
                 } else {
-                    console.warn('⚠️ No startDate provided to openAddEventModalWithTab');
                 }
             }
             // IMPORTANT: Override will be applied at END of script file to avoid hoisting issues
         // Fallback: Create FullCalendar stub if CDN failed
         if (typeof FullCalendar === 'undefined') {
-          console.warn('⚠️ FullCalendar failed to load from CDN');
           const script = document.createElement('script');
           script.src = 'https://unpkg.com/fullcalendar@6.1.10/index.global.min.js';
-          script.onload = () => console.log('✅ FullCalendar loaded from unpkg fallback');
+          script.onload = () => {};
           script.onerror = () => {
-            console.error('❌ All FullCalendar JS sources failed');
           };
           document.head.appendChild(script);
         } else {
-          console.log('✅ FullCalendar loaded successfully from primary CDN');
         }
 
         // Recalculate total price from selected services
@@ -246,12 +236,10 @@
                 const stored = localStorage.getItem('schedule_deleted_ids');
                 if (stored) {
                     deletedEventIds = new Set(JSON.parse(stored));
-                    console.log(`✓ Loaded ${deletedEventIds.size} deleted event IDs from localStorage`);
                 } else {
                     deletedEventIds = new Set();
                 }
             } catch (e) {
-                console.warn('⚠ Failed to load deleted event IDs', e);
                 deletedEventIds = new Set();
             }
         }
@@ -263,10 +251,7 @@
         function saveDeletedEventIds() {
             try {
                 localStorage.setItem('schedule_deleted_ids', JSON.stringify(Array.from(deletedEventIds)));
-                console.log(`✓ Persisted ${deletedEventIds.size} deleted event IDs to localStorage`);
-            } catch (e) {
-                console.warn('⚠ Failed to save deleted event IDs', e);
-            }
+            } catch (e) {}
         }
 
         /**
@@ -278,7 +263,6 @@
             const before = events.length;
             const filtered = events.filter(e => !deletedEventIds.has(e.id));
             if (before !== filtered.length) {
-                console.log(`🔍 Filtered ${before - filtered.length} deleted events`);
             }
             return filtered;
         }
@@ -319,14 +303,12 @@
             const deduplicated = events.filter(e => {
                 if (!e.id) return true; // Keep events without IDs
                 if (seen.has(e.id)) {
-                    console.log('🔍 Removing duplicate event:', e.id);
                     return false;
                 }
                 seen.add(e.id);
                 return true;
             });
             if (before !== deduplicated.length) {
-                console.log(`✨ Deduplicated ${before - deduplicated.length} events`);
             }
             return deduplicated;
         }
@@ -344,7 +326,7 @@
             // Define panel control functions in outer scope
             function closeCustomerPanel() {
                 const panel = document.getElementById('customerListPanel'); if (!panel) return; panel.classList.remove('open');
-                setTimeout(() => { try { panel.style.display = 'none'; const detail = document.getElementById('customerDetail'); if (detail) detail.style.display = 'none'; } catch(e){} }, 320);
+                setTimeout(() => { try { panel.style.display = 'none'; const detail = document.getElementById('customerDetail'); if (detail) detail.style.display = 'none'; } catch (e) {} }, 320);
             }
             
             function closeAnalyticsPanel() {
@@ -357,7 +339,7 @@
                         if (analyticsCharts.earnings) analyticsCharts.earnings.destroy();
                         if (analyticsCharts.services) analyticsCharts.services.destroy();
                         analyticsCharts = { earnings: null, services: null };
-                    } catch(e){} 
+                    } catch (e) {} 
                 }, 320);
             }
 
@@ -366,7 +348,7 @@
                 if (!panel) return;
                 panel.classList.remove('open');
                 setTimeout(() => {
-                    try { panel.style.display = 'none'; } catch(e){}
+                    try { panel.style.display = 'none'; } catch (e) {}
                 }, 320);
             }
             
@@ -468,9 +450,7 @@
                         scheduleData.events = filterDeletedEvents(scheduleData.events);
                         scheduleData.events = deduplicateEvents(scheduleData.events);
                     }
-                } catch (e) {
-                    console.warn('⚠ Failed to load schedule for customers view', e);
-                }
+                } catch (e) {}
 
                 // Merge saved customer base and derive customers from bookings
                 await loadCustomerBase();
@@ -612,7 +592,7 @@
                                     }, 60);
                                     closeCustomerPanel();
                                 }
-                            } catch (er) { console.error('customerList edit handler failed', er); }
+                            } catch (er) {}
                         }
                         if (t.id === 'customerCloseBtn' || (t.classList && t.classList.contains('btn') && t.classList.contains('btn-secondary'))) {
                             const d = document.getElementById('customerDetail'); if (d) d.style.display = 'none';
@@ -639,7 +619,6 @@
                                         if ((r.fullName && r.fullName === name) || (r.email && r.email === email) || (r.phone && r.phone === phone)) matchKey = k;
                                     });
                                     if (!matchKey) {
-                                        console.warn('No matching customer record found to delete');
                                         alert('Stranka ni bila najdena v bazi');
                                         return;
                                     }
@@ -648,8 +627,8 @@
                                     // Attempt remote delete
                                     try {
                                         const base = 'https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app/';
-                                        fetch(base + `site_config/customers/${encodeURIComponent(matchKey)}.json`, { method: 'DELETE' }).then(() => console.log('✓ Remote customer deleted', matchKey)).catch(e => console.warn('⚠ Remote delete failed', e));
-                                    } catch (e) { console.warn('⚠ Remote delete failed', e); }
+                                        fetch(base + `site_config/customers/${encodeURIComponent(matchKey)}.json`, { method: 'DELETE' }).then(() => {}).catch(() => {});
+                                    } catch (e) {}
 
                                     // Check bookings that reference this customer and optionally remove references
                                     (async function handleBookingsCleanup(){
@@ -683,13 +662,13 @@
                                                     }
                                                 }
                                             }
-                                        } catch (e) { console.warn('⚠ error cleaning bookings', e); }
+                                        } catch (e) {}
                                     })();
 
                                     // Refresh the panel
                                     showCustomerListPanel();
                                 });
-                            } catch (err) { console.warn('customer delete failed', err); }
+                            } catch (err) {}
                         }
 
                     });
@@ -723,9 +702,7 @@
                     scheduleData.events = filterDeletedEvents(scheduleData.events);
                     scheduleData.events = deduplicateEvents(scheduleData.events);
                 }
-            } catch (e) {
-                console.warn('⚠ Failed to load schedule for analytics', e);
-            }
+            } catch (e) {}
 
             // Load manual earnings
             await loadManualEarnings();
@@ -1276,7 +1253,7 @@
             // locations already in _bspData
 
             // ── Persist ───────────────────────────────────────────
-            try { localStorage.setItem('bookingSettings', JSON.stringify(s)); } catch(e) { console.warn('⚠ localStorage error', e); }
+            try { localStorage.setItem('bookingSettings', JSON.stringify(s)); } catch (e) {}
 
             // Derive global hours for backward compat
             const enabledWD = DAYS_KEYS.filter(k => k >= 1 && k <= 5 && daysByKey[k]?.enabled);
@@ -1285,7 +1262,7 @@
             try {
                 localStorage.setItem('workingHoursByDay', JSON.stringify(daysByKey));
                 localStorage.setItem('workingHours', JSON.stringify({ start: `${String(startHour).padStart(2,'0')}:00`, end: `${String(endHour).padStart(2,'0')}:00` }));
-            } catch(e) {}
+            } catch (e) {}
 
             // Update runtime SITE_CONFIG
             if (!window.SITE_CONFIG || typeof window.SITE_CONFIG !== 'object') window.SITE_CONFIG = {};
@@ -1298,14 +1275,14 @@
             window.SITE_CONFIG.booking.bufferAfter             = s.bufferAfter;
             window.SITE_CONFIG.booking.minLeadTime             = s.minLeadTime;
             window.SITE_CONFIG.booking.maxAdvanceDays          = s.maxAdvanceDays;
-            try { localStorage.setItem('site_config_backup', JSON.stringify(window.SITE_CONFIG)); } catch(e) {}
+            try { localStorage.setItem('site_config_backup', JSON.stringify(window.SITE_CONFIG)); } catch (e) {}
 
             // Cloud sync
             try {
                 if (window.CloudSync && typeof window.CloudSync.saveToCloud === 'function') {
                     await window.CloudSync.saveToCloud(window.SITE_CONFIG);
                 }
-            } catch(e) { console.warn('⚠ Cloud sync failed', e); }
+            } catch (e) {}
 
             // Update FullCalendar live
             try {
@@ -1318,7 +1295,7 @@
                     window.calendar.setOption('slotMaxTime', `${String(endHour).padStart(2,'0')}:00:00`);
                     if (typeof window.calendar.updateSize === 'function') window.calendar.updateSize();
                 }
-            } catch(e) { console.warn('⚠ Calendar update failed', e); }
+            } catch (e) {}
 
             // Also collect and persist services + team from their tab forms
             try {
@@ -1328,7 +1305,7 @@
                     if (window.StorageManager) await StorageManager.save('site_config', window.SITE_CONFIG);
                     if (window.CloudSync?.saveToCloud) await window.CloudSync.saveToCloud(window.SITE_CONFIG);
                 }
-            } catch(e) { console.warn('⚠ Could not save services/team:', e); }
+            } catch (e) {}
             // Show feedback toast if available, else alert
             if (typeof showToast === 'function') {
                 showToast('✅ Nastavitve rezervacij shranjene!');
@@ -1371,7 +1348,6 @@
                 const raw = localStorage.getItem('manual_earnings');
                 manualEarningsData = raw ? JSON.parse(raw) : [];
             } catch (e) {
-                console.warn('Failed to load manual earnings', e);
                 manualEarningsData = [];
             }
         }
@@ -1379,9 +1355,7 @@
         async function saveManualEarnings() {
             try {
                 localStorage.setItem('manual_earnings', JSON.stringify(manualEarningsData));
-            } catch (e) {
-                console.warn('Failed to save manual earnings', e);
-            }
+            } catch (e) {}
         }
 
         function renderAnalytics() {
@@ -1837,9 +1811,7 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                             if (merged) saveCustomerBase();
                         }
                     }
-                } catch (err) {
-                    console.warn('⚠ Could not fetch remote customers', err);
-                }
+                } catch (err) {}
 
             } catch (e) { customerBase = {}; }
         }
@@ -1882,10 +1854,7 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                 await fetch(base + `site_config/customers/${encodeURIComponent(key)}.json`, {
                     method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(rec)
                 });
-                console.log('✓ persisted customer to cloud:', key);
-            } catch (e) {
-                console.warn('⚠ failed to persist customer to cloud', e);
-            }
+            } catch (e) {}
             return key;
         }
 
@@ -1968,9 +1937,7 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                 // Assign canonical scheduleData and refresh calendar
                 scheduleData = newScheduleData;
                 if (typeof loadAppointmentsToCalendarNow === 'function') await loadAppointmentsToCalendarNow();
-            } catch (err) {
-                console.warn('⚠ onScheduleUpdated merge failed', err);
-            }
+            } catch (err) {}
         };
 
         // Update existing event
@@ -1995,23 +1962,17 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
         
         async function deleteScheduleEvent(eventId) {
             try {
-                console.log(`🗑️  DELETING EVENT: ${eventId}`);
                 
                 const existing = scheduleData.events.find(e => e.id === eventId);
                 if (!existing) {
-                    console.warn(`⚠ Event ${eventId} not found`);
                     return false;
                 }
 
                 // STEP 1: Mark as deleted FIRST - this prevents all restores
-                console.log(`⏳ Step 1: Marking as deleted...`);
                 markEventDeleted(eventId);
-                console.log(`✓ Step 1 COMPLETE: ${eventId} marked as deleted`);
 
                 // STEP 2: Remove from scheduleData
-                console.log(`⏳ Step 2: Removing from scheduleData...`);
                 scheduleData.events = scheduleData.events.filter(e => e.id !== eventId);
-                console.log(`✓ Step 2 COMPLETE: Removed from scheduleData`);
 
                 // STEP 3: Delete from Firebase by searching for matching entries
                 const base = 'https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app/';
@@ -2037,7 +1998,6 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                                 if (matchId || (matchWorker && matchDate && matchTime)) {
                                     // Delete this array element
                                     await fetch(`${base}site_config/adminSchedule/entries/${i}.json`, { method: 'DELETE' });
-                                    console.log(`✓ Deleted site_config entry at index ${i}`);
                                     
                                     // Mark as deleted
                                     await fetch(`${base}site_config/adminSchedule/deleted/${i}.json`, {
@@ -2049,9 +2009,7 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                             }
                         }
                     }
-                } catch (err) {
-                    console.warn('⚠ Failed to delete from site_config/adminSchedule/entries', err);
-                }
+                } catch (err) {}
 
                 // Delete from adminSchedule/entries (object with Firebase push IDs)
                 try {
@@ -2071,7 +2029,6 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                                 if (matchId || (matchWorker && matchDate && matchTime)) {
                                     // Delete this entry
                                     await fetch(`${base}adminSchedule/entries/${key}.json`, { method: 'DELETE' });
-                                    console.log(`✓ Deleted adminSchedule entry ${key}`);
                                     
                                     // Mark as deleted
                                     await fetch(`${base}adminSchedule/deleted/${key}.json`, {
@@ -2083,74 +2040,50 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                             }
                         }
                     }
-                } catch (err) {
-                    console.warn('⚠ Failed to delete from adminSchedule/entries', err);
-                }
+                } catch (err) {}
 
                 // STEP 6: Save scheduleData directly to localStorage
-                console.log(`⏳ Step 6: Saving to localStorage...`);
-                console.log(`📊 scheduleData now has ${scheduleData.events.length} events`);
                 try {
                     // Directly save to localStorage without triggering callbacks
                     localStorage.setItem('schedule', JSON.stringify(scheduleData));
-                    console.log('✓ Step 6 COMPLETE: Schedule saved directly to localStorage');
                     
                     // VERIFY it was saved
                     const saved = JSON.parse(localStorage.getItem('schedule'));
-                    console.log(`✅ VERIFICATION: localStorage has ${saved.events.length} events`);
-                    console.log(`🔍 Event in saved localStorage? ${saved.events.some(e => e.id === eventId)}`);
-                } catch (saveErr) {
-                    console.warn('⚠ Step 6 FAILED: Failed to save', saveErr);
-                }
+                } catch (saveErr) {}
 
                 // STEP 7: Remove from calendar UI and REFETCH to apply deletion filter
-                console.log(`⏳ Step 7: Removing from UI and refetching calendar...`);
                 try {
                     const calEvent = window.calendar && window.calendar.getEventById(eventId);
                     if (calEvent) {
                         calEvent.remove();
-                        console.log(`✓ Removed event from calendar DOM`);
                     }
                     
                     // CRITICAL: Refetch ALL events to apply deletion filter
                     if (window.calendar && typeof window.calendar.refetchEvents === 'function') {
-                        console.log(`⏳ Calling calendar.refetchEvents()...`);
                         await Promise.resolve(window.calendar.refetchEvents());
-                        console.log(`✓ Step 7 COMPLETE: Calendar refetched - deletion filter applied`);
                     } else {
-                        console.warn('⚠ Calendar.refetchEvents not available');
                     }
-                } catch (uiErr) {
-                    console.warn('⚠ Step 7 FAILED:', uiErr);
-                }
+                } catch (uiErr) {}
 
                 // STEP 8: Clear empty storage
-                console.log(`⏳ Step 8: Checking if storage empty...`);
                 const activeEvents = filterDeletedEvents(scheduleData.events);
                 if (activeEvents.length === 0) {
                     try {
                         localStorage.removeItem('schedule');
                         await fetch(`${base}site_config/adminSchedule/entries.json`, { method: 'PUT', body: '{}' });
                         await fetch(`${base}adminSchedule/entries.json`, { method: 'PUT', body: '{}' });
-                        console.log('✓ Step 8 COMPLETE: Cleared all storage (no active events)');
-                    } catch (e) {
-                        console.warn('⚠ Step 8 FAILED: Could not clear storage', e);
-                    }
+                    } catch (e) {}
                 } else {
-                    console.log(`✓ Step 8 COMPLETE: ${activeEvents.length} active events remain`);
                 }
 
-                console.log(`✅ DELETION COMPLETE: Event ${eventId} PERMANENTLY deleted`);
                 return true;
 
             } catch (err) {
-                console.error('❌ Deletion failed', err);
                 return false;
             }
         }
 
         window.deleteScheduleEvent = deleteScheduleEvent;
-        console.log('BUILD 2026-02-26-1: deleteScheduleEvent attached', typeof window.deleteScheduleEvent);
 
         // Mark an adminSchedule key as deleted to prevent re-merge
         async function markAdminEntryDeleted(key) {
@@ -2160,10 +2093,9 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                 // write tombstone under site_config/adminSchedule/deleted/{key}
                 await fetch(base + `site_config/adminSchedule/deleted/${key}.json`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(true) });
                 // also record under adminSchedule/deleted for completeness
-                try { await fetch(base + `adminSchedule/deleted/${key}.json`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(true) }); } catch(_){}
-                console.log('markAdminEntryDeleted:', key);
+                try { await fetch(base + `adminSchedule/deleted/${key}.json`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(true) }); } catch (_) {}
                 return true;
-            } catch (e) { console.warn('markAdminEntryDeleted failed', e); return false; }
+            } catch (e) {  return false; }
         }
 
         // Save scheduleData using StorageManager and notify other tabs
@@ -2177,30 +2109,23 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                 if (typeof StorageManager !== 'undefined' && StorageManager.save) {
                     const p = StorageManager.save('schedule', scheduleData);
                     p.then(result => {
-                        console.log('✓ schedule saved', result);
                         try {
                             if (StorageManager.broadcastUpdate) StorageManager.broadcastUpdate(scheduleData);
-                        } catch (e) {
-                            console.warn('⚠ broadcast failed', e);
-                        }
+                        } catch (e) {}
                         if (window.onScheduleUpdated) window.onScheduleUpdated(scheduleData);
                     }).catch(err => {
-                        console.error('✗ Error saving scheduleData', err);
                     });
                     return p;
                 } else {
                     try {
                         localStorage.setItem('schedule', JSON.stringify(scheduleData));
-                        console.log('✓ schedule saved to localStorage (StorageManager missing)');
                         if (window.onScheduleUpdated) window.onScheduleUpdated(scheduleData);
                         return Promise.resolve({ ok: true, method: 'localStorage' });
                     } catch (e) {
-                        console.error('✗ Fallback localStorage save failed', e);
                         return Promise.reject(e);
                     }
                 }
             } catch (err) {
-                console.error('✗ saveScheduleData failed', err);
                 return Promise.reject(err);
             }
         };
@@ -2214,25 +2139,20 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                 if (typeof StorageManager !== 'undefined' && StorageManager.save) {
                     const p = StorageManager.save('schedule', scheduleData);
                     p.then(result => {
-                        console.log('✓ schedule saved (no broadcast)', result);
                         if (window.onScheduleUpdated) window.onScheduleUpdated(scheduleData);
                     }).catch(err => {
-                        console.error('✗ Error saving scheduleData (no broadcast)', err);
                     });
                     return p;
                 } else {
                     try {
                         localStorage.setItem('schedule', JSON.stringify(scheduleData));
-                        console.log('✓ schedule saved to localStorage (no broadcast)');
                         if (window.onScheduleUpdated) window.onScheduleUpdated(scheduleData);
                         return Promise.resolve({ ok: true, method: 'localStorage' });
                     } catch (e) {
-                        console.error('✗ Fallback localStorage save failed (no broadcast)', e);
                         return Promise.reject(e);
                     }
                 }
             } catch (err) {
-                console.error('✗ saveScheduleDataNoBroadcast failed', err);
                 return Promise.reject(err);
             }
         };
@@ -2257,50 +2177,38 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                         // the event survives a page reload even if remote save fails.
                         try {
                             localStorage.setItem('schedule', JSON.stringify(scheduleData));
-                            console.log('✓ schedule persisted to localStorage (immediate fallback)');
-                        } catch (e) {
-                            console.warn('⚠ immediate localStorage persistence failed', e);
-                        }
+                        } catch (e) {}
                         if (window.saveScheduleData) {
                             // Fire-and-log save; do not block UI but record result for debugging
                             try {
                                 window.saveScheduleData().then(res => {
-                                    console.log('saveScheduleData result:', res);
                                 }).catch(err => {
-                                    console.error('saveScheduleData error:', err);
                                 });
-                            } catch (e) {
-                                console.warn('saveScheduleData invocation failed', e);
-                            }
+                            } catch (e) {}
                         }
                 return normalized.id;
             } catch (err) {
-                console.error('✗ addScheduleEvent failed', err);
                 return null;
             }
         };
 
         // Modal functions
         function openAddEventModal(startDate = null, endDate = null) {
-            console.log('🔴 SECOND openAddEventModal CALLED with:', { startDate, endDate });
             const form = document.getElementById('addEventForm');
             if (form) form.reset();
             setEventTab('worker');
 
             const modal = document.getElementById('addEventModal');
             if (startDate) {
-                console.log('📅 Setting dates in SECOND function:', { startDate, endDate });
                 const startEl = document.getElementById('eventStartDate');
                 const endEl = document.getElementById('eventEndDate');
                 if (startEl) {
                     startEl.value = startDate;
-                    console.log('✅ Set eventStartDate:', startDate, '→ actual value:', startEl.value);
                 }
                 // If endDate provided (from drag selection), use it; otherwise default to startDate
                 const actualEnDate = endDate || startDate;
                 if (endEl) {
                     endEl.value = actualEnDate;
-                    console.log('✅ Set eventEndDate:', actualEnDate, '→ actual value:', endEl.value);
                 }
             }
             modal.classList.add('show');
@@ -2366,7 +2274,6 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                 if (durWrapper) durWrapper.style.display = 'none';
             }
 
-            console.log('Opening event modal with:', { title, type: event.extendedProps?.type, startDate, startTime, isBooking });
 
             modal.classList.add('show');
         }
@@ -2407,17 +2314,14 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                         // Use centralized delete logic which also removes DB nodes and avoids broadcasting
                         try {
                             // remove from calendar UI immediately
-                            try { window.calendar.getEventById(event.id).remove(); } catch(e) {}
+                            try { window.calendar.getEventById(event.id).remove(); } catch (e) {}
                             // perform delete (await) and then close modal
                             deleteScheduleEvent(event.id).then(ok => {
-                                console.log('deleteScheduleEvent result:', ok);
                                 closeBookingDetailsModal();
                             }).catch(err => {
-                                console.error('deleteScheduleEvent failed', err);
                                 closeBookingDetailsModal();
                             });
                         } catch (e) {
-                            console.error('delete button handler failed', e);
                             closeBookingDetailsModal();
                         }
                     }
@@ -2431,7 +2335,7 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                     try {
                         closeBookingDetailsModal();
                         openEditEventModal(event);
-                    } catch (e) { console.error('booking edit handler failed', e); }
+                    } catch (e) {}
                 };
             }
             modal.classList.add('show');
@@ -2458,7 +2362,6 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                     
                     // Use the existing Firebase deletion function
                     deleteScheduleEvent(eventId).then(() => {
-                        console.log('✅ Event deleted from Firebase');
                         
                         // Remove from calendar display
                         const calEvent = window.calendar.getEventById(eventId);
@@ -2477,7 +2380,6 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                             closeEditEventModal();
                         }, remainingTime);
                     }).catch(err => {
-                        console.error('Failed to delete:', err);
                         if (loadingOverlay) {
                             loadingOverlay.style.display = 'none';
                             loadingOverlay.style.opacity = '0';
@@ -2579,7 +2481,7 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
             if (currentEventTab === 'customer') {
                 try {
                     await persistCustomerToBase({ firstName: firstName, surname: lastName, email: eventPayload.extendedProps?.email, phone: eventPayload.extendedProps?.phone });
-                } catch (e) { console.warn('⚠ persistCustomerToBase failed during add', e); }
+                } catch (e) {}
             }
 
             const eventId = (typeof window.addScheduleEvent === 'function')
@@ -2597,11 +2499,10 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                         if (typeof window.saveScheduleData === 'function') {
                             window.saveScheduleData();
                         } else {
-                            try { localStorage.setItem('schedule', JSON.stringify(scheduleData)); } catch(e) { }
+                            try { localStorage.setItem('schedule', JSON.stringify(scheduleData)); } catch (e) {}
                         }
                         return normalized.id;
                     } catch (err) {
-                        console.error('✗ fallback addScheduleEvent failed', err);
                         return null;
                     }
                 })(eventPayload);
@@ -2618,9 +2519,7 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                 } else {
                     try { localStorage.setItem('schedule', JSON.stringify(scheduleData)); } catch(e) { /* ignore */ }
                 }
-            } catch (sdErr) {
-                console.warn('⚠ saveScheduleData failed after add', sdErr);
-            }
+            } catch (sdErr) {}
 
             // Refresh calendar from saved schedule (removes duplicates and ensures canonical rendering)
             if (typeof loadAppointmentsToCalendarNow === 'function') {
@@ -2675,7 +2574,6 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                     // fire-and-forget; function defined below
                     if (typeof sendAdminScheduleEntry === 'function') {
                         sendAdminScheduleEntry(adminEntry).then(async resKey => {
-                            console.log('sendAdminScheduleEntry result:', resKey);
                             try {
                                 if (resKey) {
                                     // store adminKey on the schedule event so future edits/deletes can mirror
@@ -2704,12 +2602,10 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                                         }
                                     }
                                 }
-                            } catch (ee) { console.warn('⚠ failed to set adminKey on scheduleData', ee); }
-                        }).catch(err => console.warn('sendAdminScheduleEntry failed', err));
+                            } catch (ee) {}
+                        }).catch(() => {});
                     }
-                } catch (err) {
-                    console.warn('⚠ Failed to prepare adminSchedule entry', err);
-                }
+                } catch (err) {}
             }
 
             closeAddEventModal();
@@ -2804,7 +2700,6 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                             localStorage.setItem('schedule', JSON.stringify(scheduleData));
                             return ev.id;
                         } catch (err) {
-                            console.error('Failed to save new event:', err);
                             return null;
                         }
                     })(eventPayload);
@@ -2833,17 +2728,13 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                         
                         if (window.SMSHandler && typeof window.SMSHandler.sendAppointmentConfirmation === 'function') {
                             window.SMSHandler.sendAppointmentConfirmation(appointmentForSMS);
-                            console.log('📱 SMS confirmation sent to:', appointmentForSMS.phoneNumber);
                         }
-                    } catch (smsError) {
-                        console.warn('⚠️ SMS confirmation failed (not critical):', smsError.message);
-                    }
+                    } catch (smsError) {}
                 }
 
                 closeAddEventModal();
                 return true;
             } catch (err) {
-                console.error('handleAddEventSimplified failed', err);
                 alert('Napaka pri dodajanju termina');
                 return false;
             }
@@ -2897,10 +2788,7 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                 // Save to localStorage
                 try {
                     localStorage.setItem('schedule', JSON.stringify(scheduleData));
-                    console.log('✅ Event updated and saved to localStorage');
-                } catch (err) {
-                    console.error('Failed to save after update:', err);
-                }
+                } catch (err) {}
             }
 
             // Update calendar display
@@ -2937,15 +2825,12 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
             // First attempt: POST to push a new child under adminSchedule/entries
             try {
                 const postUrl = baseUrl + 'adminSchedule/entries.json';
-                console.log('sendAdminScheduleEntry: attempting POST to', postUrl);
                 const postRes = await fetch(postUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(entry)
                 });
-                console.log('sendAdminScheduleEntry POST status:', postRes.status);
                 const postTxt = await postRes.text().catch(() => '<no body>');
-                console.log('sendAdminScheduleEntry POST response body:', postTxt);
                     if (postRes.ok) {
                     // Mirror the pushed child into site_config so admin UI (which reads site_config.json)
                     // can see the new entry. The POST returns { name: generatedKey } in postTxt/json.
@@ -2955,31 +2840,22 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                         const generatedKey = parsed && parsed.name ? parsed.name : null;
                         if (generatedKey) {
                             const mirrorUrl = baseUrl + `site_config/adminSchedule/entries/${generatedKey}.json`;
-                            console.log('sendAdminScheduleEntry: mirroring entry into', mirrorUrl);
                             const mirrorRes = await fetch(mirrorUrl, {
                                 method: 'PUT',
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify(entry)
                             });
-                            console.log('sendAdminScheduleEntry mirror status:', mirrorRes.status);
                             const mirrorTxt = await mirrorRes.text().catch(() => '<no body>');
-                            console.log('sendAdminScheduleEntry mirror response body:', mirrorTxt);
                         }
-                    } catch (mirrorErr) {
-                        console.warn('sendAdminScheduleEntry mirror failed:', mirrorErr);
-                    }
+                    } catch (mirrorErr) {}
                     // return generated key so caller can store adminKey on schedule event
                     return generatedKey || true;
                 }
-                console.warn('sendAdminScheduleEntry POST failed, falling back to GET/PUT', postRes.status);
-            } catch (err) {
-                console.warn('sendAdminScheduleEntry POST attempt failed:', err);
-            }
+            } catch (err) {}
 
             // Fallback: GET site_config.json, append entry, PUT back
             try {
                 const dbUrl = baseUrl + 'site_config.json';
-                console.log('sendAdminScheduleEntry: falling back to GET/PUT on', dbUrl);
                 const getRes = await fetch(dbUrl);
                 let config = {};
                 if (getRes.ok) {
@@ -2996,12 +2872,9 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                     body: JSON.stringify(config)
                 });
 
-                console.log('sendAdminScheduleEntry PUT status:', putRes.status);
                 const txt = await putRes.text().catch(() => '<no body>');
-                console.log('sendAdminScheduleEntry PUT response body:', txt);
                 return putRes.ok;
             } catch (err) {
-                console.error('sendAdminScheduleEntry fallback error:', err);
                 return false;
             }
         }
@@ -3020,10 +2893,8 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
             };
             try {
                 const ok = await sendAdminScheduleEntry(entry);
-                console.log('testSendAdminScheduleEntry result:', ok);
                 return ok;
             } catch (err) {
-                console.error('testSendAdminScheduleEntry error:', err);
                 return false;
             }
         };
@@ -3033,8 +2904,7 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
         window.purgeMirroredAdminEntries = async function() {
             const base = 'https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app/';
             try {
-                if (!scheduleData || !Array.isArray(scheduleData.events)) return console.warn('No scheduleData available');
-                console.log('purgeMirroredAdminEntries: scanning', scheduleData.events.length, 'events');
+                if (!scheduleData || !Array.isArray(scheduleData.events)) return;
 
                 // Fetch site_config adminSchedule entries map
                 const cfgRes = await fetch(base + 'site_config/adminSchedule/entries.json');
@@ -3046,9 +2916,8 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                     try {
                         const adminKey = ev?.extendedProps?.adminKey;
                         if (adminKey) {
-                            console.log('purge: deleting keys for adminKey', adminKey);
-                            try { await fetch(base + `site_config/adminSchedule/entries/${adminKey}.json`, { method: 'DELETE' }); console.log('purge: deleted site_config entry', adminKey); } catch(e){console.warn('purge: site_config delete failed', e)}
-                            try { await fetch(base + `adminSchedule/entries/${adminKey}.json`, { method: 'DELETE' }); console.log('purge: deleted entries node', adminKey); } catch(e){console.warn('purge: entries delete failed', e)}
+                            try { await fetch(base + `site_config/adminSchedule/entries/${adminKey}.json`, { method: 'DELETE' }); } catch (e) {}
+                            try { await fetch(base + `adminSchedule/entries/${adminKey}.json`, { method: 'DELETE' }); } catch (e) {}
                             continue;
                         }
 
@@ -3064,8 +2933,7 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                                     const itEnd = it.endDate || it.end || null;
                                     const itCustomer = (it.customer || it.notes || '').trim();
                                     if (itStart === evStart && itEnd === evEnd && itCustomer && evCustomer && itCustomer === evCustomer) {
-                                        console.log('purge: deleting matched site_config key', k);
-                                        try { await fetch(base + `site_config/adminSchedule/entries/${k}.json`, { method: 'DELETE' }); } catch(e){console.warn('purge: delete failed', e)}
+                                        try { await fetch(base + `site_config/adminSchedule/entries/${k}.json`, { method: 'DELETE' }); } catch (e) {}
                                     }
                                 } catch (_) {}
                             }
@@ -3078,20 +2946,17 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                                     const itEnd = it.endDate || it.end || null;
                                     const itCustomer = (it.customer || it.notes || '').trim();
                                     if (itStart === evStart && itEnd === evEnd && itCustomer && evCustomer && itCustomer === evCustomer) {
-                                        console.log('purge: deleting matched pushed key', k);
-                                        try { await fetch(base + `adminSchedule/entries/${k}.json`, { method: 'DELETE' }); } catch(e){console.warn('purge: delete pushed failed', e)}
+                                        try { await fetch(base + `adminSchedule/entries/${k}.json`, { method: 'DELETE' }); } catch (e) {}
                                     }
                                 } catch (_) {}
                             }
                         }
 
-                    } catch (e) { console.warn('purge: event delete loop error', e); }
+                    } catch (e) {}
                 }
 
-                console.log('purgeMirroredAdminEntries: done');
                 return true;
             } catch (err) {
-                console.error('purgeMirroredAdminEntries failed', err);
                 return false;
             }
         };
@@ -3106,13 +2971,8 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                 ]);
                 const cfgMap = cfgRes.ok ? await cfgRes.json().catch(() => null) : null;
                 const pushedMap = pushedRes.ok ? await pushedRes.json().catch(() => null) : null;
-                console.log('site_config/adminSchedule/entries:', cfgMap ? Object.keys(cfgMap).length : 0, 'items');
-                console.log(cfgMap);
-                console.log('adminSchedule/entries:', pushedMap ? Object.keys(pushedMap).length : 0, 'items');
-                console.log(pushedMap);
                 return { cfgMap, pushedMap };
             } catch (err) {
-                console.error('listAdminEntries failed', err);
                 return null;
             }
         };
@@ -3120,15 +2980,13 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
         // Debug helper: force-delete a specific admin entry by key (deletes both mirrored and pushed nodes)
         window.forceDeleteAdminEntry = async function(key) {
             const base = 'https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app/';
-            if (!key) return console.warn('forceDeleteAdminEntry requires a key');
+            if (!key) return;
             try {
                 const res1 = await fetch(base + `site_config/adminSchedule/entries/${key}.json`, { method: 'DELETE' });
-                console.log('site_config delete', key, res1.status);
-            } catch (e) { console.warn('site_config delete failed', e); }
+            } catch (e) {}
             try {
                 const res2 = await fetch(base + `adminSchedule/entries/${key}.json`, { method: 'DELETE' });
-                console.log('adminSchedule delete', key, res2.status);
-            } catch (e) { console.warn('adminSchedule delete failed', e); }
+            } catch (e) {}
         };
 
         // Debug helper: delete all adminSchedule entries (CONFIRM first)
@@ -3138,17 +2996,13 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
             try {
                 const pushedRes = await fetch(base + 'adminSchedule/entries.json');
                 const pushedMap = pushedRes.ok ? await pushedRes.json().catch(() => null) : null;
-                if (!pushedMap) return console.log('No pushed entries found');
+                if (!pushedMap) return;
                 const keys = Object.keys(pushedMap);
-                console.log('Deleting', keys.length, 'pushed entries');
                 for (const k of keys) {
-                    try { await fetch(base + `adminSchedule/entries/${k}.json`, { method: 'DELETE' }); console.log('deleted pushed', k); } catch(e){console.warn('delete pushed failed', k, e)}
-                    try { await fetch(base + `site_config/adminSchedule/entries/${k}.json`, { method: 'DELETE' }); console.log('deleted mirrored', k); } catch(e){console.warn('delete mirrored failed', k, e)}
+                    try { await fetch(base + `adminSchedule/entries/${k}.json`, { method: 'DELETE' }); } catch (e) {}
+                    try { await fetch(base + `site_config/adminSchedule/entries/${k}.json`, { method: 'DELETE' }); } catch (e) {}
                 }
-                console.log('deleteAllAdminEntries: done');
-            } catch (err) {
-                console.error('deleteAllAdminEntries failed', err);
-            }
+            } catch (err) {}
         };
 
         // Strong wipe: delete adminSchedule/entries and mirrored site_config/adminSchedule/entries
@@ -3160,25 +3014,19 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                 // Delete the whole adminSchedule/entries parent
                 try {
                     const d1 = await fetch(base + 'adminSchedule/entries.json', { method: 'DELETE' });
-                    console.log('DELETE adminSchedule/entries', d1.status);
-                } catch (e) { console.warn('delete adminSchedule parent failed', e); }
+                } catch (e) {}
 
                 // Delete the mirrored site_config parent
                 try {
                     const d2 = await fetch(base + 'site_config/adminSchedule/entries.json', { method: 'DELETE' });
-                    console.log('DELETE site_config/adminSchedule/entries', d2.status);
-                } catch (e) { console.warn('delete site_config parent failed', e); }
+                } catch (e) {}
 
                 // Write an explicit empty map to mirrored location so admin UI sees no entries
                 try {
                     const put = await fetch(base + 'site_config/adminSchedule/entries.json', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({}) });
-                    console.log('PUT empty mirrored map', put.status);
-                } catch (e) { console.warn('put empty mirrored map failed', e); }
+                } catch (e) {}
 
-                console.log('wipeAdminScheduleNodes: done. Run listAdminEntries() to verify.');
-            } catch (err) {
-                console.error('wipeAdminScheduleNodes failed', err);
-            }
+            } catch (err) {}
         };
 
         // Nuclear option: PUT empty object to both paths to overwrite and clear all entries
@@ -3193,19 +3041,13 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                     fetch(base + 'adminSchedule/entries.json', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(empty) }),
                     fetch(base + 'site_config/adminSchedule/entries.json', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(empty) })
                 ]);
-                console.log('nukeAdminSchedule: adminSchedule/entries PUT', r1.status);
-                console.log('nukeAdminSchedule: site_config/adminSchedule/entries PUT', r2.status);
-                console.log('nukeAdminSchedule: done. Run listAdminEntries() to verify.');
-            } catch (err) {
-                console.error('nukeAdminSchedule failed', err);
-            }
+            } catch (err) {}
         };
 
         if (typeof window.debugLog !== 'function') {
             window.debugLog = function(...args) {
                 try {
                     if (window.DEBUG_SCHEDULE) {
-                        console.log(...args);
                     }
                 } catch (e) {
                     // Ignore logging failures
@@ -3245,16 +3087,12 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                                 return data;
                             }
                         }
-                    } catch (err) {
-                        console.warn('StorageManager fallback load failed', err);
-                    }
+                    } catch (err) {}
 
                     try {
                         const item = localStorage.getItem(key);
                         if (item) return JSON.parse(item);
-                    } catch (err) {
-                        console.warn('StorageManager fallback localStorage read failed', err);
-                    }
+                    } catch (err) {}
 
                     return getDefaultSchedule();
                 };
@@ -3264,9 +3102,7 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                 window.StorageManager.save = async function(key, data) {
                     try {
                         localStorage.setItem(key, JSON.stringify(data));
-                    } catch (err) {
-                        console.warn('StorageManager fallback localStorage save failed', err);
-                    }
+                    } catch (err) {}
 
                     try {
                         const response = await fetch(`${this.firebaseUrl}/${key}.json`, {
@@ -3276,7 +3112,6 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                         });
                         return { ok: response.ok, method: response.ok ? 'firebase' : 'localStorage' };
                     } catch (err) {
-                        console.warn('StorageManager fallback firebase save failed', err);
                         return { ok: true, method: 'localStorage' };
                     }
                 };
@@ -3292,7 +3127,6 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
 
             if (!container) {
                 debugLog('❌ Calendar container not found');
-                console.error('Calendar container not found');
                 return;
             }
 
@@ -3338,7 +3172,6 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                 // CRITICAL: Load deletion tracker FIRST before filtering
                 if (typeof window.loadDeletedEventIds === 'function') {
                     await window.loadDeletedEventIds();
-                    console.log(`🔍 Loaded deletion tracker with ${Array.from(deletedEventIds).length} deleted IDs`);
                 }
                 
                 // CRITICAL: Filter out any deleted events right after loading
@@ -3346,7 +3179,6 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                     const before = scheduleData.events.length;
                     scheduleData.events = filterDeletedEvents(scheduleData.events);
                     scheduleData.events = deduplicateEvents(scheduleData.events);
-                    console.log(`📊 After deletion filter: ${before} → ${scheduleData.events.length} events (removed ${before - scheduleData.events.length})`);
                     if (before !== scheduleData.events.length) {
                         debugLog(`🔍 Filtered ${before - scheduleData.events.length} deleted events on load`);
                     }
@@ -3400,10 +3232,10 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                                 } catch (e) { /* ignore per-event merge errors */ }
                             });
 
-                            try { await StorageManager.save('schedule', scheduleData); debugLog('✅ Merged local fallback events saved to canonical schedule'); } catch(e) { console.warn('⚠ failed to save merged schedule after local fallback merge', e); }
+                            try { await StorageManager.save('schedule', scheduleData); debugLog('✅ Merged local fallback events saved to canonical schedule'); } catch (e) {}
                         }
                     }
-                } catch (e) { console.warn('⚠ failed merging local fallback events', e); }
+                } catch (e) {}
                 
                 // Migrate legacy localStorage 'appointments' into schedule (DB-backed) if present
                 try {
@@ -3465,7 +3297,6 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
 
                                                     // If we've marked this event as deleted locally, skip it
                                                     if (isEventDeleted(evId)) {
-                                                        console.log(`⏭️  Skipping merge of admin entry ${evId} (marked as deleted locally)`);
                                                         return;
                                                     }
 
@@ -3494,7 +3325,6 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
 
                                                     // Skip admin entries tagged with 'worker' (worker flow removed)
                                                     if (item.worker) {
-                                                        console.log('⏭️ Skipping admin entry with worker field (worker feature removed):', key || evId);
                                                         return;
                                                     }
                                                     // Create booking event for customer admin entries
@@ -3527,22 +3357,18 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                                                         }
                                                     } catch (_) {}
                                                     scheduleData.events.push(newEvent);
-                                                } catch (inner) { console.warn('⚠ failed merging adminSchedule item', inner); }
+                                                } catch (inner) {}
                                             });
-                                            try { await saveScheduleData(); debugLog('✅ Merged adminSchedule into scheduleData and saved'); } catch(e){ console.warn('⚠ save after merge failed', e); }
+                                            try { await saveScheduleData(); debugLog('✅ Merged adminSchedule into scheduleData and saved'); } catch (e) {}
                                         }
                                     }
                                 }
-                            } catch (mergeErr) {
-                                console.warn('⚠ Could not fetch/merge site_config adminSchedule entries', mergeErr);
-                            }
+                            } catch (mergeErr) {}
                             scheduleData.events.push(...migrated);
-                            try { await StorageManager.save('schedule', scheduleData); localStorage.removeItem('appointments'); debugLog('✅ Migrated legacy appointments to DB'); } catch(e) { console.warn('⚠ Migration save failed', e); }
+                            try { await StorageManager.save('schedule', scheduleData); localStorage.removeItem('appointments'); debugLog('✅ Migrated legacy appointments to DB'); } catch (e) {}
                         }
                     }
-                } catch (e) {
-                    console.warn('⚠ Legacy appointments migration failed', e);
-                }
+                } catch (e) {}
 
                 // Ensure adminSchedule entries from site_config are merged only if not marked deleted
                 try {
@@ -3597,7 +3423,6 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                                             return eName === matchName && start && end && timesApproxEqual(e.start, e.end, start, end);
                                         });
                                         if (existingMatchingEvent && window.isEventDeleted(existingMatchingEvent.id)) {
-                                            console.log(`⏭️  Skipping Firebase entry (matching deleted event: ${existingMatchingEvent.id})`);
                                             return;
                                         }
                                         
@@ -3661,33 +3486,25 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                                         }
 
                                         scheduleData.events.push(newEvent);
-                                    } catch (inner2) { console.warn('⚠ failed merging adminSchedule item (post-load)', inner2); }
+                                    } catch (inner2) {}
                                 });
-                                try { await saveScheduleData(); debugLog('✅ Merged adminSchedule into scheduleData (post-load) and saved'); } catch(e){ console.warn('⚠ save after post-load merge failed', e); }
+                                try { await saveScheduleData(); debugLog('✅ Merged adminSchedule into scheduleData (post-load) and saved'); } catch (e) {}
                             }
                         }
                     }
-                } catch (mergeErr2) {
-                    console.warn('⚠ Could not fetch/merge site_config adminSchedule entries (post-load)', mergeErr2);
-                }
+                } catch (mergeErr2) {}
 
                 // FINAL CLEANUP: Apply deletion filter one last time after ALL merges
                 // This catches any deleted events that were re-added by adminSchedule merge
-                console.log(`🔍 FINAL CLEANUP: Before deletion filter: ${scheduleData.events.length} events`);
                 const beforeFinalFilter = scheduleData.events.length;
                 scheduleData.events = filterDeletedEvents(scheduleData.events);
                 const afterFinalFilter = scheduleData.events.length;
                 if (beforeFinalFilter !== afterFinalFilter) {
-                    console.log(`🗑️  FINAL CLEANUP REMOVED: ${beforeFinalFilter - afterFinalFilter} events that were re-added by merges`);
                     // Save cleaned scheduleData back to localStorage
                     try {
                         localStorage.setItem('schedule', JSON.stringify(scheduleData));
-                        console.log('✅ Cleaned schedule saved to localStorage');
-                    } catch (e) {
-                        console.warn('⚠ Failed to save cleaned schedule', e);
-                    }
+                    } catch (e) {}
                 } else {
-                    console.log('✓ No deleted events found in final cleanup');
                 }
 
                 // Check if CalendarEngine is available
@@ -3718,9 +3535,6 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                 debugLog('✓ Business calendar initialized');
                 
                 // DEBUG: Check if dayMaxEvents is set
-                console.log('🔍 dayMaxEvents setting:', calendar.getOption('dayMaxEvents'));
-                console.log('🔍 moreLinkClick setting:', calendar.getOption('moreLinkClick'));
-                console.log('🔍 Current view:', calendar.view.type);
 
                 // Calendar interactions
                 debugLog('🎯 Attaching event handlers...');
@@ -3730,11 +3544,9 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
 
                 // Handle single day cell clicks to open add modal (but NOT more-link clicks)
                 calendar.on('dateClick', (info) => {
-                    console.log('📅 dateClick fired for:', info.dateStr);
                     
                     // Skip if more-link was just clicked (flag set by moreLinkClick)
                     if (window._moreLinkJustClicked) {
-                        console.log('⏭️ Skipping dateClick because more-link was clicked');
                         return;
                     }
                     
@@ -3744,7 +3556,6 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
 
                 // FullCalendar's native more-link click handling works now
                 // (cell selection handler ignores clicks on .fc-more-link elements)
-                console.log('✅ More-link click handling: Using FullCalendar native (click to show popover)');
 
                 calendar.on('eventClick', (info) => {
                     debugLog('Event clicked: ' + info.event.title);
@@ -3764,12 +3575,9 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                     openEditEventModal(info.event);
                 });
                 debugLog('✅ Event handlers attached');
-                console.log('✅ Calendar handlers attached');
 
             } catch (error) {
                 debugLog('❌ Error: ' + error.message);
-                console.error('Calendar initialization error:', error);
-                console.error('Error stack:', error.stack);
                 container.innerHTML = '❌ Napaka: ' + error.message;
             }
         }
@@ -3783,7 +3591,6 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                         initializeBusinessCalendar();
                     } catch (e) {
                         debugLog('❌ Initialization error: ' + e.message);
-                        console.error('Error during calendar init:', e);
                         document.getElementById('scheduleCalendar').innerHTML = '❌ Gravna napaka: ' + e.message;
                     }
                 }, 1500);
@@ -3795,7 +3602,6 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                     initializeBusinessCalendar();
                 } catch (e) {
                     debugLog('❌ Initialization error: ' + e.message);
-                    console.error('Error during calendar init:', e);
                     document.getElementById('scheduleCalendar').innerHTML = '❌ Gravna napaka: ' + e.message;
                 }
             }, 1500);
@@ -3808,13 +3614,7 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                 const allowConsole = localStorage.getItem('enable_console') === '1';
                 if (allowConsole) return;
                 const noOp = function(){};
-                if (typeof console !== 'undefined') {
-                    console.log = noOp;
-                    console.info = noOp;
-                    console.debug = noOp;
-                    console.warn = noOp;
-                    console.error = noOp;
-                }
+                if (typeof console !== 'undefined') {}
             } catch (e) { /* ignore */ }
         })();
 
@@ -3844,12 +3644,10 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
             clear: () => {
                 deletedEventIds.clear();
                 saveDeletedEventIds();
-                console.log("✓ Cleared all deleted IDs");
             },
             markDeleted: (id) => {
                 markEventDeleted(id);
                 scheduleData.events = scheduleData.events.filter(e => e.id !== id);
-                console.log(`✓ Marked ${id} as deleted`);
             },
             stats: () => ({
                 totalInScheduleData: scheduleData.events ? scheduleData.events.length : 0,
@@ -3863,9 +3661,8 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                     evs.forEach((e, i) => {
                         const cust = (e.extendedProps && e.extendedProps.customer) ? e.extendedProps.customer : e.title;
                         const key = e.id || `${new Date(e.start).toISOString().slice(0,16)}|${new Date(e.end).toISOString().slice(0,16)}|${cust}`;
-                        console.log(i, key, e.id, e.title, e.start, e.end, e.extendedProps?.isBooking);
                     });
-                } catch (err) { console.warn('⚠ listCalendarEvents failed', err); }
+                } catch (err) {}
             },
             findDuplicates: () => {
                 const map = {};
@@ -3877,7 +3674,7 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                     map[k] = map[k] || [];
                     map[k].push(e);
                 });
-                Object.entries(map).forEach(([k, arr]) => { if (arr.length > 1) console.warn('Duplicate key', k, arr); });
+                Object.entries(map).forEach(([k, arr]) => { if (arr.length > 1)  });
             },
             // Developer utilities: force layout recalculation and dump diagnostics
             fixLayout: () => {
@@ -3886,18 +3683,12 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
             },
             dumpDiagnostics: async () => {
                 try {
-                    console.log('dumpDiagnostics: calendar exists', !!window.calendar, 'events count', window.calendar ? window.calendar.getEvents().length : 0);
-                    console.log('current view type:', window.calendar?.view?.type);
                     const scrollBodies = document.querySelectorAll('.fc-scrollgrid-section-body');
-                    console.log('scrollBodies heights:', Array.from(scrollBodies).map(b => Math.round(b.getBoundingClientRect().height)));
                     const dayCells = document.querySelectorAll('.fc-daygrid-day-cell');
-                    console.log('dayCells:', dayCells.length);
                     const timegrid = document.querySelector('.fc-timegrid');
-                    console.log('timegrid exists?', !!timegrid, 'timegrid height:', timegrid ? Math.round(timegrid.getBoundingClientRect().height) : 'N/A');
                     const events = window.calendar ? window.calendar.getEvents().map(e => ({id:e.id, title:e.title, start:e.start, end:e.end, allDay:e.allDay})) : [];
-                    console.log('calendar events snapshot', events.slice(0,20));
-                    try { const evs = await CalendarEngine.generateCalendarEvents(scheduleData); console.log('CalendarEngine.generateCalendarEvents', evs.length); } catch (err) { console.warn('generateCalendarEvents failed', err); }
-                } catch (err) { console.warn('dumpDiagnostics failed', err); }
+                    try { const evs = await CalendarEngine.generateCalendarEvents(scheduleData); } catch (err) {}
+                } catch (err) {}
             },
             remakeViews: async (view = 'timeGridWeek') => {
                 // No-op: user requested removal of automatic remakes/fallbacks
@@ -3913,26 +3704,20 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                 try {
                     const viewType = window.calendar && window.calendar.view && window.calendar.view.type ? window.calendar.view.type : null;
                     if (viewType === 'dayGridMonth' || viewType === 'timeGridDay') {
-                        console.log('calendarHealthCheck: skipping health checks for Month/Day view', viewType);
                         return true;
                     }
-                    console.log('calendarHealthCheck: starting');
                     const hasTimegrid = !!document.querySelector('.fc-timegrid');
                     const scrollBodies = document.querySelectorAll('.fc-scrollgrid-section-body');
                     const bodiesCount = scrollBodies ? scrollBodies.length : 0;
                     const bodyHeights = Array.from(scrollBodies || []).map(b => Math.round(b.getBoundingClientRect().height));
-                    console.log('calendarHealthCheck: timegrid?', hasTimegrid, 'scrollBodies', bodiesCount, 'heights', bodyHeights);
                     if (hasTimegrid && bodiesCount > 0 && bodyHeights.some(h => h > 120)) {
-                        console.log('calendarHealthCheck: OK - timegrid present and scroll bodies tall enough');
                         return true;
                     }
                     // No automatic remediation: do not attempt fixLayout/forceTimegrid or call remakeTimeGridViews.
                     // If soft-check failed, return false and allow manual intervention or higher-level logic to decide.
                     return false;
-                    console.error('calendarHealthCheck: all attempts failed');
                     return false;
                 } catch (err) {
-                    console.warn('calendarHealthCheck failed', err);
                     return false;
                 }
             },
@@ -3943,10 +3728,9 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                     if (!el) return false;
                     el.classList.toggle('debug-timegrid-visuals');
                     return el.classList.contains('debug-timegrid-visuals');
-                } catch (e) { console.warn('toggleTimegridVisuals failed', e); return false; }
+                } catch (e) {  return false; }
             }
         };
-        console.log("💡 Use window.deletionDebug.show() to see deletion status");
 
         // Escape HTML to prevent XSS
         function escapeHtml(text) {
@@ -3958,4 +3742,3 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
         // ===== CRITICAL OVERRIDE - AFTER ALL FUNCTION DEFINITIONS =====
         // Must be here, AFTER openAddEventModal is defined, to override function hoisting
         window.openAddEventModal = openAddEventModalWithTab;
-        console.log('🔧 OVERRIDE SET (at end of script): window.openAddEventModal =', typeof window.openAddEventModal, window.openAddEventModal.name || 'openAddEventModalWithTab');

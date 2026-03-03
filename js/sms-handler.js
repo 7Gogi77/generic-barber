@@ -1,4 +1,4 @@
-/**
+﻿/**
  * SMS Handler - Android SMS Gateway Integration
  * Sends appointment confirmations and reminders via Android phone
  * 
@@ -28,18 +28,15 @@ const SMS_CONFIG = {
  * @returns {Promise<Object>} Result object
  */
 async function sendSMS(phoneNumber, message) {
-  console.log('📱 Sending SMS to:', phoneNumber);
 
   // Auto-format Slovenian numbers: 031... → +38631...
   let formattedPhone = phoneNumber;
   if (formattedPhone && formattedPhone.startsWith('0')) {
     formattedPhone = '+386' + formattedPhone.substring(1);
-    console.log('Auto-formatted to:', formattedPhone);
   }
 
   // Validate phone number
   if (!formattedPhone || !formattedPhone.startsWith('+')) {
-    console.error('❌ Invalid phone number format. Must start with + or 0 (e.g., +381... or 031...)');
     return { success: false, error: 'Invalid phone number format' };
   }
 
@@ -61,14 +58,11 @@ async function sendSMS(phoneNumber, message) {
     const result = await response.json();
 
     if (response.ok) {
-      console.log('✅ SMS sent successfully:', result);
       return { success: true, data: result };
     } else {
-      console.error('❌ SMS sending failed:', result);
       return { success: false, error: result.message || result.error || 'Unknown error' };
     }
   } catch (error) {
-    console.error('❌ Network error sending SMS:', error);
     return { success: false, error: error.message };
   }
 }
@@ -95,9 +89,7 @@ async function sendAppointmentConfirmation(appointment) {
 
   // Log to console
   if (result.success) {
-    console.log(`✅ Confirmation SMS sent to ${phoneNumber}`);
   } else {
-    console.error(`❌ Failed to send confirmation SMS to ${phoneNumber}:`, result.error);
   }
 
   return result;
@@ -127,9 +119,7 @@ async function sendAppointmentReminder(appointment) {
 
   // Log to console
   if (result.success) {
-    console.log(`✅ Reminder SMS sent to ${phoneNumber} for ${timeStr}`);
   } else {
-    console.error(`❌ Failed to send reminder SMS to ${phoneNumber}:`, result.error);
   }
 
   return result;
@@ -169,10 +159,8 @@ async function getTomorrowAppointments() {
       }
     }
 
-    console.log(`📅 Found ${tomorrowAppointments.length} appointments for tomorrow`);
     return tomorrowAppointments;
   } catch (error) {
-    console.error('❌ Error fetching tomorrow appointments:', error);
     return [];
   }
 }
@@ -185,12 +173,10 @@ async function getTomorrowAppointments() {
  * @returns {Promise<Object>} Summary of sent reminders
  */
 async function sendDailyReminders() {
-  console.log('🔔 Starting daily reminder process...');
 
   const appointments = await getTomorrowAppointments();
 
   if (appointments.length === 0) {
-    console.log('ℹ️ No appointments tomorrow - no reminders to send');
     return { total: 0, sent: 0, failed: 0 };
   }
 
@@ -200,7 +186,6 @@ async function sendDailyReminders() {
   for (const appointment of appointments) {
     // Skip if no phone number
     if (!appointment.phoneNumber) {
-      console.warn(`⚠️ Appointment ${appointment.id} has no phone number - skipping`);
       failed++;
       continue;
     }
@@ -224,7 +209,6 @@ async function sendDailyReminders() {
     failed,
   };
 
-  console.log('✅ Daily reminders complete:', summary);
   return summary;
 }
 
@@ -288,4 +272,3 @@ window.SMSHandler = {
   config: SMS_CONFIG,
 };
 
-console.log('✅ SMS Handler loaded. Use window.SMSHandler for SMS functions.');
