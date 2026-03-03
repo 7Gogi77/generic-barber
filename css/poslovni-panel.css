@@ -1083,7 +1083,7 @@
         }
         #maxDaysRow { padding: 14px 18px; border-top: 1px solid #f2f2f7; }
         .bsp-footer-note { font-size: 12px; color: #8e8e93; text-align: center; padding: 0 16px; }
-        /* â”€â”€â”€ BSP Tab Bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+        /* ─── BSP Tab Bar ─────────────────────────────────────── */
         .bsp-tab-bar {
             display: flex; overflow-x: auto; background: #fff;
             border-bottom: 1px solid #e5e5ea; position: sticky; top: 60px;
@@ -1099,7 +1099,7 @@
         .bsp-tab.active { color: #007aff; border-bottom-color: #007aff; }
         .bsp-tab-panel { display: none; }
         .bsp-tab-panel.active { display: block; }
-        /* â”€â”€â”€ Reusable row/input helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+        /* ─── Reusable row/input helpers ─────────────────────── */
         .bsp-row {
             display: flex; align-items: center; justify-content: space-between;
             padding: 12px 18px; gap: 14px; border-bottom: 1px solid #f2f2f7;
@@ -1120,7 +1120,7 @@
             width: 20px; height: 20px; accent-color: #007aff;
             cursor: pointer; flex-shrink: 0;
         }
-        /* â”€â”€â”€ Time block builder â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+        /* ─── Time block builder ─────────────────────────────── */
         .time-block-row {
             display: flex; align-items: center; gap: 8px;
             padding: 7px 18px; border-bottom: 1px solid #f5f5f7;
@@ -1139,7 +1139,7 @@
             font-size: 12px; font-weight: 600; padding: 7px 18px;
             display: flex; align-items: center; gap: 5px;
         }
-        /* â”€â”€â”€ List items (exceptions, employees, locations) â”€â”€â”€â”€ */
+        /* ─── List items (exceptions, employees, locations) ──── */
         .bsp-list-item {
             display: flex; align-items: center; gap: 10px;
             padding: 10px 18px; border-bottom: 1px solid #f2f2f7;
@@ -1164,14 +1164,14 @@
             background: none; border: none; color: #007aff; cursor: pointer;
             font-size: 13px; font-weight: 600; padding: 10px 18px;
         }
-        /* â”€â”€â”€ Section heading inside tab panel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+        /* ─── Section heading inside tab panel ───────────────── */
         .bsp-section-title {
             font-size: 11px; font-weight: 600; color: #8e8e93; text-transform: uppercase;
             letter-spacing: .5px; padding: 16px 18px 6px; }
-        /* â”€â”€â”€ Employee color dot â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+        /* ─── Employee color dot ─────────────────────────────── */
         .emp-dot {
             width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
-        /* â”€â”€â”€ Inline form rows inside card (no bottom border on last) â”€ */
+        /* ─── Inline form rows inside card (no bottom border on last) ─ */
         .bsp-inline-form { padding: 12px 18px; display: flex; flex-wrap: wrap; gap: 10px; }
         .bsp-inline-form input, .bsp-inline-form select {
             padding: 7px 10px; border: 1.5px solid #e5e5ea; border-radius: 10px;

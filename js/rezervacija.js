@@ -72,7 +72,7 @@
             const successMessage = document.querySelector('#step5 .success-message');
             if (successTitle && bp.successTitle) successTitle.textContent = bp.successTitle;
             if (successMessage && bp.successMessage) {
-                successMessage.innerHTML = bp.successMessage + '<br>Potrditev bo poslana na vaĹˇ e-poĹˇtni naslov.';
+                successMessage.innerHTML = bp.successMessage + '<br>Potrditev bo poslana na vaš e-poštni naslov.';
             }
             
             // Buttons - Next
@@ -132,7 +132,7 @@
                 const response = await fetch(`${FIREBASE_DB_URL}/site_config.json`);
                 if (response.ok) {
                     const config = await response.json();
-                    console.log('âś… Loaded config from Firebase:', config);
+                    console.log('✅ Loaded config from Firebase:', config);
                     
                     // Store globally
                     window.SITE_CONFIG = config;
@@ -147,7 +147,7 @@
                             // Convert object with numeric keys to array
                             servicesData = Object.values(items).filter(item => item !== null);
                         }
-                        console.log('âś… Services loaded:', servicesData.length, servicesData);
+                        console.log('✅ Services loaded:', servicesData.length, servicesData);
                     }
                     
                     // Update business hours display
@@ -157,10 +157,10 @@
                     applyThemeColors();
                     
                 } else {
-                    console.warn('âš  Firebase response not OK:', response.status);
+                    console.warn('⚠ Firebase response not OK:', response.status);
                 }
             } catch (err) {
-                console.error('âťŚ Failed to load config from Firebase:', err);
+                console.error('❌ Failed to load config from Firebase:', err);
                 // Fallback to local config.js if available
                 if (typeof SITE_CONFIG !== 'undefined' && SITE_CONFIG.servicesSection) {
                     servicesData = SITE_CONFIG.servicesSection.items || [];
@@ -188,7 +188,7 @@
                 // Used in button text
             }
             
-            console.log('âś… Theme colors applied from config');
+            console.log('✅ Theme colors applied from config');
         }
         
         // ===== GET BOOKING SETTINGS (from poslovni-panel localStorage) =====
@@ -218,7 +218,7 @@
         // ===== UPDATE BUSINESS HOURS DISPLAY =====
         function updateBusinessHoursDisplay() {
             const bs = getBookingSettings();
-            const dayNames = ['Ned', 'Pon', 'Tor', 'Sre', 'ÄŚet', 'Pet', 'Sob'];
+            const dayNames = ['Ned', 'Pon', 'Tor', 'Sre', 'Čet', 'Pet', 'Sob'];
 
             const hoursText = document.getElementById('businessHoursText');
             const workingDaysInfo = document.getElementById('workingDaysInfo');
@@ -330,19 +330,19 @@
                 
                 if (scheduleData && Array.isArray(scheduleData.events)) {
                     BookingState.events = scheduleData.events;
-                    console.log('âś… Loaded', BookingState.events.length, 'events from schedule');
+                    console.log('✅ Loaded', BookingState.events.length, 'events from schedule');
                 } else {
                     BookingState.events = [];
-                    console.log('đź“‹ No events found in schedule');
+                    console.log('📋 No events found in schedule');
                 }
                 
                 // Debug: log event details
                 if (BookingState.events.length > 0) {
-                    console.log('đź“‹ Sample events:', BookingState.events.slice(0, 3));
+                    console.log('📋 Sample events:', BookingState.events.slice(0, 3));
                 }
                 
             } catch (err) {
-                console.warn('âš  Could not load events:', err);
+                console.warn('⚠ Could not load events:', err);
                 BookingState.events = [];
             }
         }
@@ -355,10 +355,10 @@
             // Use servicesData loaded from Firebase
             const services = servicesData;
             
-            console.log('đź”Ť Services found:', services.length, services);
+            console.log('🔍 Services found:', services.length, services);
             
             if (services.length === 0) {
-                grid.innerHTML = '<p style="text-align: center; color: var(--ios-text-tertiary);">Ni razpoloĹľljivih storitev</p>';
+                grid.innerHTML = '<p style="text-align: center; color: var(--ios-text-tertiary);">Ni razpoložljivih storitev</p>';
                 return;
             }
             
@@ -367,10 +367,10 @@
                 item.className = 'service-item';
                 item.dataset.index = index;
                 
-                // Format price - add â‚¬ if not present
+                // Format price - add € if not present
                 let priceDisplay = service.price || '';
-                if (priceDisplay && !priceDisplay.includes('â‚¬')) {
-                    priceDisplay = priceDisplay + ' â‚¬';
+                if (priceDisplay && !priceDisplay.includes('€')) {
+                    priceDisplay = priceDisplay + ' €';
                 }
                 
                 item.innerHTML = `
@@ -447,7 +447,7 @@
                 durationText.textContent = durationStr.trim();
                 
                 // Format price
-                priceText.textContent = `${BookingState.totalPrice.toFixed(2)} â‚¬`;
+                priceText.textContent = `${BookingState.totalPrice.toFixed(2)} €`;
             } else {
                 summary.style.display = 'none';
             }
@@ -550,7 +550,7 @@
                     if (bs.dateExceptions.some(ex => ex.date === dateStr)) return true;
                 }
 
-                // Check dateOverrides (a specific date with custom hours â†’ open)
+                // Check dateOverrides (a specific date with custom hours → open)
                 if (bs.dateOverrides && bs.dateOverrides.length > 0) {
                     if (bs.dateOverrides.some(ov => ov.date === dateStr)) return false;
                 }
@@ -559,7 +559,7 @@
                 const dayData = bs.workingHoursByDay[dayOfWeek];
                 if (dayData !== undefined) return !dayData.enabled;
 
-                return false; // no data â†’ assume open
+                return false; // no data → assume open
             }
 
             // Fallback to SITE_CONFIG
@@ -694,13 +694,13 @@
             const slotDuration = window.SITE_CONFIG?.booking?.slotDuration || 15;
             const serviceDuration = BookingState.totalDuration || 30;
             
-            console.log('đź“… Generating slots for:', dateStr, '(day:', dayOfWeek, ') Business hours:', businessHours.start, '-', businessHours.end, 'Service:', serviceDuration, 'min');
+            console.log('📅 Generating slots for:', dateStr, '(day:', dayOfWeek, ') Business hours:', businessHours.start, '-', businessHours.end, 'Service:', serviceDuration, 'min');
             
             const totalWorkMinutes = Math.max(0, (businessHours.end - businessHours.start) * 60);
 
             // If service is too long to fit in a day and multi-day is disabled, show no slots
             if (!rules.allowMultiDayAppointments && serviceDuration > totalWorkMinutes) {
-                console.log('âš ď¸Ź Service too long for business hours!');
+                console.log('⚠️ Service too long for business hours!');
                 return [];
             }
             
@@ -734,14 +734,14 @@
                 });
             }
             
-            console.log('đź“… Generated', allSlots.length, 'potential slots, checking against', BookingState.events.length, 'events');
+            console.log('📅 Generated', allSlots.length, 'potential slots, checking against', BookingState.events.length, 'events');
             
             // Filter out slots that conflict with existing events
             let availableSlots = allSlots.filter(slot => {
                 return !hasConflict(slot.start, slot.end);
             });
             
-            console.log('đź“… Available slots after conflict check:', availableSlots.length, '(blocked:', allSlots.length - availableSlots.length, ')');
+            console.log('📅 Available slots after conflict check:', availableSlots.length, '(blocked:', allSlots.length - availableSlots.length, ')');
 
             // Filter out slots that overlap with auto-break
             const bs = getBookingSettings();
@@ -758,7 +758,7 @@
                     // Slot overlaps break if slot.start < breakEnd AND slot.end > breakStart
                     return !(slot.start < breakEnd && slot.end > breakStart);
                 });
-                console.log('đź“… After auto-break filter:', availableSlots.length, 'slots');
+                console.log('📅 After auto-break filter:', availableSlots.length, 'slots');
             }
             
             return availableSlots;
@@ -810,7 +810,7 @@
                     
                     // Check for overlap: (slotStart < eventEnd) && (slotEnd > eventStart)
                     if (slotStart < eventEnd && slotEnd > eventStart) {
-                        console.log('đźš« Conflict found:', event.title, eventStart.toISOString(), '-', eventEnd.toISOString(), 'vs slot', slotStart.toISOString());
+                        console.log('🚫 Conflict found:', event.title, eventStart.toISOString(), '-', eventEnd.toISOString(), 'vs slot', slotStart.toISOString());
                         return true; // Conflict found
                     }
                 } catch (err) {
@@ -872,16 +872,16 @@
                         : `${businessHours.start}:00 - ${businessHours.end}:00`;
                     grid.innerHTML = `
                         <div class="no-slots-message" style="grid-column: 1 / -1;">
-                            <div class="icon">âŹ°</div>
+                            <div class="icon">⏰</div>
                             <p>Izbrane storitve trajajo <strong>${hours}h ${mins}min</strong>, 
-                            kar presega delovni ÄŤas (${hoursLabel}).</p>
+                            kar presega delovni čas (${hoursLabel}).</p>
                             <p style="margin-top: 10px; font-size: 13px;">Prosimo, izberite manj storitev ali nas kontaktirajte za posebno rezervacijo.</p>
                         </div>
                     `;
                 } else {
                     grid.innerHTML = `
                         <div class="no-slots-message" style="grid-column: 1 / -1;">
-                            <div class="icon">đź”</div>
+                            <div class="icon">😔</div>
                             <p>Na ta dan ni prostih terminov.<br>Prosimo, izberite drug datum.</p>
                         </div>
                     `;
@@ -894,7 +894,7 @@
             const svcMins = serviceDuration % 60;
             const durationStr = svcHours > 0 ? `${svcHours}h ${svcMins}min` : `${svcMins} min`;
             
-            // Add duration info header (no "VeÄŤdnevno" text)
+            // Add duration info header (no "Večdnevno" text)
             const infoDiv = document.createElement('div');
             infoDiv.className = 'slots-info';
             infoDiv.style.cssText = 'grid-column: 1 / -1; margin-bottom: 12px; padding: 10px; background: rgba(0, 122, 255, 0.1); border-radius: 8px; font-size: 13px; color: var(--ios-blue);';
@@ -913,8 +913,8 @@
                 const endDateStr = getLocalDateStr(slot.end);
                 // Use dd/mm/yyyy for end date if it spans to a different day
                 const endLabel = (endDateStr === getLocalDateStr(slot.start))
-                    ? `â†’ ${endTimeStr}`
-                    : `â†’ ${formatDateSlash(endDateStr)} ${endTimeStr}`;
+                    ? `→ ${endTimeStr}`
+                    : `→ ${formatDateSlash(endDateStr)} ${endTimeStr}`;
                 
                 btn.innerHTML = `
                     <div class="slot-time">${slot.timeStr}</div>
@@ -977,12 +977,12 @@
             }
             
             if (!email || !email.includes('@')) {
-                alert('Prosimo, vnesite veljavni e-poĹˇtni naslov.');
+                alert('Prosimo, vnesite veljavni e-poštni naslov.');
                 return false;
             }
             
             if (!phone) {
-                alert('Prosimo, vnesite telefonsko Ĺˇtevilko.');
+                alert('Prosimo, vnesite telefonsko številko.');
                 return false;
             }
             
@@ -1035,7 +1035,7 @@
                 `${BookingState.customerInfo.email}\n${BookingState.customerInfo.phone}`;
             
             // Total
-            const currency = window.SITE_CONFIG?.currency || 'â‚¬';
+            const currency = window.SITE_CONFIG?.currency || '€';
             document.getElementById('summaryTotal').textContent = `${currency}${BookingState.totalPrice.toFixed(2)}`;
         }
 
@@ -1093,7 +1093,7 @@
                 // Save
                 await StorageManager.save('schedule', scheduleData);
                 
-                console.log('âś… Booking saved:', appointment);
+                console.log('✅ Booking saved:', appointment);
                 const manageBaseUrl = (window.SMSHandler && window.SMSHandler.config && window.SMSHandler.config.productionUrl)
                     ? window.SMSHandler.config.productionUrl
                     : window.location.origin;
@@ -1113,24 +1113,24 @@
                         
                         if (window.SMSHandler && typeof window.SMSHandler.sendAppointmentConfirmation === 'function') {
                             window.SMSHandler.sendAppointmentConfirmation(appointmentForSMS);
-                            console.log('đź“± SMS confirmation sent to:', appointmentForSMS.phoneNumber);
+                            console.log('📱 SMS confirmation sent to:', appointmentForSMS.phoneNumber);
                         }
                     } catch (smsError) {
-                        console.warn('âš ď¸Ź SMS confirmation failed (not critical):', smsError.message);
+                        console.warn('⚠️ SMS confirmation failed (not critical):', smsError.message);
                     }
                 }
                 
                 // Go to success step
                 goToStep(5);
                 
-                // Fire confetti celebration! đźŽ‰
+                // Fire confetti celebration! 🎉
                 if (typeof fireConfetti === 'function') {
                     fireConfetti();
                 }
                 
             } catch (err) {
-                console.error('âťŚ Error saving booking:', err);
-                alert('PriĹˇlo je do napake. Prosimo, poskusite znova.');
+                console.error('❌ Error saving booking:', err);
+                alert('Prišlo je do napake. Prosimo, poskusite znova.');
             }
             
             showLoading(false);

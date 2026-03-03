@@ -64,7 +64,7 @@
             <div class="card">
                 <div class="card-header">
                     <h2>1. Izberite storitev</h2>
-                    <p>Izberite eno ali veÄŤ storitev</p>
+                    <p>Izberite eno ali več storitev</p>
                 </div>
                 <div class="card-body">
                     <div class="services-grid" id="servicesGrid">
@@ -73,12 +73,12 @@
                     <!-- Selection Summary -->
                     <div class="selection-summary" id="selectionSummary" style="display: none;">
                         <div class="summary-row">
-                            <span>Skupaj ÄŤas:</span>
+                            <span>Skupaj čas:</span>
                             <span id="totalDurationText">0 min</span>
                         </div>
                         <div class="summary-row">
                             <span>Skupaj cena:</span>
-                            <span id="totalPriceText">0 â‚¬</span>
+                            <span id="totalPriceText">0 €</span>
                         </div>
                     </div>
                 </div>
@@ -97,11 +97,11 @@
                     <!-- Business Hours Info -->
                     <div class="business-hours-info" id="businessHoursInfo">
                         <div style="display: flex; align-items: center; gap: 6px;">
-                            <span class="icon">đź•</span>
-                            <span>Delovni ÄŤas: <span id="businessHoursText">9:00 - 19:00</span></span>
+                            <span class="icon">🕐</span>
+                            <span>Delovni čas: <span id="businessHoursText">9:00 - 19:00</span></span>
                         </div>
                         <div style="display: flex; align-items: center; gap: 6px; margin-top: 4px;">
-                            <span class="icon">đź“…</span>
+                            <span class="icon">📅</span>
                             <span>Delovni dnevi: <span id="workingDaysInfo">Pon - Pet</span></span>
                         </div>
                     </div>
@@ -109,15 +109,15 @@
                 <div class="card-body">
                     <!-- Calendar -->
                     <div class="calendar-header">
-                        <button class="calendar-nav-btn" id="prevMonth">â€ą</button>
+                        <button class="calendar-nav-btn" id="prevMonth">‹</button>
                         <span class="calendar-month-year" id="calendarMonthYear"></span>
-                        <button class="calendar-nav-btn" id="nextMonth">â€ş</button>
+                        <button class="calendar-nav-btn" id="nextMonth">›</button>
                     </div>
                     <div class="calendar-weekdays">
                         <div class="calendar-weekday">Pon</div>
                         <div class="calendar-weekday">Tor</div>
                         <div class="calendar-weekday">Sre</div>
-                        <div class="calendar-weekday">ÄŚet</div>
+                        <div class="calendar-weekday">Čet</div>
                         <div class="calendar-weekday">Pet</div>
                         <div class="calendar-weekday">Sob</div>
                         <div class="calendar-weekday">Ned</div>
@@ -145,7 +145,7 @@
         <div class="booking-step" id="step3">
             <div class="card">
                 <div class="card-header">
-                    <h2>3. VaĹˇi podatki</h2>
+                    <h2>3. Vaši podatki</h2>
                     <p>Vnesite kontaktne podatke</p>
                 </div>
                 <div class="card-body">
@@ -154,7 +154,7 @@
                         <input type="text" class="form-input" id="customerName" placeholder="Janez Novak" required>
                     </div>
                     <div class="form-group">
-                        <label class="form-label" id="labelEmail">E-poĹˇta *</label>
+                        <label class="form-label" id="labelEmail">E-pošta *</label>
                         <input type="email" class="form-input" id="customerEmail" placeholder="janez@email.com" required>
                     </div>
                     <div class="form-group">
@@ -163,7 +163,7 @@
                     </div>
                     <div class="form-group">
                         <label class="form-label" id="labelNotes">Opombe (neobvezno)</label>
-                        <textarea class="form-input" id="customerNotes" placeholder="Posebne Ĺľelje ali opombe..."></textarea>
+                        <textarea class="form-input" id="customerNotes" placeholder="Posebne želje ali opombe..."></textarea>
                     </div>
                 </div>
             </div>
@@ -208,7 +208,7 @@
                         </div>
                         <div class="summary-total">
                             <span class="summary-label">Skupaj</span>
-                            <span class="summary-value" id="summaryTotal">â‚¬0</span>
+                            <span class="summary-value" id="summaryTotal">€0</span>
                         </div>
                     </div>
                 </div>
@@ -225,10 +225,10 @@
                 <div class="card-body">
                     <div class="success-container">
                         <div class="success-icon"></div>
-                        <h2 class="success-title">Rezervacija uspeĹˇna!</h2>
+                        <h2 class="success-title">Rezervacija uspešna!</h2>
                         <p class="success-message">
-                            VaĹˇ termin je bil uspeĹˇno rezerviran.<br>
-                            Potrditev bo poslana na vaĹˇ e-poĹˇtni naslov.
+                            Vaš termin je bil uspešno rezerviran.<br>
+                            Potrditev bo poslana na vaš e-poštni naslov.
                         </p>
                     </div>
                 </div>

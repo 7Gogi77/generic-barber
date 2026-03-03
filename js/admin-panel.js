@@ -134,7 +134,7 @@
                 const passwordHash = await hashPassword(password);
                 if (passwordHash !== credentials.passwordHash) {
                     if (errorEl) {
-                        errorEl.textContent = 'NapaÄŤno geslo';
+                        errorEl.textContent = 'Napačno geslo';
                         errorEl.style.display = 'block';
                     }
                     return;
@@ -164,7 +164,7 @@
             location.reload();
         }
 
-        // Save all helper for non-technical users â€” calls known save functions if present
+        // Save all helper for non-technical users — calls known save functions if present
         function saveAll() {
             try {
                 if (typeof saveBookingPageContent === 'function') saveBookingPageContent();
@@ -175,19 +175,19 @@
                 // Provide immediate feedback
                 const el = document.getElementById('adminQuickStart');
                 if (el) {
-                    el.textContent = 'Shranjeno â€” preverite konzolo za napake, ÄŤe obstajajo.';
-                    setTimeout(() => { el.textContent = 'Koraki: 1) ÄŚe prviÄŤ, ustvarite geslo spodaj â†’ 2) Prijavite se â†’ 3) Uredite vsebine â†’ 4) Kliknite "Shrani vse"'; }, 3000);
+                    el.textContent = 'Shranjeno — preverite konzolo za napake, če obstajajo.';
+                    setTimeout(() => { el.textContent = 'Koraki: 1) Če prvič, ustvarite geslo spodaj → 2) Prijavite se → 3) Uredite vsebine → 4) Kliknite "Shrani vse"'; }, 3000);
                 }
             } catch (err) {
                 console.error('SaveAll failed', err);
-                alert('PriĹˇlo je do napake pri shranjevanju. Preverite konzolo.');
+                alert('Prišlo je do napake pri shranjevanju. Preverite konzolo.');
             }
         }
 
         // Template presets
         const TEMPLATE_PRESETS = {
             barber: {
-                shopName: 'Gentlemenâ€™s Barber',
+                shopName: 'Gentlemen’s Barber',
                 navLinks: [
                     { name: 'Domov', link: '#home' },
                     { name: 'O nas', link: '#about' },
@@ -198,21 +198,21 @@
                 galleryTitle: 'Galerija',
                 contactSection: {
                     title: 'Kontakt',
-                    subtitle: 'PiĹˇite ali nas pokliÄŤite za termin.',
+                    subtitle: 'Pišite ali nas pokličite za termin.',
                     address: 'Stara ulica 10, Ljubljana',
                     phone: '+386 40 111 222',
                     email: 'info@barber.si'
                 },
                 googleReviews: {
                     title: 'Google ocene',
-                    subtitle: 'Preveri mnenja naĹˇih strank.',
+                    subtitle: 'Preveri mnenja naših strank.',
                     rating: '5.0',
                     countText: '(120 ocen)',
                     link: '',
                     items: [
-                        { author: 'Ana K.', text: 'OdliÄŤna storitev in vzduĹˇje.', stars: 5 },
-                        { author: 'Marko P.', text: 'Vrhunska ekipa, priporoÄŤam!', stars: 5 },
-                        { author: 'Sara M.', text: 'Super izkuĹˇnja, pridem spet.', stars: 5 }
+                        { author: 'Ana K.', text: 'Odlična storitev in vzdušje.', stars: 5 },
+                        { author: 'Marko P.', text: 'Vrhunska ekipa, priporočam!', stars: 5 },
+                        { author: 'Sara M.', text: 'Super izkušnja, pridem spet.', stars: 5 }
                     ]
                 },
                 theme: {
@@ -240,25 +240,25 @@
                     backgroundImage: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?q=80&w=2000'
                 },
                 ourStory: {
-                    sectionTitle: 'NaĹˇa zgodba',
-                    title: 'NatanÄŤnost in tradicija',
-                    text: 'Sodobne tehnike v kombinaciji s klasiÄŤnim pristopom. Vsak obisk je izkuĹˇnja.',
+                    sectionTitle: 'Naša zgodba',
+                    title: 'Natančnost in tradicija',
+                    text: 'Sodobne tehnike v kombinaciji s klasičnim pristopom. Vsak obisk je izkušnja.',
                     image: 'https://images.unsplash.com/photo-1532710093739-9470acff878f?q=80&w=1200'
                 },
                 servicesSection: {
                     title: 'Storitve',
                     items: [
-                        { name: 'KlasiÄŤna frizura', price: 'â‚¬25', desc: '30 min â€˘ NatanÄŤen rez', duration: 30 },
-                        { name: 'Fade & Styling', price: 'â‚¬30', desc: '45 min â€˘ Moderno', duration: 45 },
-                        { name: 'Britje z brisaÄŤo', price: 'â‚¬22', desc: '25 min â€˘ Tradicionalno', duration: 25 },
-                        { name: 'Paket Gentleman', price: 'â‚¬45', desc: '60 min â€˘ Frizura + britje', duration: 60 }
+                        { name: 'Klasična frizura', price: '€25', desc: '30 min • Natančen rez', duration: 30 },
+                        { name: 'Fade & Styling', price: '€30', desc: '45 min • Moderno', duration: 45 },
+                        { name: 'Britje z brisačo', price: '€22', desc: '25 min • Tradicionalno', duration: 25 },
+                        { name: 'Paket Gentleman', price: '€45', desc: '60 min • Frizura + britje', duration: 60 }
                     ]
                 },
                 barbersSection: {
-                    title: 'NaĹˇa ekipa',
+                    title: 'Naša ekipa',
                     list: [
                         { name: 'Marko Novak', role: 'Master Barber', img: 'https://images.unsplash.com/photo-1519345182560-3f2917c472ef?q=80&w=1000' },
-                        { name: 'Luka Ĺ ter', role: 'Beard Expert', img: 'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?q=80&w=1000' },
+                        { name: 'Luka Šter', role: 'Beard Expert', img: 'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?q=80&w=1000' },
                         { name: 'Tilen Kralj', role: 'Senior Stylist', img: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1000' }
                     ]
                 },
@@ -268,20 +268,20 @@
                     'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?q=80&w=1000'
                 ],
                 testimonial: {
-                    quote: 'NajboljĹˇa izkuĹˇnja v mestu. Vrnem se zagotovo!',
-                    author: 'TomaĹľ P.'
+                    quote: 'Najboljša izkušnja v mestu. Vrnem se zagotovo!',
+                    author: 'Tomaž P.'
                 },
                 ctaSection: {
                     title: 'Pripravljeni na spremembo?',
-                    text: 'Rezervirajte termin danes in doĹľivite vrhunsko storitev.',
+                    text: 'Rezervirajte termin danes in doživite vrhunsko storitev.',
                     buttonText: 'Rezerviraj zdaj'
                 },
                 booking: {
-                    title: 'NaroÄŤilo termina',
+                    title: 'Naročilo termina',
                     heading: 'Rezervirajte termin',
                     buttonText: 'Potrdi termin',
                     placeholderName: 'Ime',
-                    placeholderEmail: 'E-poĹˇta',
+                    placeholderEmail: 'E-pošta',
                     placeholderPhone: 'Telefon'
                 }
             },
@@ -304,14 +304,14 @@
                 },
                 googleReviews: {
                     title: 'Google ocene',
-                    subtitle: 'Preveri mnenja naĹˇih strank.',
+                    subtitle: 'Preveri mnenja naših strank.',
                     rating: '4.9',
                     countText: '(87 ocen)',
                     link: '',
                     items: [
                         { author: 'Tilen V.', text: 'Avto izgleda kot nov.', stars: 5 },
                         { author: 'Nina Z.', text: 'Profesionalno in hitro.', stars: 5 },
-                        { author: 'Rok S.', text: 'OdliÄŤna kakovost storitve.', stars: 5 }
+                        { author: 'Rok S.', text: 'Odlična kakovost storitve.', stars: 5 }
                     ]
                 },
                 theme: {
@@ -341,22 +341,22 @@
                 ourStory: {
                     sectionTitle: 'O nas',
                     title: 'Skrb za vsak detajl',
-                    text: 'Profesionalno ÄŤiĹˇÄŤenje, poliranje in zaĹˇÄŤita. VaĹˇe vozilo zasije kot novo.',
+                    text: 'Profesionalno čiščenje, poliranje in zaščita. Vaše vozilo zasije kot novo.',
                     image: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?q=80&w=1200'
                 },
                 servicesSection: {
                     title: 'Paketne storitve',
                     items: [
-                        { name: 'Notranje ÄŤiĹˇÄŤenje', price: 'â‚¬60', desc: '90 min â€˘ Globinsko', duration: 90 },
-                        { name: 'Zunanje poliranje', price: 'â‚¬120', desc: '150 min â€˘ Visok sijaj', duration: 150 },
-                        { name: 'KeramiÄŤna zaĹˇÄŤita', price: 'â‚¬280', desc: '4h â€˘ Dolgotrajno', duration: 240 },
-                        { name: 'Komplet Detail', price: 'â‚¬190', desc: '3h â€˘ Notranje + zunanje', duration: 180 }
+                        { name: 'Notranje čiščenje', price: '€60', desc: '90 min • Globinsko', duration: 90 },
+                        { name: 'Zunanje poliranje', price: '€120', desc: '150 min • Visok sijaj', duration: 150 },
+                        { name: 'Keramična zaščita', price: '€280', desc: '4h • Dolgotrajno', duration: 240 },
+                        { name: 'Komplet Detail', price: '€190', desc: '3h • Notranje + zunanje', duration: 180 }
                     ]
                 },
                 barbersSection: {
-                    title: 'NaĹˇa ekipa',
+                    title: 'Naša ekipa',
                     list: [
-                        { name: 'Andrej KovaÄŤ', role: 'Detailing specialist', img: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=1000' },
+                        { name: 'Andrej Kovač', role: 'Detailing specialist', img: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=1000' },
                         { name: 'Nika Zupan', role: 'Paint correction', img: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=1000' }
                     ]
                 },
@@ -370,7 +370,7 @@
                     author: 'Miha K.'
                 },
                 ctaSection: {
-                    title: 'Naj bo vaĹˇ avto kot nov',
+                    title: 'Naj bo vaš avto kot nov',
                     text: 'Izberite paket in rezervirajte termin.',
                     buttonText: 'Rezerviraj zdaj'
                 },
@@ -379,7 +379,7 @@
                     heading: 'Rezervirajte termin',
                     buttonText: 'Potrdi termin',
                     placeholderName: 'Ime',
-                    placeholderEmail: 'E-poĹˇta',
+                    placeholderEmail: 'E-pošta',
                     placeholderPhone: 'Telefon'
                 }
             },
@@ -395,20 +395,20 @@
                 galleryTitle: 'Galerija',
                 contactSection: {
                     title: 'Kontakt',
-                    subtitle: 'Rezervacije in vpraĹˇanja â€“ piĹˇite ali pokliÄŤite.',
+                    subtitle: 'Rezervacije in vprašanja – pišite ali pokličite.',
                     address: 'Trg lepote 3, Celje',
                     phone: '+386 40 333 444',
                     email: 'hello@beauty.si'
                 },
                 googleReviews: {
                     title: 'Google ocene',
-                    subtitle: 'Preveri mnenja naĹˇih strank.',
+                    subtitle: 'Preveri mnenja naših strank.',
                     rating: '5.0',
                     countText: '(64 ocen)',
                     link: '',
                     items: [
-                        { author: 'Lana B.', text: 'ÄŚudovit salon in storitev.', stars: 5 },
-                        { author: 'Tina K.', text: 'Top nega, priporoÄŤam!', stars: 5 },
+                        { author: 'Lana B.', text: 'Čudovit salon in storitev.', stars: 5 },
+                        { author: 'Tina K.', text: 'Top nega, priporočam!', stars: 5 },
                         { author: 'Maja P.', text: 'Zelo prijazno osebje.', stars: 5 }
                     ]
                 },
@@ -433,31 +433,31 @@
                     scrollbarTrack: '#F2F2F7'
                 },
                 hero: {
-                    subtitle: 'NEGA â€˘ LEPOTA â€˘ SIJAJ',
+                    subtitle: 'NEGA • LEPOTA • SIJAJ',
                     title: 'Beauty Salon',
                     buttonText: 'Rezerviraj nego',
                     backgroundImage: 'https://images.pexels.com/photos/7755512/pexels-photo-7755512.jpeg'
                 },
                 ourStory: {
                     sectionTitle: 'O nas',
-                    title: 'VaĹˇ ÄŤas za razvajanje',
-                    text: 'Nudimo vrhunske tretmaje, ki poudarijo vaĹˇo naravno lepoto.',
+                    title: 'Vaš čas za razvajanje',
+                    text: 'Nudimo vrhunske tretmaje, ki poudarijo vašo naravno lepoto.',
                     image: 'https://images.unsplash.com/photo-1500917293891-ef795e70e1f6?q=80&w=1200'
                 },
                 servicesSection: {
                     title: 'Storitve',
                     items: [
-                        { name: 'Nega obraza', price: 'â‚¬55', desc: '60 min â€˘ Globinska', duration: 60 },
-                        { name: 'Manikura', price: 'â‚¬25', desc: '30 min â€˘ KlasiÄŤna', duration: 30 },
-                        { name: 'Pedikura', price: 'â‚¬35', desc: '45 min â€˘ SPA', duration: 45 },
-                        { name: 'MasaĹľa', price: 'â‚¬50', desc: '60 min â€˘ SproĹˇÄŤujoÄŤa', duration: 60 }
+                        { name: 'Nega obraza', price: '€55', desc: '60 min • Globinska', duration: 60 },
+                        { name: 'Manikura', price: '€25', desc: '30 min • Klasična', duration: 30 },
+                        { name: 'Pedikura', price: '€35', desc: '45 min • SPA', duration: 45 },
+                        { name: 'Masaža', price: '€50', desc: '60 min • Sproščujoča', duration: 60 }
                     ]
                 },
                 barbersSection: {
-                    title: 'NaĹˇa ekipa',
+                    title: 'Naša ekipa',
                     list: [
-                        { name: 'Sara M.', role: 'KozmetiÄŤarka', img: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?q=80&w=1000' },
-                        { name: 'Ana L.', role: 'Nega in masaĹľe', img: 'https://images.pexels.com/photos/734478/pexels-photo-734478.jpeg' }
+                        { name: 'Sara M.', role: 'Kozmetičarka', img: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?q=80&w=1000' },
+                        { name: 'Ana L.', role: 'Nega in masaže', img: 'https://images.pexels.com/photos/734478/pexels-photo-734478.jpeg' }
                     ]
                 },
                 gallery: [
@@ -466,7 +466,7 @@
                     'https://images.pexels.com/photos/939835/pexels-photo-939835.jpeg?q=80&w=1000'
                 ],
                 testimonial: {
-                    quote: 'ÄŚudovita izkuĹˇnja in popolna nega. PriporoÄŤam!',
+                    quote: 'Čudovita izkušnja in popolna nega. Priporočam!',
                     author: 'Nina R.'
                 },
                 ctaSection: {
@@ -479,7 +479,7 @@
                     heading: 'Rezervirajte termin',
                     buttonText: 'Potrdi termin',
                     placeholderName: 'Ime',
-                    placeholderEmail: 'E-poĹˇta',
+                    placeholderEmail: 'E-pošta',
                     placeholderPhone: 'Telefon'
                 }
             }
@@ -570,7 +570,7 @@
             // Contact Section
             const cs = SITE_CONFIG.contactSection || {};
             document.getElementById('contactTitle').value = cs.title || 'Kontakt';
-            document.getElementById('contactSubtitle').value = cs.subtitle || 'PiĹˇite ali nas pokliÄŤite za termin.';
+            document.getElementById('contactSubtitle').value = cs.subtitle || 'Pišite ali nas pokličite za termin.';
             document.getElementById('contactAddress').value = cs.address || '';
             document.getElementById('contactPhone').value = cs.phone || SITE_CONFIG.ownerContact?.phone || '';
             document.getElementById('contactEmail').value = cs.email || SITE_CONFIG.ownerContact?.email || '';
@@ -578,7 +578,7 @@
             // Google Reviews
             const gr = SITE_CONFIG.googleReviews || {};
             document.getElementById('reviewsTitle').value = gr.title || 'Google ocene';
-            document.getElementById('reviewsSubtitle').value = gr.subtitle || 'Preveri mnenja naĹˇih strank.';
+            document.getElementById('reviewsSubtitle').value = gr.subtitle || 'Preveri mnenja naših strank.';
             document.getElementById('reviewsRating').value = gr.rating || '5.0';
             document.getElementById('reviewsCount').value = gr.countText || '(120 ocen)';
             document.getElementById('reviewsLink').value = gr.link || '';
@@ -597,7 +597,7 @@
             document.getElementById('review3Stars').value = r3.stars || '';
 
             // Footer Copy
-            document.getElementById('footerCopyText').value = SITE_CONFIG.footerCopy || 'Vse pravice pridrĹľane.';
+            document.getElementById('footerCopyText').value = SITE_CONFIG.footerCopy || 'Vse pravice pridržane.';
 
             // Navigation Links
             renderNavLinks();
@@ -678,15 +678,15 @@
             document.getElementById('bookingPageTitle').value = bp.pageTitle || 'Rezervacija termina';
             document.getElementById('bookingPageSubtitle').value = bp.pageSubtitle || 'Izberite storitev in termin';
             document.getElementById('bookingStep1Title').value = bp.step1Title || '1. Izberite storitev';
-            document.getElementById('bookingStep1Desc').value = bp.step1Desc || 'Izberite eno ali veÄŤ storitev';
+            document.getElementById('bookingStep1Desc').value = bp.step1Desc || 'Izberite eno ali več storitev';
             document.getElementById('bookingStep2Title').value = bp.step2Title || '2. Izberite datum';
             document.getElementById('bookingStep2Desc').value = bp.step2Desc || 'Zeleni datumi imajo proste termine';
-            document.getElementById('bookingStep3Title').value = bp.step3Title || '3. VaĹˇi podatki';
+            document.getElementById('bookingStep3Title').value = bp.step3Title || '3. Vaši podatki';
             document.getElementById('bookingStep3Desc').value = bp.step3Desc || 'Vnesite kontaktne podatke';
             document.getElementById('bookingStep4Title').value = bp.step4Title || '4. Potrditev';
             document.getElementById('bookingStep4Desc').value = bp.step4Desc || 'Preverite podatke in potrdite';
-            document.getElementById('bookingSuccessTitle').value = bp.successTitle || 'Rezervacija uspeĹˇna!';
-            document.getElementById('bookingSuccessMessage').value = bp.successMessage || 'VaĹˇ termin je bil uspeĹˇno rezerviran.';
+            document.getElementById('bookingSuccessTitle').value = bp.successTitle || 'Rezervacija uspešna!';
+            document.getElementById('bookingSuccessMessage').value = bp.successMessage || 'Vaš termin je bil uspešno rezerviran.';
             document.getElementById('bookingBtnNext').value = bp.nextButton || 'Naprej';
             document.getElementById('bookingBtnBack').value = bp.backButton || 'Nazaj';
             document.getElementById('bookingBtnConfirm').value = bp.confirmButton || 'Potrdi rezervacijo';
@@ -710,7 +710,7 @@
                 gallery.innerHTML += `
                     <div class="image-item">
                         <img src="${img}" alt="Galerija slika" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23eee%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22 font-family=%22Poppins%22 font-size=%2214%22 fill=%22%23999%22%3ESlika%3C/text%3E%3C/svg%3E'">
-                        <button class="image-remove" onclick="removeImage(${idx})">Ă—</button>
+                        <button class="image-remove" onclick="removeImage(${idx})">×</button>
                     </div>
                 `;
             });
@@ -780,9 +780,9 @@
             
             // Update metric displays
             document.getElementById('totalAppointments').textContent = totalAppointments;
-            document.getElementById('monthlyRevenue').textContent = 'â‚¬' + monthlyRevenue;
+            document.getElementById('monthlyRevenue').textContent = '€' + monthlyRevenue;
             document.getElementById('monthlyAppointments').textContent = monthlyAppts.length;
-            document.getElementById('averagePrice').textContent = 'â‚¬' + averagePrice;
+            document.getElementById('averagePrice').textContent = '€' + averagePrice;
             
             // Services chart data
             const serviceCount = {};
@@ -859,7 +859,7 @@
                         data: {
                             labels: dayLabels.map(d => d + '.'),
                             datasets: [{
-                                label: 'NaroÄŤila',
+                                label: 'Naročila',
                                 data: dayData,
                                 backgroundColor: '#3498db',
                                 borderColor: '#2980b9',
@@ -905,7 +905,7 @@
             renderCalendar();
             
             if (appointments.length === 0) {
-                container.innerHTML = '<div style="padding: 40px 20px; text-align: center; color: var(--ios-text-secondary, #8E8E93);"><i class="bi bi-calendar-x" style="font-size: 48px; opacity: 0.5; display: block; margin-bottom: 12px;"></i>Ni nobenega naroÄŤila</div>';
+                container.innerHTML = '<div style="padding: 40px 20px; text-align: center; color: var(--ios-text-secondary, #8E8E93);"><i class="bi bi-calendar-x" style="font-size: 48px; opacity: 0.5; display: block; margin-bottom: 12px;"></i>Ni nobenega naročila</div>';
                 return;
             }
             
@@ -918,15 +918,15 @@
                     <div style="margin: 8px; padding: 16px; border-left: 4px solid var(--ios-blue, #007AFF); border-radius: var(--ios-radius-md, 12px); background: var(--ios-bg-secondary, white); transition: all 0.2s; box-shadow: var(--ios-shadow-sm, 0 1px 3px rgba(0,0,0,0.08));">
                         <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
                             <p style="margin: 0; font-weight: 600; color: var(--ios-text-primary, #000); font-size: 16px;">${appt.firstName || 'N/A'} ${appt.surname || appt.lastName || 'N/A'}</p>
-                            <span style="background: rgba(0, 122, 255, 0.15); color: var(--ios-blue, #007AFF); padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600;">â‚¬${appt.totalPrice || appt.price || '0'}</span>
+                            <span style="background: rgba(0, 122, 255, 0.15); color: var(--ios-blue, #007AFF); padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600;">€${appt.totalPrice || appt.price || '0'}</span>
                         </div>
                         <p style="margin: 0 0 6px 0; font-size: 13px; color: var(--ios-text-secondary, #8E8E93);">${appt.email || '-'} | ${appt.phone || '-'}</p>
-                        <p style="margin: 10px 0 6px 0; font-size: 14px; color: var(--ios-text-primary, #000);"><strong>đź“…</strong> ${dateStr} ob ${appt.time}</p>
-                        <p style="margin: 6px 0; font-size: 14px; color: var(--ios-text-primary, #000);"><strong>âś‚ď¸Ź</strong> ${(appt.services || []).join(', ') || appt.service || 'N/A'}</p>
-                        <p style="margin: 6px 0; font-size: 13px; color: var(--ios-text-secondary, #8E8E93);"><strong>âŹ±ď¸Ź</strong> ${appt.totalDuration || '-'} min</p>
+                        <p style="margin: 10px 0 6px 0; font-size: 14px; color: var(--ios-text-primary, #000);"><strong>📅</strong> ${dateStr} ob ${appt.time}</p>
+                        <p style="margin: 6px 0; font-size: 14px; color: var(--ios-text-primary, #000);"><strong>✂️</strong> ${(appt.services || []).join(', ') || appt.service || 'N/A'}</p>
+                        <p style="margin: 6px 0; font-size: 13px; color: var(--ios-text-secondary, #8E8E93);"><strong>⏱️</strong> ${appt.totalDuration || '-'} min</p>
                         <div style="margin-top: 12px; display: flex; gap: 10px;">
-                            <button onclick="deleteAppointment(${idx})" style="flex: 1; padding: 10px 16px; background: var(--ios-red, #FF3B30); color: white; border: none; border-radius: var(--ios-radius-sm, 8px); font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s;">đź—‘ď¸Ź IzbriĹˇi</button>
-                            <button onclick="generateInvoice(${idx})" style="flex: 1; padding: 10px 16px; background: var(--ios-blue, #007AFF); color: white; border: none; border-radius: var(--ios-radius-sm, 8px); font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s;">đź“„ RaÄŤun</button>
+                            <button onclick="deleteAppointment(${idx})" style="flex: 1; padding: 10px 16px; background: var(--ios-red, #FF3B30); color: white; border: none; border-radius: var(--ios-radius-sm, 8px); font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s;">🗑️ Izbriši</button>
+                            <button onclick="generateInvoice(${idx})" style="flex: 1; padding: 10px 16px; background: var(--ios-blue, #007AFF); color: white; border: none; border-radius: var(--ios-radius-sm, 8px); font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s;">📄 Račun</button>
                         </div>
                     </div>
                 `;
@@ -935,7 +935,7 @@
         
         // Delete appointment
         function deleteAppointment(idx) {
-            if (confirm('Ali si prepriÄŤan?')) {
+            if (confirm('Ali si prepričan?')) {
                 const deletedAppt = SITE_CONFIG.appointments[idx];
                 SITE_CONFIG.appointments.splice(idx, 1);
                 // Clear localStorage backup and appointments
@@ -964,19 +964,19 @@
                 // Generate printable invoice for an appointment
                 function generateInvoice(idx) {
                         const appt = (SITE_CONFIG.appointments || [])[idx];
-                        if (!appt) return alert('Ni najdenega naroÄŤila');
+                        if (!appt) return alert('Ni najdenega naročila');
 
                         // Build service rows with prices
                         const serviceRows = appt.services.map(serviceName => {
                             const service = SITE_CONFIG.servicesSection.items.find(s => s.name === serviceName);
-                            const price = service ? service.price : 'â‚¬0';
+                            const price = service ? service.price : '€0';
                             return `<tr><td>${serviceName}</td><td class="right">${price}</td></tr>`;
                         }).join('');
 
                         const invoiceHtml = `
                                             <html>
                                             <head>
-                                                <title>RaÄŤun - ${SITE_CONFIG.shopName}</title>
+                                                <title>Račun - ${SITE_CONFIG.shopName}</title>
                                                 <style>body{font-family:Arial,Helvetica,sans-serif;padding:20px} .header{display:flex;align-items:center;gap:20px} .logo{max-height:80px} table{width:100%;border-collapse:collapse;margin-top:20px} td,th{border:1px solid #ddd;padding:8px;text-align:left} .right{text-align:right}</style>
                                             </head>
                                             <body>
@@ -987,7 +987,7 @@
                                                         <div>${SITE_CONFIG.ownerContact?.phone || ''}</div>
                                                     </div>
                                                 </div>
-                                                <h3>RaÄŤun za: ${appt.name}</h3>
+                                                <h3>Račun za: ${appt.name}</h3>
                                                 <div>Email: ${appt.email} | Tel: ${appt.phone}</div>
                                                 <div>Termin: ${appt.date} ob ${appt.time}</div>
                                                 <table>
@@ -1034,17 +1034,17 @@
             
             // Step titles and descriptions
             SITE_CONFIG.bookingPage.step1Title = document.getElementById('bookingStep1Title').value || '1. Izberite storitev';
-            SITE_CONFIG.bookingPage.step1Desc = document.getElementById('bookingStep1Desc').value || 'Izberite eno ali veÄŤ storitev';
+            SITE_CONFIG.bookingPage.step1Desc = document.getElementById('bookingStep1Desc').value || 'Izberite eno ali več storitev';
             SITE_CONFIG.bookingPage.step2Title = document.getElementById('bookingStep2Title').value || '2. Izberite datum';
             SITE_CONFIG.bookingPage.step2Desc = document.getElementById('bookingStep2Desc').value || 'Zeleni datumi imajo proste termine';
-            SITE_CONFIG.bookingPage.step3Title = document.getElementById('bookingStep3Title').value || '3. VaĹˇi podatki';
+            SITE_CONFIG.bookingPage.step3Title = document.getElementById('bookingStep3Title').value || '3. Vaši podatki';
             SITE_CONFIG.bookingPage.step3Desc = document.getElementById('bookingStep3Desc').value || 'Vnesite kontaktne podatke';
             SITE_CONFIG.bookingPage.step4Title = document.getElementById('bookingStep4Title').value || '4. Potrditev';
             SITE_CONFIG.bookingPage.step4Desc = document.getElementById('bookingStep4Desc').value || 'Preverite podatke in potrdite';
             
             // Success messages
-            SITE_CONFIG.bookingPage.successTitle = document.getElementById('bookingSuccessTitle').value || 'Rezervacija uspeĹˇna!';
-            SITE_CONFIG.bookingPage.successMessage = document.getElementById('bookingSuccessMessage').value || 'VaĹˇ termin je bil uspeĹˇno rezerviran.';
+            SITE_CONFIG.bookingPage.successTitle = document.getElementById('bookingSuccessTitle').value || 'Rezervacija uspešna!';
+            SITE_CONFIG.bookingPage.successMessage = document.getElementById('bookingSuccessMessage').value || 'Vaš termin je bil uspešno rezerviran.';
             
             // Button labels
             SITE_CONFIG.bookingPage.nextButton = document.getElementById('bookingBtnNext').value || 'Naprej';
@@ -1108,7 +1108,7 @@
             if (!SITE_CONFIG.booking) SITE_CONFIG.booking = {};
             if (!SITE_CONFIG.booking.workingDays) SITE_CONFIG.booking.workingDays = {};
             
-            const dayNames = ['Nedelja', 'Ponedeljek', 'Torek', 'Sreda', 'ÄŚetrtek', 'Petek', 'Sobota'];
+            const dayNames = ['Nedelja', 'Ponedeljek', 'Torek', 'Sreda', 'Četrtek', 'Petek', 'Sobota'];
             const dayNamesEn = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
             
             for (let dayNum = 0; dayNum < 7; dayNum++) {
@@ -1236,7 +1236,7 @@
         function saveCtaSection() {
             if (!SITE_CONFIG.ctaSection) SITE_CONFIG.ctaSection = {};
             SITE_CONFIG.ctaSection.title = document.getElementById('ctaTitle').value || 'Pripravljeni na Spremembo?';
-            SITE_CONFIG.ctaSection.text = document.getElementById('ctaText').value || 'Rezervirajte svoj termin danes in doĹľivite naĹˇo profesionalno storitev.';
+            SITE_CONFIG.ctaSection.text = document.getElementById('ctaText').value || 'Rezervirajte svoj termin danes in doživite našo profesionalno storitev.';
             SITE_CONFIG.ctaSection.buttonText = document.getElementById('ctaButtonText').value || 'Rezerviraj Zdaj';
             saveConfig();
             showNotification('CTA sekcija shranjena!', 'success');
@@ -1248,7 +1248,7 @@
             if (!SITE_CONFIG.ownerContact) SITE_CONFIG.ownerContact = {};
 
             SITE_CONFIG.contactSection.title = document.getElementById('contactTitle').value || 'Kontakt';
-            SITE_CONFIG.contactSection.subtitle = document.getElementById('contactSubtitle').value || 'PiĹˇite ali nas pokliÄŤite za termin.';
+            SITE_CONFIG.contactSection.subtitle = document.getElementById('contactSubtitle').value || 'Pišite ali nas pokličite za termin.';
             SITE_CONFIG.contactSection.address = document.getElementById('contactAddress').value || '';
             SITE_CONFIG.contactSection.phone = document.getElementById('contactPhone').value || '';
             SITE_CONFIG.contactSection.email = document.getElementById('contactEmail').value || '';
@@ -1265,7 +1265,7 @@
         function saveReviewsSection() {
             if (!SITE_CONFIG.googleReviews) SITE_CONFIG.googleReviews = {};
             SITE_CONFIG.googleReviews.title = document.getElementById('reviewsTitle').value || 'Google ocene';
-            SITE_CONFIG.googleReviews.subtitle = document.getElementById('reviewsSubtitle').value || 'Preveri mnenja naĹˇih strank.';
+            SITE_CONFIG.googleReviews.subtitle = document.getElementById('reviewsSubtitle').value || 'Preveri mnenja naših strank.';
             SITE_CONFIG.googleReviews.rating = document.getElementById('reviewsRating').value || '5.0';
             SITE_CONFIG.googleReviews.countText = document.getElementById('reviewsCount').value || '(120 ocen)';
             SITE_CONFIG.googleReviews.link = document.getElementById('reviewsLink').value || '';
@@ -1297,7 +1297,7 @@
 
         // Save footer copy
         function saveFooterCopy() {
-            SITE_CONFIG.footerCopy = document.getElementById('footerCopyText').value || 'Vse pravice pridrĹľane.';
+            SITE_CONFIG.footerCopy = document.getElementById('footerCopyText').value || 'Vse pravice pridržane.';
             saveConfig();
             showNotification('Noga strani shranjena!', 'success');
         }
@@ -1873,7 +1873,7 @@
                     }
                 }
             } catch (e) {
-                console.warn('âš  Could not load bookings from StorageManager, falling back to localStorage', e);
+                console.warn('⚠ Could not load bookings from StorageManager, falling back to localStorage', e);
                 const savedAppts = localStorage.getItem('appointments');
                 if (savedAppts) {
                     try { SITE_CONFIG.appointments = JSON.parse(savedAppts); } catch (err) { console.log('Could not load appointments'); }
@@ -1914,9 +1914,9 @@
 
                 schedule.events.push(...mapped);
                 await StorageManager.save('schedule', schedule);
-                console.log('âś“ Appointments synced to StorageManager schedule');
+                console.log('✓ Appointments synced to StorageManager schedule');
             } catch (e) {
-                console.warn('âš  syncAppointmentsToSchedule failed', e);
+                console.warn('⚠ syncAppointmentsToSchedule failed', e);
             }
         }
 
@@ -1938,7 +1938,7 @@
                 preview.src = e.target.result;
                 preview.style.display = 'block';
                 saveConfig();
-                showNotification('Naslovnica slika naloĹľena in shranjena', 'success');
+                showNotification('Naslovnica slika naložena in shranjena', 'success');
             };
             reader.readAsDataURL(file);
         }
@@ -1963,7 +1963,7 @@
                     preview.style.display = 'block';
                 }
                 saveConfig();
-                showNotification('Story slika naloĹľena in shranjena', 'success');
+                showNotification('Story slika naložena in shranjena', 'success');
             };
             reader.readAsDataURL(file);
         }
@@ -1973,7 +1973,7 @@
             const fileInput = document.querySelector('.barber-img-input-' + idx);
             const file = fileInput.files[0];
             if (!file) {
-                showNotification('Izberi sliko za ÄŤlana ekipe', 'error');
+                showNotification('Izberi sliko za člana ekipe', 'error');
                 return;
             }
             
@@ -1985,7 +1985,7 @@
                 preview.src = e.target.result;
                 preview.style.display = 'block';
                 saveConfig();
-                showNotification(`Slika ÄŤlana ekipe "${SITE_CONFIG.barbersSection.list[idx].name}" naloĹľena in shranjena`, 'success');
+                showNotification(`Slika člana ekipe "${SITE_CONFIG.barbersSection.list[idx].name}" naložena in shranjena`, 'success');
             };
             reader.readAsDataURL(file);
         }
@@ -2009,7 +2009,7 @@
         function saveBarberImageUrl(idx) {
             const url = document.querySelector('.barber-img-url-' + idx).value.trim();
             if (!url) {
-                showNotification('Vnesi URL slike za ÄŤlana ekipe', 'error');
+                showNotification('Vnesi URL slike za člana ekipe', 'error');
                 return;
             }
             SITE_CONFIG.barbersSection.list[idx].img = url;
@@ -2018,7 +2018,7 @@
             preview.src = url;
             preview.style.display = 'block';
             saveConfig();
-            showNotification(`URL slike ÄŤlana ekipe "${SITE_CONFIG.barbersSection.list[idx].name}" shranjen`, 'success');
+            showNotification(`URL slike člana ekipe "${SITE_CONFIG.barbersSection.list[idx].name}" shranjen`, 'success');
         }
 
         // Add gallery image from URL
@@ -2046,16 +2046,16 @@
                     if (typeof StorageManager !== 'undefined' && StorageManager.load) {
                         const schedule = await StorageManager.load('schedule');
                         SITE_CONFIG.schedule = schedule || { events: [] };
-                        console.log('đź“Ą Attached StorageManager schedule to SITE_CONFIG (events):', SITE_CONFIG.schedule.events ? SITE_CONFIG.schedule.events.length : 0);
+                        console.log('📥 Attached StorageManager schedule to SITE_CONFIG (events):', SITE_CONFIG.schedule.events ? SITE_CONFIG.schedule.events.length : 0);
                     } else {
-                        console.log('âš  StorageManager not available when saving config; skipping schedule attach');
+                        console.log('⚠ StorageManager not available when saving config; skipping schedule attach');
                     }
                 } catch (err) {
-                    console.warn('âš  Failed to load schedule for attaching to SITE_CONFIG:', err);
+                    console.warn('⚠ Failed to load schedule for attaching to SITE_CONFIG:', err);
                 } finally {
                     // Sync to Firebase REST API (simpler, no module issues)
                     syncToFirebase(SITE_CONFIG);
-                    showNotification('âś… Spremembe so bile shranjene in sinhronizirane', 'success');
+                    showNotification('✅ Spremembe so bile shranjene in sinhronizirane', 'success');
 
                     if (typeof syncAppointmentsToSchedule === 'function') syncAppointmentsToSchedule();
                 }
@@ -2070,9 +2070,9 @@
                 const adminScheduleEntries = config && config.adminSchedule && Array.isArray(config.adminSchedule.entries)
                     ? config.adminSchedule.entries.length
                     : 0;
-                console.log('đź“¤ syncToFirebase sending payload. adminSchedule.entries:', adminScheduleEntries);
+                console.log('📤 syncToFirebase sending payload. adminSchedule.entries:', adminScheduleEntries);
                 const body = JSON.stringify(config);
-                console.log('đź“¦ Payload size (bytes):', new Blob([body]).size);
+                console.log('📦 Payload size (bytes):', new Blob([body]).size);
 
                 fetch(dbUrl, {
                     method: 'PUT',
@@ -2080,21 +2080,21 @@
                     body: body
                 })
                 .then(async response => {
-                    console.log('đź” Firebase response status:', response.status, response.statusText);
+                    console.log('🔁 Firebase response status:', response.status, response.statusText);
                     let txt = null;
                     try { txt = await response.text(); } catch(e) { txt = '<no body>'; }
-                    console.log('đź” Firebase response body:', txt);
+                    console.log('🔁 Firebase response body:', txt);
                     if (response.ok) {
-                        console.log('âś… Synced to Firebase');
+                        console.log('✅ Synced to Firebase');
                     } else {
-                        console.warn('âš ď¸Ź Firebase sync failed');
+                        console.warn('⚠️ Firebase sync failed');
                     }
                 })
                 .catch(error => {
-                    console.warn('âš ď¸Ź Firebase sync error:', error);
+                    console.warn('⚠️ Firebase sync error:', error);
                 });
             } catch (err) {
-                console.warn('âš ď¸Ź syncToFirebase error preparing payload:', err);
+                console.warn('⚠️ syncToFirebase error preparing payload:', err);
             }
         }
 
@@ -2207,7 +2207,7 @@
             grid.innerHTML = '';
             
             // Day headers - adjust for mobile - LARGER on mobile
-            const dayHeaders = isSmallMobile ? ['P', 'T', 'S', 'ÄŚ', 'P', 'S', 'N'] : isMobile ? ['Po', 'To', 'Sr', 'ÄŚe', 'Pe', 'So', 'Ne'] : ['Pon', 'Tor', 'Sre', 'ÄŚet', 'Pet', 'Sob', 'Ned'];
+            const dayHeaders = isSmallMobile ? ['P', 'T', 'S', 'Č', 'P', 'S', 'N'] : isMobile ? ['Po', 'To', 'Sr', 'Če', 'Pe', 'So', 'Ne'] : ['Pon', 'Tor', 'Sre', 'Čet', 'Pet', 'Sob', 'Ned'];
             const headerPadding = isSmallMobile ? '8px 5px' : isMobile ? '10px 5px' : '8px';
             const headerFontSize = isSmallMobile ? '13px' : isMobile ? '14px' : '12px';
             const headerHeight = isSmallMobile ? '40px' : isMobile ? '45px' : '30px';
@@ -2242,7 +2242,7 @@
                 if (appointmentsOnDay.length > 0) {
                     const dotSize = isSmallMobile ? '8px' : isMobile ? '10px' : '8px';
                     dayCell.style.cssText = `padding:${cellPadding}; border:${borderWidth} solid var(--ios-blue, #007AFF); border-radius:${borderRadius}; text-align:center; cursor:pointer; background:linear-gradient(135deg, var(--ios-blue, #007AFF), #0055cc); font-size:${cellFontSize}; font-weight:700; color:#fff; transition:all 0.2s; min-height:${minHeight}; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 8px rgba(0,122,255,0.4); user-select:none; -webkit-user-select:none;`;
-                    dayCell.innerHTML = `<div style="text-align:center; width:100%;"><div style="line-height:1; font-size:${cellFontSize};">${day}</div><div style="font-size:${dotSize}; margin-top:2px; letter-spacing:-2px; line-height:0.8;">â—Źâ—Źâ—Ź</div></div>`;
+                    dayCell.innerHTML = `<div style="text-align:center; width:100%;"><div style="line-height:1; font-size:${cellFontSize};">${day}</div><div style="font-size:${dotSize}; margin-top:2px; letter-spacing:-2px; line-height:0.8;">●●●</div></div>`;
                 }
                 
                 dayCell.onmouseover = () => {
@@ -2269,7 +2269,7 @@
             const container = document.getElementById('dayAppointments');
             
             if (appts.length === 0) {
-                container.innerHTML = '<span style="color:var(--ios-text-secondary, #8E8E93);">Ni naroÄŤil za ta dan</span>';
+                container.innerHTML = '<span style="color:var(--ios-text-secondary, #8E8E93);">Ni naročil za ta dan</span>';
             } else {
                 container.innerHTML = appts.map(a => {
                     const firstName = a.firstName || a.name || 'Neznano';
@@ -2314,7 +2314,7 @@
 
             // Calculate price
             const serviceObj = SITE_CONFIG.servicesSection.items.find(s => s.name === service);
-            const price = serviceObj ? parseFloat(serviceObj.price.replace('$', '').replace('â‚¬', '')) : 0;
+            const price = serviceObj ? parseFloat(serviceObj.price.replace('$', '').replace('€', '')) : 0;
 
             // Create appointment
             const appointment = {
@@ -2324,7 +2324,7 @@
                 email,
                 phone,
                 service,
-                barber: barber || 'Izbran ÄŤlan',
+                barber: barber || 'Izbran član',
                 date,
                 time,
                 price,
@@ -2431,12 +2431,12 @@
             const notes = document.getElementById('scheduleNotes').value;
 
             if (!startDate || !endDate) {
-                showNotification('Prosim vnesi datume zaÄŤetka in konca', 'error');
+                showNotification('Prosim vnesi datume začetka in konca', 'error');
                 return;
             }
 
             if (new Date(startDate) > new Date(endDate)) {
-                showNotification('Datum zaÄŤetka ne sme biti poznejĹˇi od datuma konca', 'error');
+                showNotification('Datum začetka ne sme biti poznejši od datuma konca', 'error');
                 return;
             }
 
@@ -2452,8 +2452,8 @@
             };
 
             SITE_CONFIG.adminSchedule.entries.push(entry);
-            console.log('âž• addScheduleEntry pushed entry:', entry);
-            console.log('đź“Š adminSchedule now has', SITE_CONFIG.adminSchedule.entries.length, 'entries');
+            console.log('➕ addScheduleEntry pushed entry:', entry);
+            console.log('📊 adminSchedule now has', SITE_CONFIG.adminSchedule.entries.length, 'entries');
             saveConfig();
             
             // Clear form
@@ -2519,7 +2519,7 @@
                 'pavza': 'Pavza',
                 'malica': 'Malica',
                 'dopust': 'Dopust',
-                'bolniska': 'BolniĹˇka'
+                'bolniska': 'Bolniška'
             };
             return labels[type] || type;
         }
@@ -2548,7 +2548,7 @@
             calendar.innerHTML = '';
 
             // Add day headers
-            const dayHeaders = ['Pon', 'Tor', 'Sre', 'ÄŚet', 'Pet', 'Sob', 'Ned'];
+            const dayHeaders = ['Pon', 'Tor', 'Sre', 'Čet', 'Pet', 'Sob', 'Ned'];
             dayHeaders.forEach(day => {
                 const header = document.createElement('div');
                 header.style.cssText = 'background: #e74c3c; color: white; padding: 8px; text-align: center; font-weight: 600; border-radius: 4px;';
@@ -2725,9 +2725,9 @@
                             <div style="font-size: 13px; color: var(--ios-text-primary, #000);">
                                 <strong>${startDate}</strong> (${entry.startTime}:00) - <strong>${endDate}</strong> (${entry.endTime}:00)
                             </div>
-                            ${entry.notes ? `<div style="font-size: 12px; color: var(--ios-text-secondary, #8E8E93); margin-top: 6px;">đź’¬ ${entry.notes}</div>` : ''}
+                            ${entry.notes ? `<div style="font-size: 12px; color: var(--ios-text-secondary, #8E8E93); margin-top: 6px;">💬 ${entry.notes}</div>` : ''}
                         </div>
-                        <button onclick="deleteScheduleEntry(${entry.id})" style="background: var(--ios-red, #FF3B30); color: white; border: none; padding: 8px 14px; border-radius: var(--ios-radius-sm, 8px); cursor: pointer; font-size: 13px; font-weight: 600;">IzbriĹˇi</button>
+                        <button onclick="deleteScheduleEntry(${entry.id})" style="background: var(--ios-red, #FF3B30); color: white; border: none; padding: 8px 14px; border-radius: var(--ios-radius-sm, 8px); cursor: pointer; font-size: 13px; font-weight: 600;">Izbriši</button>
                     </div>
                 `;
             });
@@ -2737,7 +2737,7 @@
 
         // Delete schedule entry
         function deleteScheduleEntry(id) {
-            if (confirm('Ali si prepriÄŤan, da ĹľeliĹˇ izbrisati ta vnos?')) {
+            if (confirm('Ali si prepričan, da želiš izbrisati ta vnos?')) {
                 SITE_CONFIG.adminSchedule.entries = SITE_CONFIG.adminSchedule.entries.filter(e => e.id !== id);
                 saveConfig();
                 renderScheduleView();

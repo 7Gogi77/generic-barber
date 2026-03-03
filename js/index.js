@@ -129,14 +129,14 @@
                         Object.assign(SITE_CONFIG, cloudConfig);
                         window.SITE_CONFIG = SITE_CONFIG;
                         localStorage.setItem('site_config_backup', JSON.stringify(SITE_CONFIG));
-                        console.log('âś… Loaded config from Firebase (REST)');
+                        console.log('✅ Loaded config from Firebase (REST)');
                         return true;
                     }
                 } else {
-                    console.warn(`âš ď¸Ź Firebase REST fetch failed: ${response.status} ${response.statusText}`);
+                    console.warn(`⚠️ Firebase REST fetch failed: ${response.status} ${response.statusText}`);
                 }
             } catch (error) {
-                console.log('âš ď¸Ź Firebase unavailable, using local config', error);
+                console.log('⚠️ Firebase unavailable, using local config', error);
                 if (error && error.message) {
                     console.warn('Firebase error detail:', error.message);
                 }
@@ -179,7 +179,7 @@
             
             // Testimonial
             document.getElementById('test-quote').innerText = SITE_CONFIG.testimonial.quote;
-            document.getElementById('test-author').innerText = `â€” ${SITE_CONFIG.testimonial.author}`;
+            document.getElementById('test-author').innerText = `— ${SITE_CONFIG.testimonial.author}`;
             
             // Navigation links
             const navContainer = document.getElementById('nav-links-container');
@@ -204,7 +204,7 @@
                         <h4>${s.name}</h4>
                         <p>${s.desc}</p>
                     </div>
-                    <span class="service-price">${s.price}â‚¬</span>
+                    <span class="service-price">${s.price}€</span>
                 `;
                 servicesList.appendChild(item);
             });
@@ -250,13 +250,13 @@
                 link.innerText = item.name;
                 footerLinks.appendChild(link);
             });
-            const footerCopyText = SITE_CONFIG.footerCopy || 'Vse pravice pridrĹľane.';
-            document.getElementById('footer-copy').innerHTML = `Â© ${new Date().getFullYear()} ${SITE_CONFIG.shopName}. ${footerCopyText}`;
+            const footerCopyText = SITE_CONFIG.footerCopy || 'Vse pravice pridržane.';
+            document.getElementById('footer-copy').innerHTML = `© ${new Date().getFullYear()} ${SITE_CONFIG.shopName}. ${footerCopyText}`;
             
             // CTA Section
             if (SITE_CONFIG.ctaSection) {
                 document.getElementById('cta-title').innerText = SITE_CONFIG.ctaSection.title || 'Pripravljeni na Spremembo?';
-                document.getElementById('cta-text').innerText = SITE_CONFIG.ctaSection.text || 'Rezervirajte svoj termin danes in doĹľivite naĹˇo profesionalno storitev.';
+                document.getElementById('cta-text').innerText = SITE_CONFIG.ctaSection.text || 'Rezervirajte svoj termin danes in doživite našo profesionalno storitev.';
                 document.getElementById('cta-button-text').innerText = SITE_CONFIG.ctaSection.buttonText || 'Rezerviraj Zdaj';
             }
 
@@ -269,10 +269,10 @@
             const contactPhoneEl = document.getElementById('contact-phone');
             const contactEmailEl = document.getElementById('contact-email');
             if (contactTitleEl) contactTitleEl.innerText = contact.title || 'Kontakt';
-            if (contactSubtitleEl) contactSubtitleEl.innerText = contact.subtitle || 'PiĹˇite ali nas pokliÄŤite za termin.';
-            if (contactAddressEl) contactAddressEl.innerText = contact.address || 'â€”';
-            if (contactPhoneEl) contactPhoneEl.innerText = contact.phone || owner.phone || 'â€”';
-            if (contactEmailEl) contactEmailEl.innerText = contact.email || owner.email || 'â€”';
+            if (contactSubtitleEl) contactSubtitleEl.innerText = contact.subtitle || 'Pišite ali nas pokličite za termin.';
+            if (contactAddressEl) contactAddressEl.innerText = contact.address || '—';
+            if (contactPhoneEl) contactPhoneEl.innerText = contact.phone || owner.phone || '—';
+            if (contactEmailEl) contactEmailEl.innerText = contact.email || owner.email || '—';
 
             // Google Reviews
             const reviews = SITE_CONFIG.googleReviews || {};
@@ -283,7 +283,7 @@
             const reviewsLink = document.getElementById('reviews-link');
             const reviewsGrid = document.getElementById('reviews-grid');
             if (reviewsTitle) reviewsTitle.innerText = reviews.title || 'Google ocene';
-            if (reviewsSubtitle) reviewsSubtitle.innerText = reviews.subtitle || 'Preveri mnenja naĹˇih strank.';
+            if (reviewsSubtitle) reviewsSubtitle.innerText = reviews.subtitle || 'Preveri mnenja naših strank.';
             if (reviewsRating) reviewsRating.innerText = reviews.rating || '5.0';
             if (reviewsCount) reviewsCount.innerText = reviews.countText || '(120 ocen)';
             if (reviewsLink) {
@@ -296,7 +296,7 @@
                 list.forEach(r => {
                     const card = document.createElement('div');
                     card.className = 'review-card glass-card';
-                    const stars = 'â…â…â…â…â…'.slice(0, Math.max(1, Math.min(5, r.stars || 5)));
+                    const stars = '★★★★★'.slice(0, Math.max(1, Math.min(5, r.stars || 5)));
                     card.innerHTML = `
                         <div class="review-stars">${stars}</div>
                         <div class="review-text">${r.text || ''}</div>
@@ -310,13 +310,13 @@
             const hoursSection = SITE_CONFIG.businessHoursSection || {};
             const hoursTitle = hoursSection.title || 'Urnik dela';
             const hoursSubtitle = hoursSection.subtitle || 'Nastavi svoje delovne dneve in ure';
-            const hoursLabel = hoursSection.hoursLabel || 'Delovni ÄŤas';
+            const hoursLabel = hoursSection.hoursLabel || 'Delovni čas';
             const daysLabel = hoursSection.daysLabel || 'Delovni dnevi';
             const businessHours = SITE_CONFIG.booking?.businessHours || { start: 9, end: 19 };
             const workingDays = SITE_CONFIG.booking?.workingDays || {};
             const daysClosed = SITE_CONFIG.booking?.daysClosed || [0];
             const perDayHours = SITE_CONFIG.booking?.hours || {};
-            const dayNamesFull = ['Nedelja', 'Ponedeljek', 'Torek', 'Sreda', 'ÄŚetrtek', 'Petek', 'Sobota'];
+            const dayNamesFull = ['Nedelja', 'Ponedeljek', 'Torek', 'Sreda', 'Četrtek', 'Petek', 'Sobota'];
 
             const hoursTitleEl = document.getElementById('businessHoursTitle');
             const hoursSubtitleEl = document.getElementById('businessHoursSubtitle');

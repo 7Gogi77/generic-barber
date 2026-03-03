@@ -3,20 +3,20 @@
             let currentEventTab = 'worker';
             // Types used for worker-mode events
             const workerTypes = [
-                { value: 'working_hours', label: 'Delovni ÄŤas' },
+                { value: 'working_hours', label: 'Delovni čas' },
                 { value: 'break', label: 'Premor' },
                 { value: 'lunch', label: 'Kosilo' },
-                { value: 'vacation', label: 'PoÄŤitnice' },
-                { value: 'sick_leave', label: 'BolniĹˇka' },
+                { value: 'vacation', label: 'Počitnice' },
+                { value: 'sick_leave', label: 'Bolniška' },
                 { value: 'day_off', label: 'Prosti dan' }
             ];
-            // Pridobi storitve iz SITE_CONFIG, ÄŤe obstaja, sicer fallback
+            // Pridobi storitve iz SITE_CONFIG, če obstaja, sicer fallback
             function getCustomerTypes() {
                 let items = [];
                 if (window.SITE_CONFIG && window.SITE_CONFIG.servicesSection && Array.isArray(window.SITE_CONFIG.servicesSection.items)) {
                     items = window.SITE_CONFIG.servicesSection.items.map(s => ({ value: s.name, label: s.name }));
                 }
-                // ÄŚe ni storitev, prikaĹľi samo prazno izbiro
+                // Če ni storitev, prikaži samo prazno izbiro
                 return [ { value: '', label: '-- Izberi storitev --' }, ...items ];
             }
                         function renderEventTypeOptions(tab) {
@@ -78,7 +78,7 @@
                                         warn.style.color = '#e74c3c';
                                         warn.style.fontSize = '13px';
                                         warn.style.marginTop = '6px';
-                                        warn.textContent = 'Storitve niso nastavljene v admin panelu ali Ĺˇe niso naloĹľene iz oblaka.';
+                                        warn.textContent = 'Storitve niso nastavljene v admin panelu ali še niso naložene iz oblaka.';
                                         select.parentNode.appendChild(warn);
                                     }
                                 } else {
@@ -153,11 +153,11 @@
             }
             // Always reload services when opening modal
             function openAddEventModalWithTab(startDate = null, endDate = null, retry = 0, tab = null) {
-                console.log('đź“Ť openAddEventModalWithTab called with:', { startDate, endDate, tab, retry });
-                // ÄŚe storitve Ĺˇe niso naloĹľene iz Firebase, poÄŤakaj in poskusi znova
+                console.log('📍 openAddEventModalWithTab called with:', { startDate, endDate, tab, retry });
+                // Če storitve še niso naložene iz Firebase, počakaj in poskusi znova
                 const ready = window.SITE_CONFIG && window.SITE_CONFIG.servicesSection && Array.isArray(window.SITE_CONFIG.servicesSection.items) && window.SITE_CONFIG.servicesSection.items.length > 0;
                 if (!ready && retry < 10) {
-                    console.log('âŹł Services not ready, retrying... (attempt', retry + 1, ')');
+                    console.log('⏳ Services not ready, retrying... (attempt', retry + 1, ')');
                     setTimeout(() => openAddEventModalWithTab(startDate, endDate, retry + 1, tab), 200);
                     return;
                 }
@@ -174,39 +174,39 @@
                 
                 // Show modal
                 const modal = document.getElementById('addEventModal');
-                console.log('đź“‹ Modal element:', { modalExists: !!modal, hasShowClass: modal?.classList.contains('show') });
+                console.log('📋 Modal element:', { modalExists: !!modal, hasShowClass: modal?.classList.contains('show') });
                 if (modal) modal.classList.add('show');
                 if (startDate) {
                     const startDateEl = document.getElementById('eventStartDate');
                     const endDateEl = document.getElementById('eventEndDate');
-                    console.log('đź“… Setting dates:', { startDateEl: !!startDateEl, endDateEl: !!endDateEl });
+                    console.log('📅 Setting dates:', { startDateEl: !!startDateEl, endDateEl: !!endDateEl });
                     if (startDateEl) {
                         startDateEl.value = startDate;
-                        console.log('âś… Set eventStartDate to:', startDate, '- actual value:', startDateEl.value);
+                        console.log('✅ Set eventStartDate to:', startDate, '- actual value:', startDateEl.value);
                     }
                     // If endDate provided, use it; otherwise default to startDate
                     const actualEndDate = endDate || startDate;
                     if (endDateEl) {
                         endDateEl.value = actualEndDate;
-                        console.log('âś… Set eventEndDate to:', actualEndDate, '- actual value:', endDateEl.value);
+                        console.log('✅ Set eventEndDate to:', actualEndDate, '- actual value:', endDateEl.value);
                     }
                 } else {
-                    console.warn('âš ď¸Ź No startDate provided to openAddEventModalWithTab');
+                    console.warn('⚠️ No startDate provided to openAddEventModalWithTab');
                 }
             }
             // IMPORTANT: Override will be applied at END of script file to avoid hoisting issues
         // Fallback: Create FullCalendar stub if CDN failed
         if (typeof FullCalendar === 'undefined') {
-          console.warn('âš ď¸Ź FullCalendar failed to load from CDN');
+          console.warn('⚠️ FullCalendar failed to load from CDN');
           const script = document.createElement('script');
           script.src = 'https://unpkg.com/fullcalendar@6.1.10/index.global.min.js';
-          script.onload = () => console.log('âś… FullCalendar loaded from unpkg fallback');
+          script.onload = () => console.log('✅ FullCalendar loaded from unpkg fallback');
           script.onerror = () => {
-            console.error('âťŚ All FullCalendar JS sources failed');
+            console.error('❌ All FullCalendar JS sources failed');
           };
           document.head.appendChild(script);
         } else {
-          console.log('âś… FullCalendar loaded successfully from primary CDN');
+          console.log('✅ FullCalendar loaded successfully from primary CDN');
         }
 
         // Recalculate total price from selected services
@@ -229,7 +229,7 @@
                     if (svc) total += parsePrice(svc.price);
                 });
             }
-            const currency = (window.SITE_CONFIG && window.SITE_CONFIG.currency) ? window.SITE_CONFIG.currency : 'â‚¬';
+            const currency = (window.SITE_CONFIG && window.SITE_CONFIG.currency) ? window.SITE_CONFIG.currency : '€';
             priceInput.value = total + currency;
             return total;
         }
@@ -246,12 +246,12 @@
                 const stored = localStorage.getItem('schedule_deleted_ids');
                 if (stored) {
                     deletedEventIds = new Set(JSON.parse(stored));
-                    console.log(`âś“ Loaded ${deletedEventIds.size} deleted event IDs from localStorage`);
+                    console.log(`✓ Loaded ${deletedEventIds.size} deleted event IDs from localStorage`);
                 } else {
                     deletedEventIds = new Set();
                 }
             } catch (e) {
-                console.warn('âš  Failed to load deleted event IDs', e);
+                console.warn('⚠ Failed to load deleted event IDs', e);
                 deletedEventIds = new Set();
             }
         }
@@ -263,9 +263,9 @@
         function saveDeletedEventIds() {
             try {
                 localStorage.setItem('schedule_deleted_ids', JSON.stringify(Array.from(deletedEventIds)));
-                console.log(`âś“ Persisted ${deletedEventIds.size} deleted event IDs to localStorage`);
+                console.log(`✓ Persisted ${deletedEventIds.size} deleted event IDs to localStorage`);
             } catch (e) {
-                console.warn('âš  Failed to save deleted event IDs', e);
+                console.warn('⚠ Failed to save deleted event IDs', e);
             }
         }
 
@@ -278,7 +278,7 @@
             const before = events.length;
             const filtered = events.filter(e => !deletedEventIds.has(e.id));
             if (before !== filtered.length) {
-                console.log(`đź”Ť Filtered ${before - filtered.length} deleted events`);
+                console.log(`🔍 Filtered ${before - filtered.length} deleted events`);
             }
             return filtered;
         }
@@ -319,14 +319,14 @@
             const deduplicated = events.filter(e => {
                 if (!e.id) return true; // Keep events without IDs
                 if (seen.has(e.id)) {
-                    console.log('đź”Ť Removing duplicate event:', e.id);
+                    console.log('🔍 Removing duplicate event:', e.id);
                     return false;
                 }
                 seen.add(e.id);
                 return true;
             });
             if (before !== deduplicated.length) {
-                console.log(`âś¨ Deduplicated ${before - deduplicated.length} events`);
+                console.log(`✨ Deduplicated ${before - deduplicated.length} events`);
             }
             return deduplicated;
         }
@@ -411,7 +411,7 @@
                     }
                 });
 
-                // navigation â€” listen on entire nav-item row so text label also triggers navigation
+                // navigation — listen on entire nav-item row so text label also triggers navigation
                 const navIcons = sidebar.querySelectorAll('.nav-icon');
                 const navItems = sidebar.querySelectorAll('.nav-item');
                 navItems.forEach(item => {
@@ -469,7 +469,7 @@
                         scheduleData.events = deduplicateEvents(scheduleData.events);
                     }
                 } catch (e) {
-                    console.warn('âš  Failed to load schedule for customers view', e);
+                    console.warn('⚠ Failed to load schedule for customers view', e);
                 }
 
                 // Merge saved customer base and derive customers from bookings
@@ -528,9 +528,9 @@
                         return ((c.fullName||'') + ' ' + (c.email||'') + ' ' + (c.phone||'')).toLowerCase().includes(term);
                     });
 
-                    let table = '<div style="overflow:auto; overflow-x:hidden; max-height: calc(100% - 160px);"><table class="customer-table"><thead><tr><th>Ime</th><th>Priimek</th><th>Email</th><th>Telefon</th><th style="text-align:right">Ĺ t. terminov</th><th style="text-align:right">Akcije</th></tr></thead><tbody>';
+                    let table = '<div style="overflow:auto; overflow-x:hidden; max-height: calc(100% - 160px);"><table class="customer-table"><thead><tr><th>Ime</th><th>Priimek</th><th>Email</th><th>Telefon</th><th style="text-align:right">Št. terminov</th><th style="text-align:right">Akcije</th></tr></thead><tbody>';
                     rows.forEach((c, idx) => {
-                        table += `<tr class="customer-row" data-idx="${idx}"><td>${c.firstName||'-'}</td><td>${c.surname||'-'}</td><td>${c.email||'-'}</td><td>${c.phone||'-'}</td><td style="text-align:right">${c.count||0}</td><td style="text-align:right"><button class="btn btn-danger btn-sm customerDeleteBtnRow" data-idx="${idx}">IzbriĹˇi</button></td></tr>`;
+                        table += `<tr class="customer-row" data-idx="${idx}"><td>${c.firstName||'-'}</td><td>${c.surname||'-'}</td><td>${c.email||'-'}</td><td>${c.phone||'-'}</td><td style="text-align:right">${c.count||0}</td><td style="text-align:right"><button class="btn btn-danger btn-sm customerDeleteBtnRow" data-idx="${idx}">Izbriši</button></td></tr>`;
                     });
                     table += '</tbody></table></div>';
                     table += '<div id="customerDetail" style="padding:12px; border-top:1px solid #eee; display:none;"></div>';
@@ -570,7 +570,7 @@
                 if (exportBtn) {
                     exportBtn.onclick = () => {
                         const rows = Array.from(document.querySelectorAll('#customerListContent table.customer-table tbody tr'));
-                        const csv = ['"Ime","Priimek","Email","Telefon","Ĺ t. terminov"'].concat(rows.map(r => {
+                        const csv = ['"Ime","Priimek","Email","Telefon","Št. terminov"'].concat(rows.map(r => {
                             const cols = Array.from(r.querySelectorAll('td')).map(td => '"' + (td.textContent || '').replace(/"/g,'""') + '"');
                             return cols.join(',');
                         })).join('\n');
@@ -630,7 +630,7 @@
                                 const name = cols[0].textContent.trim() + ' ' + cols[1].textContent.trim();
                                 const email = cols[2].textContent.trim();
                                 const phone = cols[3].textContent.trim();
-                                if (!confirm(`IzbriĹˇem stranko "${name}" iz baze strank?`)) return;
+                                if (!confirm(`Izbrišem stranko "${name}" iz baze strank?`)) return;
                                 // Find key in customerBase
                                 loadCustomerBase().then(() => {
                                     let matchKey = null;
@@ -648,8 +648,8 @@
                                     // Attempt remote delete
                                     try {
                                         const base = 'https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app/';
-                                        fetch(base + `site_config/customers/${encodeURIComponent(matchKey)}.json`, { method: 'DELETE' }).then(() => console.log('âś“ Remote customer deleted', matchKey)).catch(e => console.warn('âš  Remote delete failed', e));
-                                    } catch (e) { console.warn('âš  Remote delete failed', e); }
+                                        fetch(base + `site_config/customers/${encodeURIComponent(matchKey)}.json`, { method: 'DELETE' }).then(() => console.log('✓ Remote customer deleted', matchKey)).catch(e => console.warn('⚠ Remote delete failed', e));
+                                    } catch (e) { console.warn('⚠ Remote delete failed', e); }
 
                                     // Check bookings that reference this customer and optionally remove references
                                     (async function handleBookingsCleanup(){
@@ -663,7 +663,7 @@
                                                 return (evName && evName.trim() === (name || '').trim()) || (email && evEmail && evEmail.trim() === (email || '').trim()) || (phone && evPhone && evPhone.trim() === (phone || '').trim());
                                             });
                                             if (refs.length > 0) {
-                                                if (confirm(`V ${refs.length} terminih je ta stranka. Ali Ĺľelite odstraniti podatke stranke iz teh terminov? (OK = odstranite, PrekliÄŤi = pusti)`)) {
+                                                if (confirm(`V ${refs.length} terminih je ta stranka. Ali želite odstraniti podatke stranke iz teh terminov? (OK = odstranite, Prekliči = pusti)`)) {
                                                     let changed = false;
                                                     evs.forEach(ev => {
                                                         const name = (ev.extendedProps && ev.extendedProps.customer) ? ev.extendedProps.customer : (ev.title || '');
@@ -683,7 +683,7 @@
                                                     }
                                                 }
                                             }
-                                        } catch (e) { console.warn('âš  error cleaning bookings', e); }
+                                        } catch (e) { console.warn('⚠ error cleaning bookings', e); }
                                     })();
 
                                     // Refresh the panel
@@ -724,7 +724,7 @@
                     scheduleData.events = deduplicateEvents(scheduleData.events);
                 }
             } catch (e) {
-                console.warn('âš  Failed to load schedule for analytics', e);
+                console.warn('⚠ Failed to load schedule for analytics', e);
             }
 
             // Load manual earnings
@@ -759,7 +759,7 @@
             }
         }
 
-        // â”€â”€â”€ Booking Settings: in-memory state â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // ─── Booking Settings: in-memory state ───────────────────────────────────
         let _bspData = null; // loaded once per panel open
 
         function loadBookingSettings() {
@@ -837,13 +837,13 @@
                 { key: 1, name: 'Ponedeljek' },
                 { key: 2, name: 'Torek'      },
                 { key: 3, name: 'Sreda'      },
-                { key: 4, name: 'ÄŚetrtek'    },
+                { key: 4, name: 'Četrtek'    },
                 { key: 5, name: 'Petek'      },
                 { key: 6, name: 'Sobota'     },
                 { key: 0, name: 'Nedelja'    },
             ];
 
-            // â”€â”€ Tab 1: Working days grid â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // ── Tab 1: Working days grid ──────────────────────────
             const grid = document.getElementById('workingDaysGrid');
             if (grid) {
                 grid.innerHTML = '';
@@ -856,7 +856,7 @@
                         <span class="day-name">${day.name}</span>
                         <div class="day-times">
                             <input type="time" id="dayStart_${day.key}" value="${d.start}">
-                            <span style="color:#8e8e93;font-size:12px;flex-shrink:0;">â€“</span>
+                            <span style="color:#8e8e93;font-size:12px;flex-shrink:0;">–</span>
                             <input type="time" id="dayEnd_${day.key}" value="${d.end}">
                         </div>`;
                     row.querySelector(`#dayEnabled_${day.key}`).addEventListener('change', e => row.classList.toggle('day-disabled', !e.target.checked));
@@ -864,7 +864,7 @@
                 });
             }
 
-            // â”€â”€ Auto break â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // ── Auto break ───────────────────────────────────────
             const setVal = (id, v) => { const el = document.getElementById(id); if (el) el.value = v; };
             const setChk = (id, v) => { const el = document.getElementById(id); if (el) el.checked = !!v; };
             const showHide = (id, show) => { const el = document.getElementById(id); if (el) el.style.display = show ? 'block' : 'none'; };
@@ -874,12 +874,12 @@
             setVal('autoBreakEnd',       s.autoBreak.end);
             showHide('autoBreakDetails', s.autoBreak.enabled);
 
-            // â”€â”€ Multi-day â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // ── Multi-day ─────────────────────────────────────────
             setChk('allowMultiDayAppointments', s.allowMultiDayAppointments);
             setVal('maxAppointmentDays',         s.maxAppointmentDays);
             showHide('maxDaysRow', s.allowMultiDayAppointments);
 
-            // â”€â”€ Tab 2: Exceptions & Seasons â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // ── Tab 2: Exceptions & Seasons ───────────────────────
             setChk('seasonalEnabled',       s.seasonalSchedule.enabled);
             setVal('seasonSummerStart',     s.seasonalSchedule.summerStart);
             setVal('seasonSummerEnd',       s.seasonalSchedule.summerEnd);
@@ -889,12 +889,12 @@
             bspRenderExceptions();
             bspRenderOverrides();
 
-            // â”€â”€ Tab 3: Capacity â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // ── Tab 3: Capacity ───────────────────────────────────
             setVal('parallelClients',    s.parallelClients);
             setVal('maxBookingsPerDay',  s.maxBookingsPerDay);
             setChk('autoAssignEmployee', s.autoAssignEmployee);
 
-            // â”€â”€ Tab 4: Rules â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // ── Tab 4: Rules ──────────────────────────────────────
             setVal('bufferBefore',           s.bufferBefore);
             setVal('bufferAfter',            s.bufferAfter);
             setVal('minLeadTime',            s.minLeadTime);
@@ -903,7 +903,7 @@
             setVal('minDuration',            s.minDuration);
             setVal('maxActivePerClient',     s.maxActiveBookingsPerClient);
 
-            // â”€â”€ Tab 5: Pricing â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // ── Tab 5: Pricing ────────────────────────────────────
             setChk('peakPricingEnabled',     s.peakHourPricing.enabled);
             setVal('peakMultiplier',         s.peakHourPricing.multiplier);
             setVal('peakStart',              s.peakHourPricing.start);
@@ -914,7 +914,7 @@
             showHide('weekendPricingDetails',s.weekendPricing.enabled);
             bspRenderPromos();
 
-            // â”€â”€ Tab 6: Smart features â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // ── Tab 6: Smart features ─────────────────────────────
             setChk('waitlistEnabled',        s.waitlistEnabled);
             setChk('autoOfferOnCancel',      s.autoOfferOnCancel);
             setChk('autoFillEnabled',        s.autoFillEnabled);
@@ -928,7 +928,7 @@
             bspRenderTeam();
         }
 
-        // â”€â”€ Dynamic list renderers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // ── Dynamic list renderers ────────────────────────────────────────────────
         function bspRenderExceptions() {
             const el = document.getElementById('dateExceptionsList');
             if (!el || !_bspData) return;
@@ -937,7 +937,7 @@
                 <div class="bsp-list-item">
                     <div style="flex:1;min-width:0;">
                         <div style="font-size:14px;font-weight:500;">${ex.label || ex.date}</div>
-                        <div style="font-size:12px;color:#8e8e93;">${ex.date} &nbsp;Â·&nbsp; <span class="bsp-badge" style="background:#ff3b301a;color:#ff3b30;">${typeLabel[ex.type]||ex.type}</span></div>
+                        <div style="font-size:12px;color:#8e8e93;">${ex.date} &nbsp;·&nbsp; <span class="bsp-badge" style="background:#ff3b301a;color:#ff3b30;">${typeLabel[ex.type]||ex.type}</span></div>
                     </div>
                     <button class="bsp-list-del" onclick="bspDelException(${i})"><i class="bi bi-trash3"></i></button>
                 </div>`).join('') || '<p style="font-size:13px;color:#8e8e93;padding:8px 0 8px 12px;margin:0;width:100%;">Ni vnesenih izjem.</p>';
@@ -962,7 +962,7 @@
             el.innerHTML = _bspData.dateOverrides.map((ov, i) => `
                 <div class="bsp-list-item">
                     <div style="flex:1;min-width:0;">
-                        <div style="font-size:14px;font-weight:500;">${ov.date} &nbsp; ${ov.start}â€“${ov.end}</div>
+                        <div style="font-size:14px;font-weight:500;">${ov.date} &nbsp; ${ov.start}–${ov.end}</div>
                         <div style="font-size:12px;color:#8e8e93;">${ov.note || '(brez opombe)'}</div>
                     </div>
                     <button class="bsp-list-del" onclick="bspDelOverride(${i})"><i class="bi bi-trash3"></i></button>
@@ -990,7 +990,7 @@
                 <div class="bsp-list-item">
                     <div style="flex:1;min-width:0;">
                         <div style="font-size:14px;font-weight:500;">${p.label || 'Akcija'} &nbsp;<span class="bsp-badge" style="background:#34c75920;color:#34c759;">-${p.discount}%</span></div>
-                        <div style="font-size:12px;color:#8e8e93;">${p.from} â€“ ${p.to}</div>
+                        <div style="font-size:12px;color:#8e8e93;">${p.from} – ${p.to}</div>
                     </div>
                     <button class="bsp-list-del" onclick="bspDelPromo(${i})"><i class="bi bi-trash3"></i></button>
                 </div>`).join('') || '<p style="font-size:13px;color:#8e8e93;padding:8px 0 8px 12px;margin:0;width:100%;">Ni vnesenih akcij.</p>';
@@ -1011,10 +1011,10 @@
             document.getElementById('newPromoLabel').value = '';
         }
 
-        // â”€â”€ HTML escape helper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // ── HTML escape helper ─────────────────────────────────────────────────
         function _escH(s) { return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
-        // â”€â”€ Services management (syncs with SITE_CONFIG.servicesSection.items) â”€â”€
+        // ── Services management (syncs with SITE_CONFIG.servicesSection.items) ──
         let _bspSvcTimer = null, _bspTeamTimer = null;
         function _bspSvcAutoSave()  { clearTimeout(_bspSvcTimer);  _bspSvcTimer  = setTimeout(bspSaveServicesToConfig, 900); }
         function _bspTeamAutoSave() { clearTimeout(_bspTeamTimer); _bspTeamTimer = setTimeout(bspSaveTeamToConfig, 900); }
@@ -1039,9 +1039,9 @@
                     </div>
                     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
                         <div><label style="font-size:11px;color:#8e8e93;display:block;margin-bottom:3px;">Ime storitve</label>
-                        <input type="text" class="bsp-input svc-name" value="${_escH(svc.name||'')}" style="width:100%;box-sizing:border-box;" placeholder="Npr. StriĹľenje"></div>
+                        <input type="text" class="bsp-input svc-name" value="${_escH(svc.name||'')}" style="width:100%;box-sizing:border-box;" placeholder="Npr. Striženje"></div>
                         <div><label style="font-size:11px;color:#8e8e93;display:block;margin-bottom:3px;">Cena</label>
-                        <input type="text" class="bsp-input svc-price" value="${_escH(svc.price||'')}" style="width:100%;box-sizing:border-box;" placeholder="â‚¬15"></div>
+                        <input type="text" class="bsp-input svc-price" value="${_escH(svc.price||'')}" style="width:100%;box-sizing:border-box;" placeholder="€15"></div>
                     </div>
                     <div style="display:grid;grid-template-columns:1fr auto;gap:8px;align-items:end;">
                         <div><label style="font-size:11px;color:#8e8e93;display:block;margin-bottom:3px;">Opis</label>
@@ -1085,39 +1085,39 @@
             if (!window.SITE_CONFIG) return;
             if (!window.SITE_CONFIG.servicesSection) window.SITE_CONFIG.servicesSection = { title: 'Storitve', items: [] };
             window.SITE_CONFIG.servicesSection.items = bspCollectServices();
-            window.SITE_CONFIG.servicesSection.items.push({ name: 'Nova storitev', price: 'â‚¬0', duration: 30, desc: '' });
+            window.SITE_CONFIG.servicesSection.items.push({ name: 'Nova storitev', price: '€0', duration: 30, desc: '' });
             bspRenderServices();
         }
         async function bspSaveServicesToConfig() {
-            if (!window.SITE_CONFIG) { alert('Konfiguracija ni naloĹľena.'); return; }
+            if (!window.SITE_CONFIG) { alert('Konfiguracija ni naložena.'); return; }
             if (!window.SITE_CONFIG.servicesSection) window.SITE_CONFIG.servicesSection = { title: 'Storitve', items: [] };
             window.SITE_CONFIG.servicesSection.items = bspCollectServices();
             try {
                 if (window.StorageManager) await StorageManager.save('site_config', window.SITE_CONFIG);
                 if (window.CloudSync && typeof window.CloudSync.saveToCloud === 'function') await window.CloudSync.saveToCloud(window.SITE_CONFIG);
-                if (typeof showToast === 'function') showToast('âś… Storitve shranjene!');
+                if (typeof showToast === 'function') showToast('✅ Storitve shranjene!');
                 else alert('Storitve shranjene.');
             } catch(e) { alert('Napaka pri shranjevanju: ' + e.message); }
         }
 
-        // â”€â”€ Team management (syncs with SITE_CONFIG.barbersSection.list) â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // ── Team management (syncs with SITE_CONFIG.barbersSection.list) ─────────
         function bspRenderTeam() {
             const el = document.getElementById('bspTeamList');
             if (!el) return;
             const list = window.SITE_CONFIG?.barbersSection?.list || [];
             if (list.length === 0) {
-                el.innerHTML = '<p style="font-size:13px;color:#8e8e93;padding:8px 0;">Ni dodanih ÄŤlanov ekipe. Klikni + Dodaj ÄŤlana.</p>';
+                el.innerHTML = '<p style="font-size:13px;color:#8e8e93;padding:8px 0;">Ni dodanih članov ekipe. Klikni + Dodaj člana.</p>';
                 return;
             }
             el.innerHTML = list.map((m, i) => `
                 <div class="bsp-list-item" style="flex-direction:column;align-items:stretch;gap:8px;padding:12px 14px;" data-team-idx="${i}">
                     <div style="display:flex;gap:8px;align-items:center;justify-content:space-between;">
-                        <span style="font-size:12px;font-weight:600;color:#8e8e93;">ÄŚlan ${i+1}</span>
+                        <span style="font-size:12px;font-weight:600;color:#8e8e93;">Član ${i+1}</span>
                         <button class="bsp-list-del" onclick="bspDelTeamMember(${i})"><i class="bi bi-trash3"></i></button>
                     </div>
                     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
                         <div><label style="font-size:11px;color:#8e8e93;display:block;margin-bottom:3px;">Ime</label>
-                        <input type="text" class="bsp-input team-name" value="${_escH(m.name||'')}" style="width:100%;box-sizing:border-box;" placeholder="Ime ÄŤlana"></div>
+                        <input type="text" class="bsp-input team-name" value="${_escH(m.name||'')}" style="width:100%;box-sizing:border-box;" placeholder="Ime člana"></div>
                         <div><label style="font-size:11px;color:#8e8e93;display:block;margin-bottom:3px;">Vloga</label>
                         <input type="text" class="bsp-input team-role" value="${_escH(m.role||'')}" style="width:100%;box-sizing:border-box;" placeholder="npr. Frizer"></div>
                     </div>
@@ -1148,17 +1148,17 @@
             if (!window.SITE_CONFIG) return;
             if (!window.SITE_CONFIG.barbersSection) window.SITE_CONFIG.barbersSection = { title: 'Ekipa', list: [] };
             window.SITE_CONFIG.barbersSection.list = bspCollectTeam();
-            window.SITE_CONFIG.barbersSection.list.push({ name: 'Nov ÄŤlan', role: 'Frizer', img: '' });
+            window.SITE_CONFIG.barbersSection.list.push({ name: 'Nov član', role: 'Frizer', img: '' });
             bspRenderTeam();
         }
         async function bspSaveTeamToConfig() {
-            if (!window.SITE_CONFIG) { alert('Konfiguracija ni naloĹľena.'); return; }
+            if (!window.SITE_CONFIG) { alert('Konfiguracija ni naložena.'); return; }
             if (!window.SITE_CONFIG.barbersSection) window.SITE_CONFIG.barbersSection = { title: 'Ekipa', list: [] };
             window.SITE_CONFIG.barbersSection.list = bspCollectTeam();
             try {
                 if (window.StorageManager) await StorageManager.save('site_config', window.SITE_CONFIG);
                 if (window.CloudSync && typeof window.CloudSync.saveToCloud === 'function') await window.CloudSync.saveToCloud(window.SITE_CONFIG);
-                if (typeof showToast === 'function') showToast('âś… Ekipa shranjena!');
+                if (typeof showToast === 'function') showToast('✅ Ekipa shranjena!');
                 else alert('Ekipa shranjena.');
             } catch(e) { alert('Napaka pri shranjevanju: ' + e.message); }
         }
@@ -1170,7 +1170,7 @@
                 <div class="bsp-list-item">
                     <div style="flex:1;min-width:0;">
                         <div style="font-size:14px;font-weight:500;">${loc.name}</div>
-                        <div style="font-size:12px;color:#8e8e93;">${loc.address || ''} ${loc.phone ? 'Â· ' + loc.phone : ''}</div>
+                        <div style="font-size:12px;color:#8e8e93;">${loc.address || ''} ${loc.phone ? '· ' + loc.phone : ''}</div>
                     </div>
                     <button class="bsp-list-del" onclick="bspDelLocation(${i})"><i class="bi bi-trash3"></i></button>
                 </div>`).join('') || '<p style="font-size:13px;color:#8e8e93;padding:8px 0 8px 12px;margin:0;">Ni dodanih poslovalnic. Privzeto je ena lokacija.</p>';
@@ -1186,7 +1186,7 @@
             bspRenderLocations();
         }
 
-        // â”€â”€ Show panel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // ── Show panel ────────────────────────────────────────────────────────────
         function showBusinessSettingsPanel() {
             const panel = document.getElementById('businessSettingsPanel');
             if (!panel) return;
@@ -1204,7 +1204,7 @@
             setTimeout(() => panel.classList.add('open'), 10);
         }
 
-        // â”€â”€ Save all settings â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // ── Save all settings ─────────────────────────────────────────────────────
         async function saveBusinessSettings() {
             if (!_bspData) { alert('Najprej odpri nastavitve.'); return; }
             const s = _bspData;
@@ -1213,7 +1213,7 @@
             const getF = (id, def) => { const v = parseFloat(get(id)); return isNaN(v) ? def : v; };
             const getC = id => { const el = document.getElementById(id); return el ? el.checked : false; };
 
-            // â”€â”€ Tab 1: Days â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // ── Tab 1: Days ───────────────────────────────────────
             const DAYS_KEYS = [1, 2, 3, 4, 5, 6, 0];
             let allValid = true;
             const daysByKey = {};
@@ -1227,8 +1227,8 @@
                     const [sh,sm] = start.split(':').map(Number);
                     const [eh,em] = end.split(':').map(Number);
                     if ((eh*60+em) <= (sh*60+sm)) {
-                        const names = ['Nedelja','Ponedeljek','Torek','Sreda','ÄŚetrtek','Petek','Sobota'];
-                        alert(`Konec mora biti po zaÄŤetku (${names[k]}).`);
+                        const names = ['Nedelja','Ponedeljek','Torek','Sreda','Četrtek','Petek','Sobota'];
+                        alert(`Konec mora biti po začetku (${names[k]}).`);
                         allValid = false; break;
                     }
                 }
@@ -1241,17 +1241,17 @@
             s.allowMultiDayAppointments = getC('allowMultiDayAppointments');
             s.maxAppointmentDays  = Math.max(1, Math.min(14, getN('maxAppointmentDays', 4)));
 
-            // â”€â”€ Tab 2: Exceptions & Seasons â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // ── Tab 2: Exceptions & Seasons ───────────────────────
             s.seasonalSchedule    = { enabled: getC('seasonalEnabled'), summerStart: get('seasonSummerStart'), summerEnd: get('seasonSummerEnd'), summerHoursStart: get('seasonSummerStart_h'), summerHoursEnd: get('seasonSummerEnd_h') };
             // dateExceptions & dateOverrides already in _bspData (managed in-memory)
 
-            // â”€â”€ Tab 3: Capacity â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // ── Tab 3: Capacity ───────────────────────────────────
             s.parallelClients     = Math.max(1, getN('parallelClients', 1));
             s.maxBookingsPerDay   = Math.max(0, getN('maxBookingsPerDay', 0));
             s.autoAssignEmployee  = getC('autoAssignEmployee');
             // employees already in _bspData
 
-            // â”€â”€ Tab 4: Rules â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // ── Tab 4: Rules ──────────────────────────────────────
             s.bufferBefore              = Math.max(0, getN('bufferBefore', 0));
             s.bufferAfter               = Math.max(0, getN('bufferAfter', 0));
             s.minLeadTime               = Math.max(0, getN('minLeadTime', 120));
@@ -1260,12 +1260,12 @@
             s.minDuration               = Math.max(5, getN('minDuration', 15));
             s.maxActiveBookingsPerClient = Math.max(0, getN('maxActivePerClient', 0));
 
-            // â”€â”€ Tab 5: Pricing â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // ── Tab 5: Pricing ────────────────────────────────────
             s.peakHourPricing    = { enabled: getC('peakPricingEnabled'), multiplier: getF('peakMultiplier', 1.2), start: get('peakStart') || '12:00', end: get('peakEnd') || '14:00' };
             s.weekendPricing     = { enabled: getC('weekendPricingEnabled'), multiplier: getF('weekendMultiplier', 1.1) };
             // promoIntervals already in _bspData
 
-            // â”€â”€ Tab 6: Smart features â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // ── Tab 6: Smart features ─────────────────────────────
             s.waitlistEnabled       = getC('waitlistEnabled');
             s.autoOfferOnCancel     = getC('autoOfferOnCancel');
             s.autoFillEnabled       = getC('autoFillEnabled');
@@ -1275,8 +1275,8 @@
             s.groupServices         = getC('groupServices');
             // locations already in _bspData
 
-            // â”€â”€ Persist â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-            try { localStorage.setItem('bookingSettings', JSON.stringify(s)); } catch(e) { console.warn('âš  localStorage error', e); }
+            // ── Persist ───────────────────────────────────────────
+            try { localStorage.setItem('bookingSettings', JSON.stringify(s)); } catch(e) { console.warn('⚠ localStorage error', e); }
 
             // Derive global hours for backward compat
             const enabledWD = DAYS_KEYS.filter(k => k >= 1 && k <= 5 && daysByKey[k]?.enabled);
@@ -1305,7 +1305,7 @@
                 if (window.CloudSync && typeof window.CloudSync.saveToCloud === 'function') {
                     await window.CloudSync.saveToCloud(window.SITE_CONFIG);
                 }
-            } catch(e) { console.warn('âš  Cloud sync failed', e); }
+            } catch(e) { console.warn('⚠ Cloud sync failed', e); }
 
             // Update FullCalendar live
             try {
@@ -1318,7 +1318,7 @@
                     window.calendar.setOption('slotMaxTime', `${String(endHour).padStart(2,'0')}:00:00`);
                     if (typeof window.calendar.updateSize === 'function') window.calendar.updateSize();
                 }
-            } catch(e) { console.warn('âš  Calendar update failed', e); }
+            } catch(e) { console.warn('⚠ Calendar update failed', e); }
 
             // Also collect and persist services + team from their tab forms
             try {
@@ -1328,10 +1328,10 @@
                     if (window.StorageManager) await StorageManager.save('site_config', window.SITE_CONFIG);
                     if (window.CloudSync?.saveToCloud) await window.CloudSync.saveToCloud(window.SITE_CONFIG);
                 }
-            } catch(e) { console.warn('âš  Could not save services/team:', e); }
+            } catch(e) { console.warn('⚠ Could not save services/team:', e); }
             // Show feedback toast if available, else alert
             if (typeof showToast === 'function') {
-                showToast('âś… Nastavitve rezervacij shranjene!');
+                showToast('✅ Nastavitve rezervacij shranjene!');
             } else {
                 alert('Nastavitve rezervacij so shranjene.');
             }
@@ -1441,11 +1441,11 @@
             const avgPerDay = daysInRange > 0 ? totalEarnings / daysInRange : 0;
 
             // Update stat cards
-            document.getElementById('totalEarnings').textContent = `${totalEarnings.toFixed(2)}â‚¬`;
+            document.getElementById('totalEarnings').textContent = `${totalEarnings.toFixed(2)}€`;
             document.getElementById('totalEarningsCount').textContent = `${completedEvents.length} opravljenih terminov`;
-            document.getElementById('upcomingRevenue').textContent = `${upcomingRevenue.toFixed(2)}â‚¬`;
+            document.getElementById('upcomingRevenue').textContent = `${upcomingRevenue.toFixed(2)}€`;
             document.getElementById('upcomingRevenueCount').textContent = `${upcomingEvents.length} rezerviranih terminov`;
-            document.getElementById('avgPerDay').textContent = `${avgPerDay.toFixed(2)}â‚¬`;
+            document.getElementById('avgPerDay').textContent = `${avgPerDay.toFixed(2)}€`;
             document.getElementById('avgPerDayData').textContent = `iz ${daysInRange} dni`;
             document.getElementById('activeCustomers').textContent = activeCustomers;
             document.getElementById('activeCustomersData').textContent = `${completedEvents.length} terminov skupaj`;
@@ -1489,7 +1489,7 @@
                 data: {
                     labels: dates.map(d => new Date(d).toLocaleDateString('sl-SI', { day: 'numeric', month: 'short' })),
                     datasets: [{
-                        label: 'ZasluĹľek (â‚¬)',
+                        label: 'Zaslužek (€)',
                         data: values,
                         borderColor: '#34C759',
                         backgroundColor: 'rgba(52, 199, 89, 0.1)',
@@ -1504,7 +1504,7 @@
                         legend: { display: false },
                         tooltip: {
                             callbacks: {
-                                label: (context) => `${context.parsed.y.toFixed(2)}â‚¬`
+                                label: (context) => `${context.parsed.y.toFixed(2)}€`
                             }
                         }
                     },
@@ -1512,7 +1512,7 @@
                         y: {
                             beginAtZero: true,
                             ticks: {
-                                callback: (value) => `${value}â‚¬`
+                                callback: (value) => `${value}€`
                             }
                         }
                     }
@@ -1572,7 +1572,7 @@
                         },
                         tooltip: {
                             callbacks: {
-                                label: (context) => `${context.label}: ${context.parsed.toFixed(2)}â‚¬`
+                                label: (context) => `${context.label}: ${context.parsed.toFixed(2)}€`
                             }
                         }
                     }
@@ -1585,7 +1585,7 @@
             if (!container) return;
 
             if (manualEarningsData.length === 0) {
-                container.innerHTML = '<div style="color:var(--ios-text-secondary); padding:20px; text-align:center;">Ni roÄŤnih vnosov.</div>';
+                container.innerHTML = '<div style="color:var(--ios-text-secondary); padding:20px; text-align:center;">Ni ročnih vnosov.</div>';
                 return;
             }
 
@@ -1598,9 +1598,9 @@
                             <div class="manual-earning-desc">${m.description}</div>
                             <div class="manual-earning-date">${date}</div>
                         </div>
-                        <div class="manual-earning-amount">${parseFloat(m.amount).toFixed(2)}â‚¬</div>
+                        <div class="manual-earning-amount">${parseFloat(m.amount).toFixed(2)}€</div>
                         <div class="manual-earning-actions">
-                            <button class="btn btn-danger btn-sm" onclick="deleteManualEarning(${idx})" style="padding:6px 10px; font-size:12px;">IzbriĹˇi</button>
+                            <button class="btn btn-danger btn-sm" onclick="deleteManualEarning(${idx})" style="padding:6px 10px; font-size:12px;">Izbriši</button>
                         </div>
                     </div>
                 `;
@@ -1609,12 +1609,12 @@
         }
 
         function showAddManualEarningDialog() {
-            const description = prompt('Opis zasluĹľka:');
+            const description = prompt('Opis zaslužka:');
             if (!description) return;
 
-            const amount = prompt('Znesek (â‚¬):');
+            const amount = prompt('Znesek (€):');
             if (!amount || isNaN(parseFloat(amount))) {
-                alert('NapaÄŤen znesek!');
+                alert('Napačen znesek!');
                 return;
             }
 
@@ -1633,7 +1633,7 @@
         }
 
         async function deleteManualEarning(index) {
-            if (!confirm('Ali ste prepriÄŤani, da Ĺľelite izbrisati ta vnos?')) return;
+            if (!confirm('Ali ste prepričani, da želite izbrisati ta vnos?')) return;
             manualEarningsData.splice(index, 1);
             await saveManualEarnings();
             renderAnalytics();
@@ -1642,7 +1642,7 @@
         function exportAnalyticsReport() {
             const rangeDays = parseInt(document.getElementById('analyticsRange')?.value || '30');
             const shopName = (window.SITE_CONFIG && window.SITE_CONFIG.shopName) ? window.SITE_CONFIG.shopName : 'Podjetje';
-            const currency = (window.SITE_CONFIG && window.SITE_CONFIG.currency) ? window.SITE_CONFIG.currency : 'â‚¬';
+            const currency = (window.SITE_CONFIG && window.SITE_CONFIG.currency) ? window.SITE_CONFIG.currency : '€';
             const now = new Date();
             const rangeStart = new Date(now.getTime() - (rangeDays * 24 * 60 * 60 * 1000));
             const exportDate = now.toLocaleDateString('sl-SI', { day: '2-digit', month: '2-digit', year: 'numeric' });
@@ -1712,7 +1712,7 @@
                 </tr>`;
             });
             if (rowsUpcoming) rowsUpcoming += `<tr style="background:#eef2ff;font-weight:bold;border-top:2px solid #4361ee">
-                <td colspan="7" style="text-align:right">SKUPAJ PRIÄŚAKOVANO</td>
+                <td colspan="7" style="text-align:right">SKUPAJ PRIČAKOVANO</td>
                 <td style="text-align:right">${fmt(upcomingRevenue)}</td></tr>`;
 
             let rowsManual = '';
@@ -1746,37 +1746,37 @@ tr:nth-child(even) td{background:#f8f9ff}
   <div style="width:6px;height:48px;background:#4361ee;margin-right:14px;border-radius:3px"></div>
   <div>
     <div style="font-size:20pt;font-weight:bold;color:#1a1a2e">${esc(shopName)}</div>
-    <div style="font-size:10pt;color:#666;margin-top:2px">Poslovno poroÄŤ\u010dilo &nbsp;&bull;&nbsp; Obdobje: ${rangeLabel} &nbsp;&bull;&nbsp; Izvoz: ${exportDate}</div>
+    <div style="font-size:10pt;color:#666;margin-top:2px">Poslovno poroč\u010dilo &nbsp;&bull;&nbsp; Obdobje: ${rangeLabel} &nbsp;&bull;&nbsp; Izvoz: ${exportDate}</div>
   </div>
 </div>
 <hr style="border:none;border-top:2px solid #4361ee;margin:10px 0 18px 0">
 
 ${sectionTitle('Povzetek', '')}
 <table>
-  <tr><td style="font-weight:bold;width:260px">Skupaj zasluĹľeno</td><td style="font-weight:bold;color:#22c55e;font-size:13pt">${fmt(totalEarnings)}</td></tr>
-  <tr><td style="font-weight:bold">ZasluĹľek iz terminov</td><td>${fmt(apptEarnings)}</td></tr>
-  <tr><td style="font-weight:bold">RoÄŤni vnosi skupaj</td><td>${fmt(manualSum)}</td></tr>
-  <tr><td style="font-weight:bold">Prihodnji prihodek (priÄŤakovan)</td><td style="color:#f59e0b;font-weight:bold">${fmt(upcomingRevenue)}</td></tr>
-  <tr><td style="font-weight:bold">PovpreÄŤje na dan</td><td>${fmt(avgPerDay)}</td></tr>
+  <tr><td style="font-weight:bold;width:260px">Skupaj zasluženo</td><td style="font-weight:bold;color:#22c55e;font-size:13pt">${fmt(totalEarnings)}</td></tr>
+  <tr><td style="font-weight:bold">Zaslužek iz terminov</td><td>${fmt(apptEarnings)}</td></tr>
+  <tr><td style="font-weight:bold">Ročni vnosi skupaj</td><td>${fmt(manualSum)}</td></tr>
+  <tr><td style="font-weight:bold">Prihodnji prihodek (pričakovan)</td><td style="color:#f59e0b;font-weight:bold">${fmt(upcomingRevenue)}</td></tr>
+  <tr><td style="font-weight:bold">Povprečje na dan</td><td>${fmt(avgPerDay)}</td></tr>
   <tr><td style="font-weight:bold">Opravljeni termini</td><td>${completedEvents.length}</td></tr>
-  <tr><td style="font-weight:bold">PrihajajoÄŤi termini</td><td>${upcomingEvents.length}</td></tr>
+  <tr><td style="font-weight:bold">Prihajajoči termini</td><td>${upcomingEvents.length}</td></tr>
   <tr><td style="font-weight:bold">Aktivne stranke</td><td>${custSet.size}</td></tr>
 </table>
 
 ${sectionTitle('Opravljeni termini', completedEvents.length)}
 ${completedEvents.length > 0 ? `<table><thead><tr>
-  <th>#</th><th>Datum</th><th>ÄŚas</th><th>Stranka</th><th>Telefon</th><th>Email</th><th>Storitve</th><th>Trajanje</th><th>Znesek</th>
+  <th>#</th><th>Datum</th><th>Čas</th><th>Stranka</th><th>Telefon</th><th>Email</th><th>Storitve</th><th>Trajanje</th><th>Znesek</th>
 </tr></thead><tbody>${rowsCompleted}</tbody></table>` : '<p style="color:#888;font-style:italic">Ni opravljenih terminov v izbranem obdobju.</p>'}
 
-${sectionTitle('PrihajajoÄŤi termini', upcomingEvents.length)}
+${sectionTitle('Prihajajoči termini', upcomingEvents.length)}
 ${upcomingEvents.length > 0 ? `<table><thead><tr>
-  <th>#</th><th>Datum</th><th>ÄŚas</th><th>Stranka</th><th>Telefon</th><th>Email</th><th>Storitve</th><th>PriÄŤakovan znesek</th>
+  <th>#</th><th>Datum</th><th>Čas</th><th>Stranka</th><th>Telefon</th><th>Email</th><th>Storitve</th><th>Pričakovan znesek</th>
 </tr></thead><tbody>${rowsUpcoming}</tbody></table>` : '<p style="color:#888;font-style:italic">Ni prihodnjih terminov.</p>'}
 
-${sectionTitle('RoÄŤni vnosi', manualEarningsData.length)}
+${sectionTitle('Ročni vnosi', manualEarningsData.length)}
 ${manualEarningsData.length > 0 ? `<table><thead><tr>
   <th>#</th><th>Datum</th><th>Opis</th><th>Znesek</th>
-</tr></thead><tbody>${rowsManual}</tbody></table>` : '<p style="color:#888;font-style:italic">Ni roÄŤnih vnosov.</p>'}
+</tr></thead><tbody>${rowsManual}</tbody></table>` : '<p style="color:#888;font-style:italic">Ni ročnih vnosov.</p>'}
 
 <hr style="border:none;border-top:1px solid #ddd;margin:28px 0 8px 0">
 <div style="font-size:9pt;color:#aaa">Generirano: ${now.toLocaleString('sl-SI')} &nbsp;&bull;&nbsp; ${esc(shopName)}</div>
@@ -1838,7 +1838,7 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                         }
                     }
                 } catch (err) {
-                    console.warn('âš  Could not fetch remote customers', err);
+                    console.warn('⚠ Could not fetch remote customers', err);
                 }
 
             } catch (e) { customerBase = {}; }
@@ -1882,9 +1882,9 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                 await fetch(base + `site_config/customers/${encodeURIComponent(key)}.json`, {
                     method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(rec)
                 });
-                console.log('âś“ persisted customer to cloud:', key);
+                console.log('✓ persisted customer to cloud:', key);
             } catch (e) {
-                console.warn('âš  failed to persist customer to cloud', e);
+                console.warn('⚠ failed to persist customer to cloud', e);
             }
             return key;
         }
@@ -1936,7 +1936,7 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                                 debugLog && debugLog(`onScheduleUpdated: kept remote ${remote?.id || byId} (local ${localEv?.id} not preferred)`, { localPreferred, localId: localEv?.id, localTitle, remoteId: remote?.id, remoteTitle });
                             }
 
-                            // matched by id â€” no further matching needed for this local event
+                            // matched by id — no further matching needed for this local event
                             return;
                         }
 
@@ -1969,7 +1969,7 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                 scheduleData = newScheduleData;
                 if (typeof loadAppointmentsToCalendarNow === 'function') await loadAppointmentsToCalendarNow();
             } catch (err) {
-                console.warn('âš  onScheduleUpdated merge failed', err);
+                console.warn('⚠ onScheduleUpdated merge failed', err);
             }
         };
 
@@ -1995,23 +1995,23 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
         
         async function deleteScheduleEvent(eventId) {
             try {
-                console.log(`đź—‘ď¸Ź  DELETING EVENT: ${eventId}`);
+                console.log(`🗑️  DELETING EVENT: ${eventId}`);
                 
                 const existing = scheduleData.events.find(e => e.id === eventId);
                 if (!existing) {
-                    console.warn(`âš  Event ${eventId} not found`);
+                    console.warn(`⚠ Event ${eventId} not found`);
                     return false;
                 }
 
                 // STEP 1: Mark as deleted FIRST - this prevents all restores
-                console.log(`âŹł Step 1: Marking as deleted...`);
+                console.log(`⏳ Step 1: Marking as deleted...`);
                 markEventDeleted(eventId);
-                console.log(`âś“ Step 1 COMPLETE: ${eventId} marked as deleted`);
+                console.log(`✓ Step 1 COMPLETE: ${eventId} marked as deleted`);
 
                 // STEP 2: Remove from scheduleData
-                console.log(`âŹł Step 2: Removing from scheduleData...`);
+                console.log(`⏳ Step 2: Removing from scheduleData...`);
                 scheduleData.events = scheduleData.events.filter(e => e.id !== eventId);
-                console.log(`âś“ Step 2 COMPLETE: Removed from scheduleData`);
+                console.log(`✓ Step 2 COMPLETE: Removed from scheduleData`);
 
                 // STEP 3: Delete from Firebase by searching for matching entries
                 const base = 'https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app/';
@@ -2037,7 +2037,7 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                                 if (matchId || (matchWorker && matchDate && matchTime)) {
                                     // Delete this array element
                                     await fetch(`${base}site_config/adminSchedule/entries/${i}.json`, { method: 'DELETE' });
-                                    console.log(`âś“ Deleted site_config entry at index ${i}`);
+                                    console.log(`✓ Deleted site_config entry at index ${i}`);
                                     
                                     // Mark as deleted
                                     await fetch(`${base}site_config/adminSchedule/deleted/${i}.json`, {
@@ -2050,7 +2050,7 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                         }
                     }
                 } catch (err) {
-                    console.warn('âš  Failed to delete from site_config/adminSchedule/entries', err);
+                    console.warn('⚠ Failed to delete from site_config/adminSchedule/entries', err);
                 }
 
                 // Delete from adminSchedule/entries (object with Firebase push IDs)
@@ -2071,7 +2071,7 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                                 if (matchId || (matchWorker && matchDate && matchTime)) {
                                     // Delete this entry
                                     await fetch(`${base}adminSchedule/entries/${key}.json`, { method: 'DELETE' });
-                                    console.log(`âś“ Deleted adminSchedule entry ${key}`);
+                                    console.log(`✓ Deleted adminSchedule entry ${key}`);
                                     
                                     // Mark as deleted
                                     await fetch(`${base}adminSchedule/deleted/${key}.json`, {
@@ -2084,67 +2084,67 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                         }
                     }
                 } catch (err) {
-                    console.warn('âš  Failed to delete from adminSchedule/entries', err);
+                    console.warn('⚠ Failed to delete from adminSchedule/entries', err);
                 }
 
                 // STEP 6: Save scheduleData directly to localStorage
-                console.log(`âŹł Step 6: Saving to localStorage...`);
-                console.log(`đź“Š scheduleData now has ${scheduleData.events.length} events`);
+                console.log(`⏳ Step 6: Saving to localStorage...`);
+                console.log(`📊 scheduleData now has ${scheduleData.events.length} events`);
                 try {
                     // Directly save to localStorage without triggering callbacks
                     localStorage.setItem('schedule', JSON.stringify(scheduleData));
-                    console.log('âś“ Step 6 COMPLETE: Schedule saved directly to localStorage');
+                    console.log('✓ Step 6 COMPLETE: Schedule saved directly to localStorage');
                     
                     // VERIFY it was saved
                     const saved = JSON.parse(localStorage.getItem('schedule'));
-                    console.log(`âś… VERIFICATION: localStorage has ${saved.events.length} events`);
-                    console.log(`đź”Ť Event in saved localStorage? ${saved.events.some(e => e.id === eventId)}`);
+                    console.log(`✅ VERIFICATION: localStorage has ${saved.events.length} events`);
+                    console.log(`🔍 Event in saved localStorage? ${saved.events.some(e => e.id === eventId)}`);
                 } catch (saveErr) {
-                    console.warn('âš  Step 6 FAILED: Failed to save', saveErr);
+                    console.warn('⚠ Step 6 FAILED: Failed to save', saveErr);
                 }
 
                 // STEP 7: Remove from calendar UI and REFETCH to apply deletion filter
-                console.log(`âŹł Step 7: Removing from UI and refetching calendar...`);
+                console.log(`⏳ Step 7: Removing from UI and refetching calendar...`);
                 try {
                     const calEvent = window.calendar && window.calendar.getEventById(eventId);
                     if (calEvent) {
                         calEvent.remove();
-                        console.log(`âś“ Removed event from calendar DOM`);
+                        console.log(`✓ Removed event from calendar DOM`);
                     }
                     
                     // CRITICAL: Refetch ALL events to apply deletion filter
                     if (window.calendar && typeof window.calendar.refetchEvents === 'function') {
-                        console.log(`âŹł Calling calendar.refetchEvents()...`);
+                        console.log(`⏳ Calling calendar.refetchEvents()...`);
                         await Promise.resolve(window.calendar.refetchEvents());
-                        console.log(`âś“ Step 7 COMPLETE: Calendar refetched - deletion filter applied`);
+                        console.log(`✓ Step 7 COMPLETE: Calendar refetched - deletion filter applied`);
                     } else {
-                        console.warn('âš  Calendar.refetchEvents not available');
+                        console.warn('⚠ Calendar.refetchEvents not available');
                     }
                 } catch (uiErr) {
-                    console.warn('âš  Step 7 FAILED:', uiErr);
+                    console.warn('⚠ Step 7 FAILED:', uiErr);
                 }
 
                 // STEP 8: Clear empty storage
-                console.log(`âŹł Step 8: Checking if storage empty...`);
+                console.log(`⏳ Step 8: Checking if storage empty...`);
                 const activeEvents = filterDeletedEvents(scheduleData.events);
                 if (activeEvents.length === 0) {
                     try {
                         localStorage.removeItem('schedule');
                         await fetch(`${base}site_config/adminSchedule/entries.json`, { method: 'PUT', body: '{}' });
                         await fetch(`${base}adminSchedule/entries.json`, { method: 'PUT', body: '{}' });
-                        console.log('âś“ Step 8 COMPLETE: Cleared all storage (no active events)');
+                        console.log('✓ Step 8 COMPLETE: Cleared all storage (no active events)');
                     } catch (e) {
-                        console.warn('âš  Step 8 FAILED: Could not clear storage', e);
+                        console.warn('⚠ Step 8 FAILED: Could not clear storage', e);
                     }
                 } else {
-                    console.log(`âś“ Step 8 COMPLETE: ${activeEvents.length} active events remain`);
+                    console.log(`✓ Step 8 COMPLETE: ${activeEvents.length} active events remain`);
                 }
 
-                console.log(`âś… DELETION COMPLETE: Event ${eventId} PERMANENTLY deleted`);
+                console.log(`✅ DELETION COMPLETE: Event ${eventId} PERMANENTLY deleted`);
                 return true;
 
             } catch (err) {
-                console.error('âťŚ Deletion failed', err);
+                console.error('❌ Deletion failed', err);
                 return false;
             }
         }
@@ -2177,30 +2177,30 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                 if (typeof StorageManager !== 'undefined' && StorageManager.save) {
                     const p = StorageManager.save('schedule', scheduleData);
                     p.then(result => {
-                        console.log('âś“ schedule saved', result);
+                        console.log('✓ schedule saved', result);
                         try {
                             if (StorageManager.broadcastUpdate) StorageManager.broadcastUpdate(scheduleData);
                         } catch (e) {
-                            console.warn('âš  broadcast failed', e);
+                            console.warn('⚠ broadcast failed', e);
                         }
                         if (window.onScheduleUpdated) window.onScheduleUpdated(scheduleData);
                     }).catch(err => {
-                        console.error('âś— Error saving scheduleData', err);
+                        console.error('✗ Error saving scheduleData', err);
                     });
                     return p;
                 } else {
                     try {
                         localStorage.setItem('schedule', JSON.stringify(scheduleData));
-                        console.log('âś“ schedule saved to localStorage (StorageManager missing)');
+                        console.log('✓ schedule saved to localStorage (StorageManager missing)');
                         if (window.onScheduleUpdated) window.onScheduleUpdated(scheduleData);
                         return Promise.resolve({ ok: true, method: 'localStorage' });
                     } catch (e) {
-                        console.error('âś— Fallback localStorage save failed', e);
+                        console.error('✗ Fallback localStorage save failed', e);
                         return Promise.reject(e);
                     }
                 }
             } catch (err) {
-                console.error('âś— saveScheduleData failed', err);
+                console.error('✗ saveScheduleData failed', err);
                 return Promise.reject(err);
             }
         };
@@ -2214,25 +2214,25 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                 if (typeof StorageManager !== 'undefined' && StorageManager.save) {
                     const p = StorageManager.save('schedule', scheduleData);
                     p.then(result => {
-                        console.log('âś“ schedule saved (no broadcast)', result);
+                        console.log('✓ schedule saved (no broadcast)', result);
                         if (window.onScheduleUpdated) window.onScheduleUpdated(scheduleData);
                     }).catch(err => {
-                        console.error('âś— Error saving scheduleData (no broadcast)', err);
+                        console.error('✗ Error saving scheduleData (no broadcast)', err);
                     });
                     return p;
                 } else {
                     try {
                         localStorage.setItem('schedule', JSON.stringify(scheduleData));
-                        console.log('âś“ schedule saved to localStorage (no broadcast)');
+                        console.log('✓ schedule saved to localStorage (no broadcast)');
                         if (window.onScheduleUpdated) window.onScheduleUpdated(scheduleData);
                         return Promise.resolve({ ok: true, method: 'localStorage' });
                     } catch (e) {
-                        console.error('âś— Fallback localStorage save failed (no broadcast)', e);
+                        console.error('✗ Fallback localStorage save failed (no broadcast)', e);
                         return Promise.reject(e);
                     }
                 }
             } catch (err) {
-                console.error('âś— saveScheduleDataNoBroadcast failed', err);
+                console.error('✗ saveScheduleDataNoBroadcast failed', err);
                 return Promise.reject(err);
             }
         };
@@ -2257,9 +2257,9 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                         // the event survives a page reload even if remote save fails.
                         try {
                             localStorage.setItem('schedule', JSON.stringify(scheduleData));
-                            console.log('âś“ schedule persisted to localStorage (immediate fallback)');
+                            console.log('✓ schedule persisted to localStorage (immediate fallback)');
                         } catch (e) {
-                            console.warn('âš  immediate localStorage persistence failed', e);
+                            console.warn('⚠ immediate localStorage persistence failed', e);
                         }
                         if (window.saveScheduleData) {
                             // Fire-and-log save; do not block UI but record result for debugging
@@ -2275,32 +2275,32 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                         }
                 return normalized.id;
             } catch (err) {
-                console.error('âś— addScheduleEvent failed', err);
+                console.error('✗ addScheduleEvent failed', err);
                 return null;
             }
         };
 
         // Modal functions
         function openAddEventModal(startDate = null, endDate = null) {
-            console.log('đź”´ SECOND openAddEventModal CALLED with:', { startDate, endDate });
+            console.log('🔴 SECOND openAddEventModal CALLED with:', { startDate, endDate });
             const form = document.getElementById('addEventForm');
             if (form) form.reset();
             setEventTab('worker');
 
             const modal = document.getElementById('addEventModal');
             if (startDate) {
-                console.log('đź“… Setting dates in SECOND function:', { startDate, endDate });
+                console.log('📅 Setting dates in SECOND function:', { startDate, endDate });
                 const startEl = document.getElementById('eventStartDate');
                 const endEl = document.getElementById('eventEndDate');
                 if (startEl) {
                     startEl.value = startDate;
-                    console.log('âś… Set eventStartDate:', startDate, 'â†’ actual value:', startEl.value);
+                    console.log('✅ Set eventStartDate:', startDate, '→ actual value:', startEl.value);
                 }
                 // If endDate provided (from drag selection), use it; otherwise default to startDate
                 const actualEnDate = endDate || startDate;
                 if (endEl) {
                     endEl.value = actualEnDate;
-                    console.log('âś… Set eventEndDate:', actualEnDate, 'â†’ actual value:', endEl.value);
+                    console.log('✅ Set eventEndDate:', actualEnDate, '→ actual value:', endEl.value);
                 }
             }
             modal.classList.add('show');
@@ -2394,16 +2394,16 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
             
             document.getElementById('bookingDuration').textContent = `${booking.duration || 0} minut`;
             document.getElementById('bookingServices').textContent = booking.services ? booking.services.join(', ') : 'N/A';
-            document.getElementById('bookingPrice').textContent = `${booking.price || 0}â‚¬`;
+            document.getElementById('bookingPrice').textContent = `${booking.price || 0}€`;
             const notesText = (booking.notes || booking.note || '').toString().trim();
-            document.getElementById('bookingNotes').textContent = notesText ? notesText : 'â€”';
+            document.getElementById('bookingNotes').textContent = notesText ? notesText : '—';
             
             const modal = document.getElementById('bookingDetailsModal');
             // attach delete handler
             const deleteBtn = document.getElementById('bookingDeleteBtn');
             if (deleteBtn) {
                 deleteBtn.onclick = function() {
-                    if (confirm('Sigurno ĹľeliĹˇ izbrisati to rezervacijo?')) {
+                    if (confirm('Sigurno želiš izbrisati to rezervacijo?')) {
                         // Use centralized delete logic which also removes DB nodes and avoids broadcasting
                         try {
                             // remove from calendar UI immediately
@@ -2445,7 +2445,7 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
 
         function deleteCurrentEvent() {
             if (currentEditingEvent) {
-                if (confirm('Sigurno ĹľeliĹˇ izbrisati ta dogodek?')) {
+                if (confirm('Sigurno želiš izbrisati ta dogodek?')) {
                     // Show loading overlay
                     const loadingOverlay = document.getElementById('loadingOverlay');
                     const startTime = Date.now();
@@ -2458,7 +2458,7 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                     
                     // Use the existing Firebase deletion function
                     deleteScheduleEvent(eventId).then(() => {
-                        console.log('âś… Event deleted from Firebase');
+                        console.log('✅ Event deleted from Firebase');
                         
                         // Remove from calendar display
                         const calEvent = window.calendar.getEventById(eventId);
@@ -2579,7 +2579,7 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
             if (currentEventTab === 'customer') {
                 try {
                     await persistCustomerToBase({ firstName: firstName, surname: lastName, email: eventPayload.extendedProps?.email, phone: eventPayload.extendedProps?.phone });
-                } catch (e) { console.warn('âš  persistCustomerToBase failed during add', e); }
+                } catch (e) { console.warn('⚠ persistCustomerToBase failed during add', e); }
             }
 
             const eventId = (typeof window.addScheduleEvent === 'function')
@@ -2601,7 +2601,7 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                         }
                         return normalized.id;
                     } catch (err) {
-                        console.error('âś— fallback addScheduleEvent failed', err);
+                        console.error('✗ fallback addScheduleEvent failed', err);
                         return null;
                     }
                 })(eventPayload);
@@ -2619,7 +2619,7 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                     try { localStorage.setItem('schedule', JSON.stringify(scheduleData)); } catch(e) { /* ignore */ }
                 }
             } catch (sdErr) {
-                console.warn('âš  saveScheduleData failed after add', sdErr);
+                console.warn('⚠ saveScheduleData failed after add', sdErr);
             }
 
             // Refresh calendar from saved schedule (removes duplicates and ensures canonical rendering)
@@ -2638,7 +2638,7 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                 try {
                     const sDate = startDate;
                     const eDate = endDate;
-                    // Use full time (HH:MM) instead of rounding to hour â€” prevents near-duplicates
+                    // Use full time (HH:MM) instead of rounding to hour — prevents near-duplicates
                     const sTime = startTime ? String(startTime).slice(0,5) : '09:00';
                     const eTime = endTime ? String(endTime).slice(0,5) : '17:00';
                     // Build admin entry with full booking/worker details
@@ -2704,11 +2704,11 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                                         }
                                     }
                                 }
-                            } catch (ee) { console.warn('âš  failed to set adminKey on scheduleData', ee); }
+                            } catch (ee) { console.warn('⚠ failed to set adminKey on scheduleData', ee); }
                         }).catch(err => console.warn('sendAdminScheduleEntry failed', err));
                     }
                 } catch (err) {
-                    console.warn('âš  Failed to prepare adminSchedule entry', err);
+                    console.warn('⚠ Failed to prepare adminSchedule entry', err);
                 }
             }
 
@@ -2833,10 +2833,10 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                         
                         if (window.SMSHandler && typeof window.SMSHandler.sendAppointmentConfirmation === 'function') {
                             window.SMSHandler.sendAppointmentConfirmation(appointmentForSMS);
-                            console.log('đź“± SMS confirmation sent to:', appointmentForSMS.phoneNumber);
+                            console.log('📱 SMS confirmation sent to:', appointmentForSMS.phoneNumber);
                         }
                     } catch (smsError) {
-                        console.warn('âš ď¸Ź SMS confirmation failed (not critical):', smsError.message);
+                        console.warn('⚠️ SMS confirmation failed (not critical):', smsError.message);
                     }
                 }
 
@@ -2897,7 +2897,7 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                 // Save to localStorage
                 try {
                     localStorage.setItem('schedule', JSON.stringify(scheduleData));
-                    console.log('âś… Event updated and saved to localStorage');
+                    console.log('✅ Event updated and saved to localStorage');
                 } catch (err) {
                     console.error('Failed to save after update:', err);
                 }
@@ -3284,20 +3284,20 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
         }
 
         async function initializeBusinessCalendar() {
-            debugLog('đźš€ Initialization started');
+            debugLog('🚀 Initialization started');
             // Flag to prevent FullCalendar's select handler during custom cell dragging
             window._isDraggingCustomCells = false;
             const container = document.getElementById('scheduleCalendar');
-            container.innerHTML = 'đź”„ Inicializiram orodje...';
+            container.innerHTML = '🔄 Inicializiram orodje...';
 
             if (!container) {
-                debugLog('âťŚ Calendar container not found');
+                debugLog('❌ Calendar container not found');
                 console.error('Calendar container not found');
                 return;
             }
 
             try {
-                debugLog('âś… Container found');
+                debugLog('✅ Container found');
                 container.innerHTML = '<div class="calendar-loading"><div class="calendar-spinner"></div><span>Nalagam FullCalendar...</span></div>';
 
                 // Wait for required modules to load
@@ -3309,13 +3309,13 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                         const ce = typeof CalendarEngine !== 'undefined';
 
                         if (fc && sm && ce) {
-                            debugLog(`âś… All modules loaded (attempt ${attempts})`);
+                            debugLog(`✅ All modules loaded (attempt ${attempts})`);
                             resolve();
                         } else if (attempts < 300) {
                             attempts++;
                             setTimeout(checkModules, 50);
                         } else {
-                            debugLog('âš ď¸Ź Timeout waiting for modules after 15 seconds');
+                            debugLog('⚠️ Timeout waiting for modules after 15 seconds');
                             resolve();
                         }
                     };
@@ -3323,22 +3323,22 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                 });
 
                 if (typeof FullCalendar === 'undefined') {
-                    debugLog('âťŚ FullCalendar not defined');
-                    container.innerHTML = 'âťŚ FullCalendar se ni naloĹľil';
+                    debugLog('❌ FullCalendar not defined');
+                    container.innerHTML = '❌ FullCalendar se ni naložil';
                     return;
                 }
 
-                debugLog('đź”§ Loading schedule data...');
+                debugLog('🔧 Loading schedule data...');
                 container.innerHTML = '<div class="calendar-loading"><div class="calendar-spinner"></div><span>Nalagam podatke...</span></div>';
                 
                 // Load schedule data using StorageManager (tries Firebase first, falls back to localStorage)
                 scheduleData = await StorageManager.load('schedule');
-                debugLog(`âś… Schedule data loaded (${scheduleData.events ? scheduleData.events.length : 0} events)`);
+                debugLog(`✅ Schedule data loaded (${scheduleData.events ? scheduleData.events.length : 0} events)`);
                 
                 // CRITICAL: Load deletion tracker FIRST before filtering
                 if (typeof window.loadDeletedEventIds === 'function') {
                     await window.loadDeletedEventIds();
-                    console.log(`đź”Ť Loaded deletion tracker with ${Array.from(deletedEventIds).length} deleted IDs`);
+                    console.log(`🔍 Loaded deletion tracker with ${Array.from(deletedEventIds).length} deleted IDs`);
                 }
                 
                 // CRITICAL: Filter out any deleted events right after loading
@@ -3346,9 +3346,9 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                     const before = scheduleData.events.length;
                     scheduleData.events = filterDeletedEvents(scheduleData.events);
                     scheduleData.events = deduplicateEvents(scheduleData.events);
-                    console.log(`đź“Š After deletion filter: ${before} â†’ ${scheduleData.events.length} events (removed ${before - scheduleData.events.length})`);
+                    console.log(`📊 After deletion filter: ${before} → ${scheduleData.events.length} events (removed ${before - scheduleData.events.length})`);
                     if (before !== scheduleData.events.length) {
-                        debugLog(`đź”Ť Filtered ${before - scheduleData.events.length} deleted events on load`);
+                        debugLog(`🔍 Filtered ${before - scheduleData.events.length} deleted events on load`);
                     }
                 }
 
@@ -3359,7 +3359,7 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                         const localSched = JSON.parse(localRaw);
                         const localEvents = Array.isArray(localSched.events) ? localSched.events.filter(ev => ev.extendedProps && ev.extendedProps.origin === 'local') : [];
                         if (localEvents.length > 0) {
-                            debugLog(`đź“Ą Found ${localEvents.length} local-origin events in localStorage; attempting to merge`);
+                            debugLog(`📥 Found ${localEvents.length} local-origin events in localStorage; attempting to merge`);
                             const TIME_TOLERANCE_MS = 10 * 60 * 1000;
                             const timesApproxEqual = (aStart, aEnd, bStart, bEnd) => {
                                 try {
@@ -3386,24 +3386,24 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                                             const remoteTitle = remote.extendedProps?.customer || remote.title || '';
                                             const localTitle = localEv.extendedProps?.customer || localEv.title || '';
                                             if (genericTitle(remoteTitle) && !genericTitle(localTitle)) {
-                                                debugLog(`đź” Replacing remote generic event ${remote.id || 'unknown'} with local event ${localEv.id}`);
+                                                debugLog(`🔁 Replacing remote generic event ${remote.id || 'unknown'} with local event ${localEv.id}`);
                                                 scheduleData.events[conflictIdx] = localEv;
                                             } else {
-                                                debugLog(`âž• Appending local event ${localEv.id} (no replace)`);
+                                                debugLog(`➕ Appending local event ${localEv.id} (no replace)`);
                                                 scheduleData.events.push(localEv);
                                             }
                                         } else {
-                                            debugLog(`âž• Appending local event ${localEv.id} (no conflict found)`);
+                                            debugLog(`➕ Appending local event ${localEv.id} (no conflict found)`);
                                             scheduleData.events.push(localEv);
                                         }
                                     }
                                 } catch (e) { /* ignore per-event merge errors */ }
                             });
 
-                            try { await StorageManager.save('schedule', scheduleData); debugLog('âś… Merged local fallback events saved to canonical schedule'); } catch(e) { console.warn('âš  failed to save merged schedule after local fallback merge', e); }
+                            try { await StorageManager.save('schedule', scheduleData); debugLog('✅ Merged local fallback events saved to canonical schedule'); } catch(e) { console.warn('⚠ failed to save merged schedule after local fallback merge', e); }
                         }
                     }
-                } catch (e) { console.warn('âš  failed merging local fallback events', e); }
+                } catch (e) { console.warn('⚠ failed merging local fallback events', e); }
                 
                 // Migrate legacy localStorage 'appointments' into schedule (DB-backed) if present
                 try {
@@ -3411,7 +3411,7 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                     if (legacyRaw) {
                         const legacy = JSON.parse(legacyRaw || '[]');
                         if (Array.isArray(legacy) && legacy.length > 0) {
-                            debugLog(`đź“Ą Migrating ${legacy.length} legacy appointments from localStorage`);
+                            debugLog(`📥 Migrating ${legacy.length} legacy appointments from localStorage`);
                             scheduleData.events = scheduleData.events || [];
                             const migrated = legacy.map(appt => {
                                 const title = appt.fullName || `${appt.firstName || ''} ${appt.surname || ''}`.trim() || 'Stranka';
@@ -3445,7 +3445,7 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                                             Object.entries(entries).forEach(([k, it]) => pairList.push({ key: k, item: it }));
                                         }
                                         if (pairList.length > 0) {
-                                            debugLog(`đź“Ą Merging ${pairList.length} adminSchedule entries into scheduleData`);
+                                            debugLog(`📥 Merging ${pairList.length} adminSchedule entries into scheduleData`);
                                             scheduleData.events = scheduleData.events || [];
                                             // build deleted map if present
                                             const deletedMapRoot = (config && config.adminSchedule && config.adminSchedule.deleted) ? config.adminSchedule.deleted : {};
@@ -3465,7 +3465,7 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
 
                                                     // If we've marked this event as deleted locally, skip it
                                                     if (isEventDeleted(evId)) {
-                                                        console.log(`âŹ­ď¸Ź  Skipping merge of admin entry ${evId} (marked as deleted locally)`);
+                                                        console.log(`⏭️  Skipping merge of admin entry ${evId} (marked as deleted locally)`);
                                                         return;
                                                     }
 
@@ -3494,7 +3494,7 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
 
                                                     // Skip admin entries tagged with 'worker' (worker flow removed)
                                                     if (item.worker) {
-                                                        console.log('âŹ­ď¸Ź Skipping admin entry with worker field (worker feature removed):', key || evId);
+                                                        console.log('⏭️ Skipping admin entry with worker field (worker feature removed):', key || evId);
                                                         return;
                                                     }
                                                     // Create booking event for customer admin entries
@@ -3527,21 +3527,21 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                                                         }
                                                     } catch (_) {}
                                                     scheduleData.events.push(newEvent);
-                                                } catch (inner) { console.warn('âš  failed merging adminSchedule item', inner); }
+                                                } catch (inner) { console.warn('⚠ failed merging adminSchedule item', inner); }
                                             });
-                                            try { await saveScheduleData(); debugLog('âś… Merged adminSchedule into scheduleData and saved'); } catch(e){ console.warn('âš  save after merge failed', e); }
+                                            try { await saveScheduleData(); debugLog('✅ Merged adminSchedule into scheduleData and saved'); } catch(e){ console.warn('⚠ save after merge failed', e); }
                                         }
                                     }
                                 }
                             } catch (mergeErr) {
-                                console.warn('âš  Could not fetch/merge site_config adminSchedule entries', mergeErr);
+                                console.warn('⚠ Could not fetch/merge site_config adminSchedule entries', mergeErr);
                             }
                             scheduleData.events.push(...migrated);
-                            try { await StorageManager.save('schedule', scheduleData); localStorage.removeItem('appointments'); debugLog('âś… Migrated legacy appointments to DB'); } catch(e) { console.warn('âš  Migration save failed', e); }
+                            try { await StorageManager.save('schedule', scheduleData); localStorage.removeItem('appointments'); debugLog('✅ Migrated legacy appointments to DB'); } catch(e) { console.warn('⚠ Migration save failed', e); }
                         }
                     }
                 } catch (e) {
-                    console.warn('âš  Legacy appointments migration failed', e);
+                    console.warn('⚠ Legacy appointments migration failed', e);
                 }
 
                 // Ensure adminSchedule entries from site_config are merged only if not marked deleted
@@ -3556,7 +3556,7 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                             if (Array.isArray(entries2)) entries2.forEach(it => pairList2.push({ key: null, item: it }));
                             else if (entries2 && typeof entries2 === 'object') Object.entries(entries2).forEach(([k,it]) => pairList2.push({ key: k, item: it }));
                             if (pairList2.length > 0) {
-                                debugLog(`đź“Ą Merging ${pairList2.length} adminSchedule entries into scheduleData (post-load)`);
+                                debugLog(`📥 Merging ${pairList2.length} adminSchedule entries into scheduleData (post-load)`);
                                 scheduleData.events = scheduleData.events || [];
                                 pairList2.forEach(({ key, item }) => {
                                     try {
@@ -3597,7 +3597,7 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                                             return eName === matchName && start && end && timesApproxEqual(e.start, e.end, start, end);
                                         });
                                         if (existingMatchingEvent && window.isEventDeleted(existingMatchingEvent.id)) {
-                                            console.log(`âŹ­ď¸Ź  Skipping Firebase entry (matching deleted event: ${existingMatchingEvent.id})`);
+                                            console.log(`⏭️  Skipping Firebase entry (matching deleted event: ${existingMatchingEvent.id})`);
                                             return;
                                         }
                                         
@@ -3661,80 +3661,80 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                                         }
 
                                         scheduleData.events.push(newEvent);
-                                    } catch (inner2) { console.warn('âš  failed merging adminSchedule item (post-load)', inner2); }
+                                    } catch (inner2) { console.warn('⚠ failed merging adminSchedule item (post-load)', inner2); }
                                 });
-                                try { await saveScheduleData(); debugLog('âś… Merged adminSchedule into scheduleData (post-load) and saved'); } catch(e){ console.warn('âš  save after post-load merge failed', e); }
+                                try { await saveScheduleData(); debugLog('✅ Merged adminSchedule into scheduleData (post-load) and saved'); } catch(e){ console.warn('⚠ save after post-load merge failed', e); }
                             }
                         }
                     }
                 } catch (mergeErr2) {
-                    console.warn('âš  Could not fetch/merge site_config adminSchedule entries (post-load)', mergeErr2);
+                    console.warn('⚠ Could not fetch/merge site_config adminSchedule entries (post-load)', mergeErr2);
                 }
 
                 // FINAL CLEANUP: Apply deletion filter one last time after ALL merges
                 // This catches any deleted events that were re-added by adminSchedule merge
-                console.log(`đź”Ť FINAL CLEANUP: Before deletion filter: ${scheduleData.events.length} events`);
+                console.log(`🔍 FINAL CLEANUP: Before deletion filter: ${scheduleData.events.length} events`);
                 const beforeFinalFilter = scheduleData.events.length;
                 scheduleData.events = filterDeletedEvents(scheduleData.events);
                 const afterFinalFilter = scheduleData.events.length;
                 if (beforeFinalFilter !== afterFinalFilter) {
-                    console.log(`đź—‘ď¸Ź  FINAL CLEANUP REMOVED: ${beforeFinalFilter - afterFinalFilter} events that were re-added by merges`);
+                    console.log(`🗑️  FINAL CLEANUP REMOVED: ${beforeFinalFilter - afterFinalFilter} events that were re-added by merges`);
                     // Save cleaned scheduleData back to localStorage
                     try {
                         localStorage.setItem('schedule', JSON.stringify(scheduleData));
-                        console.log('âś… Cleaned schedule saved to localStorage');
+                        console.log('✅ Cleaned schedule saved to localStorage');
                     } catch (e) {
-                        console.warn('âš  Failed to save cleaned schedule', e);
+                        console.warn('⚠ Failed to save cleaned schedule', e);
                     }
                 } else {
-                    console.log('âś“ No deleted events found in final cleanup');
+                    console.log('✓ No deleted events found in final cleanup');
                 }
 
                 // Check if CalendarEngine is available
                 if (typeof CalendarEngine === 'undefined') {
-                    debugLog('âťŚ CalendarEngine not available, trying to create stub');
+                    debugLog('❌ CalendarEngine not available, trying to create stub');
                     window.CalendarEngine = {};
                 }
                 
                 if (!CalendarEngine.initializeCalendar) {
-                    debugLog('âťŚ CalendarEngine.initializeCalendar method missing');
+                    debugLog('❌ CalendarEngine.initializeCalendar method missing');
                     throw new Error('initializeCalendar method not found');
                 }
                 
                 container.innerHTML = '<div class="calendar-loading"><div class="calendar-spinner"></div><span>Inicializiram koledar...</span></div>';
                 
                 const calendar = CalendarEngine.initializeCalendar(container, scheduleData);
-                debugLog(`đź“¦ Calendar returned: ${calendar ? 'YES' : 'NO'}`);
+                debugLog(`📦 Calendar returned: ${calendar ? 'YES' : 'NO'}`);
 
                 if (!calendar) {
-                    debugLog('âťŚ Calendar initialization failed');
-                    container.innerHTML = 'âťŚ Napaka pri inicializaciji koledarja';
+                    debugLog('❌ Calendar initialization failed');
+                    container.innerHTML = '❌ Napaka pri inicializaciji koledarja';
                     return;
                 }
 
                 // Store reference globally
                 window.calendar = calendar;
                 calendarInitialized = true;
-                debugLog('âś“ Business calendar initialized');
+                debugLog('✓ Business calendar initialized');
                 
                 // DEBUG: Check if dayMaxEvents is set
-                console.log('đź”Ť dayMaxEvents setting:', calendar.getOption('dayMaxEvents'));
-                console.log('đź”Ť moreLinkClick setting:', calendar.getOption('moreLinkClick'));
-                console.log('đź”Ť Current view:', calendar.view.type);
+                console.log('🔍 dayMaxEvents setting:', calendar.getOption('dayMaxEvents'));
+                console.log('🔍 moreLinkClick setting:', calendar.getOption('moreLinkClick'));
+                console.log('🔍 Current view:', calendar.view.type);
 
                 // Calendar interactions
-                debugLog('đźŽŻ Attaching event handlers...');
+                debugLog('🎯 Attaching event handlers...');
                 
                 // Let FullCalendar's native handlers work - they handle more-link and dateClick properly
                 calendar.setOption('navLinks', false);
 
                 // Handle single day cell clicks to open add modal (but NOT more-link clicks)
                 calendar.on('dateClick', (info) => {
-                    console.log('đź“… dateClick fired for:', info.dateStr);
+                    console.log('📅 dateClick fired for:', info.dateStr);
                     
                     // Skip if more-link was just clicked (flag set by moreLinkClick)
                     if (window._moreLinkJustClicked) {
-                        console.log('âŹ­ď¸Ź Skipping dateClick because more-link was clicked');
+                        console.log('⏭️ Skipping dateClick because more-link was clicked');
                         return;
                     }
                     
@@ -3744,7 +3744,7 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
 
                 // FullCalendar's native more-link click handling works now
                 // (cell selection handler ignores clicks on .fc-more-link elements)
-                console.log('âś… More-link click handling: Using FullCalendar native (click to show popover)');
+                console.log('✅ More-link click handling: Using FullCalendar native (click to show popover)');
 
                 calendar.on('eventClick', (info) => {
                     debugLog('Event clicked: ' + info.event.title);
@@ -3755,7 +3755,7 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                         || info.event.isBooking
                         || (info.event.id && String(info.event.id).startsWith('apt_'));
                     if (isBooking) {
-                        debugLog('đź“‹ Opening booking details modal');
+                        debugLog('📋 Opening booking details modal');
                         openBookingDetailsModal(info.event);
                         return;
                     }
@@ -3763,14 +3763,14 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                     debugLog('Opening edit modal...');
                     openEditEventModal(info.event);
                 });
-                debugLog('âś… Event handlers attached');
-                console.log('âś… Calendar handlers attached');
+                debugLog('✅ Event handlers attached');
+                console.log('✅ Calendar handlers attached');
 
             } catch (error) {
-                debugLog('âťŚ Error: ' + error.message);
+                debugLog('❌ Error: ' + error.message);
                 console.error('Calendar initialization error:', error);
                 console.error('Error stack:', error.stack);
-                container.innerHTML = 'âťŚ Napaka: ' + error.message;
+                container.innerHTML = '❌ Napaka: ' + error.message;
             }
         }
 
@@ -3782,9 +3782,9 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                     try {
                         initializeBusinessCalendar();
                     } catch (e) {
-                        debugLog('âťŚ Initialization error: ' + e.message);
+                        debugLog('❌ Initialization error: ' + e.message);
                         console.error('Error during calendar init:', e);
-                        document.getElementById('scheduleCalendar').innerHTML = 'âťŚ Gravna napaka: ' + e.message;
+                        document.getElementById('scheduleCalendar').innerHTML = '❌ Gravna napaka: ' + e.message;
                     }
                 }, 1500);
             });
@@ -3794,9 +3794,9 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                 try {
                     initializeBusinessCalendar();
                 } catch (e) {
-                    debugLog('âťŚ Initialization error: ' + e.message);
+                    debugLog('❌ Initialization error: ' + e.message);
                     console.error('Error during calendar init:', e);
-                    document.getElementById('scheduleCalendar').innerHTML = 'âťŚ Gravna napaka: ' + e.message;
+                    document.getElementById('scheduleCalendar').innerHTML = '❌ Gravna napaka: ' + e.message;
                 }
             }, 1500);
         }
@@ -3820,7 +3820,7 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
 
         // Runtime self-check kept but will not print to console due to silenced console
         setTimeout(() => {
-            debugLog(`đź”Ž Runtime modules: FullCalendar=${typeof FullCalendar !== 'undefined'}, StorageManager=${typeof StorageManager !== 'undefined'}, CalendarEngine=${typeof CalendarEngine !== 'undefined'}`);
+            debugLog(`🔎 Runtime modules: FullCalendar=${typeof FullCalendar !== 'undefined'}, StorageManager=${typeof StorageManager !== 'undefined'}, CalendarEngine=${typeof CalendarEngine !== 'undefined'}`);
         }, 2000);
 
         // Close sidebar when navigating on mobile
@@ -3844,12 +3844,12 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
             clear: () => {
                 deletedEventIds.clear();
                 saveDeletedEventIds();
-                console.log("âś“ Cleared all deleted IDs");
+                console.log("✓ Cleared all deleted IDs");
             },
             markDeleted: (id) => {
                 markEventDeleted(id);
                 scheduleData.events = scheduleData.events.filter(e => e.id !== id);
-                console.log(`âś“ Marked ${id} as deleted`);
+                console.log(`✓ Marked ${id} as deleted`);
             },
             stats: () => ({
                 totalInScheduleData: scheduleData.events ? scheduleData.events.length : 0,
@@ -3865,7 +3865,7 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                         const key = e.id || `${new Date(e.start).toISOString().slice(0,16)}|${new Date(e.end).toISOString().slice(0,16)}|${cust}`;
                         console.log(i, key, e.id, e.title, e.start, e.end, e.extendedProps?.isBooking);
                     });
-                } catch (err) { console.warn('âš  listCalendarEvents failed', err); }
+                } catch (err) { console.warn('⚠ listCalendarEvents failed', err); }
             },
             findDuplicates: () => {
                 const map = {};
@@ -3946,7 +3946,7 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                 } catch (e) { console.warn('toggleTimegridVisuals failed', e); return false; }
             }
         };
-        console.log("đź’ˇ Use window.deletionDebug.show() to see deletion status");
+        console.log("💡 Use window.deletionDebug.show() to see deletion status");
 
         // Escape HTML to prevent XSS
         function escapeHtml(text) {
@@ -3958,4 +3958,4 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
         // ===== CRITICAL OVERRIDE - AFTER ALL FUNCTION DEFINITIONS =====
         // Must be here, AFTER openAddEventModal is defined, to override function hoisting
         window.openAddEventModal = openAddEventModalWithTab;
-        console.log('đź”§ OVERRIDE SET (at end of script): window.openAddEventModal =', typeof window.openAddEventModal, window.openAddEventModal.name || 'openAddEventModalWithTab');
+        console.log('🔧 OVERRIDE SET (at end of script): window.openAddEventModal =', typeof window.openAddEventModal, window.openAddEventModal.name || 'openAddEventModalWithTab');

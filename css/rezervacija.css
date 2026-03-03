@@ -191,7 +191,7 @@
         }
 
         .service-checkbox::after {
-            content: 'âś“';
+            content: '✓';
             color: white;
             font-size: 14px;
             font-weight: 700;
@@ -628,7 +628,7 @@
         }
 
         .success-icon::after {
-            content: 'âś“';
+            content: '✓';
             color: white;
             font-size: 40px;
             font-weight: 700;
