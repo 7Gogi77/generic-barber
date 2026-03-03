@@ -3663,46 +3663,87 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                 // Let FullCalendar's native handlers work - they handle more-link and dateClick properly
                 calendar.setOption('navLinks', false);
 
-                // Track touch scroll so we don't open the add-modal when user was scrolling
-                // Attach to document so we catch scrolls that start outside the calendar
+                // ── MOBILE TAP DETECTION ─────────────────────────────────────────────
+                // We completely bypass FullCalendar's dateClick on mobile because FC
+                // fires it unreliably after scroll gestures regardless of timing guards.
+                // Instead we implement our own touchstart/touchend tap detector directly
+                // on the calendar element using event delegation.
+                if (window.innerWidth <= 768) {
+                    let _tapStartX = 0, _tapStartY = 0, _tapStartTime = 0;
+
+                    calendar.el.addEventListener('touchstart', (e) => {
+                        _tapStartX = e.touches[0].clientX;
+                        _tapStartY = e.touches[0].clientY;
+                        _tapStartTime = Date.now();
+                        // Kill any lingering FC selection/highlight immediately
+                        try { calendar.unselect(); } catch(_) {}
+                    }, { passive: true });
+
+                    calendar.el.addEventListener('touchend', (e) => {
+                        const dx = Math.abs(e.changedTouches[0].clientX - _tapStartX);
+                        const dy = Math.abs(e.changedTouches[0].clientY - _tapStartY);
+                        const dt = Date.now() - _tapStartTime;
+
+                        // Not a clean tap — finger moved or held too long
+                        if (dx > 10 || dy > 10 || dt > 350) return;
+
+                        // Walk up from the touch target to find a day cell with data-date
+                        let el = e.target;
+                        let dateStr = null;
+                        // Don't trigger on events, more-link, or toolbar buttons
+                        while (el && el !== calendar.el) {
+                            if (el.classList.contains('fc-event') ||
+                                el.classList.contains('fc-daygrid-event') ||
+                                el.classList.contains('fc-daygrid-more-link') ||
+                                el.classList.contains('fc-button') ||
+                                el.classList.contains('fc-toolbar')) return;
+                            if (el.dataset && el.dataset.date) {
+                                dateStr = el.dataset.date;
+                                break;
+                            }
+                            el = el.parentElement;
+                        }
+                        if (!dateStr) return;
+
+                        // Clean tap on an empty day cell → open add modal
+                        openAddEventModal(dateStr);
+                    }, { passive: true });
+                }
+
+                // ── SCROLL GUARD (all screen sizes) ─────────────────────────────────
+                // Tracks touch movement on the document so we can suppress FC callbacks
+                // that fire after a drag/scroll gesture on desktop-ish touch devices.
                 {
-                    let _touchStartY = 0;
-                    let _touchStartX = 0;
+                    let _scrollStartY = 0, _scrollStartX = 0;
                     document.addEventListener('touchstart', (e) => {
-                        _touchStartY = e.touches[0].clientY;
-                        _touchStartX = e.touches[0].clientX;
+                        _scrollStartY = e.touches[0].clientY;
+                        _scrollStartX = e.touches[0].clientX;
                         window._calTouchScrolled = false;
                     }, { passive: true });
                     document.addEventListener('touchmove', (e) => {
-                        const dy = Math.abs(e.touches[0].clientY - _touchStartY);
-                        const dx = Math.abs(e.touches[0].clientX - _touchStartX);
+                        const dy = Math.abs(e.touches[0].clientY - _scrollStartY);
+                        const dx = Math.abs(e.touches[0].clientX - _scrollStartX);
                         if (dy > 8 || dx > 8) {
                             window._calTouchScrolled = true;
-                            // Immediately clear any FullCalendar selection highlight
-                            try { calendar.unselect(); } catch(e) {}
-                            // Also clear any inline backgroundColor set during selection
+                            try { calendar.unselect(); } catch(_) {}
                             document.querySelectorAll('[data-date]').forEach(c => { c.style.backgroundColor = ''; });
                         }
                     }, { passive: true });
-                    // On finger-lift: if it was a scroll, stamp a timestamp so that
-                    // dateClick fired by FC on the *next* tap is also blocked.
-                    // (touchstart resets _calTouchScrolled before dateClick fires, so
-                    //  we need a time-based guard that survives the next touchstart.)
                     document.addEventListener('touchend', () => {
                         if (window._calTouchScrolled) {
                             window._scrollEndedAt = Date.now();
-                            try { calendar.unselect(); } catch(e) {}
+                            try { calendar.unselect(); } catch(_) {}
                             document.querySelectorAll('[data-date]').forEach(c => { c.style.backgroundColor = ''; });
                         }
                     }, { passive: true });
                 }
 
-                // Handle single day cell clicks to open add modal (but NOT more-link clicks)
+                // Handle single day cell clicks to open add modal (desktop only)
                 calendar.on('dateClick', (info) => {
                     
-                    // Block if the touch that ended most recently was a scroll gesture.
-                    // We check both the live flag AND a 500 ms cooldown timestamp —
-                    // the flag alone gets wiped by the *next* touchstart before FC fires dateClick.
+                    // On mobile we use our own tap detector above — never open from FC's dateClick
+                    if (window.innerWidth <= 768) return;
+
                     if (window._calTouchScrolled) { window._calTouchScrolled = false; return; }
                     if (window._scrollEndedAt && Date.now() - window._scrollEndedAt < 500) { return; }
 
