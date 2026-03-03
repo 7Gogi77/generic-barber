@@ -436,6 +436,12 @@
                             closeAnalyticsPanel();
                             closeBusinessSettingsPanel();
                             if (_cal) _cal.style.display = 'block';
+                            // Re-measure after the panel transition so FC fills the correct width
+                            setTimeout(() => {
+                                if (window.calendar && typeof window.calendar.updateSize === 'function') {
+                                    window.calendar.updateSize();
+                                }
+                            }, 370);
                         }
                         else if (page === 'customers') {
                             if (_cal) _cal.style.display = 'none';
