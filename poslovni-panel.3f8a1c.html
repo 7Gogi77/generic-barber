@@ -2161,6 +2161,8 @@
                 <button class="bsp-tab" data-tab="rules"><i class="bi bi-clipboard-check"></i> Pravila</button>
                 <button class="bsp-tab" data-tab="pricing"><i class="bi bi-currency-euro"></i> Cenovanje</button>
                 <button class="bsp-tab" data-tab="smart"><i class="bi bi-stars"></i> Pametne funkcije</button>
+                <button class="bsp-tab" data-tab="services"><i class="bi bi-scissors"></i> Storitve</button>
+                <button class="bsp-tab" data-tab="team"><i class="bi bi-people-fill"></i> Ekipa</button>
             </div>
 
             <div class="bsp-body" style="padding:16px 24px 60px;">
@@ -2316,18 +2318,17 @@
                         </div>
                     </div>
 
-                    <!-- Employees -->
+                    <!-- Employees → managed in Ekipa tab -->
                     <div class="bsp-card">
                         <div class="bsp-card-header">
                             <div class="bsp-card-icon" style="background:#007aff1a;"><i class="bi bi-person-badge" style="color:#007aff;font-size:15px;"></i></div>
-                            <div><div class="bsp-card-title">Zaposleni (Resource-based)</div><div class="bsp-card-subtitle">Stranke izberejo zaposlenega ali sistem dodeli</div></div>
+                            <div><div class="bsp-card-title">Člani ekipe</div><div class="bsp-card-subtitle">Stranke izberejo zaposlenega ali sistem dodeli</div></div>
                         </div>
                         <label class="bsp-row">
                             <div><div class="bsp-row-label">Avtomatska dodelitev</div><div class="bsp-row-hint">Sistem sam dodeli razpoložljivega zaposlenega</div></div>
                             <input type="checkbox" id="autoAssignEmployee" class="bsp-toggle" checked>
                         </label>
-                        <div id="employeesList"></div>
-                        <button class="bsp-add-btn" onclick="bspAddEmployee()"><i class="bi bi-person-plus"></i> Dodaj zaposlenega</button>
+                        <p style="font-size:12px;color:#8e8e93;padding:8px 14px 12px;margin:0;">Člane ekipe upravljate v zavihku <strong>Ekipa</strong>.</p>
                     </div>
                 </div>
 
@@ -2519,6 +2520,36 @@
                     </div>
 
                 </div>
+                <!-- ══════════ TAB 7: STORITVE ══════════ -->
+                <div class="bsp-tab-panel" id="bspPanel-services">
+                    <div class="bsp-card">
+                        <div class="bsp-card-header">
+                            <div class="bsp-card-icon" style="background:#ff950020;"><i class="bi bi-scissors" style="color:#ff9500;font-size:15px;"></i></div>
+                            <div><div class="bsp-card-title">Storitve in Cene</div><div class="bsp-card-subtitle">Upravljaj s ponudbo in cenami storitev</div></div>
+                        </div>
+                        <div id="bspServicesList"></div>
+                        <button class="bsp-add-btn" onclick="bspAddServiceItem()"><i class="bi bi-plus-circle"></i> Dodaj storitev</button>
+                        <div style="padding:10px 4px 4px;">
+                            <button onclick="bspSaveServicesToConfig()" style="width:100%;padding:11px;background:#007aff;color:white;border:none;border-radius:10px;font-weight:600;font-size:14px;cursor:pointer;">Shrani storitve</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ══════════ TAB 8: EKIPA ══════════ -->
+                <div class="bsp-tab-panel" id="bspPanel-team">
+                    <div class="bsp-card">
+                        <div class="bsp-card-header">
+                            <div class="bsp-card-icon" style="background:#af52de20;"><i class="bi bi-people-fill" style="color:#af52de;font-size:15px;"></i></div>
+                            <div><div class="bsp-card-title">Ekipa in Profili</div><div class="bsp-card-subtitle">Upravljaj s profili ekipe (prikazano na spletni strani)</div></div>
+                        </div>
+                        <div id="bspTeamList"></div>
+                        <button class="bsp-add-btn" onclick="bspAddTeamMember()"><i class="bi bi-person-plus"></i> Dodaj člana</button>
+                        <div style="padding:10px 4px 4px;">
+                            <button onclick="bspSaveTeamToConfig()" style="width:100%;padding:11px;background:#007aff;color:white;border:none;border-radius:10px;font-weight:600;font-size:14px;cursor:pointer;">Shrani ekipo</button>
+                        </div>
+                    </div>
+                </div>
+
             </div><!-- end bsp-body -->
         </div>
     </div>
@@ -3636,7 +3667,6 @@
             setVal('parallelClients',    s.parallelClients);
             setVal('maxBookingsPerDay',  s.maxBookingsPerDay);
             setChk('autoAssignEmployee', s.autoAssignEmployee);
-            bspRenderEmployees();
 
             // ── Tab 4: Rules ──────────────────────────────────────
             setVal('bufferBefore',           s.bufferBefore);
@@ -3668,6 +3698,8 @@
             setVal('fragmentGapMinutes',     s.fragmentGapMinutes);
             showHide('fragmentGapRow', s.preventFragmentation);
             bspRenderLocations();
+            bspRenderServices();
+            bspRenderTeam();
         }
 
         // ── Dynamic list renderers ────────────────────────────────────────────────
@@ -3753,29 +3785,148 @@
             document.getElementById('newPromoLabel').value = '';
         }
 
-        // Colour palette for employees
-        const _EMP_COLORS = ['#007aff','#34c759','#ff9500','#ff3b30','#af52de','#5ac8fa','#ff2d55','#a2845e'];
-        function bspRenderEmployees() {
-            const el = document.getElementById('employeesList');
-            if (!el || !_bspData) return;
-            el.innerHTML = _bspData.employees.map((emp, i) => `
-                <div class="bsp-list-item">
-                    <span class="emp-dot" style="background:${emp.color || _EMP_COLORS[i % _EMP_COLORS.length]};"></span>
-                    <div style="flex:1;min-width:0;">
-                        <div style="font-size:14px;font-weight:500;">${emp.name}</div>
-                        <div style="font-size:12px;color:#8e8e93;">${emp.services ? emp.services.join(', ') : 'Vse storitve'}</div>
+        // ── HTML escape helper ─────────────────────────────────────────────────
+        function _escH(s) { return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+        // ── Services management (syncs with SITE_CONFIG.servicesSection.items) ──
+        function bspRenderServices() {
+            const el = document.getElementById('bspServicesList');
+            if (!el) return;
+            const items = window.SITE_CONFIG?.servicesSection?.items || [];
+            if (items.length === 0) {
+                el.innerHTML = '<p style="font-size:13px;color:#8e8e93;padding:8px 0;">Ni dodanih storitev. Klikni + Dodaj storitev.</p>';
+                return;
+            }
+            el.innerHTML = items.map((svc, i) => {
+                let durVal = svc.duration || 30, durUnit = 'min';
+                if (durVal >= 1440 && durVal % 1440 === 0) { durVal = durVal / 1440; durUnit = 'dni'; }
+                else if (durVal >= 60 && durVal % 60 === 0) { durVal = durVal / 60; durUnit = 'ure'; }
+                return `
+                <div class="bsp-list-item" style="flex-direction:column;align-items:stretch;gap:8px;padding:12px 14px;" data-svc-idx="${i}">
+                    <div style="display:flex;gap:8px;align-items:center;justify-content:space-between;">
+                        <span style="font-size:12px;font-weight:600;color:#8e8e93;">Storitev ${i+1}</span>
+                        <button class="bsp-list-del" onclick="bspDelService(${i})"><i class="bi bi-trash3"></i></button>
                     </div>
-                    <button class="bsp-list-del" onclick="bspDelEmployee(${i})"><i class="bi bi-trash3"></i></button>
-                </div>`).join('') || '<p style="font-size:13px;color:#8e8e93;padding:8px 0;">Ni dodanih zaposlenih.</p>';
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+                        <div><label style="font-size:11px;color:#8e8e93;display:block;margin-bottom:3px;">Ime storitve</label>
+                        <input type="text" class="bsp-input svc-name" value="${_escH(svc.name||'')}" style="width:100%;box-sizing:border-box;" placeholder="Npr. Striženje"></div>
+                        <div><label style="font-size:11px;color:#8e8e93;display:block;margin-bottom:3px;">Cena</label>
+                        <input type="text" class="bsp-input svc-price" value="${_escH(svc.price||'')}" style="width:100%;box-sizing:border-box;" placeholder="€15"></div>
+                    </div>
+                    <div style="display:grid;grid-template-columns:1fr auto;gap:8px;align-items:end;">
+                        <div><label style="font-size:11px;color:#8e8e93;display:block;margin-bottom:3px;">Opis</label>
+                        <input type="text" class="bsp-input svc-desc" value="${_escH(svc.desc||'')}" style="width:100%;box-sizing:border-box;" placeholder="Kratek opis storitve"></div>
+                        <div><label style="font-size:11px;color:#8e8e93;display:block;margin-bottom:3px;">Trajanje</label>
+                        <div style="display:flex;gap:4px;">
+                            <input type="number" class="bsp-input svc-dur-val" value="${durVal}" min="1" style="width:60px;text-align:center;">
+                            <select class="bsp-input svc-dur-unit" style="width:62px;">
+                                <option value="min" ${durUnit==='min'?'selected':''}>min</option>
+                                <option value="ure" ${durUnit==='ure'?'selected':''}>ure</option>
+                                <option value="dni" ${durUnit==='dni'?'selected':''}>dni</option>
+                            </select>
+                        </div></div>
+                    </div>
+                </div>`;
+            }).join('');
         }
-        function bspDelEmployee(i) { if (_bspData) { _bspData.employees.splice(i, 1); bspRenderEmployees(); } }
-        function bspAddEmployee() {
-            if (!_bspData) return;
-            const name = prompt('Ime zaposlenega:');
-            if (!name || !name.trim()) return;
-            const color = _EMP_COLORS[_bspData.employees.length % _EMP_COLORS.length];
-            _bspData.employees.push({ id: Date.now().toString(36), name: name.trim(), color, services: [], autoAssign: true });
-            bspRenderEmployees();
+        function bspCollectServices() {
+            const items = [];
+            document.querySelectorAll('#bspServicesList [data-svc-idx]').forEach(row => {
+                const name  = row.querySelector('.svc-name')?.value?.trim() || '';
+                const price = row.querySelector('.svc-price')?.value?.trim() || '';
+                const desc  = row.querySelector('.svc-desc')?.value?.trim() || '';
+                const durVal  = parseInt(row.querySelector('.svc-dur-val')?.value || '30') || 30;
+                const durUnit = row.querySelector('.svc-dur-unit')?.value || 'min';
+                const mult  = durUnit === 'dni' ? 1440 : durUnit === 'ure' ? 60 : 1;
+                items.push({ name, price, desc, duration: durVal * mult });
+            });
+            return items;
+        }
+        function bspDelService(i) {
+            if (!window.SITE_CONFIG?.servicesSection) return;
+            const items = bspCollectServices();
+            items.splice(i, 1);
+            window.SITE_CONFIG.servicesSection.items = items;
+            bspRenderServices();
+        }
+        function bspAddServiceItem() {
+            if (!window.SITE_CONFIG) return;
+            if (!window.SITE_CONFIG.servicesSection) window.SITE_CONFIG.servicesSection = { title: 'Storitve', items: [] };
+            window.SITE_CONFIG.servicesSection.items = bspCollectServices();
+            window.SITE_CONFIG.servicesSection.items.push({ name: 'Nova storitev', price: '€0', duration: 30, desc: '' });
+            bspRenderServices();
+        }
+        async function bspSaveServicesToConfig() {
+            if (!window.SITE_CONFIG) { alert('Konfiguracija ni naložena.'); return; }
+            if (!window.SITE_CONFIG.servicesSection) window.SITE_CONFIG.servicesSection = { title: 'Storitve', items: [] };
+            window.SITE_CONFIG.servicesSection.items = bspCollectServices();
+            try {
+                if (window.StorageManager) await StorageManager.save('site_config', window.SITE_CONFIG);
+                if (window.CloudSync && typeof window.CloudSync.saveToCloud === 'function') await window.CloudSync.saveToCloud(window.SITE_CONFIG);
+                if (typeof showToast === 'function') showToast('✅ Storitve shranjene!');
+                else alert('Storitve shranjene.');
+            } catch(e) { alert('Napaka pri shranjevanju: ' + e.message); }
+        }
+
+        // ── Team management (syncs with SITE_CONFIG.barbersSection.list) ─────────
+        function bspRenderTeam() {
+            const el = document.getElementById('bspTeamList');
+            if (!el) return;
+            const list = window.SITE_CONFIG?.barbersSection?.list || [];
+            if (list.length === 0) {
+                el.innerHTML = '<p style="font-size:13px;color:#8e8e93;padding:8px 0;">Ni dodanih članov ekipe. Klikni + Dodaj člana.</p>';
+                return;
+            }
+            el.innerHTML = list.map((m, i) => `
+                <div class="bsp-list-item" style="flex-direction:column;align-items:stretch;gap:8px;padding:12px 14px;" data-team-idx="${i}">
+                    <div style="display:flex;gap:8px;align-items:center;justify-content:space-between;">
+                        <span style="font-size:12px;font-weight:600;color:#8e8e93;">Član ${i+1}</span>
+                        <button class="bsp-list-del" onclick="bspDelTeamMember(${i})"><i class="bi bi-trash3"></i></button>
+                    </div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+                        <div><label style="font-size:11px;color:#8e8e93;display:block;margin-bottom:3px;">Ime</label>
+                        <input type="text" class="bsp-input team-name" value="${_escH(m.name||'')}" style="width:100%;box-sizing:border-box;" placeholder="Ime člana"></div>
+                        <div><label style="font-size:11px;color:#8e8e93;display:block;margin-bottom:3px;">Vloga</label>
+                        <input type="text" class="bsp-input team-role" value="${_escH(m.role||'')}" style="width:100%;box-sizing:border-box;" placeholder="npr. Frizer"></div>
+                    </div>
+                    <div><label style="font-size:11px;color:#8e8e93;display:block;margin-bottom:3px;">URL slike</label>
+                    <input type="text" class="bsp-input team-img" value="${_escH(m.img&&m.img!=='https://via.placeholder.com/300'?m.img:'')}" style="width:100%;box-sizing:border-box;" placeholder="https://..."></div>
+                </div>`).join('');
+        }
+        function bspCollectTeam() {
+            const items = [];
+            document.querySelectorAll('#bspTeamList [data-team-idx]').forEach(row => {
+                const name = row.querySelector('.team-name')?.value?.trim() || '';
+                const role = row.querySelector('.team-role')?.value?.trim() || '';
+                const img  = row.querySelector('.team-img')?.value?.trim() || '';
+                items.push({ name, role, img: img || 'https://via.placeholder.com/300' });
+            });
+            return items;
+        }
+        function bspDelTeamMember(i) {
+            if (!window.SITE_CONFIG?.barbersSection) return;
+            const list = bspCollectTeam();
+            list.splice(i, 1);
+            window.SITE_CONFIG.barbersSection.list = list;
+            bspRenderTeam();
+        }
+        function bspAddTeamMember() {
+            if (!window.SITE_CONFIG) return;
+            if (!window.SITE_CONFIG.barbersSection) window.SITE_CONFIG.barbersSection = { title: 'Ekipa', list: [] };
+            window.SITE_CONFIG.barbersSection.list = bspCollectTeam();
+            window.SITE_CONFIG.barbersSection.list.push({ name: 'Nov član', role: 'Frizer', img: '' });
+            bspRenderTeam();
+        }
+        async function bspSaveTeamToConfig() {
+            if (!window.SITE_CONFIG) { alert('Konfiguracija ni naložena.'); return; }
+            if (!window.SITE_CONFIG.barbersSection) window.SITE_CONFIG.barbersSection = { title: 'Ekipa', list: [] };
+            window.SITE_CONFIG.barbersSection.list = bspCollectTeam();
+            try {
+                if (window.StorageManager) await StorageManager.save('site_config', window.SITE_CONFIG);
+                if (window.CloudSync && typeof window.CloudSync.saveToCloud === 'function') await window.CloudSync.saveToCloud(window.SITE_CONFIG);
+                if (typeof showToast === 'function') showToast('✅ Ekipa shranjena!');
+                else alert('Ekipa shranjena.');
+            } catch(e) { alert('Napaka pri shranjevanju: ' + e.message); }
         }
 
         function bspRenderLocations() {

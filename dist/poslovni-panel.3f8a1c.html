@@ -464,6 +464,47 @@
             background: rgba(0, 122, 255, 0.05) !important;
         }
 
+        /* FullCalendar Selection Highlight - Show when dragging to select dates */
+        #scheduleCalendar.view-daygrid .fc .fc-daygrid-body {
+            position: relative;
+        }
+
+        /* DEBUG: Test if element exists */
+        .fc-daygrid-bg {
+            outline: 5px solid yellow !important;
+        }
+
+        #scheduleCalendar.view-daygrid .fc .fc-daygrid-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            width: 100% !important;
+            z-index: 6;
+            outline: 3px solid orange !important; /* DEBUG: See bg layer */
+        }
+
+        #scheduleCalendar.view-daygrid .fc .fc-daygrid-bg table,
+        #scheduleCalendar.view-daygrid .fc .fc-daygrid-bg .fc-scrollgrid-sync-table {
+            width: 100% !important;
+            table-layout: fixed !important;
+        }
+
+        /* Override FullCalendar's default highlight color - use only JS inline styles */
+        .fc .fc-highlight {
+            background: none !important;
+        }
+
+        /* Ensure the background harness doesn't clip highlights */
+        #scheduleCalendar.view-daygrid .fc-daygrid-bg-harness {
+            overflow: visible !important;
+        }
+
+        #scheduleCalendar.view-daygrid .fc-daygrid-day-bg {
+            overflow: visible !important;
+        }
+
         /* iOS-Style Day Numbers - Consistent height for perfect alignment */
         #scheduleCalendar.view-daygrid .fc .fc-daygrid-day-top {
             height: 40px !important;
@@ -1027,49 +1068,113 @@
             font-size: 15px;
             text-align: center;
             -moz-appearance: textfield;
+            appearance: textfield;
             flex-shrink: 0;
         }
         #maxDaysRow { padding: 14px 18px; border-top: 1px solid #f2f2f7; }
         .bsp-footer-note { font-size: 12px; color: #8e8e93; text-align: center; padding: 0 16px; }
-        /* ── BSP Tab system ─────────────────────────────────────── */
-        .bsp-tab-bar { display:flex; gap:6px; padding:12px 20px 0; overflow-x:auto; scrollbar-width:none; border-bottom:1px solid #f2f2f7; position:sticky; top:0; background:var(--ios-glass-bg,#fff); backdrop-filter:blur(20px); z-index:10; }
-        .bsp-tab-bar::-webkit-scrollbar { display:none; }
-        .bsp-tab { background:none; border:none; padding:8px 14px; font-size:13px; font-weight:500; color:#8e8e93; border-radius:20px; cursor:pointer; white-space:nowrap; transition:all .18s; }
-        .bsp-tab.active { background:#007aff; color:#fff; }
-        .bsp-tab:hover:not(.active) { background:#f2f2f7; color:#1c1c1e; }
-        .bsp-tab-panel { display:none; }
-        .bsp-tab-panel.active { display:block; }
-        /* ── BSP form rows ──────────────────────────────────────── */
-        .bsp-row { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:12px 18px; border-top:1px solid #f2f2f7; }
-        .bsp-row:first-child { border-top:none; }
-        .bsp-row-label { font-size:14px; font-weight:500; color:#1c1c1e; }
-        .bsp-row-hint  { font-size:12px; color:#8e8e93; margin-top:2px; }
-        .bsp-input  { border:1.5px solid #e5e5ea; border-radius:8px; padding:7px 10px; font-size:14px; color:#1c1c1e; background:#fff; outline:none; }
-        .bsp-input:focus { border-color:#007aff; }
-        .bsp-select { border:1.5px solid #e5e5ea; border-radius:8px; padding:7px 10px; font-size:14px; color:#1c1c1e; background:#fff; outline:none; cursor:pointer; }
-        .bsp-toggle { width:44px; height:26px; accent-color:#007aff; cursor:pointer; flex-shrink:0; appearance:none; -webkit-appearance:none; background:#e5e5ea; border-radius:13px; position:relative; transition:background .2s; }
-        .bsp-toggle:checked { background:#007aff; }
-        .bsp-toggle::after { content:''; position:absolute; top:3px; left:3px; width:20px; height:20px; background:#fff; border-radius:50%; transition:left .2s; box-shadow:0 1px 3px #0002; }
-        .bsp-toggle:checked::after { left:21px; }
-        /* ── time blocks & lists ────────────────────────────────── */
-        .bsp-list-item { display:flex; align-items:center; gap:10px; padding:10px 18px; border-top:1px solid #f2f2f7; }
-        .bsp-list-del { background:none; border:none; color:#ff3b30; font-size:16px; cursor:pointer; padding:4px; border-radius:6px; flex-shrink:0; }
-        .bsp-list-del:hover { background:#ff3b3015; }
-        .bsp-badge { display:inline-block; font-size:11px; font-weight:600; padding:2px 7px; border-radius:10px; background:#007aff1a; color:#007aff; }
-        .bsp-add-btn { display:inline-flex; align-items:center; gap:6px; border:none; background:#007aff1a; color:#007aff; font-size:13px; font-weight:500; padding:8px 14px; border-radius:10px; cursor:pointer; margin:10px 18px 4px; transition:background .15s; }
-        .bsp-add-btn:hover { background:#007aff2a; }
-        .bsp-section-title { font-size:11px; font-weight:600; color:#8e8e93; text-transform:uppercase; letter-spacing:.6px; padding:14px 18px 6px; }
-        .emp-dot { width:12px; height:12px; border-radius:50%; flex-shrink:0; }
-        .bsp-inline-form { display:flex; flex-wrap:wrap; align-items:flex-end; gap:10px; padding:12px 18px 8px; border-top:1px solid #f2f2f7; background:#f9f9fb; border-radius:0 0 14px 14px; }
-        .bsp-inline-form .fg { display:flex; flex-direction:column; gap:4px; }
-        .bsp-inline-form label { font-size:11px; font-weight:600; color:#8e8e93; text-transform:uppercase; letter-spacing:.4px; }
+        /* ─── BSP Tab Bar ─────────────────────────────────────── */
+        .bsp-tab-bar {
+            display: flex; overflow-x: auto; background: #fff;
+            border-bottom: 1px solid #e5e5ea; position: sticky; top: 60px;
+            z-index: 9; scrollbar-width: none; flex-shrink: 0;
+        }
+        .bsp-tab-bar::-webkit-scrollbar { display: none; }
+        .bsp-tab {
+            flex-shrink: 0; padding: 11px 16px; font-size: 13px; font-weight: 500;
+            color: #8e8e93; background: none; border: none; cursor: pointer;
+            border-bottom: 2px solid transparent; transition: color .2s, border-color .2s;
+            white-space: nowrap;
+        }
+        .bsp-tab.active { color: #007aff; border-bottom-color: #007aff; }
+        .bsp-tab-panel { display: none; }
+        .bsp-tab-panel.active { display: block; }
+        /* ─── Reusable row/input helpers ─────────────────────── */
+        .bsp-row {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 12px 18px; gap: 14px; border-bottom: 1px solid #f2f2f7;
+        }
+        .bsp-row:last-child { border-bottom: none; }
+        .bsp-row-label { font-size: 14px; color: #1c1c1e; font-weight: 500; line-height: 1.3; }
+        .bsp-row-hint { font-size: 12px; color: #8e8e93; margin-top: 2px; }
+        .bsp-input {
+            padding: 7px 10px; border: 1.5px solid #e5e5ea; border-radius: 10px;
+            font-size: 14px; color: #1c1c1e; background: #fff; min-width: 72px;
+        }
+        .bsp-input:focus { border-color: #007aff; outline: none; }
+        .bsp-select {
+            padding: 7px 10px; border: 1.5px solid #e5e5ea; border-radius: 10px;
+            font-size: 14px; color: #1c1c1e; background: #fff;
+        }
+        .bsp-toggle {
+            width: 20px; height: 20px; accent-color: #007aff;
+            cursor: pointer; flex-shrink: 0;
+        }
+        /* ─── Time block builder ─────────────────────────────── */
+        .time-block-row {
+            display: flex; align-items: center; gap: 8px;
+            padding: 7px 18px; border-bottom: 1px solid #f5f5f7;
+        }
+        .time-block-row:last-of-type { border-bottom: none; }
+        .time-block-row input[type="time"] {
+            padding: 5px 8px; border: 1.5px solid #e5e5ea; border-radius: 8px;
+            font-size: 13px; color: #1c1c1e; background: #fff; min-width: 78px;
+        }
+        .time-block-del {
+            background: none; border: none; color: #ff3b30; cursor: pointer;
+            font-size: 17px; padding: 2px 6px; line-height: 1; flex-shrink: 0;
+        }
+        .time-block-add {
+            background: none; border: none; color: #007aff; cursor: pointer;
+            font-size: 12px; font-weight: 600; padding: 7px 18px;
+            display: flex; align-items: center; gap: 5px;
+        }
+        /* ─── List items (exceptions, employees, locations) ──── */
+        .bsp-list-item {
+            display: flex; align-items: center; gap: 10px;
+            padding: 10px 18px; border-bottom: 1px solid #f2f2f7;
+        }
+        .bsp-list-item:last-child { border-bottom: none; }
+        .bsp-list-item-label { font-size: 14px; color: #1c1c1e; font-weight: 500; flex: 1; }
+        .bsp-list-item-sub { font-size: 12px; color: #8e8e93; }
+        .bsp-list-del {
+            background: none; border: none; color: #ff3b30; cursor: pointer;
+            font-size: 17px; padding: 2px 6px; flex-shrink: 0;
+        }
+        .bsp-badge {
+            font-size: 11px; font-weight: 600; padding: 2px 8px;
+            border-radius: 20px; flex-shrink: 0;
+        }
+        .bsp-badge-green { background: #34c75920; color: #1a8a3c; }
+        .bsp-badge-orange { background: #ff950020; color: #b36a00; }
+        .bsp-badge-red { background: #ff3b3020; color: #cc1a14; }
+        .bsp-badge-blue { background: #007aff20; color: #005fcc; }
+        .bsp-add-btn {
+            display: flex; align-items: center; gap: 6px;
+            background: none; border: none; color: #007aff; cursor: pointer;
+            font-size: 13px; font-weight: 600; padding: 10px 18px;
+        }
+        /* ─── Section heading inside tab panel ───────────────── */
+        .bsp-section-title {
+            font-size: 11px; font-weight: 600; color: #8e8e93; text-transform: uppercase;
+            letter-spacing: .5px; padding: 16px 18px 6px; }
+        /* ─── Employee color dot ─────────────────────────────── */
+        .emp-dot {
+            width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+        /* ─── Inline form rows inside card (no bottom border on last) ─ */
+        .bsp-inline-form { padding: 12px 18px; display: flex; flex-wrap: wrap; gap: 10px; }
+        .bsp-inline-form input, .bsp-inline-form select {
+            padding: 7px 10px; border: 1.5px solid #e5e5ea; border-radius: 10px;
+            font-size: 13px; color: #1c1c1e; background: #fff;
+        }
+        .bsp-inline-form label { font-size: 12px; color: #8e8e93; }
+        .bsp-inline-form .fg { display: flex; flex-direction: column; gap: 3px; }
         @media (max-width: 768px) {
             #businessSettingsPanel { left: 0 !important; width: 100% !important; z-index: 1100 !important; }
-            .bsp-body { padding: 16px 16px 40px; }
+            .bsp-body { padding: 0 0 40px; }
             .day-name { min-width: 80px; font-size: 13px; }
             .day-times input[type="time"] { font-size: 12px; padding: 5px 6px; min-width: 68px; }
-            .bsp-tab { font-size: 12px; padding: 7px 10px; }
-            .bsp-inline-form { flex-direction: column; }
+            .bsp-row { padding: 11px 14px; }
         }
 
         #analyticsPanel .panel-header {
@@ -2056,6 +2161,8 @@
                 <button class="bsp-tab" data-tab="rules"><i class="bi bi-clipboard-check"></i> Pravila</button>
                 <button class="bsp-tab" data-tab="pricing"><i class="bi bi-currency-euro"></i> Cenovanje</button>
                 <button class="bsp-tab" data-tab="smart"><i class="bi bi-stars"></i> Pametne funkcije</button>
+                <button class="bsp-tab" data-tab="services"><i class="bi bi-scissors"></i> Storitve</button>
+                <button class="bsp-tab" data-tab="team"><i class="bi bi-people-fill"></i> Ekipa</button>
             </div>
 
             <div class="bsp-body" style="padding:16px 24px 60px;">
@@ -2211,18 +2318,17 @@
                         </div>
                     </div>
 
-                    <!-- Employees -->
+                    <!-- Employees → managed in Ekipa tab -->
                     <div class="bsp-card">
                         <div class="bsp-card-header">
                             <div class="bsp-card-icon" style="background:#007aff1a;"><i class="bi bi-person-badge" style="color:#007aff;font-size:15px;"></i></div>
-                            <div><div class="bsp-card-title">Zaposleni (Resource-based)</div><div class="bsp-card-subtitle">Stranke izberejo zaposlenega ali sistem dodeli</div></div>
+                            <div><div class="bsp-card-title">Člani ekipe</div><div class="bsp-card-subtitle">Stranke izberejo zaposlenega ali sistem dodeli</div></div>
                         </div>
                         <label class="bsp-row">
                             <div><div class="bsp-row-label">Avtomatska dodelitev</div><div class="bsp-row-hint">Sistem sam dodeli razpoložljivega zaposlenega</div></div>
                             <input type="checkbox" id="autoAssignEmployee" class="bsp-toggle" checked>
                         </label>
-                        <div id="employeesList"></div>
-                        <button class="bsp-add-btn" onclick="bspAddEmployee()"><i class="bi bi-person-plus"></i> Dodaj zaposlenega</button>
+                        <p style="font-size:12px;color:#8e8e93;padding:8px 14px 12px;margin:0;">Člane ekipe upravljate v zavihku <strong>Ekipa</strong>.</p>
                     </div>
                 </div>
 
@@ -2414,6 +2520,36 @@
                     </div>
 
                 </div>
+                <!-- ══════════ TAB 7: STORITVE ══════════ -->
+                <div class="bsp-tab-panel" id="bspPanel-services">
+                    <div class="bsp-card">
+                        <div class="bsp-card-header">
+                            <div class="bsp-card-icon" style="background:#ff950020;"><i class="bi bi-scissors" style="color:#ff9500;font-size:15px;"></i></div>
+                            <div><div class="bsp-card-title">Storitve in Cene</div><div class="bsp-card-subtitle">Upravljaj s ponudbo in cenami storitev</div></div>
+                        </div>
+                        <div id="bspServicesList"></div>
+                        <button class="bsp-add-btn" onclick="bspAddServiceItem()"><i class="bi bi-plus-circle"></i> Dodaj storitev</button>
+                        <div style="padding:10px 4px 4px;">
+                            <button onclick="bspSaveServicesToConfig()" style="width:100%;padding:11px;background:#007aff;color:white;border:none;border-radius:10px;font-weight:600;font-size:14px;cursor:pointer;">Shrani storitve</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ══════════ TAB 8: EKIPA ══════════ -->
+                <div class="bsp-tab-panel" id="bspPanel-team">
+                    <div class="bsp-card">
+                        <div class="bsp-card-header">
+                            <div class="bsp-card-icon" style="background:#af52de20;"><i class="bi bi-people-fill" style="color:#af52de;font-size:15px;"></i></div>
+                            <div><div class="bsp-card-title">Ekipa in Profili</div><div class="bsp-card-subtitle">Upravljaj s profili ekipe (prikazano na spletni strani)</div></div>
+                        </div>
+                        <div id="bspTeamList"></div>
+                        <button class="bsp-add-btn" onclick="bspAddTeamMember()"><i class="bi bi-person-plus"></i> Dodaj člana</button>
+                        <div style="padding:10px 4px 4px;">
+                            <button onclick="bspSaveTeamToConfig()" style="width:100%;padding:11px;background:#007aff;color:white;border:none;border-radius:10px;font-weight:600;font-size:14px;cursor:pointer;">Shrani ekipo</button>
+                        </div>
+                    </div>
+                </div>
+
             </div><!-- end bsp-body -->
         </div>
     </div>
@@ -3043,6 +3179,7 @@
                 sidebarToggle.addEventListener('click', () => {
                     sidebar.classList.toggle('expanded');
                     localStorage.setItem('sidebarExpanded', sidebar.classList.contains('expanded'));
+                    // Keep business settings panel positioned to the right of the sidebar
                     const bsPanel = document.getElementById('businessSettingsPanel');
                     if (bsPanel && bsPanel.classList.contains('open')) {
                         const w = sidebar.classList.contains('expanded') ? 260 : 72;
@@ -3443,10 +3580,12 @@
             let raw = {};
             try { raw = JSON.parse(localStorage.getItem('bookingSettings') || '{}'); } catch (_) {}
             const s = Object.assign({}, def, raw);
+            // deep merge sub-objects
             s.autoBreak         = Object.assign({}, def.autoBreak,         raw.autoBreak         || {});
             s.seasonalSchedule  = Object.assign({}, def.seasonalSchedule,  raw.seasonalSchedule  || {});
             s.peakHourPricing   = Object.assign({}, def.peakHourPricing,   raw.peakHourPricing   || {});
             s.weekendPricing    = Object.assign({}, def.weekendPricing,     raw.weekendPricing    || {});
+            // per-day: merge with DAY_DEFAULTS then saved
             const savedDays = raw.workingHoursByDay || {};
             const legacyDays = (() => { try { return JSON.parse(localStorage.getItem('workingHoursByDay') || '{}'); } catch(_){return {};} })();
             s.workingHoursByDay = {};
@@ -3456,6 +3595,7 @@
                 const fromDefault = DAY_DEFAULTS[k];
                 s.workingHoursByDay[k] = fromSaved || fromLegacy || { ...fromDefault };
             });
+            // ensure arrays
             if (!Array.isArray(s.dateExceptions))  s.dateExceptions  = [];
             if (!Array.isArray(s.dateOverrides))   s.dateOverrides   = [];
             if (!Array.isArray(s.promoIntervals))  s.promoIntervals  = [];
@@ -3477,6 +3617,7 @@
                 { key: 0, name: 'Nedelja'    },
             ];
 
+            // ── Tab 1: Working days grid ──────────────────────────
             const grid = document.getElementById('workingDaysGrid');
             if (grid) {
                 grid.innerHTML = '';
@@ -3497,6 +3638,7 @@
                 });
             }
 
+            // ── Auto break ───────────────────────────────────────
             const setVal = (id, v) => { const el = document.getElementById(id); if (el) el.value = v; };
             const setChk = (id, v) => { const el = document.getElementById(id); if (el) el.checked = !!v; };
             const showHide = (id, show) => { const el = document.getElementById(id); if (el) el.style.display = show ? 'block' : 'none'; };
@@ -3505,9 +3647,13 @@
             setVal('autoBreakStart',     s.autoBreak.start);
             setVal('autoBreakEnd',       s.autoBreak.end);
             showHide('autoBreakDetails', s.autoBreak.enabled);
+
+            // ── Multi-day ─────────────────────────────────────────
             setChk('allowMultiDayAppointments', s.allowMultiDayAppointments);
             setVal('maxAppointmentDays',         s.maxAppointmentDays);
             showHide('maxDaysRow', s.allowMultiDayAppointments);
+
+            // ── Tab 2: Exceptions & Seasons ───────────────────────
             setChk('seasonalEnabled',       s.seasonalSchedule.enabled);
             setVal('seasonSummerStart',     s.seasonalSchedule.summerStart);
             setVal('seasonSummerEnd',       s.seasonalSchedule.summerEnd);
@@ -3516,10 +3662,13 @@
             showHide('seasonalDetails', s.seasonalSchedule.enabled);
             bspRenderExceptions();
             bspRenderOverrides();
+
+            // ── Tab 3: Capacity ───────────────────────────────────
             setVal('parallelClients',    s.parallelClients);
             setVal('maxBookingsPerDay',  s.maxBookingsPerDay);
             setChk('autoAssignEmployee', s.autoAssignEmployee);
-            bspRenderEmployees();
+
+            // ── Tab 4: Rules ──────────────────────────────────────
             setVal('bufferBefore',           s.bufferBefore);
             setVal('bufferAfter',            s.bufferAfter);
             setVal('minLeadTime',            s.minLeadTime);
@@ -3527,6 +3676,8 @@
             setVal('blockLastMinutes',       s.blockLastMinutes);
             setVal('minDuration',            s.minDuration);
             setVal('maxActivePerClient',     s.maxActiveBookingsPerClient);
+
+            // ── Tab 5: Pricing ────────────────────────────────────
             setChk('peakPricingEnabled',     s.peakHourPricing.enabled);
             setVal('peakMultiplier',         s.peakHourPricing.multiplier);
             setVal('peakStart',              s.peakHourPricing.start);
@@ -3536,6 +3687,8 @@
             setVal('weekendMultiplier',      s.weekendPricing.multiplier);
             showHide('weekendPricingDetails',s.weekendPricing.enabled);
             bspRenderPromos();
+
+            // ── Tab 6: Smart features ─────────────────────────────
             setChk('waitlistEnabled',        s.waitlistEnabled);
             setChk('autoOfferOnCancel',      s.autoOfferOnCancel);
             setChk('autoFillEnabled',        s.autoFillEnabled);
@@ -3545,8 +3698,11 @@
             setVal('fragmentGapMinutes',     s.fragmentGapMinutes);
             showHide('fragmentGapRow', s.preventFragmentation);
             bspRenderLocations();
+            bspRenderServices();
+            bspRenderTeam();
         }
 
+        // ── Dynamic list renderers ────────────────────────────────────────────────
         function bspRenderExceptions() {
             const el = document.getElementById('dateExceptionsList');
             if (!el || !_bspData) return;
@@ -3629,28 +3785,148 @@
             document.getElementById('newPromoLabel').value = '';
         }
 
-        const _EMP_COLORS = ['#007aff','#34c759','#ff9500','#ff3b30','#af52de','#5ac8fa','#ff2d55','#a2845e'];
-        function bspRenderEmployees() {
-            const el = document.getElementById('employeesList');
-            if (!el || !_bspData) return;
-            el.innerHTML = _bspData.employees.map((emp, i) => `
-                <div class="bsp-list-item">
-                    <span class="emp-dot" style="background:${emp.color || _EMP_COLORS[i % _EMP_COLORS.length]};"></span>
-                    <div style="flex:1;min-width:0;">
-                        <div style="font-size:14px;font-weight:500;">${emp.name}</div>
-                        <div style="font-size:12px;color:#8e8e93;">${emp.services ? emp.services.join(', ') : 'Vse storitve'}</div>
+        // ── HTML escape helper ─────────────────────────────────────────────────
+        function _escH(s) { return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+        // ── Services management (syncs with SITE_CONFIG.servicesSection.items) ──
+        function bspRenderServices() {
+            const el = document.getElementById('bspServicesList');
+            if (!el) return;
+            const items = window.SITE_CONFIG?.servicesSection?.items || [];
+            if (items.length === 0) {
+                el.innerHTML = '<p style="font-size:13px;color:#8e8e93;padding:8px 0;">Ni dodanih storitev. Klikni + Dodaj storitev.</p>';
+                return;
+            }
+            el.innerHTML = items.map((svc, i) => {
+                let durVal = svc.duration || 30, durUnit = 'min';
+                if (durVal >= 1440 && durVal % 1440 === 0) { durVal = durVal / 1440; durUnit = 'dni'; }
+                else if (durVal >= 60 && durVal % 60 === 0) { durVal = durVal / 60; durUnit = 'ure'; }
+                return `
+                <div class="bsp-list-item" style="flex-direction:column;align-items:stretch;gap:8px;padding:12px 14px;" data-svc-idx="${i}">
+                    <div style="display:flex;gap:8px;align-items:center;justify-content:space-between;">
+                        <span style="font-size:12px;font-weight:600;color:#8e8e93;">Storitev ${i+1}</span>
+                        <button class="bsp-list-del" onclick="bspDelService(${i})"><i class="bi bi-trash3"></i></button>
                     </div>
-                    <button class="bsp-list-del" onclick="bspDelEmployee(${i})"><i class="bi bi-trash3"></i></button>
-                </div>`).join('') || '<p style="font-size:13px;color:#8e8e93;padding:8px 0;">Ni dodanih zaposlenih.</p>';
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+                        <div><label style="font-size:11px;color:#8e8e93;display:block;margin-bottom:3px;">Ime storitve</label>
+                        <input type="text" class="bsp-input svc-name" value="${_escH(svc.name||'')}" style="width:100%;box-sizing:border-box;" placeholder="Npr. Striženje"></div>
+                        <div><label style="font-size:11px;color:#8e8e93;display:block;margin-bottom:3px;">Cena</label>
+                        <input type="text" class="bsp-input svc-price" value="${_escH(svc.price||'')}" style="width:100%;box-sizing:border-box;" placeholder="€15"></div>
+                    </div>
+                    <div style="display:grid;grid-template-columns:1fr auto;gap:8px;align-items:end;">
+                        <div><label style="font-size:11px;color:#8e8e93;display:block;margin-bottom:3px;">Opis</label>
+                        <input type="text" class="bsp-input svc-desc" value="${_escH(svc.desc||'')}" style="width:100%;box-sizing:border-box;" placeholder="Kratek opis storitve"></div>
+                        <div><label style="font-size:11px;color:#8e8e93;display:block;margin-bottom:3px;">Trajanje</label>
+                        <div style="display:flex;gap:4px;">
+                            <input type="number" class="bsp-input svc-dur-val" value="${durVal}" min="1" style="width:60px;text-align:center;">
+                            <select class="bsp-input svc-dur-unit" style="width:62px;">
+                                <option value="min" ${durUnit==='min'?'selected':''}>min</option>
+                                <option value="ure" ${durUnit==='ure'?'selected':''}>ure</option>
+                                <option value="dni" ${durUnit==='dni'?'selected':''}>dni</option>
+                            </select>
+                        </div></div>
+                    </div>
+                </div>`;
+            }).join('');
         }
-        function bspDelEmployee(i) { if (_bspData) { _bspData.employees.splice(i, 1); bspRenderEmployees(); } }
-        function bspAddEmployee() {
-            if (!_bspData) return;
-            const name = prompt('Ime zaposlenega:');
-            if (!name || !name.trim()) return;
-            const color = _EMP_COLORS[_bspData.employees.length % _EMP_COLORS.length];
-            _bspData.employees.push({ id: Date.now().toString(36), name: name.trim(), color, services: [], autoAssign: true });
-            bspRenderEmployees();
+        function bspCollectServices() {
+            const items = [];
+            document.querySelectorAll('#bspServicesList [data-svc-idx]').forEach(row => {
+                const name  = row.querySelector('.svc-name')?.value?.trim() || '';
+                const price = row.querySelector('.svc-price')?.value?.trim() || '';
+                const desc  = row.querySelector('.svc-desc')?.value?.trim() || '';
+                const durVal  = parseInt(row.querySelector('.svc-dur-val')?.value || '30') || 30;
+                const durUnit = row.querySelector('.svc-dur-unit')?.value || 'min';
+                const mult  = durUnit === 'dni' ? 1440 : durUnit === 'ure' ? 60 : 1;
+                items.push({ name, price, desc, duration: durVal * mult });
+            });
+            return items;
+        }
+        function bspDelService(i) {
+            if (!window.SITE_CONFIG?.servicesSection) return;
+            const items = bspCollectServices();
+            items.splice(i, 1);
+            window.SITE_CONFIG.servicesSection.items = items;
+            bspRenderServices();
+        }
+        function bspAddServiceItem() {
+            if (!window.SITE_CONFIG) return;
+            if (!window.SITE_CONFIG.servicesSection) window.SITE_CONFIG.servicesSection = { title: 'Storitve', items: [] };
+            window.SITE_CONFIG.servicesSection.items = bspCollectServices();
+            window.SITE_CONFIG.servicesSection.items.push({ name: 'Nova storitev', price: '€0', duration: 30, desc: '' });
+            bspRenderServices();
+        }
+        async function bspSaveServicesToConfig() {
+            if (!window.SITE_CONFIG) { alert('Konfiguracija ni naložena.'); return; }
+            if (!window.SITE_CONFIG.servicesSection) window.SITE_CONFIG.servicesSection = { title: 'Storitve', items: [] };
+            window.SITE_CONFIG.servicesSection.items = bspCollectServices();
+            try {
+                if (window.StorageManager) await StorageManager.save('site_config', window.SITE_CONFIG);
+                if (window.CloudSync && typeof window.CloudSync.saveToCloud === 'function') await window.CloudSync.saveToCloud(window.SITE_CONFIG);
+                if (typeof showToast === 'function') showToast('✅ Storitve shranjene!');
+                else alert('Storitve shranjene.');
+            } catch(e) { alert('Napaka pri shranjevanju: ' + e.message); }
+        }
+
+        // ── Team management (syncs with SITE_CONFIG.barbersSection.list) ─────────
+        function bspRenderTeam() {
+            const el = document.getElementById('bspTeamList');
+            if (!el) return;
+            const list = window.SITE_CONFIG?.barbersSection?.list || [];
+            if (list.length === 0) {
+                el.innerHTML = '<p style="font-size:13px;color:#8e8e93;padding:8px 0;">Ni dodanih članov ekipe. Klikni + Dodaj člana.</p>';
+                return;
+            }
+            el.innerHTML = list.map((m, i) => `
+                <div class="bsp-list-item" style="flex-direction:column;align-items:stretch;gap:8px;padding:12px 14px;" data-team-idx="${i}">
+                    <div style="display:flex;gap:8px;align-items:center;justify-content:space-between;">
+                        <span style="font-size:12px;font-weight:600;color:#8e8e93;">Član ${i+1}</span>
+                        <button class="bsp-list-del" onclick="bspDelTeamMember(${i})"><i class="bi bi-trash3"></i></button>
+                    </div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+                        <div><label style="font-size:11px;color:#8e8e93;display:block;margin-bottom:3px;">Ime</label>
+                        <input type="text" class="bsp-input team-name" value="${_escH(m.name||'')}" style="width:100%;box-sizing:border-box;" placeholder="Ime člana"></div>
+                        <div><label style="font-size:11px;color:#8e8e93;display:block;margin-bottom:3px;">Vloga</label>
+                        <input type="text" class="bsp-input team-role" value="${_escH(m.role||'')}" style="width:100%;box-sizing:border-box;" placeholder="npr. Frizer"></div>
+                    </div>
+                    <div><label style="font-size:11px;color:#8e8e93;display:block;margin-bottom:3px;">URL slike</label>
+                    <input type="text" class="bsp-input team-img" value="${_escH(m.img&&m.img!=='https://via.placeholder.com/300'?m.img:'')}" style="width:100%;box-sizing:border-box;" placeholder="https://..."></div>
+                </div>`).join('');
+        }
+        function bspCollectTeam() {
+            const items = [];
+            document.querySelectorAll('#bspTeamList [data-team-idx]').forEach(row => {
+                const name = row.querySelector('.team-name')?.value?.trim() || '';
+                const role = row.querySelector('.team-role')?.value?.trim() || '';
+                const img  = row.querySelector('.team-img')?.value?.trim() || '';
+                items.push({ name, role, img: img || 'https://via.placeholder.com/300' });
+            });
+            return items;
+        }
+        function bspDelTeamMember(i) {
+            if (!window.SITE_CONFIG?.barbersSection) return;
+            const list = bspCollectTeam();
+            list.splice(i, 1);
+            window.SITE_CONFIG.barbersSection.list = list;
+            bspRenderTeam();
+        }
+        function bspAddTeamMember() {
+            if (!window.SITE_CONFIG) return;
+            if (!window.SITE_CONFIG.barbersSection) window.SITE_CONFIG.barbersSection = { title: 'Ekipa', list: [] };
+            window.SITE_CONFIG.barbersSection.list = bspCollectTeam();
+            window.SITE_CONFIG.barbersSection.list.push({ name: 'Nov član', role: 'Frizer', img: '' });
+            bspRenderTeam();
+        }
+        async function bspSaveTeamToConfig() {
+            if (!window.SITE_CONFIG) { alert('Konfiguracija ni naložena.'); return; }
+            if (!window.SITE_CONFIG.barbersSection) window.SITE_CONFIG.barbersSection = { title: 'Ekipa', list: [] };
+            window.SITE_CONFIG.barbersSection.list = bspCollectTeam();
+            try {
+                if (window.StorageManager) await StorageManager.save('site_config', window.SITE_CONFIG);
+                if (window.CloudSync && typeof window.CloudSync.saveToCloud === 'function') await window.CloudSync.saveToCloud(window.SITE_CONFIG);
+                if (typeof showToast === 'function') showToast('✅ Ekipa shranjena!');
+                else alert('Ekipa shranjena.');
+            } catch(e) { alert('Napaka pri shranjevanju: ' + e.message); }
         }
 
         function bspRenderLocations() {
@@ -3676,6 +3952,7 @@
             bspRenderLocations();
         }
 
+        // ── Show panel ────────────────────────────────────────────────────────────
         function showBusinessSettingsPanel() {
             const panel = document.getElementById('businessSettingsPanel');
             if (!panel) return;
@@ -3687,11 +3964,13 @@
             panel.classList.remove('open');
             panel.style.display = 'block';
             loadBusinessSettingsForm();
+            // Activate first tab
             document.querySelectorAll('.bsp-tab').forEach((t,i) => t.classList.toggle('active', i === 0));
             document.querySelectorAll('.bsp-tab-panel').forEach((p,i) => p.classList.toggle('active', i === 0));
             setTimeout(() => panel.classList.add('open'), 10);
         }
 
+        // ── Save all settings ─────────────────────────────────────────────────────
         async function saveBusinessSettings() {
             if (!_bspData) { alert('Najprej odpri nastavitve.'); return; }
             const s = _bspData;
@@ -3699,6 +3978,8 @@
             const getN = (id, def) => { const v = parseInt(get(id), 10); return isNaN(v) ? def : v; };
             const getF = (id, def) => { const v = parseFloat(get(id)); return isNaN(v) ? def : v; };
             const getC = id => { const el = document.getElementById(id); return el ? el.checked : false; };
+
+            // ── Tab 1: Days ───────────────────────────────────────
             const DAYS_KEYS = [1, 2, 3, 4, 5, 6, 0];
             let allValid = true;
             const daysByKey = {};
@@ -3720,14 +4001,23 @@
                 daysByKey[k] = { enabled, start, end };
             }
             if (!allValid) return;
+
             s.workingHoursByDay   = daysByKey;
             s.autoBreak           = { enabled: getC('autoBreakEnabled'), start: get('autoBreakStart') || '13:00', end: get('autoBreakEnd') || '14:00', label: get('autoBreakLabel') || 'Malica' };
             s.allowMultiDayAppointments = getC('allowMultiDayAppointments');
             s.maxAppointmentDays  = Math.max(1, Math.min(14, getN('maxAppointmentDays', 4)));
+
+            // ── Tab 2: Exceptions & Seasons ───────────────────────
             s.seasonalSchedule    = { enabled: getC('seasonalEnabled'), summerStart: get('seasonSummerStart'), summerEnd: get('seasonSummerEnd'), summerHoursStart: get('seasonSummerStart_h'), summerHoursEnd: get('seasonSummerEnd_h') };
+            // dateExceptions & dateOverrides already in _bspData (managed in-memory)
+
+            // ── Tab 3: Capacity ───────────────────────────────────
             s.parallelClients     = Math.max(1, getN('parallelClients', 1));
             s.maxBookingsPerDay   = Math.max(0, getN('maxBookingsPerDay', 0));
             s.autoAssignEmployee  = getC('autoAssignEmployee');
+            // employees already in _bspData
+
+            // ── Tab 4: Rules ──────────────────────────────────────
             s.bufferBefore              = Math.max(0, getN('bufferBefore', 0));
             s.bufferAfter               = Math.max(0, getN('bufferAfter', 0));
             s.minLeadTime               = Math.max(0, getN('minLeadTime', 120));
@@ -3735,8 +4025,13 @@
             s.blockLastMinutes          = Math.max(0, getN('blockLastMinutes', 0));
             s.minDuration               = Math.max(5, getN('minDuration', 15));
             s.maxActiveBookingsPerClient = Math.max(0, getN('maxActivePerClient', 0));
+
+            // ── Tab 5: Pricing ────────────────────────────────────
             s.peakHourPricing    = { enabled: getC('peakPricingEnabled'), multiplier: getF('peakMultiplier', 1.2), start: get('peakStart') || '12:00', end: get('peakEnd') || '14:00' };
             s.weekendPricing     = { enabled: getC('weekendPricingEnabled'), multiplier: getF('weekendMultiplier', 1.1) };
+            // promoIntervals already in _bspData
+
+            // ── Tab 6: Smart features ─────────────────────────────
             s.waitlistEnabled       = getC('waitlistEnabled');
             s.autoOfferOnCancel     = getC('autoOfferOnCancel');
             s.autoFillEnabled       = getC('autoFillEnabled');
@@ -3744,7 +4039,12 @@
             s.fragmentGapMinutes    = Math.max(5, getN('fragmentGapMinutes', 30));
             s.optimizeOccupancy     = getC('optimizeOccupancy');
             s.groupServices         = getC('groupServices');
+            // locations already in _bspData
+
+            // ── Persist ───────────────────────────────────────────
             try { localStorage.setItem('bookingSettings', JSON.stringify(s)); } catch(e) { console.warn('⚠ localStorage error', e); }
+
+            // Derive global hours for backward compat
             const enabledWD = DAYS_KEYS.filter(k => k >= 1 && k <= 5 && daysByKey[k]?.enabled);
             const startHour = enabledWD.length > 0 ? Math.min(...enabledWD.map(k => parseInt(daysByKey[k].start, 10))) : 9;
             const endHour   = enabledWD.length > 0 ? Math.max(...enabledWD.map(k => parseInt(daysByKey[k].end, 10)))   : 19;
@@ -3752,6 +4052,8 @@
                 localStorage.setItem('workingHoursByDay', JSON.stringify(daysByKey));
                 localStorage.setItem('workingHours', JSON.stringify({ start: `${String(startHour).padStart(2,'0')}:00`, end: `${String(endHour).padStart(2,'0')}:00` }));
             } catch(e) {}
+
+            // Update runtime SITE_CONFIG
             if (!window.SITE_CONFIG || typeof window.SITE_CONFIG !== 'object') window.SITE_CONFIG = {};
             if (!window.SITE_CONFIG.booking) window.SITE_CONFIG.booking = {};
             window.SITE_CONFIG.booking.businessHours           = { start: startHour, end: endHour };
@@ -3763,11 +4065,15 @@
             window.SITE_CONFIG.booking.minLeadTime             = s.minLeadTime;
             window.SITE_CONFIG.booking.maxAdvanceDays          = s.maxAdvanceDays;
             try { localStorage.setItem('site_config_backup', JSON.stringify(window.SITE_CONFIG)); } catch(e) {}
+
+            // Cloud sync
             try {
                 if (window.CloudSync && typeof window.CloudSync.saveToCloud === 'function') {
                     await window.CloudSync.saveToCloud(window.SITE_CONFIG);
                 }
             } catch(e) { console.warn('⚠ Cloud sync failed', e); }
+
+            // Update FullCalendar live
             try {
                 if (window.calendar && typeof window.calendar.setOption === 'function') {
                     const bHoursArr = Object.entries(daysByKey)
@@ -3779,6 +4085,8 @@
                     if (typeof window.calendar.updateSize === 'function') window.calendar.updateSize();
                 }
             } catch(e) { console.warn('⚠ Calendar update failed', e); }
+
+            // Show feedback toast if available, else alert
             if (typeof showToast === 'function') {
                 showToast('✅ Nastavitve rezervacij shranjene!');
             } else {
@@ -3787,6 +4095,7 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
+            // Tab switching
             document.addEventListener('click', e => {
                 const tab = e.target.closest('.bsp-tab');
                 if (tab && tab.closest('#bspTabBar')) {
@@ -3795,6 +4104,7 @@
                     document.querySelectorAll('.bsp-tab-panel').forEach(p => p.classList.toggle('active', p.id === 'bspPanel-' + key));
                 }
             });
+            // Toggle visibility of dependent sections via event delegation
             document.addEventListener('change', e => {
                 const id = e.target.id;
                 const v  = e.target.checked;
@@ -3805,7 +4115,8 @@
                 if (id === 'weekendPricingEnabled')      { const el = document.getElementById('weekendPricingDetails');  if (el) el.style.display = v ? 'block' : 'none'; }
                 if (id === 'preventFragmentation')       { const el = document.getElementById('fragmentGapRow');         if (el) el.style.display = v ? 'block' : 'none'; }
             });
-            document.addEventListener('click', (e) => {
+            // Save button
+            document.addEventListener('click', e => {
                 if (e.target.id === 'saveBusinessSettingsBtn' || e.target.closest('#saveBusinessSettingsBtn')) {
                     saveBusinessSettings();
                 }
@@ -4533,8 +4844,7 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                     console.warn('⚠ Failed to delete from adminSchedule/entries', err);
                 }
 
-                // STEP 6: Save scheduleData
-                // STEP 6: Save scheduleData directly to localStorage (bypass broadcast)
+                // STEP 6: Save scheduleData directly to localStorage
                 console.log(`⏳ Step 6: Saving to localStorage...`);
                 console.log(`📊 scheduleData now has ${scheduleData.events.length} events`);
                 try {
@@ -4744,10 +5054,10 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                     console.log('✅ Set eventStartDate:', startDate, '→ actual value:', startEl.value);
                 }
                 // If endDate provided (from drag selection), use it; otherwise default to startDate
-                const actualEndDate = endDate || startDate;
+                const actualEnDate = endDate || startDate;
                 if (endEl) {
-                    endEl.value = actualEndDate;
-                    console.log('✅ Set eventEndDate:', actualEndDate, '→ actual value:', endEl.value);
+                    endEl.value = actualEnDate;
+                    console.log('✅ Set eventEndDate:', actualEnDate, '→ actual value:', endEl.value);
                 }
             }
             modal.classList.add('show');
@@ -6407,6 +6717,7 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
         window.openAddEventModal = openAddEventModalWithTab;
         console.log('🔧 OVERRIDE SET (at end of script): window.openAddEventModal =', typeof window.openAddEventModal, window.openAddEventModal.name || 'openAddEventModalWithTab');
     </script>
+
 
     <!-- Chart.js for Analytics -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>

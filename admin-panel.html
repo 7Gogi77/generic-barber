@@ -895,13 +895,6 @@
                 <span class="nav-label">Vsebina</span>
             </div>
 
-            <div class="nav-item">
-                <button class="nav-icon" title="Storitve" aria-label="Storitve" onclick="switchTab(event, 'storitve')">
-                    <i class="bi bi-briefcase"></i>
-                </button>
-                <span class="nav-label">Storitve</span>
-            </div>
-
             <div style="flex:1;"></div>
 
             <div class="nav-item">
@@ -1482,85 +1475,6 @@
                 </div>
 
             </div> <!-- END vsebina tab -->
-
-            <!-- ===== TAB 3: STORITVE (SERVICES & BARBERS) ===== -->
-            <div id="storitve" class="tab-content">
-                <h2 style="margin: 0 0 20px 0; color: var(--ios-text-primary, #000); font-size: 22px; font-weight: 700; border-bottom: none; padding-bottom: 0;">Storitve in Ekipa</h2>
-
-                <!-- SERVICES SECTION -->
-                <div class="admin-section">
-                    <div class="section-title">Storitve in Cene</div>
-                    <p style="font-size: 13px; color: var(--ios-text-secondary, #8E8E93); margin-bottom: 16px;">Upravljaj s storitvami in cenami</p>
-                    <div id="servicesContainer"></div>
-                    <div class="form-row" style="gap: 10px;">
-                        <button class="save-btn" onclick="addService()" style="background: var(--ios-green, #34C759); flex: 1;">+ Dodaj Storitev</button>
-                        <button class="save-btn" onclick="removeService()" style="background: var(--ios-red, #FF3B30); flex: 1;">- Odstrani Storitev</button>
-                        <button class="save-btn" onclick="saveServices()" style="flex: 2;">Shrani Storitve</button>
-                    </div>
-                </div>
-
-                <!-- BARBERS SECTION -->
-                <div class="admin-section">
-                    <div class="section-title">Ekipa in Profili</div>
-                    <p style="font-size: 13px; color: var(--ios-text-secondary, #8E8E93); margin-bottom: 16px;">Upravljaj s profili ekipe</p>
-                    <div id="barbersContainer"></div>
-                    <div class="form-row" style="gap: 10px;">
-                        <button class="save-btn" onclick="addBarber()" style="background: var(--ios-green, #34C759); flex: 1;">+ Dodaj Člana</button>
-                        <button class="save-btn" onclick="removeBarber()" style="background: var(--ios-red, #FF3B30); flex: 1;">- Odstrani Člana</button>
-                        <button class="save-btn" onclick="saveBarbers()" style="flex: 2;">Shrani Ekipo</button>
-                    </div>
-                </div>
-
-                <!-- BUSINESS HOURS SECTION -->
-                <div class="admin-section">
-                    <div class="section-title">⏰ Urnik dela</div>
-                    <p style="font-size: 13px; color: #7f8c8d; margin-bottom: 18px;">Nastavi svoje delovne dneve in ure</p>
-
-                    <div class="form-row">
-                        <div class="form-group-admin">
-                            <label class="form-label-admin">Naslov (Index)</label>
-                            <input id="homeHoursTitle" type="text" class="form-input-admin" placeholder="Urnik dela">
-                        </div>
-                        <div class="form-group-admin">
-                            <label class="form-label-admin">Podnaslov (Index)</label>
-                            <input id="homeHoursSubtitle" type="text" class="form-input-admin" placeholder="Nastavi svoje delovne dneve in ure">
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group-admin">
-                            <label class="form-label-admin">Oznaka (Delovni čas)</label>
-                            <input id="homeHoursLabel" type="text" class="form-input-admin" placeholder="Delovni čas">
-                        </div>
-                        <div class="form-group-admin">
-                            <label class="form-label-admin">Oznaka (Delovni dnevi)</label>
-                            <input id="homeDaysLabel" type="text" class="form-input-admin" placeholder="Delovni dnevi">
-                        </div>
-                    </div>
-                    
-                    <!-- Working Days & Hours managed in Poslovni Panel -->
-                    <div style="margin-bottom: 22px; padding: 14px; background: rgba(0,122,255,0.07); border-radius: 8px; border-left: 4px solid #007AFF;">
-                        <p style="margin: 0; font-size: 13px; color: #007AFF;">
-                            <i class="bi bi-info-circle"></i>
-                            <strong>Delovni čas in delovni dnevi</strong> se nastavljajo v
-                            <a href="poslovni-panel.3f8a1c.html" style="color:#007AFF;">Poslovnem Panelu → Delovni čas</a>.
-                        </p>
-                    </div>
-
-                    <!-- Default Business Hours -->
-                    <div class="form-row">
-                        <div class="form-group-admin">
-                            <label class="form-label-admin">E-pošta Lasnika</label>
-                            <input id="ownerEmail" type="email" class="form-input-admin">
-                        </div>
-                        <div class="form-group-admin">
-                            <label class="form-label-admin">Telefonska Številka Lasnika</label>
-                            <input id="ownerPhone" type="tel" class="form-input-admin">
-                        </div>
-                    </div>
-                    <button class="save-btn" onclick="saveBooking()">Shrani Nastavitve</button>
-                </div>
-
-            </div> <!-- END storitve tab -->
 
             <!-- ===== TAB 4: PANEL (BUSINESS ANALYTICS) ===== -->
             <div id="panel" class="tab-content" data-enabled="false" style="display:none;">
@@ -2498,18 +2412,6 @@
                 }
             }
 
-            // Booking
-            document.getElementById('businessStart').value = (SITE_CONFIG.booking.businessHours?.start) || 9;
-            document.getElementById('businessEnd').value = (SITE_CONFIG.booking.businessHours?.end) || 19;
-            document.getElementById('ownerEmail').value = (SITE_CONFIG.ownerContact?.email) || '';
-            document.getElementById('ownerPhone').value = (SITE_CONFIG.ownerContact?.phone) || '';
-
-            const bh = SITE_CONFIG.businessHoursSection || {};
-            document.getElementById('homeHoursTitle').value = bh.title || 'Urnik dela';
-            document.getElementById('homeHoursSubtitle').value = bh.subtitle || 'Nastavi svoje delovne dneve in ure';
-            document.getElementById('homeHoursLabel').value = bh.hoursLabel || 'Delovni čas';
-            document.getElementById('homeDaysLabel').value = bh.daysLabel || 'Delovni dnevi';
-
             // Booking Page Content (rezervacija.html)
             const bp = SITE_CONFIG.bookingPage || {};
             document.getElementById('bookingPageTitle').value = bp.pageTitle || 'Rezervacija termina';
@@ -2529,12 +2431,6 @@
             document.getElementById('bookingBtnConfirm').value = bp.confirmButton || 'Potrdi rezervacijo';
             document.getElementById('bookingBtnNew').value = bp.newButton || 'Nova rezervacija';
 
-            // Services
-            loadServices();
-
-            // Barbers
-            loadBarbers();
-
             // Gallery
             loadGallery();
             
@@ -2543,151 +2439,6 @@
 
             // Working Days
             loadWorkingDays();
-        }
-
-        // Load services
-        function loadServices() {
-            const container = document.getElementById('servicesContainer');
-            container.innerHTML = '';
-            SITE_CONFIG.servicesSection.items.forEach((service, idx) => {
-                // Decompose total minutes into val + unit for the picker
-                const dur = service.duration || 30;
-                let durVal, durUnit;
-                if (dur % 1440 === 0 && dur >= 1440) { durVal = dur / 1440; durUnit = 'dni'; }
-                else if (dur % 60 === 0 && dur >= 60) { durVal = dur / 60; durUnit = 'ure'; }
-                else { durVal = dur; durUnit = 'min'; }
-
-                container.innerHTML += `
-                    <div class="service-item">
-                        <div class="form-row">
-                            <input type="text" class="form-input-admin service-name-${idx}" value="${service.name}" placeholder="Ime storitve">
-                            <input type="text" class="form-input-admin service-price-${idx}" value="${service.price}" placeholder="Cena">
-                        </div>
-                        <div class="form-row">
-                            <div class="form-group-admin">
-                                <label class="form-label-admin">Trajanje</label>
-                                <div style="display:flex;gap:6px;align-items:center;">
-                                    <input type="number" class="form-input-admin service-dur-val-${idx}" value="${durVal}" min="1" style="width:75px;">
-                                    <select class="form-input-admin service-dur-unit-${idx}" style="width:85px;">
-                                        <option value="min" ${durUnit==='min'?'selected':''}>min</option>
-                                        <option value="ure" ${durUnit==='ure'?'selected':''}>ure</option>
-                                        <option value="dni" ${durUnit==='dni'?'selected':''}>dni</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="form-row full">
-                            <input type="text" class="form-input-admin service-desc-${idx}" value="${service.desc}" placeholder="Opis">
-                        </div>
-                    </div>
-                `;
-            });
-        }
-
-        // Save services
-        function saveServices() {
-            SITE_CONFIG.servicesSection.items.forEach((service, idx) => {
-                const nameEl = document.querySelector('.service-name-' + idx);
-                const priceEl = document.querySelector('.service-price-' + idx);
-                const durValEl = document.querySelector('.service-dur-val-' + idx);
-                const durUnitEl = document.querySelector('.service-dur-unit-' + idx);
-                const descEl = document.querySelector('.service-desc-' + idx);
-                
-                if (nameEl) service.name = nameEl.value;
-                if (priceEl) service.price = priceEl.value;
-                if (durValEl && durUnitEl) {
-                    const durVal = parseInt(durValEl.value) || 1;
-                    const durUnit = durUnitEl.value || 'min';
-                    const multiplier = durUnit === 'dni' ? 1440 : durUnit === 'ure' ? 60 : 1;
-                    service.duration = durVal * multiplier;
-                }
-                if (descEl) service.desc = descEl.value;
-            });
-            saveConfig();
-        }
-
-        // Load barbers
-        function loadBarbers() {
-            const container = document.getElementById('barbersContainer');
-            container.innerHTML = '';
-            SITE_CONFIG.barbersSection.list.forEach((barber, idx) => {
-                container.innerHTML += `
-                    <div class="service-item">
-                        <div class="form-row">
-                            <input type="text" class="form-input-admin barber-name-${idx}" value="${barber.name}" placeholder="Ime člana">
-                            <input type="text" class="form-input-admin barber-role-${idx}" value="${barber.role}" placeholder="Vloga">
-                        </div>
-                        <div class="form-row full">
-                            <div style="flex:1;">
-                                <label class="form-label-admin" style="font-size:11px; margin-bottom:5px;">Slika člana (datoteka):</label>
-                                <input type="file" accept="image/*" class="form-input-admin barber-img-input-${idx}" placeholder="Izberi sliko" style="margin-bottom:5px;">
-                                <button class="save-btn" onclick="uploadBarberImage(${idx})" style="font-size:11px; padding:5px 10px; background-color:#0066cc;">Naloži</button>
-                            </div>
-                            <img class="barber-img-preview-${idx}" src="${barber.img}" alt="Barber preview" style="max-height:80px; max-width:100px; object-fit:contain; display:${barber.img && barber.img !== 'https://via.placeholder.com/300' ? 'block' : 'none'}; margin:5px; border:1px solid #ddd; padding:3px;">
-                        </div>
-                        <input type="text" class="form-input-admin barber-img-${idx}" value="${barber.img}" placeholder="URL slike" style="display:none;">
-                    </div>
-                `;
-            });
-        }
-
-        // Add new service
-        function addService() {
-            SITE_CONFIG.servicesSection.items.push({
-                name: 'Nova Storitev',
-                price: '$0',
-                duration: 30,
-                desc: 'Opis storitve'
-            });
-            loadServices();
-            showNotification('Storitev dodana', 'success');
-        }
-
-        // Remove last service
-        function removeService() {
-            if (SITE_CONFIG.servicesSection.items.length > 1) {
-                SITE_CONFIG.servicesSection.items.pop();
-                loadServices();
-                showNotification('Storitev odstranjena', 'success');
-            } else {
-                showNotification('Morali ste imeti vsaj eno storitev', 'error');
-            }
-        }
-
-        // Save barbers
-        function saveBarbers() {
-            SITE_CONFIG.barbersSection.list.forEach((barber, idx) => {
-                const nameEl = document.querySelector('.barber-name-' + idx);
-                const roleEl = document.querySelector('.barber-role-' + idx);
-                const imgEl = document.querySelector('.barber-img-' + idx);
-                
-                if (nameEl) barber.name = nameEl.value;
-                if (roleEl) barber.role = roleEl.value;
-                if (imgEl) barber.img = imgEl.value;
-            });
-            saveConfig();
-        }
-
-        // Add new barber
-        function addBarber() {
-            SITE_CONFIG.barbersSection.list.push({
-                name: 'Nov član',
-                role: 'Strokovnjak',
-                img: 'https://via.placeholder.com/300'
-            });
-            loadBarbers();
-            showNotification('Član ekipe dodan', 'success');
-        }
-
-        // Remove last barber
-        function removeBarber() {
-            if (SITE_CONFIG.barbersSection.list.length > 1) {
-                SITE_CONFIG.barbersSection.list.pop();
-                loadBarbers();
-                showNotification('Član ekipe odstranjen', 'success');
-            } else {
-                showNotification('Morali ste imeti vsaj enega člana ekipe', 'error');
-            }
         }
 
         // Load gallery
@@ -3002,20 +2753,13 @@
             if (bookingTitleInput) {
                 SITE_CONFIG.booking.title = bookingTitleInput.value;
             }
-            
             // Ensure nested objects exist
-            if (!SITE_CONFIG.booking.businessHours) SITE_CONFIG.booking.businessHours = {};
             if (!SITE_CONFIG.ownerContact) SITE_CONFIG.ownerContact = {};
-            if (!SITE_CONFIG.businessHoursSection) SITE_CONFIG.businessHoursSection = {};
-            
-            SITE_CONFIG.booking.businessHours.start = parseInt(document.getElementById('businessStart').value) || 9;
-            SITE_CONFIG.booking.businessHours.end = parseInt(document.getElementById('businessEnd').value) || 19;
-            SITE_CONFIG.ownerContact.email = document.getElementById('ownerEmail').value;
-            SITE_CONFIG.ownerContact.phone = document.getElementById('ownerPhone').value;
-            SITE_CONFIG.businessHoursSection.title = document.getElementById('homeHoursTitle').value || 'Urnik dela';
-            SITE_CONFIG.businessHoursSection.subtitle = document.getElementById('homeHoursSubtitle').value || 'Nastavi svoje delovne dneve in ure';
-            SITE_CONFIG.businessHoursSection.hoursLabel = document.getElementById('homeHoursLabel').value || 'Delovni čas';
-            SITE_CONFIG.businessHoursSection.daysLabel = document.getElementById('homeDaysLabel').value || 'Delovni dnevi';
+            // Owner contact synced from Vsebina tab (contactEmail/contactPhone)
+            const cEmail = document.getElementById('contactEmail');
+            const cPhone = document.getElementById('contactPhone');
+            if (cEmail) SITE_CONFIG.ownerContact.email = cEmail.value;
+            if (cPhone) SITE_CONFIG.ownerContact.phone = cPhone.value;
             saveConfig();
         }
 
