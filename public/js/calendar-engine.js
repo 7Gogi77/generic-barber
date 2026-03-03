@@ -528,9 +528,15 @@ const CalendarEngine = {
       const timeGridSlotMax = '24:00:00';
       const initialScrollTime = options.scrollTime || (window.SITE_CONFIG && window.SITE_CONFIG.booking && window.SITE_CONFIG.booking.scrollTime) || '12:00:00';
 
+      const _isMobile = window.innerWidth <= 768;
+
       const calendar = new FullCalendar.Calendar(containerElement, {
-        initialView: options.initialView || 'dayGridMonth',
-        headerToolbar: {
+        initialView: options.initialView || (_isMobile ? 'listWeek' : 'dayGridMonth'),
+        headerToolbar: _isMobile ? {
+          left: 'prev,next',
+          center: 'title',
+          right: 'listWeek,timeGridDay'
+        } : {
           left: 'prev,next today',
           center: 'title',
           right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'

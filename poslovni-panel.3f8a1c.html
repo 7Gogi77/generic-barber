@@ -74,6 +74,11 @@
                     <span>Nalagam koledar...</span>
                 </div>
             </div>
+
+            <!-- Mobile FAB: floating add button -->
+            <button id="mobileFab" onclick="openAddEventModal && openAddEventModal(new Date().toISOString().slice(0,10))" title="Dodaj termin" aria-label="Dodaj termin">
+                <i class="bi bi-plus-lg"></i>
+            </button>
             <div id="debugPanel" style="position: fixed; bottom: 0; right: 0; background: rgba(0,0,0,0.8); color: #0f0; font-family: monospace; font-size: 10px; max-height: 200px; overflow-y: auto; padding: 10px; width: 400px; display: none; z-index: 999;">
                 <strong>DEBUG LOG:</strong>
                 <div id="debugOutput"></div>

@@ -1996,3 +1996,91 @@
                 touch-action: pan-x pan-y;
             }
         }
+
+/* ============================================
+   MOBILE FAB + CALENDAR IMPROVEMENTS
+   ============================================ */
+
+#mobileFab {
+    display: none;
+    position: fixed;
+    bottom: calc(24px + env(safe-area-inset-bottom));
+    right: 20px;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--ios-blue);
+    color: #fff;
+    border: none;
+    font-size: 26px;
+    box-shadow: 0 4px 16px rgba(0,122,255,0.4);
+    z-index: 1500;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    -webkit-tap-highlight-color: transparent;
+}
+
+#mobileFab:active {
+    transform: scale(0.91);
+    box-shadow: 0 2px 8px rgba(0,122,255,0.25);
+}
+
+@media (min-width: 769px) {
+    #mobileFab { display: none !important; }
+}
+
+@media (max-width: 768px) {
+    #mobileFab { display: flex !important; }
+
+    /* Fill available screen height */
+    #scheduleCalendar {
+        height: calc(100dvh - 60px) !important;
+        min-height: 0 !important;
+        max-height: none !important;
+    }
+
+    /* Bigger list rows — easy to tap */
+    .fc .fc-list-event td {
+        padding: 12px 14px !important;
+        font-size: 14px !important;
+    }
+    .fc .fc-list-event-title a {
+        font-size: 14px !important;
+        font-weight: 600 !important;
+    }
+    .fc .fc-list-event-time {
+        font-size: 12px !important;
+        white-space: nowrap;
+        padding-right: 10px !important;
+    }
+    .fc .fc-list-day-cushion {
+        padding: 8px 14px !important;
+        font-size: 13px !important;
+        font-weight: 700 !important;
+        background: #f2f2f7 !important;
+        position: sticky;
+        top: 0;
+        z-index: 2;
+    }
+    .fc .fc-list-empty {
+        font-size: 15px !important;
+        padding: 40px 16px !important;
+    }
+
+    /* Hide today button — prev/next is enough on small screen */
+    .fc .fc-today-button { display: none !important; }
+
+    /* Taller time slots in day view for easier tapping */
+    .fc .fc-timegrid-slot { height: 44px !important; }
+    .fc .fc-timegrid-axis-cushion { font-size: 11px !important; }
+
+    /* Pad bottom so FAB doesn't cover last event */
+    .fc .fc-scroller-liquid-absolute { padding-bottom: 80px !important; }
+    .fc .fc-list-table tbody::after {
+        content: '';
+        display: block;
+        height: 80px;
+    }
+}
