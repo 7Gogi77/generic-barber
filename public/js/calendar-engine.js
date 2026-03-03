@@ -652,6 +652,8 @@ const CalendarEngine = {
         // Event handling - NOTE: These are overridden by poslovni-panel.html
         // Only used in admin-panel.html - check if modal exists before calling
         select: (selectInfo) => {
+          // On mobile: completely disable selection — no highlights, no modal, nothing
+          if (_isMobile) return false;
           if (window._skipNextFcSelect) {
             window._skipNextFcSelect = false;
             return false;
@@ -1008,6 +1010,14 @@ const CalendarEngine = {
         },
 
         datesSet: (arg) => {
+
+          // On mobile: clear any inline backgroundColor that may have been set by a previous
+          // select/scroll event — this prevents stale blue cell highlights from persisting
+          if (_isMobile) {
+            containerElement.querySelectorAll('[data-date]').forEach(cell => {
+              cell.style.backgroundColor = '';
+            });
+          }
 
           // Update view-specific classes so styles can be scoped (dayGrid vs timeGrid)
           // Restore granular classes so week and day can have separate CSS
