@@ -2141,4 +2141,54 @@
     /* Customer table scrollable wrapper */
     #customerListContent { overflow-x: auto !important; }
     .customer-table { min-width: 280px; }
+
+    /* Customer cards (mobile) */
+    .customer-cards {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        padding: 12px;
+    }
+    .customer-card {
+        background: #fff;
+        border: 1px solid #e5e5ea;
+        border-radius: 12px;
+        padding: 14px 16px;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    }
+    .customer-card-name {
+        font-size: 16px;
+        font-weight: 700;
+        color: #1c1c1e;
+        margin-bottom: 6px;
+    }
+    .customer-card-row {
+        font-size: 13px;
+        color: #3a3a3c;
+        margin-bottom: 3px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        word-break: break-all;
+    }
+    .customer-card-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 10px;
+        padding-top: 8px;
+        border-top: 1px solid #f2f2f7;
+    }
+    .customer-card-count {
+        font-size: 12px;
+        color: #8e8e93;
+    }
+
+    /* Compact calendar view buttons on mobile so all 4 fit */
+    .fc .fc-button-group .fc-button,
+    .fc .fc-button {
+        padding: 6px 8px !important;
+        font-size: 11px !important;
+    }
+    .fc .fc-toolbar-chunk { flex-wrap: wrap; gap: 4px; }
 }

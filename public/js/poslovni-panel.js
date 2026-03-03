@@ -523,13 +523,36 @@
                         return ((c.fullName||'') + ' ' + (c.email||'') + ' ' + (c.phone||'')).toLowerCase().includes(term);
                     });
 
-                    let table = '<div style="overflow:auto; overflow-x:auto; max-height: calc(100% - 160px);"><table class="customer-table"><thead><tr><th>Ime</th><th>Priimek</th><th class="col-hide-xs">Email</th><th class="col-hide-xs">Telefon</th><th style="text-align:right">Terminov</th><th style="text-align:right">Akcije</th></tr></thead><tbody>';
-                    rows.forEach((c, idx) => {
-                        table += `<tr class="customer-row" data-idx="${idx}"><td>${c.firstName||'-'}</td><td>${c.surname||'-'}</td><td class="col-hide-xs">${c.email||'-'}</td><td class="col-hide-xs">${c.phone||'-'}</td><td style="text-align:right">${c.count||0}</td><td style="text-align:right"><button class="btn btn-danger btn-sm customerDeleteBtnRow" data-idx="${idx}">Izbriši</button></td></tr>`;
-                    });
-                    table += '</tbody></table></div>';
-                    table += '<div id="customerDetail" style="padding:12px; border-top:1px solid #eee; display:none;"></div>';
-                    content.innerHTML = table;
+                    const isMobile = window.innerWidth <= 768;
+                    let html = '';
+
+                    if (isMobile) {
+                        // Card layout — all data visible on small screens
+                        html = '<div class="customer-cards">';
+                        rows.forEach((c, idx) => {
+                            html += `<div class="customer-card" data-idx="${idx}">
+                                <div class="customer-card-name">${c.firstName||''} ${c.surname||''}</div>
+                                ${c.email && c.email !== '-' ? `<div class="customer-card-row"><i class="bi bi-envelope"></i> ${c.email}</div>` : ''}
+                                ${c.phone && c.phone !== '-' ? `<div class="customer-card-row"><i class="bi bi-telephone"></i> ${c.phone}</div>` : ''}
+                                <div class="customer-card-footer">
+                                    <span class="customer-card-count">${c.count||0} terminov</span>
+                                    <button class="btn btn-danger btn-sm customerDeleteBtnRow" data-idx="${idx}">Izbriši</button>
+                                </div>
+                            </div>`;
+                        });
+                        html += '</div>';
+                        html += '<div id="customerDetail" style="padding:12px; border-top:1px solid #eee; display:none;"></div>';
+                        content.innerHTML = html;
+                    } else {
+                        // Table layout for desktop
+                        let table = '<div style="overflow:auto; overflow-x:auto; max-height: calc(100% - 160px);"><table class="customer-table"><thead><tr><th>Ime</th><th>Priimek</th><th>Email</th><th>Telefon</th><th style="text-align:right">Terminov</th><th style="text-align:right">Akcije</th></tr></thead><tbody>';
+                        rows.forEach((c, idx) => {
+                            table += `<tr class="customer-row" data-idx="${idx}"><td>${c.firstName||'-'}</td><td>${c.surname||'-'}</td><td>${c.email||'-'}</td><td>${c.phone||'-'}</td><td style="text-align:right">${c.count||0}</td><td style="text-align:right"><button class="btn btn-danger btn-sm customerDeleteBtnRow" data-idx="${idx}">Izbriši</button></td></tr>`;
+                        });
+                        table += '</tbody></table></div>';
+                        table += '<div id="customerDetail" style="padding:12px; border-top:1px solid #eee; display:none;"></div>';
+                        content.innerHTML = table;
+                    }
                     // animate in rows with a small stagger
                     try {
                         const rowsEls = Array.from(content.querySelectorAll('tr.customer-row'));

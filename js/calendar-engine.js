@@ -531,11 +531,11 @@ const CalendarEngine = {
       const _isMobile = window.innerWidth <= 768;
 
       const calendar = new FullCalendar.Calendar(containerElement, {
-        initialView: options.initialView || (_isMobile ? 'listWeek' : 'dayGridMonth'),
+        initialView: options.initialView || 'dayGridMonth',
         headerToolbar: _isMobile ? {
           left: 'prev,next today',
           center: 'title',
-          right: 'listWeek,timeGridDay'
+          right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
         } : {
           left: 'prev,next today',
           center: 'title',
