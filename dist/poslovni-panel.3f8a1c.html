@@ -3708,7 +3708,7 @@
                         <div style="font-size:12px;color:#8e8e93;">${ex.date} &nbsp;·&nbsp; <span class="bsp-badge" style="background:#ff3b301a;color:#ff3b30;">${typeLabel[ex.type]||ex.type}</span></div>
                     </div>
                     <button class="bsp-list-del" onclick="bspDelException(${i})"><i class="bi bi-trash3"></i></button>
-                </div>`).join('') || '<p style="font-size:13px;color:#8e8e93;padding:8px 0;margin:0;width:100%;">Ni vnesenih izjem.</p>';
+                </div>`).join('') || '<p style="font-size:13px;color:#8e8e93;padding:8px 0 8px 12px;margin:0;width:100%;">Ni vnesenih izjem.</p>';
         }
         function bspDelException(i) { if (_bspData) { _bspData.dateExceptions.splice(i, 1); bspRenderExceptions(); } }
         function bspAddException() {
@@ -3734,7 +3734,7 @@
                         <div style="font-size:12px;color:#8e8e93;">${ov.note || '(brez opombe)'}</div>
                     </div>
                     <button class="bsp-list-del" onclick="bspDelOverride(${i})"><i class="bi bi-trash3"></i></button>
-                </div>`).join('') || '<p style="font-size:13px;color:#8e8e93;padding:8px 0;margin:0;width:100%;">Ni vnesenih override-ov.</p>';
+                </div>`).join('') || '<p style="font-size:13px;color:#8e8e93;padding:8px 0 8px 12px;margin:0;width:100%;">Ni vnesenih override-ov.</p>';
         }
         function bspDelOverride(i) { if (_bspData) { _bspData.dateOverrides.splice(i, 1); bspRenderOverrides(); } }
         function bspAddOverride() {
@@ -3761,7 +3761,7 @@
                         <div style="font-size:12px;color:#8e8e93;">${p.from} – ${p.to}</div>
                     </div>
                     <button class="bsp-list-del" onclick="bspDelPromo(${i})"><i class="bi bi-trash3"></i></button>
-                </div>`).join('') || '<p style="font-size:13px;color:#8e8e93;padding:8px 0;margin:0;width:100%;">Ni vnesenih akcij.</p>';
+                </div>`).join('') || '<p style="font-size:13px;color:#8e8e93;padding:8px 0 8px 12px;margin:0;width:100%;">Ni vnesenih akcij.</p>';
         }
         function bspDelPromo(i) { if (_bspData) { _bspData.promoIntervals.splice(i, 1); bspRenderPromos(); } }
         function bspAddPromo() {
@@ -3941,7 +3941,7 @@
                         <div style="font-size:12px;color:#8e8e93;">${loc.address || ''} ${loc.phone ? '· ' + loc.phone : ''}</div>
                     </div>
                     <button class="bsp-list-del" onclick="bspDelLocation(${i})"><i class="bi bi-trash3"></i></button>
-                </div>`).join('') || '<p style="font-size:13px;color:#8e8e93;padding:8px 0;">Ni dodanih poslovalnic. Privzeto je ena lokacija.</p>';
+                </div>`).join('') || '<p style="font-size:13px;color:#8e8e93;padding:8px 0 8px 12px;margin:0;">Ni dodanih poslovalnic. Privzeto je ena lokacija.</p>';
         }
         function bspDelLocation(i) { if (_bspData) { _bspData.locations.splice(i, 1); bspRenderLocations(); } }
         function bspAddLocation() {
