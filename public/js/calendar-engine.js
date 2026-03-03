@@ -533,7 +533,7 @@ const CalendarEngine = {
       const calendar = new FullCalendar.Calendar(containerElement, {
         initialView: options.initialView || (_isMobile ? 'listWeek' : 'dayGridMonth'),
         headerToolbar: _isMobile ? {
-          left: 'prev,next',
+          left: 'prev,next today',
           center: 'title',
           right: 'listWeek,timeGridDay'
         } : {
@@ -543,11 +543,12 @@ const CalendarEngine = {
         },
         // Slovenian button text
         buttonText: {
-          today: 'Danes',
-          month: 'Mesec',
-          week: 'Teden',
-          day: 'Dan',
-          list: 'Seznam'
+          today:    'Danes',
+          month:    'Mesec',
+          week:     'Teden',
+          day:      'Dan',
+          list:     'Seznam',
+          listWeek: 'Seznam'
         },
         locale: 'sl',
         firstDay: 1,

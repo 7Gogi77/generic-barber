@@ -2084,3 +2084,61 @@
         height: 80px;
     }
 }
+
+/* ============================================
+   PANEL MENU BUTTON (hamburger in panel headers)
+   ============================================ */
+
+.panel-menu-btn {
+    display: none; /* hidden on desktop */
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 6px 8px;
+    border-radius: 8px;
+    color: #1c1c1e;
+    font-size: 22px;
+    line-height: 1;
+    align-items: center;
+    justify-content: center;
+    -webkit-tap-highlight-color: transparent;
+    flex-shrink: 0;
+}
+
+.panel-menu-btn:active { background: rgba(0,0,0,0.08); }
+
+@media (max-width: 768px) {
+    .panel-menu-btn { display: inline-flex !important; }
+
+    /* Sidebar must float above all panels when expanded on mobile */
+    .sidebar.expanded {
+        z-index: 4000 !important;
+    }
+
+    /* Charts stack vertically on mobile */
+    #analyticsChartsGrid {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* Panel header can wrap */
+    .panel-header {
+        flex-wrap: wrap !important;
+        height: auto !important;
+        min-height: 56px !important;
+        padding: 8px 12px !important;
+    }
+
+    /* Customer table: hide email/phone columns, show on tap */
+    .customer-table .col-hide-xs { display: none !important; }
+
+    /* Delete button fits on mobile */
+    .customerDeleteBtnRow {
+        padding: 6px 10px !important;
+        font-size: 12px !important;
+        white-space: nowrap;
+    }
+
+    /* Customer table scrollable wrapper */
+    #customerListContent { overflow-x: auto !important; }
+    .customer-table { min-width: 280px; }
+}

@@ -523,9 +523,9 @@
                         return ((c.fullName||'') + ' ' + (c.email||'') + ' ' + (c.phone||'')).toLowerCase().includes(term);
                     });
 
-                    let table = '<div style="overflow:auto; overflow-x:hidden; max-height: calc(100% - 160px);"><table class="customer-table"><thead><tr><th>Ime</th><th>Priimek</th><th>Email</th><th>Telefon</th><th style="text-align:right">Št. terminov</th><th style="text-align:right">Akcije</th></tr></thead><tbody>';
+                    let table = '<div style="overflow:auto; overflow-x:auto; max-height: calc(100% - 160px);"><table class="customer-table"><thead><tr><th>Ime</th><th>Priimek</th><th class="col-hide-xs">Email</th><th class="col-hide-xs">Telefon</th><th style="text-align:right">Terminov</th><th style="text-align:right">Akcije</th></tr></thead><tbody>';
                     rows.forEach((c, idx) => {
-                        table += `<tr class="customer-row" data-idx="${idx}"><td>${c.firstName||'-'}</td><td>${c.surname||'-'}</td><td>${c.email||'-'}</td><td>${c.phone||'-'}</td><td style="text-align:right">${c.count||0}</td><td style="text-align:right"><button class="btn btn-danger btn-sm customerDeleteBtnRow" data-idx="${idx}">Izbriši</button></td></tr>`;
+                        table += `<tr class="customer-row" data-idx="${idx}"><td>${c.firstName||'-'}</td><td>${c.surname||'-'}</td><td class="col-hide-xs">${c.email||'-'}</td><td class="col-hide-xs">${c.phone||'-'}</td><td style="text-align:right">${c.count||0}</td><td style="text-align:right"><button class="btn btn-danger btn-sm customerDeleteBtnRow" data-idx="${idx}">Izbriši</button></td></tr>`;
                     });
                     table += '</tbody></table></div>';
                     table += '<div id="customerDetail" style="padding:12px; border-top:1px solid #eee; display:none;"></div>';
