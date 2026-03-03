@@ -383,6 +383,12 @@
                             p.style.width = `calc(100% - ${w}px)`;
                         }
                     });
+                    // Re-render calendar after the sidebar CSS transition (350ms) finishes
+                    setTimeout(() => {
+                        if (window.calendar && typeof window.calendar.updateSize === 'function') {
+                            window.calendar.updateSize();
+                        }
+                    }, 370);
                 });
 
                 // keyboard support
