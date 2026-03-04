@@ -639,7 +639,7 @@ const CalendarEngine = {
 
         // Interactions
         selectable: !_isMobile, // disable drag-to-select on mobile; use FAB (+) instead
-        selectMirror: false, // Disable FullCalendar's visual feedback during selection
+        selectMirror: true, // Show ghost-event block while dragging in timeGrid (week/day)
         selectOverlap: true,
         editable: true,
         eventDurationEditable: true,

@@ -480,9 +480,28 @@
             table-layout: fixed !important;
         }
 
-        /* Override FullCalendar's default highlight color - use only JS inline styles */
-        .fc .fc-highlight {
+        /* Suppress FullCalendar's native highlight in month (dayGrid) view only — we use JS inline styles there */
+        .fc-dayGrid-view .fc-highlight {
             background: none !important;
+        }
+
+        /* TimeGrid (week / day) selection highlight — visible blue tint over dragged slots */
+        .fc-timeGrid-view .fc-highlight {
+            background: rgba(10, 132, 255, 0.18) !important;
+        }
+
+        /* Ghost event block rendered during timeGrid drag-select */
+        .fc-event-mirror {
+            background: rgba(10, 132, 255, 0.32) !important;
+            border: 1.5px solid rgba(10, 132, 255, 0.7) !important;
+            border-radius: 6px !important;
+            box-shadow: 0 2px 10px rgba(10, 132, 255, 0.25) !important;
+            opacity: 1 !important;
+        }
+        .fc-event-mirror .fc-event-main {
+            color: #fff !important;
+            font-size: 11px !important;
+            font-weight: 600 !important;
         }
 
         /* Ensure the background harness doesn't clip highlights */
