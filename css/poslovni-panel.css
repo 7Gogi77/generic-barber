@@ -1569,16 +1569,24 @@
             /* Calendar toolbar */
             .fc .fc-toolbar {
                 flex-direction: row !important;
-                flex-wrap: wrap !important;
+                flex-wrap: nowrap !important;
                 align-items: center !important;
+                justify-content: space-between !important;
                 gap: 4px !important;
                 padding: 8px 8px !important;
             }
 
             .fc .fc-toolbar-chunk {
                 display: flex;
-                justify-content: center;
+                align-items: center;
                 flex-shrink: 0;
+                gap: 2px;
+            }
+
+            /* Let the center title chunk grow and stay centred */
+            .fc .fc-toolbar-chunk:nth-child(2) {
+                flex: 1 1 auto;
+                justify-content: center;
             }
 
             .fc .fc-button {
@@ -1713,30 +1721,36 @@
             /* Calendar header - iOS compact */
             .fc .fc-toolbar {
                 flex-direction: row !important;
-                flex-wrap: wrap !important;
+                flex-wrap: nowrap !important;
                 align-items: center !important;
+                justify-content: space-between !important;
                 padding: 6px 6px !important;
-                gap: 3px !important;
+                gap: 2px !important;
             }
 
             .fc .fc-toolbar-chunk {
+                display: flex;
+                align-items: center;
+                flex-shrink: 0;
                 flex-wrap: nowrap !important;
-                gap: 3px !important;
+                gap: 2px !important;
             }
 
-            .fc .fc-toolbar-chunk:last-child {
+            /* Center title chunk grows to fill middle */
+            .fc .fc-toolbar-chunk:nth-child(2) {
+                flex: 1 1 auto;
                 justify-content: center;
             }
 
             .fc .fc-button {
-                padding: 3px 6px !important;
+                padding: 3px 5px !important;
                 font-size: 10px !important;
                 border-radius: 6px !important;
                 min-width: 0 !important;
             }
 
             .fc .fc-button-group .fc-button {
-                padding: 3px 6px !important;
+                padding: 3px 5px !important;
                 min-width: 0 !important;
             }
 
@@ -1750,7 +1764,6 @@
                 font-weight: 700 !important;
                 white-space: nowrap !important;
                 margin-bottom: 0 !important;
-                order: 0;
             }
 
             /* Hide less important view buttons on very small screens */
