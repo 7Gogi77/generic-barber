@@ -678,24 +678,41 @@ const CalendarEngine = {
             const d = String(dt.getDate()).padStart(2, '0');
             return `${y}-${m}-${d}`;
           };
-          
-          // Parse start and end dates (handle both with and without time)
-          let startDate = selectInfo.startStr.split('T')[0]; // "2026-02-16"
-          let endDate = selectInfo.endStr ? selectInfo.endStr.split('T')[0] : startDate; // "2026-02-21"
-          
-          // FullCalendar's end is exclusive, so subtract 1 day
-          endDate = shiftDateString(endDate, -1); // "2026-02-20"
-          
-          
-          // Get all day cells and highlight those within range
-          document.querySelectorAll('[data-date]').forEach(cell => {
-            const cellDate = cell.getAttribute('data-date'); // "2026-02-17"
-            if (cellDate >= startDate && cellDate <= endDate) {
-              cell.style.backgroundColor = 'rgba(0, 122, 255, 0.2)'; // Blue highlight
-            } else {
-              cell.style.backgroundColor = ''; // Clear previous highlight
-            }
-          });
+
+          // Branch on whether this is a timed selection (week/day view) or all-day (month view)
+          const isTimed = !selectInfo.allDay;
+          let startDate = selectInfo.startStr.split('T')[0];
+          let endDate = selectInfo.endStr ? selectInfo.endStr.split('T')[0] : startDate;
+          let selStartTime = null;
+          let selEndTime = null;
+
+          if (isTimed) {
+            // Week / day view: preserve the selected time range; end is NOT exclusive in time sense
+            const extractTime = (str) => {
+              if (!str || !str.includes('T')) return null;
+              // str may be "2026-03-04T09:30:00" or "2026-03-04T09:30:00+01:00"
+              const timePart = str.split('T')[1];
+              if (!timePart) return null;
+              const hm = timePart.substring(0, 5); // "09:30"
+              return hm;
+            };
+            selStartTime = extractTime(selectInfo.startStr);
+            selEndTime   = extractTime(selectInfo.endStr);
+            // endDate is the same date as startDate in most cases; no -1 shift needed
+          } else {
+            // Month view: all-day selection — FullCalendar end is exclusive, subtract 1 day
+            endDate = shiftDateString(endDate, -1);
+
+            // Highlight selected day cells
+            document.querySelectorAll('[data-date]').forEach(cell => {
+              const cellDate = cell.getAttribute('data-date');
+              if (cellDate >= startDate && cellDate <= endDate) {
+                cell.style.backgroundColor = 'rgba(0, 122, 255, 0.2)';
+              } else {
+                cell.style.backgroundColor = '';
+              }
+            });
+          }
           
           const hasAdminModal = document.getElementById('eventModal');
           // If admin modal exists (admin-panel.html), use the admin modal flow
@@ -704,12 +721,10 @@ const CalendarEngine = {
             return;
           }
 
-          // Otherwise, if we're in the business panel, open the Add Event modal
-          // and prefill with the selected date range. startDate/endDate already
-          // have FullCalendar's exclusive-end adjusted (shifted -1 day above).
+          // Business panel: open the Add Event modal pre-filled with date + time
           const addModal = document.getElementById('addEventModal');
           if (addModal && typeof window.openAddEventModal === 'function') {
-            window.openAddEventModal(startDate, endDate);
+            window.openAddEventModal(startDate, endDate, 0, null, selStartTime, selEndTime);
           }
         },
         

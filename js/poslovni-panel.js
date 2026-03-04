@@ -152,11 +152,11 @@
                 }, 60);
             }
             // Always reload services when opening modal
-            function openAddEventModalWithTab(startDate = null, endDate = null, retry = 0, tab = null) {
+            function openAddEventModalWithTab(startDate = null, endDate = null, retry = 0, tab = null, startTime = null, endTime = null) {
                 // Če storitve še niso naložene iz Firebase, počakaj in poskusi znova
                 const ready = window.SITE_CONFIG && window.SITE_CONFIG.servicesSection && Array.isArray(window.SITE_CONFIG.servicesSection.items) && window.SITE_CONFIG.servicesSection.items.length > 0;
                 if (!ready && retry < 10) {
-                    setTimeout(() => openAddEventModalWithTab(startDate, endDate, retry + 1, tab), 200);
+                    setTimeout(() => openAddEventModalWithTab(startDate, endDate, retry + 1, tab, startTime, endTime), 200);
                     return;
                 }
                 setEventTab(tab || 'worker');
@@ -164,11 +164,11 @@
                 const form = document.getElementById('addEventForm');
                 if (form) form.reset();
                 
-                // Always set default times after reset (browsers may reset time inputs to '00:00')
+                // Set times: use provided times if given, otherwise use defaults
                 const startTimeEl = document.getElementById('eventStartTime');
                 const endTimeEl = document.getElementById('eventEndTime');
-                if (startTimeEl) startTimeEl.value = '09:00';
-                if (endTimeEl) endTimeEl.value = '10:00';
+                if (startTimeEl) startTimeEl.value = startTime || '09:00';
+                if (endTimeEl) endTimeEl.value = endTime || '10:00';
                 
                 // Show modal
                 const modal = document.getElementById('addEventModal');
