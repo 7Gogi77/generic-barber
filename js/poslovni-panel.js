@@ -2306,6 +2306,11 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
         function openAddEventModal(startDate = null, endDate = null) {
             const form = document.getElementById('addEventForm');
             if (form) form.reset();
+            // Always restore default times after reset (form.reset() sets time inputs to '00:00')
+            const _stEl = document.getElementById('eventStartTime');
+            const _etEl = document.getElementById('eventEndTime');
+            if (_stEl) _stEl.value = '09:00';
+            if (_etEl) _etEl.value = '10:00';
             setEventTab('worker');
 
             const modal = document.getElementById('addEventModal');
