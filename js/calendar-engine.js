@@ -1412,6 +1412,13 @@ const CalendarEngine = {
         if (!e.target.closest('#scheduleCalendar')) {
           return;
         }
+
+        // In timeGrid (week / day) views the user drags hour/minute slots — let FullCalendar
+        // handle the native timed selection entirely; our custom day-cell drag must not intercept.
+        if (e.target.closest('.fc-timegrid-body') || e.target.closest('.fc-timegrid-slot') ||
+            e.target.closest('.fc-timegrid-col') || e.target.closest('.fc-timegrid-col-events')) {
+          return;
+        }
         
         // Check if clicking on an event - if so, let FullCalendar/drag system handle it
         if (e.target.closest('.fc-event') || e.target.closest('.fc-daygrid-event')) {
