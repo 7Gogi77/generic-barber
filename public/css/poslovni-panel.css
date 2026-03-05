@@ -2115,8 +2115,8 @@
     /* Hide today button — prev/next is enough on small screen */
     .fc .fc-today-button { display: none !important; }
 
-    /* Taller time slots in day view for easier tapping */
-    .fc .fc-timegrid-slot { height: 44px !important; }
+    /* Compact time slots — 30-min increment at 24px keeps the full day visible without excessive scrolling */
+    .fc .fc-timegrid-slot { height: 24px !important; }
     .fc .fc-timegrid-axis-cushion { font-size: 11px !important; }
 
     /* Pad bottom so FAB doesn't cover last event */
