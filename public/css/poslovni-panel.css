@@ -1864,8 +1864,9 @@
             }
 
             .fc-daygrid-more-link {
-                font-size: 10px !important;
-                padding: 2px 4px !important;
+                font-size: 8px !important;
+                padding: 1px 2px !important;
+                line-height: 1 !important;
             }
 
             /* TimeGrid adjustments — compact slots so week/day views don't need excessive scrolling */
@@ -2025,7 +2026,8 @@
             }
 
             .fc-daygrid-more-link {
-                padding: 4px 6px !important;
+                /* do not enlarge on coarse-pointer — keep mobile compact size */
+                padding: 1px 2px !important;
             }
         }
 
@@ -2282,8 +2284,8 @@
     }
     /* Smaller "+X more" link text on mobile */
     .fc .fc-daygrid-more-link {
-        font-size: 10px !important;
-        padding: 1px 3px !important;
-        line-height: 1.2 !important;
+        font-size: 8px !important;
+        padding: 1px 2px !important;
+        line-height: 1 !important;
     }
 }
