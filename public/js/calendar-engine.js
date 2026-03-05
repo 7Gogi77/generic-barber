@@ -602,8 +602,8 @@ const CalendarEngine = {
         allDaySlot: false,
         views: {
           dayGridMonth: { type: 'dayGridMonth', height: 'auto' }, // auto-size so last row is never clipped
-          // Force full 24-hour rendering for timeGrid week/day views
-          timeGridWeek: { type: 'timeGrid', slotMinTime: '00:00:00', slotMaxTime: '24:00:00', slotDuration: '00:30:00' },
+          // On mobile: 1 slot per hour in week view to reduce scrolling
+          timeGridWeek: { type: 'timeGrid', slotMinTime: '00:00:00', slotMaxTime: '24:00:00', slotDuration: _isMobile ? '01:00:00' : '00:30:00' },
           timeGridDay: { type: 'timeGrid', slotMinTime: '00:00:00', slotMaxTime: '24:00:00' }
         },
         // Initial vertical scroll position in timeGrid views
