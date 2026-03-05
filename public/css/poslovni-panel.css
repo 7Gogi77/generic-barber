@@ -1738,12 +1738,13 @@
             }
 
             /* Calendar header - iOS compact */
+            /* padding-left pushes content past the fixed 44px burger (left:12px + 44px + 4px gap = 60px) */
             .fc .fc-toolbar {
                 flex-direction: row !important;
                 flex-wrap: nowrap !important;
                 align-items: center !important;
                 justify-content: space-between !important;
-                padding: 6px 6px !important;
+                padding: 6px 6px 6px 60px !important;
                 gap: 2px !important;
             }
 
@@ -1867,9 +1868,9 @@
                 padding: 2px 4px !important;
             }
 
-            /* TimeGrid adjustments */
+            /* TimeGrid adjustments — compact slots so week/day views don't need excessive scrolling */
             .fc .fc-timegrid-slot {
-                height: 36px !important;
+                height: 24px !important;
             }
 
             .fc .fc-timegrid-axis-cushion {
@@ -1950,7 +1951,7 @@
             }
             
             .fc-timegrid-slot {
-                height: 3em !important;
+                height: 24px !important;
             }
             
             /* Make event text more readable on mobile */
