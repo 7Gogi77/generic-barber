@@ -1,14 +1,6 @@
 {
-  "builds": [
-    { "src": "api/**/*.js", "use": "@vercel/node" },
-    {
-      "src": "package.json",
-      "use": "@vercel/static-build",
-      "config": {
-        "distDir": "dist"
-      }
-    }
-  ],
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
   "rewrites": [
     { "source": "/poslovni-panel.html", "destination": "/poslovni-panel.3f8a1c.html" }
   ],
