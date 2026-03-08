@@ -515,6 +515,14 @@
             SITE_CONFIG.booking = { ...SITE_CONFIG.booking, ...preset.booking };
             if (preset.theme) {
                 SITE_CONFIG.theme = { ...SITE_CONFIG.theme, ...preset.theme };
+                // Always force dark mode when applying a template so backgrounds
+                // and text colours stay consistent regardless of the previous mode.
+                SITE_CONFIG.theme.mode = 'dark';
+                SITE_CONFIG.theme.dark = '#0A0A0A';
+                SITE_CONFIG.theme.card = '#141414';
+                SITE_CONFIG.theme.scrollbarTrack = '#1C1C1E';
+                const modeEl = document.getElementById('themeMode');
+                if (modeEl) modeEl.value = 'dark';
                 applyThemeToPage();
             }
 
