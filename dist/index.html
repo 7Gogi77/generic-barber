@@ -1384,15 +1384,15 @@
                 if (window.CloudSync && typeof window.CloudSync.loadFromCloud === 'function') {
                     const sdkLoaded = await window.CloudSync.loadFromCloud();
                     if (sdkLoaded) {
-                        // Still sync bookingSettings even when CloudSync handled site_config
-                        try {
-                            if (window.CloudSync && typeof window.CloudSync.loadBookingSettings === 'function') {
-                                await window.CloudSync.loadBookingSettings();
-                            } else {
-                                const _bsRes = await fetch(`https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app/bookingSettings.json?_t=${new Date().getTime()}`, { cache: 'no-store' });
-                                if (_bsRes.ok) { const _bsD = await _bsRes.json(); if (_bsD && typeof _bsD === 'object') localStorage.setItem('bookingSettings', JSON.stringify(_bsD)); }
-                            }
-                        } catch(_) {}
+                        // Sync window.SITE_CONFIG (set by CloudSync) into the lexical SITE_CONFIG
+                        if (window.SITE_CONFIG && typeof window.SITE_CONFIG === 'object') {
+                            Object.assign(SITE_CONFIG, window.SITE_CONFIG);
+                            applyThemeColors();
+                        }
+                        // Extract _bookingSettings embedded in site_config
+                        if (SITE_CONFIG._bookingSettings && typeof SITE_CONFIG._bookingSettings === 'object') {
+                            localStorage.setItem('bookingSettings', JSON.stringify(SITE_CONFIG._bookingSettings));
+                        }
                         return true;
                     }
                 }
@@ -1419,16 +1419,10 @@
                 } else {
                     console.warn(`⚠️ Firebase REST fetch failed: ${response.status} ${response.statusText}`);
                 }
-                // Also sync bookingSettings from Firebase
-                try {
-                    const bsRes = await fetch(`https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app/bookingSettings.json?_t=${timestamp}`, { cache: 'no-store' });
-                    if (bsRes.ok) {
-                        const bsCloud = await bsRes.json();
-                        if (bsCloud && typeof bsCloud === 'object') {
-                            localStorage.setItem('bookingSettings', JSON.stringify(bsCloud));
-                        }
-                    }
-                } catch(_) {}
+                // Extract _bookingSettings embedded in site_config
+                if (SITE_CONFIG._bookingSettings && typeof SITE_CONFIG._bookingSettings === 'object') {
+                    localStorage.setItem('bookingSettings', JSON.stringify(SITE_CONFIG._bookingSettings));
+                }
                 return true;
             } catch (error) {
                 console.log('⚠️ Firebase unavailable, using local config', error);
@@ -1523,7 +1517,7 @@
                     document.documentElement.style.setProperty('--banner-height', '0px');
                 }
             }
-            SITE_CONFIG.servicesSection.items.forEach(s => {
+            (SITE_CONFIG.servicesSection?.items || []).forEach(s => {
                 const item = document.createElement('div');
                 item.className = 'service-item';
                 const _rawPrice = parseFloat(String(s.price || '0').replace(/[^0-9.,]/g,'').replace(',','.')) || 0;
@@ -1702,15 +1696,7 @@
             if (!firebaseLoaded) {
                 await loadSavedConfig();
             }
-            // Always fetch bookingSettings fresh from Firebase REST (bypasses CloudSync timing)
-            try {
-                const _bsR = await fetch('https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app/bookingSettings.json?_t=' + Date.now(), { cache: 'no-store' });
-                if (_bsR.ok) {
-                    const _bsD = await _bsR.json();
-                    if (_bsD && typeof _bsD === 'object') localStorage.setItem('bookingSettings', JSON.stringify(_bsD));
-                }
-            } catch(_) {}
-            // Also check if bookingSettings was embedded inside site_config
+            // Extract _bookingSettings from loaded site_config
             try {
                 const _sc = JSON.parse(localStorage.getItem('site_config_backup') || '{}');
                 if (_sc._bookingSettings && typeof _sc._bookingSettings === 'object') {
