@@ -210,6 +210,19 @@
             } else if (_promoBannerEl) {
                 _promoBannerEl.style.display = 'none';
             }
+            // Top announcement banner
+            const _tbEl = document.getElementById('topPromoBanner');
+            if (_tbEl) {
+                if (_todayPromo) {
+                    const _msg = (_todayPromo.bannerText || '').trim();
+                    _tbEl.innerHTML = `<span class="tpb-tag">🏷 ${_todayPromo.label || 'Akcija'}</span>${_msg ? _msg : `<strong>−${_todayPromo.discount}%</strong> popust na vse storitve — do ${_todayPromo.to}`}<button class="tpb-close" onclick="this.parentElement.style.display='none';document.documentElement.style.setProperty('--banner-height','0px');" aria-label="Zapri">&times;</button>`;
+                    _tbEl.style.display = '';
+                    requestAnimationFrame(() => document.documentElement.style.setProperty('--banner-height', _tbEl.offsetHeight + 'px'));
+                } else {
+                    _tbEl.style.display = 'none';
+                    document.documentElement.style.setProperty('--banner-height', '0px');
+                }
+            }
             SITE_CONFIG.servicesSection.items.forEach(s => {
                 const item = document.createElement('div');
                 item.className = 'service-item';

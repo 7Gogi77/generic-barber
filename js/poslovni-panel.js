@@ -1079,6 +1079,7 @@
                     <div style="flex:1;min-width:0;">
                         <div style="font-size:14px;font-weight:500;">${p.label || 'Akcija'} &nbsp;<span class="bsp-badge" style="background:#34c75920;color:#34c759;">-${p.discount}%</span></div>
                         <div style="font-size:12px;color:#8e8e93;">${p.from} – ${p.to}</div>
+                        ${p.bannerText ? `<div style="font-size:12px;color:#636366;margin-top:2px;">&#128247; ${p.bannerText}</div>` : ''}
                     </div>
                     <button class="bsp-list-del" onclick="bspDelPromo(${i})"><i class="bi bi-trash3"></i></button>
                 </div>`).join('') || '<p style="font-size:13px;color:#8e8e93;padding:8px 0 8px 12px;margin:0;width:100%;">Ni vnesenih akcij.</p>';
@@ -1086,17 +1087,20 @@
         function bspDelPromo(i) { if (_bspData) { _bspData.promoIntervals.splice(i, 1); bspRenderPromos(); } }
         function bspAddPromo() {
             if (!_bspData) return;
-            const from     = document.getElementById('newPromoFrom')?.value;
-            const to       = document.getElementById('newPromoTo')?.value;
-            const discount = parseInt(document.getElementById('newPromoDiscount')?.value, 10) || 10;
-            const label    = document.getElementById('newPromoLabel')?.value?.trim() || 'Akcija';
+            const from       = document.getElementById('newPromoFrom')?.value;
+            const to         = document.getElementById('newPromoTo')?.value;
+            const discount   = parseInt(document.getElementById('newPromoDiscount')?.value, 10) || 10;
+            const label      = document.getElementById('newPromoLabel')?.value?.trim() || 'Akcija';
+            const bannerText = document.getElementById('newPromoText')?.value?.trim() || '';
             if (!from || !to) { alert('Vnesi datuma od/do.'); return; }
-            _bspData.promoIntervals.push({ from, to, discount, label });
+            _bspData.promoIntervals.push({ from, to, discount, label, bannerText });
             _bspData.promoIntervals.sort((a,b) => a.from.localeCompare(b.from));
             bspRenderPromos();
             document.getElementById('newPromoFrom').value = '';
             document.getElementById('newPromoTo').value = '';
             document.getElementById('newPromoLabel').value = '';
+            const _ptEl = document.getElementById('newPromoText');
+            if (_ptEl) _ptEl.value = '';
         }
 
         // ── HTML escape helper ─────────────────────────────────────────────────
