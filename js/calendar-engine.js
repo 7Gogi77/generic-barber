@@ -501,7 +501,7 @@ const CalendarEngine = {
       containerElement.style.maxWidth = '100%';
       containerElement.style.minWidth = '100%';
       containerElement.style.minHeight = `${window._minCalendarHeight}px`;
-      containerElement.style.height = _isMobileHeight ? 'auto' : `${calcHeight}px`;
+      containerElement.style.height = 'auto';
       containerElement.style.overflow = 'visible';
 
 
@@ -1047,6 +1047,21 @@ const CalendarEngine = {
             }
           } catch (e) { /* ignore */ }
 
+          // Dynamic height: 'auto' for month so all rows show naturally (page scrolls);
+          // pixel height for timegrid so FC internal scroll works
+          try {
+            const vForH = arg && arg.view && arg.view.type ? arg.view.type : '';
+            if (vForH.startsWith('timeGrid')) {
+              containerElement.style.height = `${calcHeight}px`;
+              containerElement.style.overflow = 'hidden';
+              try { if (calendar && typeof calendar.setOption === 'function') calendar.setOption('height', calcHeight); } catch(_){}
+            } else {
+              containerElement.style.height = 'auto';
+              containerElement.style.overflow = 'visible';
+              try { if (calendar && typeof calendar.setOption === 'function') calendar.setOption('height', 'auto'); } catch(_){}
+            }
+          } catch (e) { /* ignore */ }
+
           // If view is a timeGrid, ensure initial scroll position and allow vertical scrolling
           try {
             const v2 = arg && arg.view && arg.view.type ? arg.view.type : '';
@@ -1180,31 +1195,31 @@ const CalendarEngine = {
               if (rows.length > 0) {
                 try {
                   if (isMonthView) {
-                    // MONTH VIEW: Set fixed 100px height on all rows and cells
-                    daygridBody.style.overflowY = 'auto';
+                    // MONTH VIEW: clear any forced sizing so rows expand naturally
+                    daygridBody.style.overflowY = 'visible';
                     daygridBody.style.webkitOverflowScrolling = 'touch';
                     rows.forEach((row) => {
-                      row.style.height = '100px';
-                      row.style.minHeight = '100px';
-                      row.style.maxHeight = '100px';
+                      row.style.height = '';
+                      row.style.minHeight = '';
+                      row.style.maxHeight = '';
                       row.style.overflow = 'visible';
                       row.querySelectorAll('.fc-daygrid-day-cell').forEach(cell => {
-                        cell.style.height = '100px';
-                        cell.style.minHeight = '100px';
-                        cell.style.maxHeight = '100px';
+                        cell.style.height = '';
+                        cell.style.minHeight = '';
+                        cell.style.maxHeight = '';
                         cell.style.overflow = 'visible';
 
-                        // Keep events container within cell bounds
+                        // Clear events container sizing overrides
                         const eventsContainer = cell.querySelector('.fc-daygrid-day-events');
                         if (eventsContainer) {
-                          eventsContainer.style.height = 'calc(100% - 30px)';
-                          eventsContainer.style.maxHeight = 'calc(100% - 30px)';
-                          eventsContainer.style.overflow = 'visible';
-                          eventsContainer.style.display = 'flex';
-                          eventsContainer.style.flexDirection = 'column';
-                          eventsContainer.style.flex = 'none';
-                          eventsContainer.style.minHeight = '0';
-                          eventsContainer.style.boxSizing = 'border-box';
+                          eventsContainer.style.height = '';
+                          eventsContainer.style.maxHeight = '';
+                          eventsContainer.style.overflow = '';
+                          eventsContainer.style.display = '';
+                          eventsContainer.style.flexDirection = '';
+                          eventsContainer.style.flex = '';
+                          eventsContainer.style.minHeight = '';
+                          eventsContainer.style.boxSizing = '';
                         }
 
                         const moreEl = cell.querySelector('.fc-daygrid-day-more');
@@ -1301,8 +1316,8 @@ const CalendarEngine = {
         slotEventOverlap: false,
         // Ensure all-day slot hidden (no dedicated all-day column/row)
         allDaySlot: false,
-        height: window._calendarHeight || 600,
-        contentHeight: 'parent'
+        height: 'auto',
+        contentHeight: 'auto'
       });
 
 
