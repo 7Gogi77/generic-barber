@@ -4154,9 +4154,10 @@
             window.SITE_CONFIG.booking.maxAdvanceDays          = s.maxAdvanceDays;
             try { localStorage.setItem('site_config_backup', JSON.stringify(window.SITE_CONFIG)); } catch(e) {}
 
-            // Cloud sync
+            // Cloud sync (embed bookingSettings so other devices can load it)
             try {
                 if (window.CloudSync && typeof window.CloudSync.saveToCloud === 'function') {
+                    window.SITE_CONFIG._bookingSettings = s;
                     await window.CloudSync.saveToCloud(window.SITE_CONFIG);
                 }
             } catch(e) { console.warn('⚠ Cloud sync failed', e); }
