@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Storage Manager - Abstraction layer with Firebase sync
  * Always syncs to Firebase for reliable cross-device access
  */
@@ -23,9 +23,7 @@ const StorageManager = {
     // Always save to localStorage first (fast, reliable)
     try {
       localStorage.setItem(key, JSON.stringify(data));
-      console.log('✓ Saved to localStorage:', key);
     } catch (lsError) {
-      console.warn('⚠ localStorage save failed:', lsError);
     }
 
     // Always sync to Firebase (works everywhere)
@@ -37,13 +35,11 @@ const StorageManager = {
       });
 
       if (response.ok) {
-        console.log('✓ Saved to Firebase:', key);
         return { ok: true, method: 'firebase' };
       } else {
         throw new Error('Firebase save failed');
       }
     } catch (fbError) {
-      console.warn('⚠ Firebase save failed:', fbError);
       // localStorage already saved, so return ok
       return { ok: true, method: 'localStorage' };
     }
@@ -64,24 +60,19 @@ const StorageManager = {
         const data = await response.json();
         
         if (data && data.events) {
-          console.log('✓ Loaded from Firebase:', key, '- Events:', data.events.length);
           // Update localStorage cache
           localStorage.setItem(key, JSON.stringify(data));
           // Clear localStorage cache only AFTER successful Firebase load with data
           if (forceRefresh) {
-            console.log('🔄 Force refresh successful - cache updated with Firebase data');
           }
           return data;
         } else if (data === null || !data.events) {
-          console.warn('⚠ Firebase returned empty/null data');
           // If forcing refresh but Firebase is empty, try localStorage as backup
           if (forceRefresh) {
-            console.log('🔄 Firebase empty, checking localStorage backup...');
             const item = localStorage.getItem(key);
             if (item) {
               const localData = JSON.parse(item);
               if (localData && localData.events && localData.events.length > 0) {
-                console.log('✓ Using localStorage backup:', key, '- Events:', localData.events.length);
                 return localData;
               }
             }
@@ -89,7 +80,6 @@ const StorageManager = {
         }
       }
     } catch (fbError) {
-      console.warn('⚠ Firebase load failed, trying localStorage:', fbError);
     }
 
     // Fallback to localStorage
@@ -98,11 +88,9 @@ const StorageManager = {
         const item = localStorage.getItem(key);
         if (item) {
           const data = JSON.parse(item);
-          console.log('✓ Loaded from localStorage:', key);
           return data;
         }
       } catch (lsError) {
-        console.warn('⚠ localStorage load failed:', lsError);
       }
     } else {
       // Even with force refresh, if Firebase failed, try localStorage
@@ -110,16 +98,13 @@ const StorageManager = {
         const item = localStorage.getItem(key);
         if (item) {
           const data = JSON.parse(item);
-          console.log('✓ Force refresh fallback to localStorage:', key);
           return data;
         }
       } catch (lsError) {
-        console.warn('⚠ localStorage fallback failed:', lsError);
       }
     }
 
     // Return default schedule
-    console.log('📋 No schedule found, returning default');
     return this._getDefaultSchedule();
   },
 
@@ -132,17 +117,13 @@ const StorageManager = {
       await fetch(`${this.firebaseUrl}/${key}.json`, {
         method: 'DELETE'
       });
-      console.log('✓ Deleted from Firebase:', key);
     } catch (e) {
-      console.warn('⚠ Firebase delete failed:', e);
     }
 
     // Delete from localStorage
     try {
       localStorage.removeItem(key);
-      console.log('✓ Deleted from localStorage:', key);
     } catch (e) {
-      console.warn('⚠ localStorage delete failed:', e);
     }
   },
 
@@ -151,7 +132,6 @@ const StorageManager = {
    */
   setupSync(onScheduleUpdated) {
     if (typeof BroadcastChannel === 'undefined') {
-      console.warn('BroadcastChannel not available');
       return;
     }
 
@@ -159,7 +139,6 @@ const StorageManager = {
 
     channel.onmessage = (event) => {
       if (event.data.type === 'SCHEDULE_UPDATED') {
-        console.log('📢 Received schedule update from another tab');
         if (onScheduleUpdated) {
           onScheduleUpdated(event.data.data);
         }

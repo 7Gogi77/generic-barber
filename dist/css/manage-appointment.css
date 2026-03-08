@@ -1,0 +1,211 @@
+:root {
+    --ios-blue:      #007AFF;
+    --ios-green:     #34C759;
+    --ios-red:       #FF3B30;
+    --ios-orange:    #FF9500;
+    --ios-bg-primary:    #F2F2F7;
+    --ios-bg-secondary:  #FFFFFF;
+    --ios-bg-tertiary:   #E5E5EA;
+    --ios-text-primary:     #000000;
+    --ios-text-secondary:   #3C3C43;
+    --ios-text-tertiary:    #8E8E93;
+    --ios-text-quaternary:  #C7C7CC;
+    --ios-shadow-sm: 0 1px 3px rgba(0,0,0,.08);
+    --ios-shadow-md: 0 4px 12px rgba(0,0,0,.08);
+    --ios-radius-sm: 8px;
+    --ios-radius-md: 12px;
+    --ios-radius-lg: 16px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+    background: var(--ios-bg-primary);
+    min-height: 100vh;
+    padding: 16px;
+    -webkit-font-smoothing: antialiased;
+}
+
+.container {
+    max-width: 500px;
+    margin: 0 auto;
+    background: var(--ios-bg-secondary);
+    border-radius: var(--ios-radius-lg);
+    box-shadow: var(--ios-shadow-md);
+    overflow: hidden;
+}
+
+.header {
+    padding: 32px 20px 24px;
+    text-align: center;
+    border-bottom: 1px solid var(--ios-bg-tertiary);
+}
+.header h1 { font-size: 28px; font-weight: 600; color: var(--ios-text-primary); margin-bottom: 8px; letter-spacing: -.4px; }
+.header p  { font-size: 13px; color: var(--ios-text-secondary); }
+
+.content { padding: 20px; }
+
+h2 { color: var(--ios-text-primary); margin-bottom: 20px; font-size: 20px; font-weight: 600; letter-spacing: -.4px; }
+
+/* ── Sections ── */
+.section { display: none; }
+.section.active { display: block; }
+
+/* ── Search ── */
+.search-box {
+    background: var(--ios-bg-primary);
+    padding: 20px;
+    border-radius: var(--ios-radius-md);
+    margin-bottom: 20px;
+}
+.search-box h3 { margin-bottom: 16px; color: var(--ios-text-primary); font-size: 16px; font-weight: 600; letter-spacing: -.3px; }
+.search-group { display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px; }
+.search-group input {
+    padding: 12px 14px;
+    border: 1px solid var(--ios-bg-tertiary);
+    border-radius: var(--ios-radius-sm);
+    font-size: 16px;
+    background: var(--ios-bg-secondary);
+    color: var(--ios-text-primary);
+    transition: border-color .2s, box-shadow .2s;
+}
+.search-group input::placeholder { color: var(--ios-text-tertiary); }
+.search-group input:focus { outline: none; border-color: var(--ios-blue); box-shadow: 0 0 0 2px rgba(0,122,255,.1); }
+.search-actions { display: flex; gap: 10px; margin-top: 16px; }
+
+/* ── Buttons ── */
+.btn {
+    flex: 1;
+    padding: 12px 16px;
+    border: none;
+    border-radius: var(--ios-radius-sm);
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: opacity .2s, transform .2s, background .2s;
+    letter-spacing: -.3px;
+}
+.btn-primary  { background: var(--ios-blue);   color: #fff; }
+.btn-secondary{ background: var(--ios-bg-tertiary); color: var(--ios-text-primary); }
+.btn-danger   { background: var(--ios-red);    color: #fff; }
+.btn-warning  { background: var(--ios-orange); color: #fff; }
+.btn-primary:active, .btn-danger:active, .btn-warning:active { opacity: .8; transform: scale(.98); }
+.btn-secondary:active { background: #D1D1D6; }
+
+/* ── Appointment details ── */
+.appointment-details {
+    background: var(--ios-bg-primary);
+    padding: 20px;
+    border-radius: var(--ios-radius-md);
+    margin-bottom: 20px;
+}
+.detail-row { display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-bottom: 1px solid var(--ios-bg-tertiary); }
+.detail-row:last-child { border-bottom: none; }
+.detail-label { font-weight: 500; color: var(--ios-text-secondary); font-size: 15px; }
+.detail-value { color: var(--ios-text-primary); text-align: right; font-weight: 500; font-size: 15px; }
+
+/* ── Reschedule box ── */
+.reschedule-box {
+    background: var(--ios-bg-primary);
+    padding: 20px;
+    border-radius: var(--ios-radius-md);
+    border-left: 3px solid var(--ios-blue);
+    margin-bottom: 20px;
+    display: none;
+}
+.reschedule-box.active { display: block; }
+.reschedule-box h3 { color: var(--ios-text-primary); margin-bottom: 16px; font-size: 16px; font-weight: 600; }
+
+/* ── Calendar ── */
+.calendar-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.calendar-nav { display: flex; gap: 8px; }
+.calendar-nav-btn {
+    width: 32px; height: 32px;
+    border-radius: var(--ios-radius-sm);
+    border: none;
+    background: var(--ios-bg-secondary);
+    color: var(--ios-blue);
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background .2s;
+}
+.calendar-nav-btn:hover { background: var(--ios-bg-tertiary); }
+.calendar-month-year { font-size: 16px; font-weight: 600; color: var(--ios-text-primary); }
+
+.calendar-weekdays, .calendar-days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+}
+.calendar-weekdays { margin-bottom: 8px; }
+.calendar-days     { margin-bottom: 20px; }
+.calendar-weekday  { text-align: center; font-size: 12px; font-weight: 600; color: var(--ios-text-tertiary); padding: 8px 0; }
+.calendar-day {
+    aspect-ratio: 1;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: var(--ios-radius-sm);
+    font-size: 14px; font-weight: 500;
+    cursor: pointer;
+    transition: background .2s, color .2s;
+    color: var(--ios-text-primary);
+    background: transparent;
+    border: none;
+}
+.calendar-day:hover:not(.disabled):not(.selected) { background: var(--ios-bg-tertiary); }
+.calendar-day.selected  { background: var(--ios-blue); color: #fff; }
+.calendar-day.disabled  { color: var(--ios-text-quaternary); cursor: not-allowed; }
+.calendar-day.other-month { color: var(--ios-text-quaternary); }
+
+/* availability dots */
+.calendar-day.has-slots::after,
+.calendar-day.no-slots::after {
+    content: '';
+    position: absolute;
+    bottom: 3px; left: 50%;
+    transform: translateX(-50%);
+    width: 5px; height: 5px;
+    border-radius: 50%;
+}
+.calendar-day.has-slots { position: relative; }
+.calendar-day.has-slots::after { background: var(--ios-green); }
+.calendar-day.no-slots  { position: relative; }
+.calendar-day.no-slots::after  { background: var(--ios-red); }
+
+/* ── Time slots ── */
+.time-slots-title { font-size: 15px; font-weight: 600; color: var(--ios-text-secondary); margin: 20px 0 12px; }
+.time-slots-grid  { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 16px; }
+.time-slot {
+    padding: 12px 8px;
+    background: var(--ios-bg-secondary);
+    border-radius: var(--ios-radius-sm);
+    border: 1px solid var(--ios-bg-tertiary);
+    font-size: 13px; font-weight: 500;
+    text-align: center;
+    cursor: pointer;
+    transition: background .2s, color .2s, border-color .2s;
+    color: var(--ios-text-primary);
+}
+.time-slot:hover:not(.disabled) { background: var(--ios-bg-tertiary); }
+.time-slot.selected  { background: var(--ios-blue); color: #fff; border-color: var(--ios-blue); }
+.time-slot.disabled  { background: var(--ios-bg-tertiary); color: var(--ios-text-quaternary); cursor: not-allowed; opacity: .5; }
+.no-slots-message    { text-align: center; padding: 32px 16px; color: var(--ios-text-tertiary); font-size: 15px; }
+
+/* ── Alerts ── */
+.alert { padding: 14px 16px; border-radius: var(--ios-radius-sm); margin-bottom: 20px; display: none; font-size: 15px; font-weight: 500; }
+.alert.show   { display: block; }
+.alert-success { background: rgba(52,199,89,.12); color: var(--ios-green); border-left: 3px solid var(--ios-green); }
+.alert-error   { background: rgba(255,59,48,.12);  color: var(--ios-red);   border-left: 3px solid var(--ios-red); }
+.alert-info    { background: rgba(0,122,255,.12);  color: var(--ios-blue);  border-left: 3px solid var(--ios-blue); }
+
+/* ── Action buttons ── */
+.action-buttons { display: flex; gap: 10px; margin-top: 20px; }
+.action-buttons .btn { flex: 1; }
+
+/* ── Responsive ── */
+@media (max-width: 500px) {
+    body { padding: 12px; }
+    .header { padding: 24px 16px 20px; }
+    .header h1 { font-size: 24px; }
+    .content { padding: 16px; }
+}

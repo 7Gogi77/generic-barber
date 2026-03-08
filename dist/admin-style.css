@@ -1,0 +1,906 @@
+/* ============================================
+   iOS-INSPIRED ADMIN PANEL DESIGN SYSTEM
+   ============================================ */
+
+:root {
+    /* iOS Colors */
+    --ios-blue: #007AFF;
+    --ios-blue-light: #5AC8FA;
+    --ios-green: #34C759;
+    --ios-red: #FF3B30;
+    --ios-orange: #FF9500;
+    --ios-yellow: #FFCC00;
+    --ios-purple: #AF52DE;
+    --ios-pink: #FF2D55;
+    --ios-teal: #5AC8FA;
+    
+    /* Backgrounds */
+    --ios-bg-primary: #F2F2F7;
+    --ios-bg-secondary: #FFFFFF;
+    --ios-bg-tertiary: #E5E5EA;
+    --ios-bg-grouped: #F2F2F7;
+    
+    /* Text */
+    --ios-text-primary: #000000;
+    --ios-text-secondary: #8E8E93;
+    --ios-text-tertiary: #C7C7CC;
+    
+    /* Separators */
+    --ios-separator: rgba(60, 60, 67, 0.12);
+    --ios-separator-opaque: #C6C6C8;
+    
+    /* Blur/Glass */
+    --ios-glass-bg: rgba(255, 255, 255, 0.72);
+    --ios-glass-border: rgba(255, 255, 255, 0.18);
+    
+    /* Shadows */
+    --ios-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+    --ios-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+    --ios-shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.12);
+    
+    /* Border Radius */
+    --ios-radius-sm: 8px;
+    --ios-radius-md: 12px;
+    --ios-radius-lg: 16px;
+    --ios-radius-xl: 20px;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    background: var(--ios-bg-primary);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* ===== iOS LOGIN SCREEN ===== */
+.login-container {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: var(--ios-radius-xl);
+    box-shadow: 0 25px 80px rgba(0, 0, 0, 0.15);
+    padding: 48px 40px;
+    max-width: 420px;
+    width: 100%;
+    text-align: center;
+}
+
+.login-logo {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--ios-text-primary);
+    margin-bottom: 8px;
+    letter-spacing: -0.5px;
+}
+
+.login-subtitle {
+    color: var(--ios-text-secondary);
+    font-size: 15px;
+    font-weight: 400;
+    margin-bottom: 40px;
+}
+
+.login-form {
+    text-align: left;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-label {
+    display: block;
+    font-size: 13px;
+    color: var(--ios-text-secondary);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.form-input {
+    width: 100%;
+    padding: 16px 18px;
+    border: none;
+    border-radius: var(--ios-radius-md);
+    font-size: 16px;
+    font-family: inherit;
+    background: var(--ios-bg-primary);
+    color: var(--ios-text-primary);
+    transition: all 0.2s ease;
+}
+
+.form-input:focus {
+    outline: none;
+    box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.25);
+    background: white;
+}
+
+.form-input::placeholder {
+    color: var(--ios-text-tertiary);
+}
+
+.login-btn {
+    width: 100%;
+    padding: 16px;
+    background: var(--ios-blue);
+    color: white;
+    border: none;
+    border-radius: var(--ios-radius-md);
+    font-size: 17px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-top: 24px;
+}
+
+.login-btn:hover {
+    background: #0066d6;
+    transform: scale(1.02);
+}
+
+.login-btn:active {
+    transform: scale(0.98);
+}
+
+.error-message {
+    color: var(--ios-red);
+    font-size: 14px;
+    margin-top: 16px;
+    text-align: center;
+    display: none;
+    padding: 12px;
+    background: rgba(255, 59, 48, 0.1);
+    border-radius: var(--ios-radius-sm);
+}
+
+/* ===== ADMIN PANEL SCREEN ===== */
+.admin-wrapper {
+    display: none;
+    width: 100%;
+    background: var(--ios-bg-primary);
+    min-height: 100vh;
+    padding: 0;
+}
+
+.admin-wrapper.active {
+    display: block;
+}
+
+body:has(.admin-wrapper.active) {
+    display: block;
+    align-items: flex-start;
+    justify-content: flex-start;
+    padding: 0;
+}
+
+.admin-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
+    padding: 24px;
+}
+
+.admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    padding: 20px 24px;
+    background: linear-gradient(180deg, #1C1C1E 0%, #2C2C2E 100%);
+    border-radius: var(--ios-radius-lg);
+    box-shadow: var(--ios-shadow-md);
+}
+
+.admin-header h1 {
+    font-size: 22px;
+    color: white;
+    font-weight: 600;
+    letter-spacing: -0.3px;
+}
+
+.logout-btn {
+    padding: 12px 20px;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border: none;
+    border-radius: var(--ios-radius-sm);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.logout-btn:hover {
+    background: var(--ios-blue);
+    transform: scale(1.02);
+}
+
+.logout-btn:active {
+    transform: scale(0.98);
+}
+
+.admin-section {
+    background: var(--ios-bg-secondary);
+    padding: 24px;
+    border-radius: var(--ios-radius-lg);
+    margin-bottom: 20px;
+    box-shadow: var(--ios-shadow-sm);
+}
+
+.section-title {
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--ios-text-primary);
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--ios-separator);
+}
+
+/* ===== iOS TABS ===== */
+.admin-tabs {
+    display: flex;
+    gap: 0;
+    background: var(--ios-bg-secondary);
+    border-radius: var(--ios-radius-lg);
+    padding: 6px;
+    margin-bottom: 24px;
+    box-shadow: var(--ios-shadow-sm);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.tab-btn {
+    flex: 1;
+    min-width: fit-content;
+    padding: 14px 20px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--ios-text-secondary);
+    border-radius: var(--ios-radius-md);
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.tab-btn:hover {
+    color: var(--ios-text-primary);
+    background: var(--ios-bg-primary);
+}
+
+.tab-btn.active {
+    color: white;
+    background: var(--ios-blue);
+    font-weight: 600;
+    box-shadow: var(--ios-shadow-sm);
+}
+
+.tab-btn i {
+    font-size: 16px;
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+    animation: iosFadeIn 0.3s ease;
+}
+
+@keyframes iosFadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.form-row.full {
+    grid-template-columns: 1fr;
+}
+
+.form-group-admin {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-label-admin {
+    font-size: 13px;
+    color: var(--ios-text-secondary);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.form-input-admin {
+    padding: 14px 16px;
+    border: none;
+    border-radius: var(--ios-radius-md);
+    font-size: 16px;
+    font-family: inherit;
+    background: var(--ios-bg-primary);
+    color: var(--ios-text-primary);
+    transition: all 0.2s ease;
+}
+
+.form-input-admin:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.25);
+    background: white;
+}
+
+.form-input-admin::placeholder {
+    color: var(--ios-text-tertiary);
+}
+
+/* Mobile: ensure calendar doesn't flush to the very bottom of the viewport
+   and respect safe-area insets. This overrides any aggressive 100dvh rules. */
+@media (max-width: 600px) {
+    .content-area,
+    .main-content,
+    .admin-container,
+    .admin-wrapper {
+        box-sizing: border-box;
+        padding-bottom: calc(20px + env(safe-area-inset-bottom));
+    }
+
+    #scheduleCalendar {
+        height: auto !important;
+        max-height: calc(100vh - 120px) !important;
+        margin-bottom: 14px !important;
+        min-height: 220px !important;
+    }
+
+    /* Ensure FullCalendar internal scrollers don't force extra height */
+    #scheduleCalendar .fc-scroller,
+    #scheduleCalendar .fc-scroller-harness,
+    #scheduleCalendar .fc-scroller-liquid,
+    #scheduleCalendar .fc-scroller-liquid-absolute {
+        max-height: none !important;
+    }
+}
+
+textarea.form-input-admin {
+    resize: vertical;
+    min-height: 100px;
+    font-family: inherit;
+}
+
+/* ===== iOS UPLOAD AREA ===== */
+.upload-area {
+    border: 2px dashed var(--ios-separator-opaque);
+    border-radius: var(--ios-radius-lg);
+    padding: 40px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: var(--ios-bg-primary);
+}
+
+.upload-area:hover {
+    border-color: var(--ios-blue);
+    background: rgba(0, 122, 255, 0.05);
+}
+
+.upload-area.dragover {
+    border-color: var(--ios-blue);
+    background: rgba(0, 122, 255, 0.1);
+}
+
+.upload-icon {
+    font-size: 48px;
+    margin-bottom: 12px;
+    color: var(--ios-blue);
+}
+
+.upload-text {
+    color: var(--ios-text-secondary);
+    font-size: 15px;
+    margin-bottom: 6px;
+}
+
+.upload-hint {
+    color: var(--ios-text-tertiary);
+    font-size: 13px;
+}
+
+.upload-input {
+    display: none;
+}
+
+/* ===== iOS IMAGE GALLERY ===== */
+.image-gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.image-item {
+    position: relative;
+    border-radius: var(--ios-radius-md);
+    overflow: hidden;
+    aspect-ratio: 1;
+    box-shadow: var(--ios-shadow-sm);
+}
+
+.image-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.image-item:hover img {
+    transform: scale(1.05);
+}
+
+.image-remove {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: var(--ios-red);
+    color: white;
+    border: none;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    opacity: 0;
+}
+
+.image-item:hover .image-remove {
+    opacity: 1;
+}
+
+.image-remove:hover {
+    transform: scale(1.1);
+}
+
+/* ===== iOS SERVICE/BARBER ITEMS ===== */
+.service-item {
+    background: var(--ios-bg-primary);
+    padding: 16px;
+    border-radius: var(--ios-radius-md);
+    margin-bottom: 12px;
+    border-left: 4px solid var(--ios-blue);
+}
+
+.service-item .form-input-admin {
+    background: var(--ios-bg-secondary);
+    margin-bottom: 10px;
+}
+
+/* ===== iOS SAVE BUTTON ===== */
+.save-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 14px 28px;
+    background: var(--ios-blue);
+    color: white;
+    border: none;
+    border-radius: var(--ios-radius-md);
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-top: 16px;
+    width: 100%;
+}
+
+.save-btn:hover {
+    background: #0066d6;
+    transform: scale(1.02);
+}
+
+.save-btn:active {
+    transform: scale(0.98);
+}
+
+.save-btn.success {
+    background: var(--ios-green);
+}
+
+.save-btn.danger {
+    background: var(--ios-red);
+}
+
+/* ===== iOS NOTIFICATION ===== */
+.notification {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    padding: 16px 24px;
+    border-radius: var(--ios-radius-lg);
+    color: white;
+    font-size: 15px;
+    font-weight: 500;
+    animation: iosSlideIn 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    z-index: 2000;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow: var(--ios-shadow-lg);
+}
+
+.notification.success {
+    background: rgba(52, 199, 89, 0.95);
+}
+
+.notification.error {
+    background: rgba(255, 59, 48, 0.95);
+}
+
+@keyframes iosSlideIn {
+    from { transform: translateY(30px) scale(0.9); opacity: 0; }
+    to { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+/* ===== iOS COLOR PICKER ===== */
+.color-picker-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+input[type="color"] {
+    width: 50px;
+    height: 50px;
+    border: 2px solid var(--ios-separator-opaque);
+    border-radius: var(--ios-radius-md);
+    cursor: pointer;
+    padding: 3px;
+    background: white;
+}
+
+input[type="color"]::-webkit-color-swatch-wrapper {
+    padding: 0;
+}
+
+input[type="color"]::-webkit-color-swatch {
+    border-radius: 6px;
+    border: none;
+}
+
+/* ===== iOS LOADING SPINNER ===== */
+.ios-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+}
+
+.ios-spinner {
+    width: 36px;
+    height: 36px;
+    border: 3px solid var(--ios-bg-tertiary);
+    border-top-color: var(--ios-blue);
+    border-radius: 50%;
+    animation: iosSpin 0.8s linear infinite;
+}
+
+.ios-loading-text {
+    margin-top: 12px;
+    font-size: 14px;
+    color: var(--ios-text-secondary);
+}
+
+@keyframes iosSpin {
+    to { transform: rotate(360deg); }
+}
+
+/* ===== iOS CHECKBOX ===== */
+.ios-checkbox-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px;
+    background: var(--ios-bg-primary);
+    border-radius: var(--ios-radius-md);
+    cursor: pointer;
+}
+
+.ios-checkbox-wrapper input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 22px;
+    height: 22px;
+    background: var(--ios-bg-tertiary);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+}
+
+.ios-checkbox-wrapper input[type="checkbox"]:checked {
+    background: var(--ios-blue);
+}
+
+.ios-checkbox-wrapper input[type="checkbox"]:checked::after {
+    content: '✓';
+    position: absolute;
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+@media (max-width: 768px) {
+    body {
+        padding: 0;
+    }
+    
+    .login-container {
+        padding: 32px 24px;
+        margin: 16px;
+        max-width: calc(100% - 32px);
+        border-radius: var(--ios-radius-lg);
+    }
+    
+    .login-logo {
+        font-size: 26px;
+    }
+    
+    .login-subtitle {
+        font-size: 13px;
+        margin-bottom: 32px;
+    }
+
+    .admin-header {
+        flex-direction: column;
+        gap: 12px;
+        align-items: stretch;
+        padding: 16px;
+        margin: 16px;
+        margin-bottom: 16px;
+    }
+    
+    .admin-header h1 {
+        font-size: 18px;
+        text-align: center;
+    }
+    
+    .admin-header > div {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+    }
+
+    .admin-container {
+        padding: 16px;
+    }
+
+    .form-row {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .admin-section {
+        padding: 16px;
+        margin-bottom: 16px;
+        border-radius: var(--ios-radius-md);
+    }
+
+    .section-title {
+        font-size: 15px;
+        margin-bottom: 16px;
+    }
+
+    .form-label-admin {
+        font-size: 12px;
+    }
+
+    .form-input-admin {
+        padding: 12px 14px;
+        font-size: 16px; /* Prevents zoom on iOS */
+    }
+
+    .image-gallery {
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    }
+    
+    .upload-area {
+        padding: 30px 15px;
+    }
+    
+    .upload-icon {
+        font-size: 40px;
+    }
+    
+    .upload-text {
+        font-size: 14px;
+    }
+    
+    .save-btn {
+        padding: 12px 20px;
+        font-size: 15px;
+        margin-top: 12px;
+    }
+    
+    .logout-btn {
+        padding: 10px 16px;
+        font-size: 13px;
+    }
+    
+    .service-item {
+        padding: 14px;
+        margin-bottom: 10px;
+    }
+    
+    .admin-tabs {
+        padding: 4px;
+        gap: 0;
+        border-radius: var(--ios-radius-md);
+    }
+    
+    .tab-btn {
+        padding: 12px 14px;
+        font-size: 12px;
+    }
+    
+    .tab-btn i {
+        display: none;
+    }
+    
+    .notification {
+        bottom: 20px;
+        right: 20px;
+        left: 20px;
+        text-align: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .login-container {
+        padding: 24px 20px;
+        border-radius: var(--ios-radius-md);
+    }
+    
+    .login-logo {
+        font-size: 22px;
+    }
+    
+    .login-subtitle {
+        font-size: 12px;
+    }
+    
+    .form-input {
+        padding: 14px 12px;
+        font-size: 16px;
+    }
+    
+    .login-btn {
+        padding: 14px;
+        font-size: 15px;
+    }
+    
+    .admin-wrapper {
+        padding: 0;
+    }
+    
+    .admin-container {
+        padding: 12px;
+    }
+    
+    .admin-header {
+        margin: 12px;
+        margin-bottom: 12px;
+        padding: 14px;
+        border-radius: var(--ios-radius-md);
+    }
+    
+    .admin-header h1 {
+        font-size: 16px;
+    }
+    
+    .admin-section {
+        padding: 14px;
+        margin-bottom: 12px;
+        border-radius: var(--ios-radius-sm);
+    }
+    
+    .section-title {
+        font-size: 14px;
+        margin-bottom: 14px;
+    }
+    
+    .form-group-admin {
+        margin-bottom: 12px;
+    }
+    
+    .form-label-admin {
+        font-size: 11px;
+        margin-bottom: 6px;
+    }
+    
+    .form-input-admin {
+        padding: 12px;
+        font-size: 16px;
+        border-radius: var(--ios-radius-sm);
+    }
+    
+    textarea.form-input-admin {
+        min-height: 80px;
+    }
+    
+    .image-gallery {
+        grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+        gap: 8px;
+    }
+    
+    .image-item {
+        aspect-ratio: 1;
+    }
+    
+    .save-btn {
+        padding: 12px 16px;
+        font-size: 14px;
+        margin-top: 10px;
+        width: 100%;
+    }
+    
+    .upload-icon {
+        font-size: 36px;
+    }
+    
+    .upload-area {
+        padding: 24px 12px;
+    }
+    
+    .tab-btn {
+        padding: 10px 12px;
+        font-size: 11px;
+    }
+    
+    input[type="number"],
+    input[type="email"],
+    input[type="tel"],
+    input[type="text"],
+    input[type="password"] {
+        font-size: 16px;
+        padding: 12px;
+    }
+    
+    input[type="color"] {
+        width: 44px;
+        height: 44px;
+    }
+}

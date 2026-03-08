@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Schedule Data Model & Rules Engine
  * Core business logic for scheduling system
  */

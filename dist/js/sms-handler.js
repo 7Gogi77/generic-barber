@@ -1,4 +1,4 @@
-/**
+﻿/**
  * SMS Handler - Android SMS Gateway Integration
  * Sends appointment confirmations and reminders via Android phone
  * 
@@ -19,6 +19,40 @@ const SMS_CONFIG = {
   productionUrl: 'https://demo-stran.vercel.app', // Production/public URL for SMS links
 };
 
+// ========== TEMPLATE HELPERS ==========
+
+// Read shop name from SITE_CONFIG (config.js) or its localStorage backup (set by admin-panel)
+function getBusinessName() {
+  try {
+    const backup = localStorage.getItem('site_config_backup');
+    if (backup) {
+      const cfg = JSON.parse(backup);
+      if (cfg && cfg.shopName) return cfg.shopName;
+    }
+  } catch (_) {}
+  // Fall back to in-memory SITE_CONFIG if present, then hardcoded value
+  if (window.SITE_CONFIG && window.SITE_CONFIG.shopName) return window.SITE_CONFIG.shopName;
+  return SMS_CONFIG.businessName;
+}
+
+// Substitute {ime}, {posel}, {datum}, {cas}, {link} in a template string
+function applyTemplate(template, vars) {
+  return template
+    .replace(/\{ime\}/g,   vars.ime   || '')
+    .replace(/\{posel\}/g, vars.posel || getBusinessName())
+    .replace(/\{datum\}/g, vars.datum || '')
+    .replace(/\{cas\}/g,   vars.cas   || '')
+    .replace(/\{link\}/g,  vars.link  || '');
+}
+
+// Load editable SMS templates saved from nastavitve rezervacij
+function getSmsTemplates() {
+  try {
+    const s = JSON.parse(localStorage.getItem('bookingSettings') || '{}');
+    return s.smsTemplates || {};
+  } catch (_) { return {}; }
+}
+
 // ========== SMS SENDING FUNCTION ==========
 
 /**
@@ -28,25 +62,31 @@ const SMS_CONFIG = {
  * @returns {Promise<Object>} Result object
  */
 async function sendSMS(phoneNumber, message) {
+
   // Auto-format Slovenian numbers: 031... → +38631...
-  let formattedPhone = String(phoneNumber || '').trim();
-  if (formattedPhone.startsWith('0')) {
+  let formattedPhone = phoneNumber;
+  if (formattedPhone && formattedPhone.startsWith('0')) {
     formattedPhone = '+386' + formattedPhone.substring(1);
   }
 
+  // Validate phone number
   if (!formattedPhone || !formattedPhone.startsWith('+')) {
     return { success: false, error: 'Invalid phone number format' };
   }
 
   try {
-    // Route through server-side proxy to avoid browser CORS restrictions
+    // Use the server-side proxy (/api/send-sms) to avoid browser CORS restrictions
     const response = await fetch('/api/send-sms', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ to: formattedPhone, message }),
+      body: JSON.stringify({
+        to:      formattedPhone,
+        message: message,
+      }),
     });
 
     const result = await response.json();
+
     if (response.ok && result.success) {
       return { success: true, data: result.data };
     } else {
@@ -65,26 +105,24 @@ async function sendSMS(phoneNumber, message) {
  * @returns {Promise<Object>} Result object
  */
 async function sendAppointmentConfirmation(appointment) {
-  const phoneNumber = appointment.phoneNumber;
+  const tmpl = getSmsTemplates();
+  // Only block if explicitly disabled — default (undefined/true) always sends
+  if (tmpl.confirmationEnabled === false) return { success: false, error: 'Disabled' };
+
+  const phoneNumber   = appointment.phoneNumber;
   const appointmentId = appointment.id;
+  const manageLink    = `${SMS_CONFIG.productionUrl}/manage-appointment.html?id=${appointmentId}`;
 
-  // Generate management link with appointment ID
-  const manageLink = `${SMS_CONFIG.productionUrl}/manage-appointment.html?id=${appointmentId}`;
+  const defaultMsg = 'Hvala za vaše naročilo na termin pri {posel}! Upravljanje: {link}';
+  const message = applyTemplate(tmpl.confirmationMessage || defaultMsg, {
+    ime:   appointment.customer || '',
+    posel: getBusinessName(),
+    link:  manageLink,
+    datum: '',
+    cas:   '',
+  });
 
-  // Compose message with link
-  const message = `Hvala za vaše naročilo na termin pri ${SMS_CONFIG.businessName}! Upravljanje: ${manageLink}`;
-
-  // Send SMS
-  const result = await sendSMS(phoneNumber, message);
-
-  // Log to console
-  if (result.success) {
-    console.log(`✅ Confirmation SMS sent to ${phoneNumber}`);
-  } else {
-    console.error(`❌ Failed to send confirmation SMS to ${phoneNumber}:`, result.error);
-  }
-
-  return result;
+  return await sendSMS(phoneNumber, message);
 }
 
 // ========== APPOINTMENT REMINDER SMS ==========
@@ -95,28 +133,24 @@ async function sendAppointmentConfirmation(appointment) {
  * @returns {Promise<Object>} Result object
  */
 async function sendAppointmentReminder(appointment) {
+  const tmpl      = getSmsTemplates();
   const phoneNumber = appointment.phoneNumber;
-  const startTime = new Date(appointment.start);
-
-  // Format time (e.g., "14:30")
-  const hours = startTime.getHours().toString().padStart(2, '0');
+  const startTime   = new Date(appointment.start);
+  const hours   = startTime.getHours().toString().padStart(2, '0');
   const minutes = startTime.getMinutes().toString().padStart(2, '0');
   const timeStr = `${hours}:${minutes}`;
+  const dateStr = `${startTime.getDate()}. ${startTime.getMonth() + 1}. ${startTime.getFullYear()}`;
 
-  // Compose message
-  const message = `Pozdravljeni, jutri ob ${timeStr} imate termin pri ${SMS_CONFIG.businessName}.`;
+  const defaultMsg = '{ime}, jutri ob {cas} imate termin pri {posel}. Se vidimo!';
+  const message = applyTemplate(tmpl.reminderMessage || defaultMsg, {
+    ime:   appointment.customer || '',
+    posel: getBusinessName(),
+    datum: dateStr,
+    cas:   timeStr,
+    link:  '',
+  });
 
-  // Send SMS
-  const result = await sendSMS(phoneNumber, message);
-
-  // Log to console
-  if (result.success) {
-    console.log(`✅ Reminder SMS sent to ${phoneNumber} for ${timeStr}`);
-  } else {
-    console.error(`❌ Failed to send reminder SMS to ${phoneNumber}:`, result.error);
-  }
-
-  return result;
+  return await sendSMS(phoneNumber, message);
 }
 
 // ========== GET TOMORROW'S APPOINTMENTS ==========
@@ -153,10 +187,8 @@ async function getTomorrowAppointments() {
       }
     }
 
-    console.log(`📅 Found ${tomorrowAppointments.length} appointments for tomorrow`);
     return tomorrowAppointments;
   } catch (error) {
-    console.error('❌ Error fetching tomorrow appointments:', error);
     return [];
   }
 }
@@ -169,12 +201,10 @@ async function getTomorrowAppointments() {
  * @returns {Promise<Object>} Summary of sent reminders
  */
 async function sendDailyReminders() {
-  console.log('🔔 Starting daily reminder process...');
 
   const appointments = await getTomorrowAppointments();
 
   if (appointments.length === 0) {
-    console.log('ℹ️ No appointments tomorrow - no reminders to send');
     return { total: 0, sent: 0, failed: 0 };
   }
 
@@ -184,7 +214,6 @@ async function sendDailyReminders() {
   for (const appointment of appointments) {
     // Skip if no phone number
     if (!appointment.phoneNumber) {
-      console.warn(`⚠️ Appointment ${appointment.id} has no phone number - skipping`);
       failed++;
       continue;
     }
@@ -208,7 +237,6 @@ async function sendDailyReminders() {
     failed,
   };
 
-  console.log('✅ Daily reminders complete:', summary);
   return summary;
 }
 
@@ -272,4 +300,3 @@ window.SMSHandler = {
   config: SMS_CONFIG,
 };
 
-console.log('✅ SMS Handler loaded. Use window.SMSHandler for SMS functions.');
