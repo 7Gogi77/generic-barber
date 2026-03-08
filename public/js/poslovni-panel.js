@@ -199,7 +199,7 @@
         } else {
         }
 
-        // Recalculate total price from selected services
+        // Recalculate total price from selected services (with active promo support)
         function recalcServicePrice() {
             const checkboxContainer = document.getElementById('eventTypeCheckboxes');
             const priceInput = document.getElementById('eventPrice');
@@ -220,9 +220,44 @@
                 });
             }
             const currency = (window.SITE_CONFIG && window.SITE_CONFIG.currency) ? window.SITE_CONFIG.currency : '€';
-            priceInput.value = total + currency;
-            return total;
+            // Check for active promo on the selected event date
+            const _dateEl = document.getElementById('eventStartDate');
+            const _eventDate = (_dateEl && _dateEl.value) ? new Date(_dateEl.value + 'T12:00:00') : new Date();
+            const _promo = (() => {
+                try {
+                    const _bs = JSON.parse(localStorage.getItem('bookingSettings') || '{}');
+                    const _ps = Array.isArray(_bs.promoIntervals) ? _bs.promoIntervals : [];
+                    if (!_ps.length) return null;
+                    const _ds = _eventDate.getFullYear() + '-' + String(_eventDate.getMonth()+1).padStart(2,'0') + '-' + String(_eventDate.getDate()).padStart(2,'0');
+                    return _ps.find(p => p.from <= _ds && _ds <= p.to) || null;
+                } catch (_) { return null; }
+            })();
+            // Render promo badge dynamically
+            let _badge = document.getElementById('eventPromoBadge');
+            if (_promo && total > 0) {
+                const _disc = Math.round(total * (1 - _promo.discount / 100) * 100) / 100;
+                priceInput.value = _disc + currency;
+                if (!_badge) {
+                    _badge = document.createElement('div');
+                    _badge.id = 'eventPromoBadge';
+                    _badge.style.cssText = 'margin-top:6px;font-size:12px;color:#34c759;line-height:1.5;';
+                    priceInput.parentNode.appendChild(_badge);
+                }
+                _badge.innerHTML = `🏷 <strong>${_promo.label || 'Akcija'} −${_promo.discount}%</strong>: <s style="opacity:0.6;">${total.toFixed(2)}${currency}</s> → <strong>${_disc.toFixed(2)}${currency}</strong>`;
+                _badge.style.display = '';
+                return _disc;
+            } else {
+                priceInput.value = total + currency;
+                if (_badge) _badge.style.display = 'none';
+                return total;
+            }
         }
+        // Re-run price calc when event date changes (promo may change)
+        document.addEventListener('change', function(e) {
+            if (e.target && e.target.id === 'eventStartDate' && typeof currentEventTab !== 'undefined' && currentEventTab === 'customer') {
+                recalcServicePrice();
+            }
+        });
         // ===== GLOBAL DELETION TRACKING SYSTEM =====
         // Track deleted event IDs persistently across page reloads
         let deletedEventIds = new Set();

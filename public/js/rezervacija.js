@@ -183,6 +183,19 @@
         }
         
         // ===== GET BOOKING SETTINGS (from poslovni-panel localStorage) =====
+        // ===== ACTIVE PROMO HELPER =====
+        function getActivePromo(date) {
+            try {
+                const bs = JSON.parse(localStorage.getItem('bookingSettings') || '{}');
+                const promos = Array.isArray(bs.promoIntervals) ? bs.promoIntervals : [];
+                if (!promos.length) return null;
+                const d = (date instanceof Date) ? date : (date ? new Date(date) : new Date());
+                if (isNaN(d)) return null;
+                const ds = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+                return promos.find(p => p.from <= ds && ds <= p.to) || null;
+            } catch (_) { return null; }
+        }
+
         function getBookingSettings() {
             try {
                 const raw = localStorage.getItem('bookingSettings');
@@ -398,7 +411,15 @@
             
             // Calculate totals
             BookingState.totalDuration = BookingState.selectedServices.reduce((sum, s) => sum + s.duration, 0);
-            BookingState.totalPrice = BookingState.selectedServices.reduce((sum, s) => sum + s.price, 0);
+            const _basePrice = BookingState.selectedServices.reduce((sum, s) => sum + s.price, 0);
+            // Apply active promo discount
+            const _promoDate = BookingState.selectedDate || new Date();
+            const _activePromo = getActivePromo(_promoDate);
+            BookingState.activePromo = _activePromo;
+            BookingState.promoOriginalPrice = (_activePromo && _basePrice > 0) ? _basePrice : null;
+            BookingState.totalPrice = (_activePromo && _basePrice > 0)
+                ? Math.round(_basePrice * (1 - _activePromo.discount / 100) * 100) / 100
+                : _basePrice;
             
             // Update summary display
             updateSelectionSummary();
@@ -430,8 +451,20 @@
                 }
                 durationText.textContent = durationStr.trim();
                 
-                // Format price
-                priceText.textContent = `${BookingState.totalPrice.toFixed(2)} €`;
+                // Format price with optional promo discount
+                if (BookingState.activePromo && BookingState.promoOriginalPrice != null) {
+                    priceText.innerHTML = `<s style="opacity:0.5;font-size:0.85em;">${BookingState.promoOriginalPrice.toFixed(2)} €</s>&nbsp;<strong>${BookingState.totalPrice.toFixed(2)} €</strong>`;
+                    const _pi = document.getElementById('promoDiscountInfo');
+                    if (_pi) {
+                        const _pl = document.getElementById('promoDiscountLabel');
+                        if (_pl) _pl.textContent = `🏷 ${BookingState.activePromo.label || 'Akcija'} −${BookingState.activePromo.discount}%`;
+                        _pi.style.display = '';
+                    }
+                } else {
+                    priceText.textContent = `${BookingState.totalPrice.toFixed(2)} €`;
+                    const _pi = document.getElementById('promoDiscountInfo');
+                    if (_pi) _pi.style.display = 'none';
+                }
             } else {
                 summary.style.display = 'none';
             }
@@ -816,6 +849,17 @@
         function selectDate(date, button) {
             BookingState.selectedDate = date;
             BookingState.selectedTime = null;
+            // Re-evaluate promo discount with the newly selected date
+            if (BookingState.selectedServices.length > 0) {
+                const _base = BookingState.promoOriginalPrice ?? BookingState.totalPrice;
+                const _p = getActivePromo(date);
+                BookingState.activePromo = _p;
+                BookingState.promoOriginalPrice = (_p && _base > 0) ? _base : null;
+                BookingState.totalPrice = (_p && _base > 0)
+                    ? Math.round(_base * (1 - _p.discount / 100) * 100) / 100
+                    : _base;
+                updateSelectionSummary();
+            }
             
             // Update calendar UI
             document.querySelectorAll('.calendar-day').forEach(btn => {
@@ -1028,6 +1072,19 @@
             
             // Total
             const currency = window.SITE_CONFIG?.currency || '€';
+            // Show promo row if discount is active
+            const _sumPromoRow = document.getElementById('summaryPromoRow');
+            if (BookingState.activePromo && BookingState.promoOriginalPrice != null && _sumPromoRow) {
+                const _sumPrLabel = document.getElementById('summaryPromoLabel');
+                const _sumPrVal   = document.getElementById('summaryPromo');
+                const _sumOrigEl  = document.getElementById('summaryOriginalPrice');
+                if (_sumPrLabel) _sumPrLabel.textContent = 'Popust';
+                if (_sumPrVal)   _sumPrVal.textContent   = `${BookingState.activePromo.label || 'Akcija'} −${BookingState.activePromo.discount}%`;
+                if (_sumOrigEl)  _sumOrigEl.textContent  = `${currency}${BookingState.promoOriginalPrice.toFixed(2)}`;
+                _sumPromoRow.style.display = '';
+            } else if (_sumPromoRow) {
+                _sumPromoRow.style.display = 'none';
+            }
             document.getElementById('summaryTotal').textContent = `${currency}${BookingState.totalPrice.toFixed(2)}`;
         }
 

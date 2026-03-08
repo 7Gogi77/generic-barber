@@ -191,15 +191,42 @@
             document.getElementById('services-title').innerText = SITE_CONFIG.servicesSection.title;
             const servicesList = document.getElementById('services-list');
             servicesList.innerHTML = '';
+            // Resolve active promo for today
+            const _todayPromo = (() => {
+                try {
+                    const _bs = JSON.parse(localStorage.getItem('bookingSettings') || '{}');
+                    const _ps = Array.isArray(_bs.promoIntervals) ? _bs.promoIntervals : [];
+                    if (!_ps.length) return null;
+                    const _n = new Date();
+                    const _ds = _n.getFullYear() + '-' + String(_n.getMonth()+1).padStart(2,'0') + '-' + String(_n.getDate()).padStart(2,'0');
+                    return _ps.find(p => p.from <= _ds && _ds <= p.to) || null;
+                } catch(_) { return null; }
+            })();
+            // Show/hide promo banner
+            const _promoBannerEl = document.getElementById('promoBanner');
+            if (_todayPromo && _promoBannerEl) {
+                _promoBannerEl.innerHTML = `<span class="promo-banner-tag">🏷 ${_todayPromo.label || 'Akcija'}</span> <strong>${_todayPromo.discount}% popust</strong> na vse storitve &ndash; do ${_todayPromo.to}!`;
+                _promoBannerEl.style.display = '';
+            } else if (_promoBannerEl) {
+                _promoBannerEl.style.display = 'none';
+            }
             SITE_CONFIG.servicesSection.items.forEach(s => {
                 const item = document.createElement('div');
                 item.className = 'service-item';
+                const _rawPrice = parseFloat(String(s.price || '0').replace(/[^0-9.,]/g,'').replace(',','.')) || 0;
+                let _priceHTML;
+                if (_todayPromo && _rawPrice > 0) {
+                    const _disc = Math.round(_rawPrice * (1 - _todayPromo.discount / 100) * 100) / 100;
+                    _priceHTML = `<div class="service-price-wrap"><span class="service-price-original">${_rawPrice.toFixed(2)}€</span><span class="service-price">${_disc.toFixed(2)}€</span></div>`;
+                } else {
+                    _priceHTML = `<span class="service-price">${s.price}€</span>`;
+                }
                 item.innerHTML = `
                     <div class="service-info">
                         <h4>${s.name}</h4>
                         <p>${s.desc}</p>
                     </div>
-                    <span class="service-price">${s.price}€</span>
+                    ${_priceHTML}
                 `;
                 servicesList.appendChild(item);
             });

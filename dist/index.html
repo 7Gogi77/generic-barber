@@ -597,6 +597,25 @@
             font-size: 1.5rem;
             color: var(--accent);
         }
+        .service-price-wrap { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; }
+        .service-price-original { font-family: 'Playfair Display', serif; font-size: 1rem; color: var(--text-tertiary); text-decoration: line-through; opacity: 0.55; }
+        #promoBanner {
+            display: none;
+            background: linear-gradient(135deg, var(--accent) 0%, color-mix(in srgb, var(--accent) 72%, #000) 100%);
+            color: #fff;
+            text-align: center;
+            padding: 14px 24px;
+            border-radius: var(--radius-md);
+            margin-bottom: 28px;
+            font-size: 0.95rem;
+            letter-spacing: 0.02em;
+            animation: promoPulse 2.4s ease-in-out infinite;
+        }
+        @keyframes promoPulse {
+            0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 35%, transparent); }
+            50%       { box-shadow: 0 0 0 10px color-mix(in srgb, var(--accent) 0%, transparent); }
+        }
+        .promo-banner-tag { background: rgba(255,255,255,0.22); border-radius: 6px; padding: 2px 10px; margin-right: 8px; font-weight: 700; font-size: 0.9em; }
         
         /* ============================================
            TEAM SECTION
@@ -1089,6 +1108,7 @@
             <div class="services-header">
                 <h2 class="display-md" id="services-title"></h2>
             </div>
+            <div id="promoBanner"></div>
             <div id="services-list"></div>
         </div>
     </section>
@@ -1409,15 +1429,42 @@
             document.getElementById('services-title').innerText = SITE_CONFIG.servicesSection.title;
             const servicesList = document.getElementById('services-list');
             servicesList.innerHTML = '';
+            // Resolve active promo for today
+            const _todayPromo = (() => {
+                try {
+                    const _bs = JSON.parse(localStorage.getItem('bookingSettings') || '{}');
+                    const _ps = Array.isArray(_bs.promoIntervals) ? _bs.promoIntervals : [];
+                    if (!_ps.length) return null;
+                    const _n = new Date();
+                    const _ds = _n.getFullYear() + '-' + String(_n.getMonth()+1).padStart(2,'0') + '-' + String(_n.getDate()).padStart(2,'0');
+                    return _ps.find(p => p.from <= _ds && _ds <= p.to) || null;
+                } catch(_) { return null; }
+            })();
+            // Show/hide promo banner
+            const _promoBannerEl = document.getElementById('promoBanner');
+            if (_todayPromo && _promoBannerEl) {
+                _promoBannerEl.innerHTML = `<span class="promo-banner-tag">🏷 ${_todayPromo.label || 'Akcija'}</span> <strong>${_todayPromo.discount}% popust</strong> na vse storitve &ndash; do ${_todayPromo.to}!`;
+                _promoBannerEl.style.display = '';
+            } else if (_promoBannerEl) {
+                _promoBannerEl.style.display = 'none';
+            }
             SITE_CONFIG.servicesSection.items.forEach(s => {
                 const item = document.createElement('div');
                 item.className = 'service-item';
+                const _rawPrice = parseFloat(String(s.price || '0').replace(/[^0-9.,]/g,'').replace(',','.')) || 0;
+                let _priceHTML;
+                if (_todayPromo && _rawPrice > 0) {
+                    const _disc = Math.round(_rawPrice * (1 - _todayPromo.discount / 100) * 100) / 100;
+                    _priceHTML = `<div class="service-price-wrap"><span class="service-price-original">${_rawPrice.toFixed(2)}€</span><span class="service-price">${_disc.toFixed(2)}€</span></div>`;
+                } else {
+                    _priceHTML = `<span class="service-price">${s.price}€</span>`;
+                }
                 item.innerHTML = `
                     <div class="service-info">
                         <h4>${s.name}</h4>
                         <p>${s.desc}</p>
                     </div>
-                    <span class="service-price">${s.price}€</span>
+                    ${_priceHTML}
                 `;
                 servicesList.appendChild(item);
             });
