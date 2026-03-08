@@ -1418,13 +1418,15 @@
             window.SITE_CONFIG.booking.maxAdvanceDays          = s.maxAdvanceDays;
             try { localStorage.setItem('site_config_backup', JSON.stringify(window.SITE_CONFIG)); } catch (e) {}
 
-            // Cloud sync (embed bookingSettings so other devices can load it)
-            try {
-                if (window.CloudSync && typeof window.CloudSync.saveToCloud === 'function') {
-                    window.SITE_CONFIG._bookingSettings = s;
-                    await window.CloudSync.saveToCloud(window.SITE_CONFIG);
-                }
-            } catch (e) {}
+            // Fire cloud sync in the background (do NOT await — would stall the UI)
+            window.SITE_CONFIG._bookingSettings = s;
+            const _scSnapshot = JSON.parse(JSON.stringify(window.SITE_CONFIG));
+            setTimeout(() => {
+                try {
+                    if (window.CloudSync && typeof window.CloudSync.saveToCloud === 'function')
+                        window.CloudSync.saveToCloud(_scSnapshot).catch(e => console.warn('⚠ Cloud sync failed', e));
+                } catch (e) {}
+            }, 0);
 
             // Update FullCalendar live
             try {
@@ -1439,15 +1441,17 @@
                 }
             } catch (e) {}
 
-            // Also collect and persist services + team from their tab forms
-            try {
-                if (window.SITE_CONFIG) {
-                    if (window.SITE_CONFIG.servicesSection) window.SITE_CONFIG.servicesSection.items = bspCollectServices();
-                    if (window.SITE_CONFIG.barbersSection)  window.SITE_CONFIG.barbersSection.list   = bspCollectTeam();
-                    if (window.StorageManager) await StorageManager.save('site_config', window.SITE_CONFIG);
-                    if (window.CloudSync?.saveToCloud) await window.CloudSync.saveToCloud(window.SITE_CONFIG);
-                }
-            } catch (e) {}
+            // Also collect and persist services + team from their tab forms (background)
+            setTimeout(() => {
+                try {
+                    if (window.SITE_CONFIG) {
+                        if (window.SITE_CONFIG.servicesSection) window.SITE_CONFIG.servicesSection.items = bspCollectServices();
+                        if (window.SITE_CONFIG.barbersSection)  window.SITE_CONFIG.barbersSection.list   = bspCollectTeam();
+                        if (window.StorageManager) StorageManager.save('site_config', window.SITE_CONFIG).catch(() => {});
+                        if (window.CloudSync?.saveToCloud) window.CloudSync.saveToCloud(window.SITE_CONFIG).catch(() => {});
+                    }
+                } catch (e) {}
+            }, 0);
             _bspClearDirty();
         }
 
