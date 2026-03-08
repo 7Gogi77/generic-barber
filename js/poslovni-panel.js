@@ -1377,6 +1377,12 @@
 
             // ── Persist ───────────────────────────────────────────
             try { localStorage.setItem('bookingSettings', JSON.stringify(s)); } catch (e) {}
+            // Sync bookingSettings to Firebase directly (no isConnected guard)
+            try {
+                if (window.CloudSync && typeof window.CloudSync.saveBookingSettings === 'function') {
+                    window.CloudSync.saveBookingSettings(s);
+                }
+            } catch (_) {}
 
             // Derive global hours for backward compat
             const enabledWD = DAYS_KEYS.filter(k => k >= 1 && k <= 5 && daysByKey[k]?.enabled);
