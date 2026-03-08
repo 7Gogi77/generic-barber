@@ -74,22 +74,27 @@ window.CloudSync = {
     
     // Save config to cloud
     async saveToCloud(config) {
-        if (!this.isConnected) {
-            return false;
+        // Embed bookingSettings inside site_config so it uses the same permitted path
+        const bs = localStorage.getItem('bookingSettings');
+        if (bs) {
+            try { config._bookingSettings = JSON.parse(bs); } catch(_) {}
         }
-        
+        // Try Firebase SDK first
         try {
             const configRef = ref(database, 'site_config');
-            // Embed bookingSettings inside site_config so it uses the same permitted path
-            const bs = localStorage.getItem('bookingSettings');
-            if (bs) {
-                try { config._bookingSettings = JSON.parse(bs); } catch(_) {}
-            }
             await set(configRef, config);
             return true;
-        } catch (error) {
-            return false;
-        }
+        } catch (error) {}
+        // Fallback: REST PUT (works even when SDK isConnected hasn't fired yet)
+        try {
+            const res = await fetch('https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app/site_config.json', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(config)
+            });
+            return res.ok;
+        } catch (_) {}
+        return false;
     },
     
     // Load config from cloud on startup
