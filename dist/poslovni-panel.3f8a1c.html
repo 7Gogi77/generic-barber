@@ -64,8 +64,8 @@
 
         html, body {
             width: 100%;
-            height: 100%;
-            overflow: hidden;
+            min-height: 100%;
+            overflow-y: auto;
             margin: 0;
             padding: 0;
         }
@@ -74,7 +74,7 @@
             font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', Helvetica, Arial, sans-serif;
             background: var(--ios-bg-primary);
             display: flex;
-            overflow: hidden;
+            overflow-y: auto;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
         }
@@ -203,11 +203,11 @@
             margin-left: 72px;
             display: flex;
             flex-direction: column;
-            overflow-y: auto;
-            overflow-x: hidden;
+            overflow: visible;
             transition: margin-left 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
             width: calc(100% - 72px);
-            height: 100vh;
+            min-height: 100vh;
+            height: auto;
             background: var(--ios-bg-primary);
         }
 
@@ -221,14 +221,12 @@
         }
 
         .content-area {
-            flex: 1;
-            overflow-y: visible;
-            overflow-x: hidden;
+            flex: 0 0 auto;
+            overflow: visible;
             padding: 16px;
             background: var(--ios-bg-primary);
             width: 100%;
             height: auto;
-            min-height: 0;
             display: flex;
             flex-direction: column;
             box-sizing: border-box;
@@ -1551,7 +1549,7 @@
             #scheduleCalendar {
                 border-radius: var(--ios-radius-md);
                 margin-top: 6px;
-                height: calc(100vh - 120px);
+                height: auto;
             }
 
             .sidebar {
@@ -1655,7 +1653,7 @@
             #scheduleCalendar {
                 border-radius: var(--ios-radius-md);
                 margin-top: 0;
-                height: 100%;
+                height: auto;
                 min-height: 0;
             }
 

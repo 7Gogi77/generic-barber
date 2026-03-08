@@ -1642,6 +1642,10 @@ const CalendarEngine = {
 
           function applySizing(avail) {
             try {
+              // Only apply pixel sizing for timegrid views; month view must stay height:auto
+              const currentViewType = (calendar && calendar.view && calendar.view.type) ? calendar.view.type : '';
+              const isTimegrid = currentViewType.startsWith('timeGrid');
+
               const toolbar = containerElement.querySelector('.fc-toolbar');
               const headerRow = containerElement.querySelector('.fc-col-header');
               const fcRoot = containerElement.querySelector('.fc');
@@ -1649,6 +1653,14 @@ const CalendarEngine = {
               const timegrid = containerElement.querySelector('.fc-timegrid');
               const scrollBodies = containerElement.querySelectorAll('.fc-scrollgrid-section-body');
 
+              if (!isTimegrid) {
+                // Month / list views: clear any stale pixel heights and let FC size naturally
+                if (fcRoot) { fcRoot.style.height = ''; fcRoot.style.minHeight = ''; fcRoot.style.overflow = ''; }
+                if (viewHarness) { viewHarness.style.height = ''; viewHarness.style.minHeight = ''; }
+                try { if (calendar && typeof calendar.setOption === 'function') { calendar.setOption('height', 'auto'); calendar.setOption('contentHeight', 'auto'); } } catch (_) {}
+                if (calendar && typeof calendar.updateSize === 'function') calendar.updateSize();
+                return;
+              }
 
               if (fcRoot) { fcRoot.style.height = avail + 'px'; fcRoot.style.minHeight = avail + 'px'; fcRoot.style.overflow = 'visible'; }
               if (viewHarness) { viewHarness.style.height = avail + 'px'; viewHarness.style.minHeight = avail + 'px'; }
@@ -1767,26 +1779,22 @@ const CalendarEngine = {
         clearTimeout(resizeTimeout);
         resizeTimeout = setTimeout(() => {
           
-          // Always use 100% - no fixed heights
-          const newCalendarHeight = '100%';
-          const newMinCalendarHeight = '100%';
-          
-          // Store new heights
-          window._calendarHeight = newCalendarHeight;
-          window._minCalendarHeight = newMinCalendarHeight;
+          // Always use auto for month; pixel for timegrid
+          const currentViewType = (calendar && calendar.view && calendar.view.type) ? calendar.view.type : '';
+          const isTimegrid = currentViewType.startsWith('timeGrid');
           
           // Apply to container
-          containerElement.style.minHeight = '100%';
-          containerElement.style.height = '100%';
+          containerElement.style.minHeight = isTimegrid ? `${Math.max(520, window.innerHeight - 140)}px` : 'auto';
+          containerElement.style.height = isTimegrid ? `${Math.max(520, window.innerHeight - 140)}px` : 'auto';
           
           // Apply to FC elements
           const fcView = containerElement.querySelector('.fc');
           if (fcView) {
-            fcView.style.height = '100%';
+            fcView.style.height = isTimegrid ? `${Math.max(520, window.innerHeight - 140)}px` : '';
             const fcRoot = containerElement.querySelector('.fc-root');
-            if (fcRoot) fcRoot.style.height = '100%';
+            if (fcRoot) fcRoot.style.height = isTimegrid ? `${Math.max(520, window.innerHeight - 140)}px` : '';
             const fcViewHarness = containerElement.querySelector('.fc-view-harness');
-            if (fcViewHarness) fcViewHarness.style.height = '100%';
+            if (fcViewHarness) fcViewHarness.style.height = isTimegrid ? `${Math.max(520, window.innerHeight - 140)}px` : '';
           }
           
           // Update calendar size
