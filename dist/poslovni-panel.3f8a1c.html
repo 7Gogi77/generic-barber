@@ -2165,7 +2165,6 @@
                     <i class="bi bi-chevron-left"></i> Nazaj
                 </button>
                 <h3 style="margin:0;font-size:17px;font-weight:600;color:#1c1c1e;">Nastavitve rezervacij</h3>
-                <button id="saveBusinessSettingsBtn" class="btn btn-primary" style="padding:8px 18px;font-size:14px;border-radius:10px;flex:none;width:fit-content;">Shrani</button>
             </div>
 
             <!-- Tab bar -->
@@ -3594,6 +3593,25 @@
         // ─── Booking Settings: in-memory state ───────────────────────────────────
         let _bspData = null; // loaded once per panel open
 
+        // ── Unsaved-changes tracking ───────────────────────────────────────────
+        let _bspDirty = false;
+        function _bspMarkDirty() {
+            if (_bspDirty) return;
+            _bspDirty = true;
+            const bar = document.getElementById('bspUnsavedBar');
+            if (bar) bar.style.display = 'flex';
+        }
+        function _bspClearDirty() {
+            _bspDirty = false;
+            const bar = document.getElementById('bspUnsavedBar');
+            if (bar) bar.style.display = 'none';
+        }
+        function _bspDiscardChanges() {
+            _bspData = loadBookingSettings();
+            loadBusinessSettingsForm();
+            _bspClearDirty();
+        }
+
         function loadBookingSettings() {
             const DAY_DEFAULTS = {
                 1: { enabled: true,  start: '09:00', end: '19:00' },
@@ -4165,12 +4183,7 @@
                     if (window.CloudSync?.saveToCloud) await window.CloudSync.saveToCloud(window.SITE_CONFIG);
                 }
             } catch(e) { console.warn('⚠ Could not save services/team:', e); }
-            // Show feedback toast if available, else alert
-            if (typeof showToast === 'function') {
-                showToast('✅ Nastavitve rezervacij shranjene!');
-            } else {
-                alert('Nastavitve rezervacij so shranjene.');
-            }
+            _bspClearDirty();
         }
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -4193,12 +4206,16 @@
                 if (id === 'peakPricingEnabled')         { const el = document.getElementById('peakPricingDetails');     if (el) el.style.display = v ? 'block' : 'none'; }
                 if (id === 'weekendPricingEnabled')      { const el = document.getElementById('weekendPricingDetails');  if (el) el.style.display = v ? 'block' : 'none'; }
                 if (id === 'preventFragmentation')       { const el = document.getElementById('fragmentGapRow');         if (el) el.style.display = v ? 'block' : 'none'; }
+                if (e.target.closest('#businessSettingsPanel')) _bspMarkDirty();
             });
-            // Save button
+            // Mark dirty on any text input in the settings panel
+            document.addEventListener('input', e => {
+                if (e.target.closest('#businessSettingsPanel')) _bspMarkDirty();
+            });
+            // Unsaved bar buttons
             document.addEventListener('click', e => {
-                if (e.target.id === 'saveBusinessSettingsBtn' || e.target.closest('#saveBusinessSettingsBtn')) {
-                    saveBusinessSettings();
-                }
+                if (e.target.id === 'bspSaveBarBtn' || e.target.closest('#bspSaveBarBtn')) saveBusinessSettings();
+                if (e.target.id === 'bspDiscardBtn' || e.target.closest('#bspDiscardBtn')) _bspDiscardChanges();
             });
         });
 
@@ -6802,6 +6819,15 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
     <!-- Dev debug controls removed for production/admin cleanup -->
+
+    <!-- Unsaved changes bar -->
+    <div id="bspUnsavedBar" style="display:none; position:fixed; bottom:0; left:72px; right:0; z-index:500; background:#fff3cd; border-top:2px solid #ffc107; padding:12px 20px; align-items:center; justify-content:space-between; box-shadow:0 -2px 12px rgba(0,0,0,0.12);">
+        <span style="font-size:14px; color:#1c1c1e; font-weight:500;">&#9888;&#65039; Spremembe niso shranjene</span>
+        <div style="display:flex; gap:10px;">
+            <button id="bspDiscardBtn" class="btn btn-secondary" style="padding:8px 16px; font-size:14px; border-radius:10px;">Prekliči</button>
+            <button id="bspSaveBarBtn" class="btn btn-primary" style="padding:8px 18px; font-size:14px; border-radius:10px;">Shrani</button>
+        </div>
+    </div>
 
 </body>
 </html>

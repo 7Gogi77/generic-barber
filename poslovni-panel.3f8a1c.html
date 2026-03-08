@@ -173,7 +173,6 @@
             <div class="bsp-header">
                 <button class="panel-menu-btn" onclick="document.getElementById('sidebar').classList.add('expanded')" title="Meni" style="color:#007aff; font-size:22px;"><i class="bi bi-list"></i></button>
                 <h3 style="margin:0;font-size:17px;font-weight:600;color:#1c1c1e;">Nastavitve rezervacij</h3>
-                <button id="saveBusinessSettingsBtn" class="btn btn-primary" style="padding:8px 18px;font-size:14px;border-radius:10px;flex:none;width:fit-content;">Shrani</button>
             </div>
 
             <!-- Tab bar -->
@@ -838,6 +837,15 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
     <!-- Dev debug controls removed for production/admin cleanup -->
+
+    <!-- Unsaved changes bar -->
+    <div id="bspUnsavedBar" style="display:none; position:fixed; bottom:0; left:72px; right:0; z-index:500; background:#fff3cd; border-top:2px solid #ffc107; padding:12px 20px; align-items:center; justify-content:space-between; box-shadow:0 -2px 12px rgba(0,0,0,0.12);">
+        <span style="font-size:14px; color:#1c1c1e; font-weight:500;">&#9888;&#65039; Spremembe niso shranjene</span>
+        <div style="display:flex; gap:10px;">
+            <button id="bspDiscardBtn" class="btn btn-secondary" style="padding:8px 16px; font-size:14px; border-radius:10px;">Prekliči</button>
+            <button id="bspSaveBarBtn" class="btn btn-primary" style="padding:8px 18px; font-size:14px; border-radius:10px;">Shrani</button>
+        </div>
+    </div>
 
 </body>
 </html>

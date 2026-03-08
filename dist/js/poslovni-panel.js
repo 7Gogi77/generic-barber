@@ -1106,10 +1106,28 @@
         // ── HTML escape helper ─────────────────────────────────────────────────
         function _escH(s) { return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
+        // ── Unsaved-changes tracking ───────────────────────────────────────────
+        let _bspDirty = false;
+        function _bspMarkDirty() {
+            if (_bspDirty) return;
+            _bspDirty = true;
+            const bar = document.getElementById('bspUnsavedBar');
+            if (bar) bar.style.display = 'flex';
+        }
+        function _bspClearDirty() {
+            _bspDirty = false;
+            const bar = document.getElementById('bspUnsavedBar');
+            if (bar) bar.style.display = 'none';
+        }
+        function _bspDiscardChanges() {
+            _bspData = loadBookingSettings();
+            loadBusinessSettingsForm();
+            _bspClearDirty();
+        }
+
         // ── Services management (syncs with SITE_CONFIG.servicesSection.items) ──
-        let _bspSvcTimer = null, _bspTeamTimer = null;
-        function _bspSvcAutoSave()  { clearTimeout(_bspSvcTimer);  _bspSvcTimer  = setTimeout(bspSaveServicesToConfig, 900); }
-        function _bspTeamAutoSave() { clearTimeout(_bspTeamTimer); _bspTeamTimer = setTimeout(bspSaveTeamToConfig, 900); }
+        function _bspSvcAutoSave()  { _bspMarkDirty(); }
+        function _bspTeamAutoSave() { _bspMarkDirty(); }
 
         function bspRenderServices() {
             const el = document.getElementById('bspServicesList');
@@ -1429,12 +1447,7 @@
                     if (window.CloudSync?.saveToCloud) await window.CloudSync.saveToCloud(window.SITE_CONFIG);
                 }
             } catch (e) {}
-            // Show feedback toast if available, else alert
-            if (typeof showToast === 'function') {
-                showToast('✅ Nastavitve rezervacij shranjene!');
-            } else {
-                alert('Nastavitve rezervacij so shranjene.');
-            }
+            _bspClearDirty();
         }
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -1457,12 +1470,16 @@
                 if (id === 'peakPricingEnabled')         { const el = document.getElementById('peakPricingDetails');     if (el) el.style.display = v ? 'block' : 'none'; }
                 if (id === 'weekendPricingEnabled')      { const el = document.getElementById('weekendPricingDetails');  if (el) el.style.display = v ? 'block' : 'none'; }
                 if (id === 'preventFragmentation')       { const el = document.getElementById('fragmentGapRow');         if (el) el.style.display = v ? 'block' : 'none'; }
+                if (e.target.closest('#businessSettingsPanel')) _bspMarkDirty();
             });
-            // Save button
+            // Mark dirty on any text input in the settings panel
+            document.addEventListener('input', e => {
+                if (e.target.closest('#businessSettingsPanel')) _bspMarkDirty();
+            });
+            // Unsaved bar buttons
             document.addEventListener('click', e => {
-                if (e.target.id === 'saveBusinessSettingsBtn' || e.target.closest('#saveBusinessSettingsBtn')) {
-                    saveBusinessSettings();
-                }
+                if (e.target.id === 'bspSaveBarBtn' || e.target.closest('#bspSaveBarBtn')) saveBusinessSettings();
+                if (e.target.id === 'bspDiscardBtn' || e.target.closest('#bspDiscardBtn')) _bspDiscardChanges();
             });
         });
 
