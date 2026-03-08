@@ -227,7 +227,7 @@
                     document.documentElement.style.setProperty('--banner-height', '0px');
                 }
             }
-            SITE_CONFIG.servicesSection.items.forEach(s => {
+            (SITE_CONFIG.servicesSection?.items || []).forEach(s => {
                 const item = document.createElement('div');
                 item.className = 'service-item';
                 const _rawPrice = parseFloat(String(s.price || '0').replace(/[^0-9.,]/g,'').replace(',','.')) || 0;
