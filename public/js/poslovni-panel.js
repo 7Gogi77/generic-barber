@@ -1377,14 +1377,6 @@
 
             // ── Persist ───────────────────────────────────────────
             try { localStorage.setItem('bookingSettings', JSON.stringify(s)); } catch (e) {}
-            // Sync bookingSettings to Firebase so all devices see it
-            try {
-                await fetch('https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app/bookingSettings.json', {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(s)
-                });
-            } catch (_) {}
 
             // Derive global hours for backward compat
             const enabledWD = DAYS_KEYS.filter(k => k >= 1 && k <= 5 && daysByKey[k]?.enabled);

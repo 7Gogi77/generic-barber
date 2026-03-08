@@ -128,6 +128,10 @@
                         Object.assign(SITE_CONFIG, cloudConfig);
                         window.SITE_CONFIG = SITE_CONFIG;
                         localStorage.setItem('site_config_backup', JSON.stringify(SITE_CONFIG));
+                        // Extract bookingSettings embedded by CloudSync.saveToCloud
+                        if (cloudConfig._bookingSettings && typeof cloudConfig._bookingSettings === 'object') {
+                            localStorage.setItem('bookingSettings', JSON.stringify(cloudConfig._bookingSettings));
+                        }
                     }
                 }
                 // Also sync bookingSettings from Firebase
