@@ -1702,6 +1702,21 @@
             if (!firebaseLoaded) {
                 await loadSavedConfig();
             }
+            // Always fetch bookingSettings fresh from Firebase REST (bypasses CloudSync timing)
+            try {
+                const _bsR = await fetch('https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app/bookingSettings.json?_t=' + Date.now(), { cache: 'no-store' });
+                if (_bsR.ok) {
+                    const _bsD = await _bsR.json();
+                    if (_bsD && typeof _bsD === 'object') localStorage.setItem('bookingSettings', JSON.stringify(_bsD));
+                }
+            } catch(_) {}
+            // Also check if bookingSettings was embedded inside site_config
+            try {
+                const _sc = JSON.parse(localStorage.getItem('site_config_backup') || '{}');
+                if (_sc._bookingSettings && typeof _sc._bookingSettings === 'object') {
+                    localStorage.setItem('bookingSettings', JSON.stringify(_sc._bookingSettings));
+                }
+            } catch(_) {}
             renderSiteContent();
         }
         

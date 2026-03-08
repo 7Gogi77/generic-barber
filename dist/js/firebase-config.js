@@ -49,6 +49,11 @@ window.CloudSync = {
             if (snapshot.exists() && this.syncEnabled) {
                 const remoteConfig = snapshot.val();
                 
+                // Extract bookingSettings embedded in site_config
+                if (remoteConfig && remoteConfig._bookingSettings) {
+                    localStorage.setItem('bookingSettings', JSON.stringify(remoteConfig._bookingSettings));
+                }
+
                 // Merge remote config with local
                 if (!window.SITE_CONFIG || typeof window.SITE_CONFIG !== 'object') {
                     window.SITE_CONFIG = {};
@@ -75,15 +80,12 @@ window.CloudSync = {
         
         try {
             const configRef = ref(database, 'site_config');
+            // Embed bookingSettings inside site_config so it uses the same permitted path
+            const bs = localStorage.getItem('bookingSettings');
+            if (bs) {
+                try { config._bookingSettings = JSON.parse(bs); } catch(_) {}
+            }
             await set(configRef, config);
-            // Also save bookingSettings alongside site_config
-            try {
-                const bs = localStorage.getItem('bookingSettings');
-                if (bs) {
-                    const bsRef = ref(database, 'bookingSettings');
-                    await set(bsRef, JSON.parse(bs));
-                }
-            } catch(_) {}
             return true;
         } catch (error) {
             return false;
@@ -97,6 +99,10 @@ window.CloudSync = {
             const snapshot = await get(configRef);
             if (snapshot.exists()) {
                 const cloudConfig = snapshot.val();
+                // Extract bookingSettings embedded in site_config
+                if (cloudConfig && cloudConfig._bookingSettings) {
+                    localStorage.setItem('bookingSettings', JSON.stringify(cloudConfig._bookingSettings));
+                }
                 if (!window.SITE_CONFIG || typeof window.SITE_CONFIG !== 'object') {
                     window.SITE_CONFIG = {};
                 }
@@ -104,17 +110,6 @@ window.CloudSync = {
                 localStorage.setItem('site_config_backup', JSON.stringify(window.SITE_CONFIG));
             }
         } catch (error) {}
-        // Always try to load bookingSettings
-        try {
-            const bsRef = ref(database, 'bookingSettings');
-            const bsSnap = await get(bsRef);
-            if (bsSnap.exists()) {
-                const bsData = bsSnap.val();
-                if (bsData && typeof bsData === 'object') {
-                    localStorage.setItem('bookingSettings', JSON.stringify(bsData));
-                }
-            }
-        } catch(_) {}
         return true;
     },
 
