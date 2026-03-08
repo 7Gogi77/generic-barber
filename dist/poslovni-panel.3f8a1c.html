@@ -4117,13 +4117,15 @@
 
             // ── Persist ───────────────────────────────────────────
             try { localStorage.setItem('bookingSettings', JSON.stringify(s)); } catch(e) { console.warn('⚠ localStorage error', e); }
-            // Sync bookingSettings to Firebase so all devices see it
+            // Sync bookingSettings to Firebase (use SDK so auth rules are satisfied)
             try {
-                await fetch('https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app/bookingSettings.json', {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(s)
-                });
+                if (window.CloudSync && typeof window.CloudSync.saveBookingSettings === 'function') {
+                    await window.CloudSync.saveBookingSettings(s);
+                } else {
+                    await fetch('https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app/bookingSettings.json', {
+                        method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(s)
+                    });
+                }
             } catch (_) {}
 
             // Derive global hours for backward compat
