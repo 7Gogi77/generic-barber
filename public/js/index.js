@@ -183,7 +183,7 @@
             // Navigation links
             const navContainer = document.getElementById('nav-links-container');
             navContainer.innerHTML = '';
-            SITE_CONFIG.navLinks.forEach(item => {
+            (SITE_CONFIG.navLinks || []).forEach(item => {
                 const link = document.createElement('a');
                 link.href = item.link;
                 link.innerText = item.name;
@@ -283,7 +283,7 @@
             document.getElementById('footer-brand').innerText = SITE_CONFIG.shopName;
             const footerLinks = document.getElementById('footer-links');
             footerLinks.innerHTML = '';
-            SITE_CONFIG.navLinks.forEach(item => {
+            (SITE_CONFIG.navLinks || []).forEach(item => {
                 const link = document.createElement('a');
                 link.href = item.link;
                 link.innerText = item.name;
