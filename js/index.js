@@ -128,10 +128,19 @@
                         Object.assign(SITE_CONFIG, cloudConfig);
                         window.SITE_CONFIG = SITE_CONFIG;
                         localStorage.setItem('site_config_backup', JSON.stringify(SITE_CONFIG));
-                        return true;
                     }
-                } else {
                 }
+                // Also sync bookingSettings from Firebase
+                try {
+                    const bsRes = await fetch(`https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app/bookingSettings.json?_t=${timestamp}`, { cache: 'no-store' });
+                    if (bsRes.ok) {
+                        const bsCloud = await bsRes.json();
+                        if (bsCloud && typeof bsCloud === 'object') {
+                            localStorage.setItem('bookingSettings', JSON.stringify(bsCloud));
+                        }
+                    }
+                } catch(_) {}
+                return true;
             } catch (error) {
                 if (error && error.message) {
                 }
