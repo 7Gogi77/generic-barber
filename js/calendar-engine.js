@@ -520,6 +520,31 @@ const CalendarEngine = {
       containerElement.style.width = '100%';
       containerElement.style.overflow = 'auto';
 
+      // ── Merge saved booking settings from localStorage into SITE_CONFIG ──
+      // poslovni-panel saves to localStorage; we need to apply those settings
+      // before computing slotMinTime/slotMaxTime and businessHours below.
+      try {
+        const _savedBS = JSON.parse(localStorage.getItem('bookingSettings') || 'null');
+        if (_savedBS && window.SITE_CONFIG && window.SITE_CONFIG.booking) {
+          const _days = _savedBS.workingHoursByDay ||
+                        JSON.parse(localStorage.getItem('workingHoursByDay') || 'null');
+          if (_days) {
+            const _enabledKeys = [1,2,3,4,5,6,0].filter(k => _days[k] && _days[k].enabled);
+            if (_enabledKeys.length > 0) {
+              const _startH = Math.min(..._enabledKeys.map(k => parseInt((_days[k].start || '09:00').split(':')[0], 10)));
+              const _endH   = Math.max(..._enabledKeys.map(k => parseInt((_days[k].end   || '19:00').split(':')[0], 10)));
+              window.SITE_CONFIG.booking.businessHours = { start: _startH, end: _endH };
+            }
+            // Store per-day map for use in the businessHours FC option below
+            window.SITE_CONFIG.booking._workingHoursByDay = _days;
+          }
+          if (_savedBS.allowMultiDayAppointments !== undefined)
+            window.SITE_CONFIG.booking.allowMultiDayAppointments = _savedBS.allowMultiDayAppointments;
+          if (_savedBS.maxAppointmentDays !== undefined)
+            window.SITE_CONFIG.booking.maxAppointmentDays = _savedBS.maxAppointmentDays;
+        }
+      } catch(_e) { console.warn('⚠ Could not apply saved booking settings', _e); }
+
       // Compute slot duration from SITE_CONFIG if present
       const slotMinutes = (window.SITE_CONFIG && window.SITE_CONFIG.booking && window.SITE_CONFIG.booking.slotDuration) ? window.SITE_CONFIG.booking.slotDuration : 30;
       const slotDurationStr = `00:${('0' + slotMinutes).slice(-2)}:00`;
@@ -586,12 +611,24 @@ const CalendarEngine = {
           const bDuration = bEnd - bStart;
           return bDuration - aDuration;
         },
-        // Business hours (visual only)
-        businessHours: {
-          daysOfWeek: [1,2,3,4,5],
-          startTime: (window.SITE_CONFIG && window.SITE_CONFIG.booking && window.SITE_CONFIG.booking.businessHours) ? (('0' + window.SITE_CONFIG.booking.businessHours.start).slice(-2) + ':00') : '09:00',
-          endTime: (window.SITE_CONFIG && window.SITE_CONFIG.booking && window.SITE_CONFIG.booking.businessHours) ? (('0' + window.SITE_CONFIG.booking.businessHours.end).slice(-2) + ':00') : '17:00'
-        },
+        // Business hours (visual only — shades non-working cells in timeGrid views)
+        businessHours: (() => {
+          const _byDay = window.SITE_CONFIG && window.SITE_CONFIG.booking && window.SITE_CONFIG.booking._workingHoursByDay;
+          if (_byDay) {
+            return Object.entries(_byDay)
+              .filter(([, d]) => d.enabled)
+              .map(([k, d]) => ({
+                daysOfWeek: [parseInt(k, 10)],
+                startTime: d.start || '09:00',
+                endTime:   d.end   || '19:00'
+              }));
+          }
+          return {
+            daysOfWeek: [1,2,3,4,5],
+            startTime: (window.SITE_CONFIG && window.SITE_CONFIG.booking && window.SITE_CONFIG.booking.businessHours) ? (('0' + window.SITE_CONFIG.booking.businessHours.start).slice(-2) + ':00') : '09:00',
+            endTime:   (window.SITE_CONFIG && window.SITE_CONFIG.booking && window.SITE_CONFIG.booking.businessHours) ? (('0' + window.SITE_CONFIG.booking.businessHours.end).slice(-2)   + ':00') : '17:00'
+          };
+        })(),
         // TimeGrid options (defaults apply globally, views override to show full day)
         slotMinTime: slotMinTimeVal,
         slotMaxTime: slotMaxTimeVal,
