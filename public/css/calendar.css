@@ -41,7 +41,11 @@
 }
 
 /* Week/Day timegrid: container scrolls, month does not */
-#scheduleCalendar.view-timegrid-week,
+#scheduleCalendar.view-timegrid-week {
+  height: auto !important;
+  max-height: none !important;
+  overflow-y: visible !important;
+}
 #scheduleCalendar.view-timegrid-day {
   max-height: calc(100vh - 120px) !important;
   overflow-y: auto !important;
@@ -242,12 +246,21 @@
    TIMEGRID (WEEK/DAY) - SEPARATE FROM MONTH
    These rules ensure Week/Day views have their own scrolling and layout
    ============================================ */
-#scheduleCalendar.view-timegrid-week .fc, #scheduleCalendar.view-timegrid-day .fc {
+#scheduleCalendar.view-timegrid-week .fc {
+  height: auto !important;
+  box-sizing: border-box;
+}
+#scheduleCalendar.view-timegrid-day .fc {
   height: 100% !important;
   box-sizing: border-box;
 }
 
-#scheduleCalendar.view-timegrid-week .fc .fc-view-harness,
+#scheduleCalendar.view-timegrid-week .fc .fc-view-harness {
+  height: auto !important;
+  min-height: 0 !important;
+  position: relative !important;
+  overflow: visible !important;
+}
 #scheduleCalendar.view-timegrid-day .fc .fc-view-harness {
   height: 100% !important;
   min-height: 520px !important;
@@ -263,7 +276,10 @@
   overflow: visible !important;
 }
 
-#scheduleCalendar.view-timegrid-week .fc .fc-timegrid .fc-scrollgrid-section-body,
+#scheduleCalendar.view-timegrid-week .fc .fc-timegrid .fc-scrollgrid-section-body {
+  max-height: none !important;
+  overflow-y: visible !important;
+}
 #scheduleCalendar.view-timegrid-day .fc .fc-timegrid .fc-scrollgrid-section-body {
   max-height: calc(100vh - 220px) !important;
   overflow-y: auto !important;
@@ -374,14 +390,24 @@
   margin-bottom: 4px !important;
   padding-bottom: 0 !important;
 }
-/* Ensure the timeGrid scrollable section allows vertical scrolling when content exceeds available height (week/day only) */
-#scheduleCalendar.view-timegrid-week .fc .fc-timegrid .fc-scrollgrid-section-body,
+/* Ensure the timeGrid scrollable section allows vertical scrolling when content exceeds available height (day only) */
 #scheduleCalendar.view-timegrid-day .fc .fc-timegrid .fc-scrollgrid-section-body,
-#scheduleCalendar.view-timegrid-week .fc .fc-scrollgrid-section-body,
 #scheduleCalendar.view-timegrid-day .fc .fc-scrollgrid-section-body {
   overflow-x: hidden !important;
   overflow-y: auto !important;
   -webkit-overflow-scrolling: touch;
+}
+/* Week view: no scroll — expand fully */
+#scheduleCalendar.view-timegrid-week .fc .fc-timegrid .fc-scrollgrid-section-body,
+#scheduleCalendar.view-timegrid-week .fc .fc-scrollgrid-section-body {
+  overflow-x: hidden !important;
+  overflow-y: visible !important;
+  max-height: none !important;
+}
+#scheduleCalendar.view-timegrid-week .fc .fc-scroller {
+  overflow-y: visible !important;
+  height: auto !important;
+  max-height: none !important;
 }
 /* ============================================
    MODAL STYLES

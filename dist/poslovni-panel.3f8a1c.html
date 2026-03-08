@@ -702,10 +702,14 @@
            TIMEGRID (WEEK/DAY) - ENABLE VERTICAL SCROLLING
            ============================================ */
         
-        /* Enable scrolling for timegrid views to see all hours */
-        #scheduleCalendar.view-timegrid-week .fc-scroller,
+        /* Enable scrolling for day view to see all hours; week view expands fully */
         #scheduleCalendar.view-timegrid-day .fc-scroller {
             overflow-y: auto !important;
+        }
+        #scheduleCalendar.view-timegrid-week .fc-scroller {
+            overflow-y: visible !important;
+            height: auto !important;
+            max-height: none !important;
         }
 
         /* Style scrollbars for a cleaner look */

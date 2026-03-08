@@ -1084,11 +1084,11 @@ const CalendarEngine = {
             }
           } catch (e) { /* ignore */ }
 
-          // Dynamic height: 'auto' for month so all rows show naturally (page scrolls);
-          // pixel height for timegrid so FC internal scroll works
+          // Dynamic height: 'auto' for month/week so all rows show naturally (page scrolls);
+          // pixel height for timeGridDay only so FC internal scroll works in day view
           try {
             const vForH = arg && arg.view && arg.view.type ? arg.view.type : '';
-            if (vForH.startsWith('timeGrid')) {
+            if (vForH === 'timeGridDay') {
               containerElement.style.height = `${calcHeight}px`;
               containerElement.style.overflow = 'hidden';
               try { if (calendar && typeof calendar.setOption === 'function') calendar.setOption('height', calcHeight); } catch(_){}
@@ -1681,7 +1681,7 @@ const CalendarEngine = {
             try {
               // Only apply pixel sizing for timegrid views; month view must stay height:auto
               const currentViewType = (calendar && calendar.view && calendar.view.type) ? calendar.view.type : '';
-              const isTimegrid = currentViewType.startsWith('timeGrid');
+              const isTimegrid = currentViewType === 'timeGridDay';
 
               const toolbar = containerElement.querySelector('.fc-toolbar');
               const headerRow = containerElement.querySelector('.fc-col-header');
