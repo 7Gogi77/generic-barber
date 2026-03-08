@@ -75,26 +75,22 @@ async function sendSMS(phoneNumber, message) {
   }
 
   try {
-    // HTTP SMS API request
-    const response = await fetch(SMS_CONFIG.apiUrl, {
+    // Use the server-side proxy (/api/send-sms) to avoid browser CORS restrictions
+    const response = await fetch('/api/send-sms', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': SMS_CONFIG.apiKey,
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        from: SMS_CONFIG.phoneNumber,  // Your phone number (the sender)
-        to: formattedPhone,             // Customer's phone number (formatted)
-        content: message,               // SMS text
+        to:      formattedPhone,
+        message: message,
       }),
     });
 
     const result = await response.json();
 
-    if (response.ok) {
-      return { success: true, data: result };
+    if (response.ok && result.success) {
+      return { success: true, data: result.data };
     } else {
-      return { success: false, error: result.message || result.error || 'Unknown error' };
+      return { success: false, error: result.error || 'Unknown error' };
     }
   } catch (error) {
     return { success: false, error: error.message };
