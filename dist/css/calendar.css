@@ -34,9 +34,17 @@
   display: block !important;
   width: 100% !important;
   box-sizing: border-box !important;
-  max-height: 550px !important;
-  overflow-y: auto !important;
+  height: auto !important;
+  max-height: none !important;
+  overflow-y: visible !important;
   overflow-x: clip !important;
+}
+
+/* Week/Day timegrid: container scrolls, month does not */
+#scheduleCalendar.view-timegrid-week,
+#scheduleCalendar.view-timegrid-day {
+  max-height: calc(100vh - 120px) !important;
+  overflow-y: auto !important;
 }
 
 #scheduleCalendar .fc {
