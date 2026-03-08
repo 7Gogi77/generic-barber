@@ -211,7 +211,8 @@
 
         .content-area {
             flex: 1;
-            overflow: hidden;
+            overflow-y: auto;
+            overflow-x: hidden;
             padding: 16px;
             background: var(--ios-bg-primary);
             width: 100%;
@@ -226,15 +227,11 @@
         #scheduleCalendar {
             background: var(--ios-bg-secondary);
             width: 100%;
-            overflow: hidden; /* Clip to rounded corners */
+            overflow: visible; /* let calendar.css control overflow per view */
             padding: 0;
             border-radius: var(--ios-radius-lg);
             box-shadow: var(--ios-shadow-md);
-            display: flex;
-            flex-direction: column;
-            flex: 1;
-            min-height: 0; /* Critical for flex children to shrink */
-            max-height: 100%; /* Don't exceed parent */
+            display: block;
             border: none;
         }
         
