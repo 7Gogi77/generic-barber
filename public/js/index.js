@@ -252,7 +252,7 @@
             document.getElementById('barbers-title').innerText = SITE_CONFIG.barbersSection.title;
             const barbersList = document.getElementById('barbers-list');
             barbersList.innerHTML = '';
-            SITE_CONFIG.barbersSection.list.forEach(b => {
+            (SITE_CONFIG.barbersSection?.list || []).forEach(b => {
                 const member = document.createElement('div');
                 member.className = 'team-member';
                 member.innerHTML = `
@@ -272,7 +272,7 @@
             }
             const galleryList = document.getElementById('gallery-list');
             galleryList.innerHTML = '';
-            SITE_CONFIG.gallery.forEach(img => {
+            (SITE_CONFIG.gallery || []).forEach(img => {
                 const imgEl = document.createElement('img');
                 imgEl.src = img;
                 imgEl.alt = 'Gallery Image';
