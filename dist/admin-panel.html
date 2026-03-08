@@ -2258,14 +2258,24 @@
             SITE_CONFIG.booking = { ...SITE_CONFIG.booking, ...preset.booking };
             if (preset.theme) {
                 SITE_CONFIG.theme = { ...SITE_CONFIG.theme, ...preset.theme };
-                // Always force dark mode when applying a template so backgrounds
-                // and text colours stay consistent regardless of the previous mode.
-                SITE_CONFIG.theme.mode = 'dark';
-                SITE_CONFIG.theme.dark = '#0A0A0A';
-                SITE_CONFIG.theme.card = '#141414';
-                SITE_CONFIG.theme.scrollbarTrack = '#1C1C1E';
+                // Detect light vs dark from the preset's background colour so light
+                // templates (e.g. beauty salon with dark:'#FFFFFF') are not overridden.
+                const presetDark = (preset.theme.dark || '').replace(/\s/g,'').toLowerCase();
+                const isLightPreset = preset.theme.mode === 'light' ||
+                    presetDark === '#ffffff' || presetDark === '#fff' ||
+                    presetDark === '#f2f2f7' || presetDark === '#fafafa';
+                if (isLightPreset) {
+                    SITE_CONFIG.theme.mode = 'light';
+                    // Light backgrounds already supplied by the preset; keep them.
+                } else {
+                    SITE_CONFIG.theme.mode = 'dark';
+                    // Fill in dark backgrounds if the preset didn't supply them.
+                    if (!preset.theme.dark)          SITE_CONFIG.theme.dark          = '#0A0A0A';
+                    if (!preset.theme.card)          SITE_CONFIG.theme.card          = '#141414';
+                    if (!preset.theme.scrollbarTrack) SITE_CONFIG.theme.scrollbarTrack = '#1C1C1E';
+                }
                 const modeEl = document.getElementById('themeMode');
-                if (modeEl) modeEl.value = 'dark';
+                if (modeEl) modeEl.value = SITE_CONFIG.theme.mode;
                 applyThemeToPage();
             }
 
