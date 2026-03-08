@@ -107,15 +107,6 @@
                 if (window.CloudSync && typeof window.CloudSync.loadFromCloud === 'function') {
                     const sdkLoaded = await window.CloudSync.loadFromCloud();
                     if (sdkLoaded) {
-                        // Sync window.SITE_CONFIG (set by CloudSync) into the lexical SITE_CONFIG
-                        if (window.SITE_CONFIG && typeof window.SITE_CONFIG === 'object') {
-                            Object.assign(SITE_CONFIG, window.SITE_CONFIG);
-                            applyThemeColors();
-                        }
-                        // Extract _bookingSettings embedded in site_config
-                        if (SITE_CONFIG._bookingSettings && typeof SITE_CONFIG._bookingSettings === 'object') {
-                            localStorage.setItem('bookingSettings', JSON.stringify(SITE_CONFIG._bookingSettings));
-                        }
                         return true;
                     }
                 }
@@ -139,10 +130,16 @@
                         localStorage.setItem('site_config_backup', JSON.stringify(SITE_CONFIG));
                     }
                 }
-                // Extract _bookingSettings embedded in site_config
-                if (SITE_CONFIG._bookingSettings && typeof SITE_CONFIG._bookingSettings === 'object') {
-                    localStorage.setItem('bookingSettings', JSON.stringify(SITE_CONFIG._bookingSettings));
-                }
+                // Also sync bookingSettings from Firebase
+                try {
+                    const bsRes = await fetch(`https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app/bookingSettings.json?_t=${timestamp}`, { cache: 'no-store' });
+                    if (bsRes.ok) {
+                        const bsCloud = await bsRes.json();
+                        if (bsCloud && typeof bsCloud === 'object') {
+                            localStorage.setItem('bookingSettings', JSON.stringify(bsCloud));
+                        }
+                    }
+                } catch(_) {}
                 return true;
             } catch (error) {
                 if (error && error.message) {
@@ -235,7 +232,7 @@
                     document.documentElement.style.setProperty('--banner-height', '0px');
                 }
             }
-            (SITE_CONFIG.servicesSection?.items || []).forEach(s => {
+            SITE_CONFIG.servicesSection.items.forEach(s => {
                 const item = document.createElement('div');
                 item.className = 'service-item';
                 const _rawPrice = parseFloat(String(s.price || '0').replace(/[^0-9.,]/g,'').replace(',','.')) || 0;
@@ -414,13 +411,6 @@
             if (!firebaseLoaded) {
                 await loadSavedConfig();
             }
-            // Extract _bookingSettings from loaded site_config
-            try {
-                const _sc = JSON.parse(localStorage.getItem('site_config_backup') || '{}');
-                if (_sc._bookingSettings && typeof _sc._bookingSettings === 'object') {
-                    localStorage.setItem('bookingSettings', JSON.stringify(_sc._bookingSettings));
-                }
-            } catch(_) {}
             renderSiteContent();
         }
         
