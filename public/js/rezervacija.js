@@ -168,22 +168,18 @@
         function applyThemeColors() {
             const theme = window.SITE_CONFIG?.theme || {};
             const root = document.documentElement;
-            
-            // Apply primary color to iOS blue if set
-            if (theme.primaryColor) {
-                root.style.setProperty('--ios-blue', theme.primaryColor);
+
+            // Primary accent color — stored as theme.primary by admin panel
+            const accent = theme.primary || theme.primaryColor || theme.buttonColor;
+            if (accent) {
+                root.style.setProperty('--ios-blue', accent);
+                root.style.setProperty('--ios-blue-light', accent + 'CC');
             }
-            
-            // Apply button color
-            if (theme.buttonColor) {
-                root.style.setProperty('--ios-blue', theme.buttonColor);
-            }
-            
-            // Apply button text color
+
+            // Button text color
             if (theme.buttonTextColor) {
-                // Used in button text
+                root.style.setProperty('--booking-btn-text', theme.buttonTextColor);
             }
-            
         }
         
         // ===== GET BOOKING SETTINGS (from poslovni-panel localStorage) =====
@@ -473,10 +469,13 @@
                 container.appendChild(btn);
             }
             
-            // Calculate max date (2 months from today)
+            // Calculate max date from maxAdvanceDays setting (default 60 days)
             const maxDate = new Date();
             maxDate.setHours(0, 0, 0, 0);
-            maxDate.setMonth(maxDate.getMonth() + 2);
+            const _bsMaxDate = getBookingSettings();
+            const _maxAdvDays = (_bsMaxDate && parseInt(_bsMaxDate.maxAdvanceDays, 10) > 0)
+                ? parseInt(_bsMaxDate.maxAdvanceDays, 10) : 60;
+            maxDate.setDate(maxDate.getDate() + _maxAdvDays);
             
             // Render current month days
             for (let day = 1; day <= daysInMonth; day++) {
@@ -484,7 +483,7 @@
                 date.setHours(0, 0, 0, 0);
                 
                 const isPast = date < today;
-                const isTooFar = date > maxDate; // Disable dates more than 2 months ahead
+                const isTooFar = date > maxDate; // Disable dates beyond maxAdvanceDays
                 const isToday = date.getTime() === today.getTime();
                 const isSelected = BookingState.selectedDate && 
                     BookingState.selectedDate.getTime() === date.getTime();
@@ -721,10 +720,22 @@
             }
             
             
-            // Filter out slots that conflict with existing events
+            // Filter out slots that conflict with existing events (with bufferBefore/After padding)
+            const _bsSlot = getBookingSettings();
+            const _bufBefore = parseInt(_bsSlot?.bufferBefore, 10) || 0;
+            const _bufAfter  = parseInt(_bsSlot?.bufferAfter,  10) || 0;
             let availableSlots = allSlots.filter(slot => {
-                return !hasConflict(slot.start, slot.end);
+                const checkStart = _bufBefore > 0 ? new Date(slot.start.getTime() - _bufBefore * 60000) : slot.start;
+                const checkEnd   = _bufAfter  > 0 ? new Date(slot.end.getTime()   + _bufAfter  * 60000) : slot.end;
+                return !hasConflict(checkStart, checkEnd);
             });
+
+            // Filter out slots within minLeadTime minutes from now
+            const _minLead = parseInt(_bsSlot?.minLeadTime, 10) || 0;
+            if (_minLead > 0) {
+                const _earliest = new Date(Date.now() + _minLead * 60000);
+                availableSlots = availableSlots.filter(slot => slot.start >= _earliest);
+            }
             
 
             // Filter out slots that overlap with auto-break

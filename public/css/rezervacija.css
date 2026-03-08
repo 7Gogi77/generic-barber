@@ -2,6 +2,7 @@
         :root {
             --ios-blue: #007AFF;
             --ios-blue-light: #5AC8FA;
+            --booking-btn-text: #FFFFFF;
             --ios-green: #34C759;
             --ios-red: #FF3B30;
             --ios-orange: #FF9500;
@@ -579,7 +580,7 @@
 
         .btn-primary {
             background: var(--ios-blue);
-            color: white;
+            color: var(--booking-btn-text);
         }
 
         .btn-primary:hover {
