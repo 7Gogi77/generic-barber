@@ -28,47 +28,31 @@ const SMS_CONFIG = {
  * @returns {Promise<Object>} Result object
  */
 async function sendSMS(phoneNumber, message) {
-  console.log('📱 Sending SMS to:', phoneNumber);
-
   // Auto-format Slovenian numbers: 031... → +38631...
-  let formattedPhone = phoneNumber;
-  if (formattedPhone && formattedPhone.startsWith('0')) {
+  let formattedPhone = String(phoneNumber || '').trim();
+  if (formattedPhone.startsWith('0')) {
     formattedPhone = '+386' + formattedPhone.substring(1);
-    console.log('Auto-formatted to:', formattedPhone);
   }
 
-  // Validate phone number
   if (!formattedPhone || !formattedPhone.startsWith('+')) {
-    console.error('❌ Invalid phone number format. Must start with + or 0 (e.g., +381... or 031...)');
     return { success: false, error: 'Invalid phone number format' };
   }
 
   try {
-    // HTTP SMS API request
-    const response = await fetch(SMS_CONFIG.apiUrl, {
+    // Route through server-side proxy to avoid browser CORS restrictions
+    const response = await fetch('/api/send-sms', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': SMS_CONFIG.apiKey,
-      },
-      body: JSON.stringify({
-        from: SMS_CONFIG.phoneNumber,  // Your phone number (the sender)
-        to: formattedPhone,             // Customer's phone number (formatted)
-        content: message,               // SMS text
-      }),
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ to: formattedPhone, message }),
     });
 
     const result = await response.json();
-
-    if (response.ok) {
-      console.log('✅ SMS sent successfully:', result);
-      return { success: true, data: result };
+    if (response.ok && result.success) {
+      return { success: true, data: result.data };
     } else {
-      console.error('❌ SMS sending failed:', result);
-      return { success: false, error: result.message || result.error || 'Unknown error' };
+      return { success: false, error: result.error || 'Unknown error' };
     }
   } catch (error) {
-    console.error('❌ Network error sending SMS:', error);
     return { success: false, error: error.message };
   }
 }

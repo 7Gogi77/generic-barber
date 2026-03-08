@@ -106,6 +106,7 @@ async function sendSMS(phoneNumber, message) {
  */
 async function sendAppointmentConfirmation(appointment) {
   const tmpl = getSmsTemplates();
+  // Only block if explicitly disabled — default (undefined/true) always sends
   if (tmpl.confirmationEnabled === false) return { success: false, error: 'Disabled' };
 
   const phoneNumber   = appointment.phoneNumber;
