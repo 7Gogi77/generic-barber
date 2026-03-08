@@ -1441,12 +1441,10 @@
                 }
             } catch (e) {}
 
-            // Also collect and persist services + team from their tab forms (background)
+            // Sync services + team to cloud (without overwriting from DOM — they have their own save buttons)
             setTimeout(() => {
                 try {
                     if (window.SITE_CONFIG) {
-                        if (window.SITE_CONFIG.servicesSection) window.SITE_CONFIG.servicesSection.items = bspCollectServices();
-                        if (window.SITE_CONFIG.barbersSection)  window.SITE_CONFIG.barbersSection.list   = bspCollectTeam();
                         if (window.StorageManager) StorageManager.save('site_config', window.SITE_CONFIG).catch(() => {});
                         if (window.CloudSync?.saveToCloud) window.CloudSync.saveToCloud(window.SITE_CONFIG).catch(() => {});
                     }

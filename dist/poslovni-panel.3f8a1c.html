@@ -4177,16 +4177,14 @@
                 }
             } catch(e) { console.warn('⚠ Calendar update failed', e); }
 
-            // Also collect and persist services + team from their tab forms (background)
+            // Sync to cloud without overwriting services/team from DOM (they have their own save buttons)
             setTimeout(() => {
                 try {
                     if (window.SITE_CONFIG) {
-                        if (window.SITE_CONFIG.servicesSection) window.SITE_CONFIG.servicesSection.items = bspCollectServices();
-                        if (window.SITE_CONFIG.barbersSection)  window.SITE_CONFIG.barbersSection.list   = bspCollectTeam();
                         if (window.StorageManager) StorageManager.save('site_config', window.SITE_CONFIG).catch(() => {});
                         if (window.CloudSync?.saveToCloud) window.CloudSync.saveToCloud(window.SITE_CONFIG).catch(() => {});
                     }
-                } catch(e) { console.warn('⚠ Could not save services/team:', e); }
+                } catch(e) { console.warn('⚠ Cloud sync failed', e); }
             }, 0);
             _bspClearDirty();
         }
