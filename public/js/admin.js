@@ -317,16 +317,54 @@ const AdminManager = {
     applyTheme() {
         const root = document.documentElement;
         const t = SITE_CONFIG.theme;
-        
-        root.style.setProperty('--color-primary', t.primary);
-        root.style.setProperty('--color-dark', t.dark);
-        root.style.setProperty('--color-card', t.card);
-        root.style.setProperty('--gradient-start', t.gradientStart);
-        root.style.setProperty('--gradient-end', t.gradientEnd);
-        root.style.setProperty('--text-primary', t.textPrimary);
-        root.style.setProperty('--text-secondary', t.textSecondary);
-        root.style.setProperty('--text-gold', t.textGold);
-        
+        if (!t) return;
+
+        // Helper: hex colour → "r, g, b" string for rgba() usage
+        function hexToRgb(hex) {
+            if (!hex) return '0, 122, 255';
+            const clean = hex.replace('#', '');
+            const full = clean.length === 3 ? clean.split('').map(c => c + c).join('') : clean;
+            const r = parseInt(full.substring(0, 2), 16);
+            const g = parseInt(full.substring(2, 4), 16);
+            const b = parseInt(full.substring(4, 6), 16);
+            return `${r}, ${g}, ${b}`;
+        }
+
+        const isLight = t.mode === 'light' || (t.dark && t.dark.toUpperCase() === '#FFFFFF');
+
+        // Primary CSS vars used by index.html
+        root.style.setProperty('--accent',                  t.primary            || '#007AFF');
+        root.style.setProperty('--accent-rgb',              hexToRgb(t.primary));
+        root.style.setProperty('--accent-light',            `rgba(${hexToRgb(t.primary)}, 0.1)`);
+        root.style.setProperty('--bg-primary',              t.dark               || (isLight ? '#FFFFFF' : '#0A0A0A'));
+        root.style.setProperty('--bg-secondary',            t.card               || (isLight ? '#F2F2F7' : '#141414'));
+        root.style.setProperty('--bg-tertiary',             isLight ? '#E5E5EA'  : '#1C1C1E');
+        root.style.setProperty('--subtitle-color',          t.primary            || '#007AFF');
+        root.style.setProperty('--text-on-hero',            t.textOnHero         || '#FFFFFF');
+        root.style.setProperty('--text-primary',            t.textPrimary        || (isLight ? '#1C1C1E' : '#FFFFFF'));
+        root.style.setProperty('--text-secondary',          t.textSecondary      || (isLight ? '#6E6E73' : '#8E8E93'));
+        root.style.setProperty('--text-tertiary',           isLight ? '#48484A'  : '#636366');
+        root.style.setProperty('--border-color',            isLight ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.08)');
+        root.style.setProperty('--glass-bg',                isLight ? 'rgba(255,255,255,0.85)' : 'rgba(28,28,30,0.85)');
+        root.style.setProperty('--gradient-start',          t.gradientStart      || t.primary || '#007AFF');
+        root.style.setProperty('--gradient-end',            t.gradientEnd        || '#5AC8FA');
+        root.style.setProperty('--button-color',            t.buttonColor        || t.primary || '#007AFF');
+        root.style.setProperty('--button-text-color',       t.buttonTextColor    || '#FFFFFF');
+        root.style.setProperty('--nav-text-color',          t.navTextColor       || (isLight ? '#6E6E73' : '#8E8E93'));
+        root.style.setProperty('--nav-text-color-top',      t.navTextColorTop    || '#FFFFFF');
+        root.style.setProperty('--nav-text-color-scrolled', t.navTextColorScrolled || (isLight ? '#1C1C1E' : '#8E8E93'));
+        root.style.setProperty('--nav-hover-color',         t.navHoverColor      || t.primary || '#007AFF');
+        root.style.setProperty('--footer-bg-color',         t.footerBgColor      || (isLight ? '#1C1C1E' : '#0A0A0A'));
+        root.style.setProperty('--footer-text-color',       t.footerTextColor    || (isLight ? '#F2F2F7' : '#636366'));
+        root.style.setProperty('--scrollbar-thumb',         t.scrollbarThumb     || t.primary || '#007AFF');
+        root.style.setProperty('--scrollbar-track',         t.scrollbarTrack     || (isLight ? '#F2F2F7' : '#1C1C1E'));
+
+        // Legacy variable aliases (kept for any older CSS that may still reference them)
+        root.style.setProperty('--color-primary', t.primary || '#007AFF');
+        root.style.setProperty('--color-dark',    t.dark    || '#0A0A0A');
+        root.style.setProperty('--color-card',    t.card    || '#141414');
+        root.style.setProperty('--text-gold',     t.textGold || t.primary || '#007AFF');
+
         // Update Tailwind config
         if (window.tailwind && window.tailwind.config) {
             window.tailwind.config.theme.extend.colors = {
