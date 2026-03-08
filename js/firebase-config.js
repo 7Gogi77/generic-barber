@@ -111,33 +111,6 @@ window.CloudSync = {
             }
         } catch (error) {}
         return true;
-    },
-
-    // Save bookingSettings to cloud
-    async saveBookingSettings(data) {
-        try {
-            const bsRef = ref(database, 'bookingSettings');
-            await set(bsRef, data);
-            return true;
-        } catch (error) {
-            return false;
-        }
-    },
-
-    // Load bookingSettings from cloud
-    async loadBookingSettings() {
-        try {
-            const bsRef = ref(database, 'bookingSettings');
-            const snapshot = await get(bsRef);
-            if (snapshot.exists()) {
-                const data = snapshot.val();
-                if (data && typeof data === 'object') {
-                    localStorage.setItem('bookingSettings', JSON.stringify(data));
-                    return true;
-                }
-            }
-        } catch (error) {}
-        return false;
     }
 };
 
