@@ -76,6 +76,14 @@ window.CloudSync = {
         try {
             const configRef = ref(database, 'site_config');
             await set(configRef, config);
+            // Also save bookingSettings alongside site_config
+            try {
+                const bs = localStorage.getItem('bookingSettings');
+                if (bs) {
+                    const bsRef = ref(database, 'bookingSettings');
+                    await set(bsRef, JSON.parse(bs));
+                }
+            } catch(_) {}
             return true;
         } catch (error) {
             return false;
@@ -94,11 +102,20 @@ window.CloudSync = {
                 }
                 Object.assign(window.SITE_CONFIG, cloudConfig || {});
                 localStorage.setItem('site_config_backup', JSON.stringify(window.SITE_CONFIG));
-                return true;
             }
-        } catch (error) {
-        }
-        return false;
+        } catch (error) {}
+        // Always try to load bookingSettings
+        try {
+            const bsRef = ref(database, 'bookingSettings');
+            const bsSnap = await get(bsRef);
+            if (bsSnap.exists()) {
+                const bsData = bsSnap.val();
+                if (bsData && typeof bsData === 'object') {
+                    localStorage.setItem('bookingSettings', JSON.stringify(bsData));
+                }
+            }
+        } catch(_) {}
+        return true;
     },
 
     // Save bookingSettings to cloud
