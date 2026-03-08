@@ -107,6 +107,11 @@
                 if (window.CloudSync && typeof window.CloudSync.loadFromCloud === 'function') {
                     const sdkLoaded = await window.CloudSync.loadFromCloud();
                     if (sdkLoaded) {
+                        // Still sync bookingSettings even when CloudSync handled site_config
+                        try {
+                            const _bsRes = await fetch(`https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app/bookingSettings.json?_t=${new Date().getTime()}`, { cache: 'no-store' });
+                            if (_bsRes.ok) { const _bsD = await _bsRes.json(); if (_bsD && typeof _bsD === 'object') localStorage.setItem('bookingSettings', JSON.stringify(_bsD)); }
+                        } catch(_) {}
                         return true;
                     }
                 }
