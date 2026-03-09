@@ -286,6 +286,14 @@
             flex-direction: column !important;
         }
 
+        /* In week view, .fc must be auto height (not 100%) — 100% expands to fill parent
+           and leaves empty space if parent is larger than the grid content */
+        #scheduleCalendar.view-timegrid-week .fc,
+        .fc-timeGridWeek-view ~ * .fc,
+        #scheduleCalendar:has(.fc-timeGridWeek-view) .fc {
+            height: auto !important;
+        }
+
         /* iOS-Style FullCalendar */
         .fc {
             font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif;
@@ -403,6 +411,20 @@
             max-height: none !important;
             min-height: 0 !important;
             overflow: visible !important;
+        }
+        /* Remove any bottom padding/margin on FC table elements that cause empty space */
+        .fc-timeGridWeek-view .fc-scrollgrid,
+        .fc-timeGridWeek-view .fc-timegrid-body,
+        .fc-timeGridWeek-view .fc-scrollgrid-section:last-child > td,
+        .fc-timeGridWeek-view .fc-timegrid-slots,
+        .fc-timeGridWeek-view .fc-timegrid-cols {
+            padding-bottom: 0 !important;
+            margin-bottom: 0 !important;
+        }
+        /* FC scrollgrid is a <table> — kill its bottom border spacing */
+        .fc-timeGridWeek-view table.fc-scrollgrid {
+            border-collapse: collapse !important;
+            border-spacing: 0 !important;
         }
         /* FC's own class on the timegrid root — covers first render before datesSet fires.
            NOTE: overflow: hidden + overflow-y: visible is invalid CSS (browser computes

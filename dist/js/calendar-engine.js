@@ -1099,6 +1099,12 @@ const CalendarEngine = {
                 viewRoot.style.setProperty('min-height', '0', 'important');
                 viewRoot.style.setProperty('overflow', 'visible', 'important');
               }
+              // Strip .fc itself — height:100% on it expands beyond grid content leaving empty space
+              const fcEl = containerElement.querySelector('.fc');
+              if (fcEl) {
+                fcEl.style.setProperty('height', 'auto', 'important');
+                fcEl.style.setProperty('min-height', '0', 'important');
+              }
               // Strip view-harness height
               containerElement.querySelectorAll('.fc-view-harness').forEach(el => {
                 el.style.setProperty('height', 'auto', 'important');
