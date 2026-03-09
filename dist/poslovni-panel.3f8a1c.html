@@ -399,9 +399,14 @@
         }
 
         /* ===== WEEK VIEW: NO INTERNAL SCROLL — expand to full content height ===== */
-        /* Target FC's own .fc-timeGridWeek-view class (always present from first render)
-           AND our dynamic .view-timegrid-week class for double coverage.                 */
-        #scheduleCalendar.view-timegrid-week,
+        /* Container keeps overflow:hidden so border-radius clips cell lines at corners */
+        #scheduleCalendar.view-timegrid-week {
+            height: auto !important;
+            max-height: none !important;
+            min-height: 0 !important;
+            overflow: hidden !important;
+        }
+        /* Children expand freely */
         #scheduleCalendar.view-timegrid-week .fc,
         #scheduleCalendar.view-timegrid-week .fc-view-harness,
         #scheduleCalendar.view-timegrid-week .fc-timegrid,
