@@ -138,6 +138,7 @@ async function displayAppointmentDetails(event) {
         <div class="detail-row"><span class="detail-label"><i class="bi bi-calendar"></i> Datum:</span><span class="detail-value">${dateStr}</span></div>
         <div class="detail-row"><span class="detail-label"><i class="bi bi-clock"></i> Ura:</span><span class="detail-value">${timeStr}</span></div>
         <div class="detail-row"><span class="detail-label"><i class="bi bi-briefcase"></i> Storitve:</span><span class="detail-value">${services || '-'}</span></div>
+        ${event.extendedProps.workerName ? `<div class="detail-row"><span class="detail-label"><i class="bi bi-person-badge-fill"></i> Zaposleni:</span><span class="detail-value">${event.extendedProps.workerName}</span></div>` : ''}
         <div class="detail-row"><span class="detail-label"><i class="bi bi-cash-coin"></i> Cena:</span><span class="detail-value">${price}</span></div>
         <div class="detail-row"><span class="detail-label"><i class="bi bi-envelope"></i> Email:</span><span class="detail-value" style="font-size:12px">${event.extendedProps.email || '-'}</span></div>
         <div class="detail-row"><span class="detail-label"><i class="bi bi-telephone"></i> Telefon:</span><span class="detail-value">${event.extendedProps.phone || '-'}</span></div>

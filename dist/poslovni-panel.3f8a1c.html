@@ -2176,10 +2176,22 @@
 
     <div class="main-content">
         <div class="content-area">
-            <div id="calWorkerFilterWrap" style="display:none; padding:6px 8px 0; flex-shrink:0;">
-                <select id="calWorkerFilter" style="padding:6px 12px;border:1px solid #ddd;border-radius:8px;font-size:13px;color:#1c1c1e;background:#fff;cursor:pointer;">
-                    <option value="all">👥 Vsi zaposleni</option>
-                </select>
+            <style>
+                #calWorkerFilterWrap{border-bottom:1px solid rgba(0,0,0,0.08);background:#fff;padding:8px 14px 10px;flex-shrink:0}
+                #calWorkerFilterBar{display:flex;align-items:center;gap:10px;overflow-x:auto;scrollbar-width:none}
+                #calWorkerFilterBar::-webkit-scrollbar{display:none}
+                .cwf-label{font-size:11px;font-weight:700;color:#8e8e93;white-space:nowrap;text-transform:uppercase;letter-spacing:.5px;flex-shrink:0}
+                .cwf-chip{display:flex;align-items:center;gap:6px;padding:5px 13px 5px 6px;border-radius:100px;border:1.5px solid #e0e0e0;background:#f5f5f7;cursor:pointer;font-size:13px;font-weight:500;color:#1c1c1e;white-space:nowrap;transition:all .15s ease;user-select:none;flex-shrink:0}
+                .cwf-chip:hover{background:#ebebed}
+                .cwf-chip.active{background:rgba(0,122,255,.08);border-color:#007aff;color:#007aff}
+                .cwf-chip-avatar{width:24px;height:24px;border-radius:50%;object-fit:cover;flex-shrink:0}
+                .cwf-chip-placeholder{width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,rgba(0,122,255,.15),rgba(0,122,255,.3));display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#007aff;flex-shrink:0}
+            </style>
+            <div id="calWorkerFilterWrap" style="display:none;">
+                <div id="calWorkerFilterBar">
+                    <span class="cwf-label">&#128101; Zaposleni</span>
+                    <div id="calWorkerChips"></div>
+                </div>
             </div>
             <div id="scheduleCalendar">
                 <div class="calendar-loading">

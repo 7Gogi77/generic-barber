@@ -1043,23 +1043,30 @@
             const section = document.getElementById('workerPickerSection');
             const grid    = document.getElementById('workerPickerGrid');
             if (!section || !grid) return;
-            const workers = [{ id: 'any', name: 'Brez preference' },
-                             ...teamList.map(m => ({ id: m.id || m.name, name: m.name }))];
+            const hasRealImg = (m) => m.img && m.img !== 'https://via.placeholder.com/300' && m.img.trim() !== '';
+            function avatar(w) {
+                if (w.id === 'any') {
+                    return '<div class="worker-card-initials" style="background:linear-gradient(135deg,#e5e5ea,#d1d1d6);color:#8e8e93;font-size:22px;">&#128101;</div>';
+                }
+                if (hasRealImg(w)) {
+                    const initId = '_wi_' + (w.id || w.name).replace(/[^a-zA-Z0-9]/g,'_');
+                    return `<img class="worker-card-avatar" src="${w.img}" alt="${w.name}" onerror="this.style.display='none';document.getElementById('${initId}').style.display='flex'"><div id="${initId}" class="worker-card-initials" style="display:none">${(w.name||'?').charAt(0).toUpperCase()}</div>`;
+                }
+                return `<div class="worker-card-initials">${(w.name||'?').charAt(0).toUpperCase()}</div>`;
+            }
+            const workers = [{ id: 'any', name: 'Brez preference', img: '' },
+                             ...teamList.map(m => ({ id: m.id || m.name, name: m.name, img: m.img || '' }))];
             grid.innerHTML = workers.map(w =>
-                `<div class="worker-card" data-worker-id="${w.id}" data-worker-name="${w.name}"
-                      onclick="window.selectWorker(this)"
-                      style="border:2px solid #ddd;border-radius:10px;padding:12px 8px;text-align:center;cursor:pointer;font-size:13px;font-weight:500;"
-                 >${w.name}</div>`).join('');
+                `<div class="worker-card" data-worker-id="${w.id}" data-worker-name="${w.name}" onclick="window.selectWorker(this)">
+                    ${avatar(w)}
+                    <div class="worker-card-name">${w.name}</div>
+                </div>`).join('');
             section.style.display = 'block';
             window.selectWorker(grid.querySelector('[data-worker-id="any"]'));
         }
         window.selectWorker = function selectWorker(el) {
-            document.querySelectorAll('.worker-card').forEach(c => {
-                c.style.borderColor = '#ddd'; c.style.background = ''; c.style.color = '';
-            });
-            el.style.borderColor = '#007aff';
-            el.style.background  = '#007aff10';
-            el.style.color       = '#007aff';
+            document.querySelectorAll('.worker-card').forEach(c => c.classList.remove('selected-worker'));
+            el.classList.add('selected-worker');
             BookingState.selectedWorker = { id: el.dataset.workerId, name: el.dataset.workerName };
         };
         function updateSummary() {

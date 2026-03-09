@@ -1276,24 +1276,36 @@
         }
 
         function initCalWorkerFilter() {
-            const wrap = document.getElementById('calWorkerFilterWrap');
-            const sel  = document.getElementById('calWorkerFilter');
-            if (!wrap || !sel) return;
+            const wrap     = document.getElementById('calWorkerFilterWrap');
+            const chipsEl  = document.getElementById('calWorkerChips');
+            if (!wrap || !chipsEl) return;
             const s    = _bspData || {};
             const list = window.SITE_CONFIG?.barbersSection?.list || [];
             if (s.autoAssignEmployee === false && list.length > 0) {
-                sel.innerHTML = '<option value="all">👥 Vsi zaposleni</option>' +
-                    list.map(m => `<option value="${m.id||m.name}">${m.name}</option>`).join('');
+                const all = [{ id: 'all', name: 'Vsi', img: '' }, ...list];
+                chipsEl.innerHTML = all.map((m, i) => {
+                    const isAll  = m.id === 'all';
+                    const hasImg = !isAll && m.img && m.img !== 'https://via.placeholder.com/300' && m.img.trim() !== '';
+                    const avatar = isAll
+                        ? `<div class="cwf-chip-placeholder" style="background:linear-gradient(135deg,#e5e5ea,#c7c7cc)">&#128101;</div>`
+                        : hasImg
+                            ? `<img class="cwf-chip-avatar" src="${m.img}" alt="${m.name}" onerror="this.style.display='none'">`
+                            : `<div class="cwf-chip-placeholder">${(m.name||'?').charAt(0).toUpperCase()}</div>`;
+                    return `<div class="cwf-chip${i===0?' active':''}" data-wid="${m.id||m.name}" onclick="window.calFilterSelect(this)">${avatar}<span>${m.name}</span></div>`;
+                }).join('');
                 wrap.style.display = 'block';
-                sel.onchange = () => {
-                    window._calWorkerFilterId = sel.value;
-                    if (window._calendarInstance?.refetchEvents) window._calendarInstance.refetchEvents();
-                };
+                window._calWorkerFilterId = 'all';
             } else {
                 wrap.style.display = 'none';
                 window._calWorkerFilterId = 'all';
             }
         }
+        window.calFilterSelect = function(el) {
+            document.querySelectorAll('.cwf-chip').forEach(c => c.classList.remove('active'));
+            el.classList.add('active');
+            window._calWorkerFilterId = el.dataset.wid;
+            if (window.calendar && typeof window.calendar.refetchEvents === 'function') window.calendar.refetchEvents();
+        };
 
         function bspRenderLocations() {
             const el = document.getElementById('locationsList');
