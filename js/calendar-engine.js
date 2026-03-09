@@ -652,8 +652,8 @@ const CalendarEngine = {
         slotDuration: slotDurationStr,
         slotLabelInterval: { hours: 1 },
         slotLabelFormat: { hour: '2-digit', minute: '2-digit', hour12: false },
-        // Hide the all-day slot so week/day views don't show a separate all-day row
-        allDaySlot: false,
+        // Show the all-day slot so multi-day events appear at the top of the week/day view
+        allDaySlot: true,
         views: {
           dayGridMonth: { type: 'dayGridMonth', height: 'auto' }, // auto-size so last row is never clipped
           // On mobile: 1 slot per hour in week view to reduce scrolling
@@ -1435,8 +1435,8 @@ const CalendarEngine = {
         eventDisplay: 'auto',
         // Make overlapping events display side-by-side in timeGrid views
         slotEventOverlap: false,
-        // Ensure all-day slot hidden (no dedicated all-day column/row)
-        allDaySlot: false,
+        // Ensure all-day slot is visible for multi-day events
+        allDaySlot: true,
         height: 'auto',
         contentHeight: 'auto'
       });
