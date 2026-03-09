@@ -1805,48 +1805,8 @@ const CalendarEngine = {
           setTimeout(() => attempt(0), delays[0]);
         })();
 
-        // MutationObserver: permanently strip FC's inline height/overflow on week view scrollers.
-        // Uses disconnect/reconnect to prevent re-entrancy (boolean flags are not safe across microtasks).
-        (function watchWeekScrollers() {
-          if (typeof MutationObserver === 'undefined') return;
-          const _moConfig = { subtree: true, attributes: true, attributeFilter: ['style'] };
-          const _mo = new MutationObserver((mutations) => {
-            const viewType = calendar && calendar.view && calendar.view.type ? calendar.view.type : '';
-            if (viewType !== 'timeGridWeek') return;
-            // Disconnect first to prevent our own setProperty calls from re-triggering this callback
-            _mo.disconnect();
-            try {
-              mutations.forEach(m => {
-                const el = m.target;
-                if (!el || !el.style) return;
-                const cls = el.classList;
-                if (cls.contains('fc-scroller') || cls.contains('fc-scroller-liquid-absolute') || cls.contains('fc-scroller-harness')) {
-                  el.style.setProperty('overflow', 'visible', 'important');
-                  el.style.setProperty('overflow-x', 'hidden', 'important');
-                  el.style.setProperty('overflow-y', 'visible', 'important');
-                  el.style.setProperty('height', 'auto', 'important');
-                  el.style.setProperty('max-height', 'none', 'important');
-                  if (cls.contains('fc-scroller-liquid-absolute')) {
-                    el.style.setProperty('position', 'relative', 'important');
-                    el.style.removeProperty('top');
-                    el.style.removeProperty('bottom');
-                    el.style.removeProperty('left');
-                    el.style.removeProperty('right');
-                  }
-                }
-                if (cls.contains('fc-view-harness') || cls.contains('fc-timegrid')) {
-                  el.style.removeProperty('height');
-                  el.style.removeProperty('max-height');
-                  el.style.removeProperty('min-height');
-                }
-              });
-            } finally {
-              // Always reconnect, even if an error occurred
-              _mo.observe(containerElement, _moConfig);
-            }
-          });
-          _mo.observe(containerElement, _moConfig);
-        })();
+        // Week view sizing is handled entirely by CSS !important rules in calendar.css.
+        // No MutationObserver needed - CSS !important beats FC's regular inline styles.
 
         // Safely process day cells (may not exist immediately after render).
         (function handleDayCells() {

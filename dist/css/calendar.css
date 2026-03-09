@@ -276,6 +276,33 @@
   overflow: visible !important;
 }
 
+/* Strip FC's inline height/overflow from all scroller elements in week view.
+   CSS !important beats FC's regular inline styles (FC never uses !important inline). */
+#scheduleCalendar.view-timegrid-week .fc-scroller-harness {
+  height: auto !important;
+  min-height: 0 !important;
+}
+#scheduleCalendar.view-timegrid-week .fc-scroller {
+  overflow: visible !important;
+  overflow-x: hidden !important;
+  overflow-y: visible !important;
+  height: auto !important;
+  max-height: none !important;
+}
+#scheduleCalendar.view-timegrid-week .fc-scroller-liquid-absolute {
+  position: relative !important;
+  top: auto !important;
+  bottom: auto !important;
+  left: auto !important;
+  right: auto !important;
+  overflow: visible !important;
+  height: auto !important;
+  max-height: none !important;
+}
+#scheduleCalendar.view-timegrid-week .fc-scrollgrid-section-body > td {
+  height: auto !important;
+}
+
 #scheduleCalendar.view-timegrid-week .fc .fc-timegrid .fc-scrollgrid-section-body {
   max-height: none !important;
   overflow-y: visible !important;
