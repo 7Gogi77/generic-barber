@@ -1676,7 +1676,7 @@
         }
 
         function showNotification(message, type) {
-            const notif = document.createElement('div');
+            if (type !== 'error') return;
             notif.className = `notification ${type}`;
             notif.textContent = message;
             document.body.appendChild(notif);
