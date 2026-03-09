@@ -714,6 +714,9 @@
 
             // Working Days
             loadWorkingDays();
+
+            // Section visibility toggles
+            loadSectionVisibility();
         }
 
         // Load gallery
@@ -1616,6 +1619,40 @@
             saveConfig();
             showNotification('Barve drsnika so bile shranjene!', 'success');
         }
+
+        // Section visibility
+        const _SV_SECTIONS = [
+            { key: 'about',       selector: '#about' },
+            { key: 'testimonial', selector: '.testimonial-section' },
+            { key: 'services',    selector: '#services' },
+            { key: 'barbers',     selector: '#barbers' },
+            { key: 'gallery',     selector: '#gallery' },
+            { key: 'hours',       selector: '#business-hours' },
+            { key: 'contact',     selector: '#contact' },
+            { key: 'reviews',     selector: '#reviews' },
+            { key: 'cta',         selector: '.cta-section' }
+        ];
+
+        function saveSectionVisibility() {
+            const hidden = [];
+            _SV_SECTIONS.forEach(s => {
+                const cb = document.getElementById('svToggle_' + s.key);
+                if (cb && !cb.checked) hidden.push(s.selector);
+            });
+            SITE_CONFIG.hiddenSections = hidden;
+            saveConfig();
+            showNotification('Vidnost razdelkov shranjena!', 'success');
+        }
+
+        function loadSectionVisibility() {
+            const hidden = Array.isArray(SITE_CONFIG.hiddenSections) ? SITE_CONFIG.hiddenSections : [];
+            _SV_SECTIONS.forEach(s => {
+                const cb = document.getElementById('svToggle_' + s.key);
+                if (cb) cb.checked = !hidden.includes(s.selector);
+            });
+        }
+
+        function saveSiteConfig() { saveSectionVisibility(); }
 
         // Apply theme colors to the page
         function applyThemeToPage() {

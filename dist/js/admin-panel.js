@@ -1622,15 +1622,15 @@
 
         // Section visibility helpers
         const _SV_SECTIONS = [
-            { key: 'about',          selector: '#about' },
-            { key: 'testimonial-section', selector: '.testimonial-section' },
-            { key: 'services',       selector: '#services' },
-            { key: 'barbers',        selector: '#barbers' },
-            { key: 'gallery',        selector: '#gallery' },
-            { key: 'business-hours', selector: '#business-hours' },
-            { key: 'contact',        selector: '#contact' },
-            { key: 'reviews',        selector: '#reviews' },
-            { key: 'cta-section',    selector: '.cta-section' }
+            { key: 'about',        selector: '#about' },
+            { key: 'testimonial',  selector: '.testimonial-section' },
+            { key: 'services',     selector: '#services' },
+            { key: 'barbers',      selector: '#barbers' },
+            { key: 'gallery',      selector: '#gallery' },
+            { key: 'hours',        selector: '#business-hours' },
+            { key: 'contact',      selector: '#contact' },
+            { key: 'reviews',      selector: '#reviews' },
+            { key: 'cta',          selector: '.cta-section' }
         ];
 
         function saveSectionVisibility() {
