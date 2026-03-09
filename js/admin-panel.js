@@ -164,26 +164,16 @@
         // Save all helper for non-technical users — calls known save functions if present
         let _saveBulkMode = false;
         function saveAll() {
+            _saveBulkMode = true;
             try {
-                _saveBulkMode = true;
-                if (typeof saveAppearance === 'function') saveAppearance();
-                if (typeof saveLogo === 'function') saveLogo();
-                if (typeof saveTheme === 'function') saveTheme();
-                if (typeof saveTextColors === 'function') saveTextColors();
-                if (typeof saveFooterColors === 'function') saveFooterColors();
-                if (typeof saveScrollbarColors === 'function') saveScrollbarColors();
-                if (typeof saveSectionTitles === 'function') saveSectionTitles();
-                if (typeof saveNavLinks === 'function') saveNavLinks();
-                if (typeof saveCtaSection === 'function') saveCtaSection();
-                if (typeof saveContactSection === 'function') saveContactSection();
-                if (typeof saveReviewsSection === 'function') saveReviewsSection();
-                if (typeof saveFooterCopy === 'function') saveFooterCopy();
-                if (typeof saveGallery === 'function') saveGallery();
-                if (typeof saveBookingPageContent === 'function') saveBookingPageContent();
-                if (typeof saveBooking === 'function') saveBooking();
-                if (typeof saveSectionVisibility === 'function') saveSectionVisibility();
-            } catch (err) {
-                alert('Prišlo je do napake pri shranjevanju. Preverite konzolo.');
+                var _fns = [saveAppearance, saveLogo, saveTheme, saveTextColors, saveFooterColors,
+                    saveScrollbarColors, saveSectionTitles, saveNavLinks, saveCtaSection,
+                    saveContactSection, saveReviewsSection, saveFooterCopy, saveGallery,
+                    saveBookingPageContent, saveBooking, saveSectionVisibility];
+                _fns.forEach(function(fn) {
+                    try { if (typeof fn === 'function') fn(); }
+                    catch(e) { console.warn('[saveAll] skipped', fn && fn.name, e); }
+                });
             } finally {
                 _saveBulkMode = false;
                 if (typeof syncToFirebase === 'function') syncToFirebase(SITE_CONFIG);
@@ -1665,6 +1655,7 @@
 
         // Apply theme colors to the page
         function applyThemeToPage() {
+            if (_saveBulkMode) return;
             const t = SITE_CONFIG.theme;
             const root = document.documentElement;
             root.style.setProperty('--color-primary', t.primary || '#007AFF');
