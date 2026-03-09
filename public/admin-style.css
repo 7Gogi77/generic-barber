@@ -904,3 +904,35 @@ input[type="color"]::-webkit-color-swatch {
         height: 44px;
     }
 }
+
+/* ===== iOS Toggle Switches ===== */
+.ios-toggle {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 28px;
+    flex-shrink: 0;
+}
+.ios-toggle input { opacity: 0; width: 0; height: 0; position: absolute; }
+.ios-toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: #ccc;
+    border-radius: 28px;
+    transition: background-color .3s;
+}
+.ios-toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 22px;
+    width: 22px;
+    left: 3px;
+    bottom: 3px;
+    background-color: #fff;
+    border-radius: 50%;
+    transition: transform .3s;
+    box-shadow: 0 1px 4px rgba(0,0,0,.3);
+}
+.ios-toggle input:checked + .ios-toggle-slider { background-color: #34C759; }
+.ios-toggle input:checked + .ios-toggle-slider:before { transform: translateX(22px); }

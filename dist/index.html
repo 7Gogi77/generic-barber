@@ -1681,6 +1681,15 @@
                     });
                 }
             }
+
+            // Apply hidden sections from admin config
+            const _hiddenSections = Array.isArray(SITE_CONFIG.hiddenSections) ? SITE_CONFIG.hiddenSections : [];
+            _hiddenSections.forEach(sel => {
+                try {
+                    const el = document.querySelector(sel);
+                    if (el) el.style.display = 'none';
+                } catch(_) {}
+            });
         }
         
         async function initSite() {
