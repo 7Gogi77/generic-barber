@@ -1167,14 +1167,15 @@ const CalendarEngine = {
           } catch (e) { /* ignore */ }
 
           // Month view shows all 7 days; week/day views hide non-working days
+          // Guard: only call setOption when value changes to avoid datesSet infinite loop
           try {
             const _vhd = arg && arg.view && arg.view.type ? arg.view.type : '';
             if (calendar && typeof calendar.setOption === 'function') {
-              if (_vhd === 'dayGridMonth') {
-                calendar.setOption('hiddenDays', []);
-              } else {
-                calendar.setOption('hiddenDays', weekHiddenDays);
-              }
+              const _targetHidden = _vhd === 'dayGridMonth' ? [] : weekHiddenDays;
+              const _curHidden = (calendar.getOption && calendar.getOption('hiddenDays')) || [];
+              const _changed = _targetHidden.length !== _curHidden.length ||
+                _targetHidden.some((d, i) => d !== _curHidden[i]);
+              if (_changed) calendar.setOption('hiddenDays', _targetHidden);
             }
           } catch(_) {}
 
