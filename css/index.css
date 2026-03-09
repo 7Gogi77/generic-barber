@@ -961,7 +961,7 @@
             align-items: center;
             gap: 10px;
             background: white;
-            color: #0A0A0A;
+            color: var(--text-on-light);
             padding: 16px 32px;
             border-radius: var(--radius-sm);
             font-weight: 600;
@@ -1003,7 +1003,7 @@
             font-family: 'Playfair Display', serif;
             font-size: 1.25rem;
             font-weight: 600;
-            color: var(--text-primary);
+            color: var(--footer-text-color);
         }
         
         .footer-links {
