@@ -214,12 +214,11 @@
                     <div class="bsp-card">
                         <div class="bsp-card-header">
                             <div class="bsp-card-icon" style="background:#ff950020;"><i class="bi bi-cup-hot" style="color:#ff9500;font-size:15px;"></i></div>
-                            <div><div class="bsp-card-title">Omogoči avtomatski odmor</div></div>
+                            <label for="autoBreakEnabled" style="flex:1;cursor:pointer;margin:0;display:flex;align-items:center;justify-content:space-between;gap:10px;">
+                                <div class="bsp-card-title">Omogoči avtomatski odmor<i class="bi bi-info-circle bsp-tip-icon" data-tip="Sistem vsak dan samodejno blokira izbran čas za odmor, zato v tem času rezervacije niso možne.|če nastavite odmor 13:00–14:00, stranke v tem času ne morejo rezervirati termina." onclick="event.preventDefault();event.stopPropagation();"></i></div>
+                                <input type="checkbox" id="autoBreakEnabled" class="bsp-toggle" onclick="event.stopPropagation()">
+                            </label>
                         </div>
-                        <label class="bsp-row">
-                            <div><div class="bsp-row-label">Omogoči avtomatski odmor<i class="bi bi-info-circle bsp-tip-icon" data-tip="Sistem vsak dan samodejno blokira izbran čas za odmor, zato v tem času rezervacije niso možne.|če nastavite odmor 13:00–14:00, stranke v tem času ne morejo rezervirati termina."></i></div><div class="bsp-row-hint">Blokira termin za malico vsak dan</div></div>
-                            <input type="checkbox" id="autoBreakEnabled" class="bsp-toggle">
-                        </label>
                         <div id="autoBreakDetails" style="display:none;">
                             <div class="bsp-row">
                                 <div><div class="bsp-row-label">Naziv odmora<i class="bi bi-info-circle bsp-tip-icon" data-tip="Ime odmora, ki se prikaže v koledarju.|'Malica', 'Odmor', 'Interno delo'."></i></div></div>
