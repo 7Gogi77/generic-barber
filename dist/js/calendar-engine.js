@@ -552,6 +552,23 @@ const CalendarEngine = {
       const timeGridSlotMax = '24:00:00';
       const initialScrollTime = options.scrollTime || (window.SITE_CONFIG && window.SITE_CONFIG.booking && window.SITE_CONFIG.booking.scrollTime) || '12:00:00';
 
+      // Compute week-view slot bounds and hidden days from per-day working hours
+      const _wkByDay = window.SITE_CONFIG && window.SITE_CONFIG.booking && window.SITE_CONFIG.booking._workingHoursByDay;
+      let weekSlotMin = slotMinTimeVal, weekSlotMax = slotMaxTimeVal, weekHiddenDays = [];
+      if (_wkByDay) {
+        const _enabled = Object.entries(_wkByDay).filter(([, d]) => d.enabled);
+        if (_enabled.length) {
+          const _minH = Math.min(..._enabled.map(([, d]) => parseInt((d.start || '09:00').split(':')[0], 10)));
+          const _maxH = Math.max(..._enabled.map(([, d]) => {
+            const parts = (d.end || '19:00').split(':');
+            return parseInt(parts[0], 10) + (parseInt(parts[1] || '0', 10) > 0 ? 1 : 0);
+          }));
+          weekSlotMin = ('0' + _minH).slice(-2) + ':00:00';
+          weekSlotMax = ('0' + Math.min(_maxH, 24)).slice(-2) + ':00:00';
+        }
+        weekHiddenDays = Object.entries(_wkByDay).filter(([, d]) => !d.enabled).map(([k]) => parseInt(k, 10));
+      }
+
       const _isMobile = window.innerWidth <= 768;
 
       const calendar = new FullCalendar.Calendar(containerElement, {
@@ -637,9 +654,11 @@ const CalendarEngine = {
         views: {
           dayGridMonth: { type: 'dayGridMonth', height: 'auto' }, // auto-size so last row is never clipped
           // On mobile: 1 slot per hour in week view to reduce scrolling
-          timeGridWeek: { type: 'timeGrid', slotMinTime: '00:00:00', slotMaxTime: '24:00:00', slotDuration: _isMobile ? '01:00:00' : '00:30:00' },
-          timeGridDay: { type: 'timeGrid', slotMinTime: '00:00:00', slotMaxTime: '24:00:00' }
+          timeGridWeek: { type: 'timeGrid', slotMinTime: weekSlotMin, slotMaxTime: weekSlotMax, slotDuration: _isMobile ? '01:00:00' : '00:30:00' },
+          timeGridDay: { type: 'timeGrid', slotMinTime: weekSlotMin, slotMaxTime: weekSlotMax }
         },
+        // Hide non-working days in the week view
+        hiddenDays: weekHiddenDays,
         // Initial vertical scroll position in timeGrid views
         scrollTime: initialScrollTime,
         height: _isMobile ? 'auto' : calcHeight,
@@ -1090,6 +1109,14 @@ const CalendarEngine = {
             setTimeout(_freeWeekDs, 0);
             setTimeout(_freeWeekDs, 100);
             setTimeout(_freeWeekDs, 300);
+            // Re-apply slot bounds in case FC reset them
+            try {
+              if (calendar) {
+                calendar.setOption('slotMinTime', weekSlotMin);
+                calendar.setOption('slotMaxTime', weekSlotMax);
+                calendar.setOption('hiddenDays', weekHiddenDays);
+              }
+            } catch(_) {}
           }
 
           // Update view-specific classes so styles can be scoped (dayGrid vs timeGrid)
@@ -1126,9 +1153,9 @@ const CalendarEngine = {
             if (v2.startsWith('timeGrid')) {
               try { if (calendar && typeof calendar.setOption === 'function') {
                 calendar.setOption('scrollTime', initialScrollTime);
-                // Ensure slot bounds are set for full 24h in case the internal options didn't apply
-                calendar.setOption('slotMinTime', '00:00:00');
-                calendar.setOption('slotMaxTime', '24:00:00');
+                // Ensure slot bounds match working hours
+                calendar.setOption('slotMinTime', weekSlotMin);
+                calendar.setOption('slotMaxTime', weekSlotMax);
               } } catch (_) {}
 
               // Attempt to scroll the timegrid body to the approximate time slot
@@ -1325,10 +1352,10 @@ const CalendarEngine = {
             try {
               const v = arg && arg.view && arg.view.type ? arg.view.type : '';
               if (v === 'timeGridWeek' || v === 'timeGridDay') {
-                // Force slot bounds for full day and set initial scrollTime again in case options didn't apply earlier
+                // Set slot bounds to working hours and initial scrollTime
                 try { if (calendar && typeof calendar.setOption === 'function') {
-                  calendar.setOption('slotMinTime', '00:00:00');
-                  calendar.setOption('slotMaxTime', '24:00:00');
+                  calendar.setOption('slotMinTime', weekSlotMin);
+                  calendar.setOption('slotMaxTime', weekSlotMax);
                   calendar.setOption('scrollTime', initialScrollTime);
 
                   // Note: we avoid DOM overrides to prevent fallback side-effects. If slots do not render properly, investigate CSS/FullCalendar options instead.
