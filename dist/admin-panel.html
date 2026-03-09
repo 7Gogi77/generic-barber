@@ -1191,19 +1191,36 @@
     </script>
     <!-- ========== END FULLCALENDAR SYSTEM ========== -->
 
+    <!-- Unsaved changes bar -->
+    <div id="apUnsavedBar" style="display:none; position:fixed; bottom:0; left:72px; right:0; z-index:9000; background:#fff3cd; border-top:2px solid #ffc107; padding:12px 20px; align-items:center; justify-content:space-between; box-shadow:0 -2px 12px rgba(0,0,0,0.12);">
+        <span style="font-size:14px; color:#1c1c1e; font-weight:500;">&#9888;&#65039; Spremembe niso shranjene</span>
+        <div style="display:flex; gap:10px;">
+            <button onclick="apDiscardChanges()" style="padding:8px 16px; font-size:14px; border-radius:10px; background:#8E8E93; color:#fff; border:none; cursor:pointer; font-weight:500;">Preklici</button>
+            <button onclick="apSaveChanges()" style="padding:8px 18px; font-size:14px; border-radius:10px; background:#007AFF; color:#fff; border:none; cursor:pointer; font-weight:600;">Shrani</button>
+        </div>
+    </div>
     <script>
         (function() {
             var _apSaveTimer = null;
-            function _apAutoSave() {
+            function _apOnChange() {
+                var bar = document.getElementById('apUnsavedBar');
+                if (bar) bar.style.display = 'flex';
                 clearTimeout(_apSaveTimer);
                 _apSaveTimer = setTimeout(function() {
                     if (typeof saveAll === 'function') saveAll();
-                }, 600);
+                }, 300);
             }
+            window.apSaveChanges = function() {
+                clearTimeout(_apSaveTimer);
+                if (typeof saveAll === 'function') saveAll();
+                var bar = document.getElementById('apUnsavedBar');
+                if (bar) bar.style.display = 'none';
+            };
+            window.apDiscardChanges = function() { location.reload(); };
             document.addEventListener('DOMContentLoaded', function() {
                 var container = document.querySelector('.main-content') || document.body;
-                container.addEventListener('input', _apAutoSave);
-                container.addEventListener('change', _apAutoSave);
+                container.addEventListener('input', _apOnChange);
+                container.addEventListener('change', _apOnChange);
             });
         })();
     </script>

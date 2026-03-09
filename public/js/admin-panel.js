@@ -164,17 +164,22 @@
         // Save all helper for non-technical users — calls known save functions if present
         function saveAll() {
             try {
-                if (typeof saveBookingPageContent === 'function') saveBookingPageContent();
-                if (typeof saveBooking === 'function') saveBooking();
-                if (typeof saveSiteConfig === 'function') saveSiteConfig();
+                if (typeof saveAppearance === 'function') saveAppearance();
+                if (typeof saveLogo === 'function') saveLogo();
+                if (typeof saveTheme === 'function') saveTheme();
+                if (typeof saveTextColors === 'function') saveTextColors();
+                if (typeof saveFooterColors === 'function') saveFooterColors();
+                if (typeof saveScrollbarColors === 'function') saveScrollbarColors();
+                if (typeof saveSectionTitles === 'function') saveSectionTitles();
+                if (typeof saveNavLinks === 'function') saveNavLinks();
+                if (typeof saveCtaSection === 'function') saveCtaSection();
                 if (typeof saveContactSection === 'function') saveContactSection();
                 if (typeof saveReviewsSection === 'function') saveReviewsSection();
-                // Provide immediate feedback
-                const el = document.getElementById('adminQuickStart');
-                if (el) {
-                    el.textContent = 'Shranjeno — preverite konzolo za napake, če obstajajo.';
-                    setTimeout(() => { el.textContent = 'Koraki: 1) Če prvič, ustvarite geslo spodaj → 2) Prijavite se → 3) Uredite vsebine → 4) Kliknite "Shrani vse"'; }, 3000);
-                }
+                if (typeof saveFooterCopy === 'function') saveFooterCopy();
+                if (typeof saveGallery === 'function') saveGallery();
+                if (typeof saveBookingPageContent === 'function') saveBookingPageContent();
+                if (typeof saveBooking === 'function') saveBooking();
+                if (typeof saveSectionVisibility === 'function') saveSectionVisibility();
             } catch (err) {
                 alert('Prišlo je do napake pri shranjevanju. Preverite konzolo.');
             }
