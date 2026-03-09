@@ -62,7 +62,7 @@
             root.style.setProperty('--text-primary', textPrimary);
             root.style.setProperty('--text-secondary', textSecondary);
             root.style.setProperty('--text-tertiary', textTertiary);
-            root.style.setProperty('--text-on-hero', t.textOnHero || '#FFFFFF');
+            root.style.setProperty('--text-on-hero', '#FFFFFF'); // always white — hero overlay is always dark
             root.style.setProperty('--text-on-light', t.textOnLight || (lightTheme ? '#1C1C1E' : '#0A0A0A'));
             root.style.setProperty('--border-color', lightTheme ? 'rgba(0, 0, 0, 0.08)' : 'rgba(255, 255, 255, 0.08)');
             root.style.setProperty('--border-hover', lightTheme ? 'rgba(0, 0, 0, 0.12)' : 'rgba(255, 255, 255, 0.15)');
@@ -273,7 +273,9 @@
             // Gallery
             const galleryTitle = document.getElementById('gallery-title');
             if (galleryTitle) {
-                galleryTitle.innerText = SITE_CONFIG.galleryTitle || 'Galerija';
+                const _gt = (SITE_CONFIG.galleryTitle || '').trim();
+                if (_gt) galleryTitle.innerText = _gt;
+                // else keeps the HTML default "Galerija"
             }
             const galleryList = document.getElementById('gallery-list');
             galleryList.innerHTML = '';
