@@ -268,18 +268,7 @@ body::before {
 
 /* ===== WORKER PICKER ===== */
 #workerPickerSection {
-    margin-top: 18px;
-    padding-top: 16px;
-    border-top: 1px solid var(--separator);
-}
-
-#workerPickerSection h3 {
-    font-size: 12px;
-    font-weight: 700;
-    color: var(--tertiary);
-    text-transform: uppercase;
-    letter-spacing: 0.6px;
-    margin-bottom: 12px;
+    /* now the sole content of its own step card */
 }
 
 #workerPickerGrid {

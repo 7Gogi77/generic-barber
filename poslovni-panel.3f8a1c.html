@@ -78,9 +78,11 @@
         <div class="content-area">
             <style>
                 #calWorkerFilterWrap{border-bottom:1px solid rgba(0,0,0,0.08);background:#fff;padding:8px 14px 10px;flex-shrink:0}
-                #calWorkerFilterBar{display:flex;align-items:center;gap:10px;overflow-x:auto;scrollbar-width:none}
+                #calWorkerFilterBar{display:flex;align-items:center;gap:12px;overflow-x:auto;scrollbar-width:none}
                 #calWorkerFilterBar::-webkit-scrollbar{display:none}
-                .cwf-label{font-size:11px;font-weight:700;color:#8e8e93;white-space:nowrap;text-transform:uppercase;letter-spacing:.5px;flex-shrink:0}
+                .cwf-label{font-size:11px;font-weight:700;color:#8e8e93;white-space:nowrap;text-transform:uppercase;letter-spacing:.5px;flex-shrink:0;display:flex;align-items:center;gap:5px}
+                #calWorkerChips{display:flex;flex-direction:row;align-items:center;gap:8px;overflow-x:auto;scrollbar-width:none;flex-wrap:nowrap}
+                #calWorkerChips::-webkit-scrollbar{display:none}
                 .cwf-chip{display:flex;align-items:center;gap:6px;padding:5px 13px 5px 6px;border-radius:100px;border:1.5px solid #e0e0e0;background:#f5f5f7;cursor:pointer;font-size:13px;font-weight:500;color:#1c1c1e;white-space:nowrap;transition:all .15s ease;user-select:none;flex-shrink:0}
                 .cwf-chip:hover{background:#ebebed}
                 .cwf-chip.active{background:rgba(0,122,255,.08);border-color:#007aff;color:#007aff}
@@ -89,7 +91,7 @@
             </style>
             <div id="calWorkerFilterWrap" style="display:none;">
                 <div id="calWorkerFilterBar">
-                    <span class="cwf-label">&#128101; Zaposleni</span>
+                    <span class="cwf-label"><i class="bi bi-people-fill"></i> Izberi pogled zaposlenega</span>
                     <div id="calWorkerChips"></div>
                 </div>
             </div>

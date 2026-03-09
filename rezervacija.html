@@ -57,6 +57,7 @@
             <div class="step-dot" data-step="2"></div>
             <div class="step-dot" data-step="3"></div>
             <div class="step-dot" data-step="4"></div>
+            <div class="step-dot" data-step="5"></div>
         </div>
 
         <!-- Step 1: Select Services -->
@@ -81,11 +82,7 @@
                             <span id="totalPriceText">0 €</span>
                         </div>
                     </div>
-                    <!-- Worker Picker -->
-                    <div id="workerPickerSection" style="display:none; margin-top:20px; padding-top:16px; border-top:1px solid #eee;">
-                        <h3 style="font-size:15px;font-weight:600;margin:0 0 12px;color:#1c1c1e;">Izberite zaposlenega</h3>
-                        <div id="workerPickerGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;"></div>
-                    </div>
+
                 </div>
             </div>
             <button class="btn btn-primary" id="toStep2Btn" disabled>
@@ -93,11 +90,30 @@
             </button>
         </div>
 
-        <!-- Step 2: Select Date & Time -->
+        <!-- Step 2: Select Worker -->
         <div class="booking-step" id="step2">
             <div class="card">
                 <div class="card-header">
-                    <h2>2. Izberite datum</h2>
+                    <h2>2. Izberite zaposlenega</h2>
+                    <p>Kdo bo opravil vašo storitev?</p>
+                </div>
+                <div class="card-body">
+                    <div id="workerPickerSection">
+                        <div id="workerPickerGrid"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-secondary" id="backToStep1FromWorker">Nazaj</button>
+                <button class="btn btn-primary" id="toStep3FromWorker">Naprej</button>
+            </div>
+        </div>
+
+        <!-- Step 3: Select Date & Time -->
+        <div class="booking-step" id="step3">
+            <div class="card">
+                <div class="card-header">
+                    <h2>3. Izberite datum</h2>
                     <p>Zeleni datumi imajo proste termine</p>
                     <!-- Business Hours Info -->
                     <div class="business-hours-info" id="businessHoursInfo">
@@ -141,16 +157,16 @@
                 </div>
             </div>
             <div class="btn-group">
-                <button class="btn btn-secondary" id="backToStep1">Nazaj</button>
-                <button class="btn btn-primary" id="toStep3Btn" disabled>Naprej</button>
+                <button class="btn btn-secondary" id="backToStep2">Nazaj</button>
+                <button class="btn btn-primary" id="toStep4Btn" disabled>Naprej</button>
             </div>
         </div>
 
-        <!-- Step 3: Customer Info -->
-        <div class="booking-step" id="step3">
+        <!-- Step 4: Customer Info -->
+        <div class="booking-step" id="step4">
             <div class="card">
                 <div class="card-header">
-                    <h2>3. Vaši podatki</h2>
+                    <h2>4. Vaši podatki</h2>
                     <p>Vnesite kontaktne podatke</p>
                 </div>
                 <div class="card-body">
@@ -173,16 +189,16 @@
                 </div>
             </div>
             <div class="btn-group">
-                <button class="btn btn-secondary" id="backToStep2">Nazaj</button>
-                <button class="btn btn-primary" id="toStep4Btn">Naprej</button>
+                <button class="btn btn-secondary" id="backToStep3">Nazaj</button>
+                <button class="btn btn-primary" id="toStep5Btn">Naprej</button>
             </div>
         </div>
 
-        <!-- Step 4: Confirmation -->
-        <div class="booking-step" id="step4">
+        <!-- Step 5: Confirmation -->
+        <div class="booking-step" id="step5">
             <div class="card">
                 <div class="card-header">
-                    <h2>4. Potrditev</h2>
+                    <h2>5. Potrditev</h2>
                     <p>Preverite podatke in potrdite rezervacijo</p>
                 </div>
                 <div class="card-body">
@@ -223,13 +239,13 @@
                 </div>
             </div>
             <div class="btn-group">
-                <button class="btn btn-secondary" id="backToStep3">Nazaj</button>
+                <button class="btn btn-secondary" id="backToStep4">Nazaj</button>
                 <button class="btn btn-primary" id="confirmBookingBtn">Potrdi rezervacijo</button>
             </div>
         </div>
 
-        <!-- Step 5: Success -->
-        <div class="booking-step" id="step5">
+        <!-- Step 6: Success -->
+        <div class="booking-step" id="step6">
             <div class="card">
                 <div class="card-body">
                     <div class="success-container">

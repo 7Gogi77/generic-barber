@@ -1287,7 +1287,7 @@
                     const isAll  = m.id === 'all';
                     const hasImg = !isAll && m.img && m.img !== 'https://via.placeholder.com/300' && m.img.trim() !== '';
                     const avatar = isAll
-                        ? `<div class="cwf-chip-placeholder" style="background:linear-gradient(135deg,#e5e5ea,#c7c7cc)">&#128101;</div>`
+                        ? `<div class="cwf-chip-placeholder" style="background:linear-gradient(135deg,#e5e5ea,#c7c7cc)"><i class="bi bi-people-fill" style="font-size:13px;"></i></div>`
                         : hasImg
                             ? `<img class="cwf-chip-avatar" src="${m.img}" alt="${m.name}" onerror="this.style.display='none'">`
                             : `<div class="cwf-chip-placeholder">${(m.name||'?').charAt(0).toUpperCase()}</div>`;

@@ -77,13 +77,13 @@
             }
             
             // Buttons - Next
-            const nextBtns = document.querySelectorAll('#toStep2Btn, #toStep3Btn, #toStep4Btn');
+            const nextBtns = document.querySelectorAll('#toStep2Btn, #toStep3FromWorker, #toStep4Btn, #toStep5Btn');
             nextBtns.forEach(btn => {
                 if (bp.nextButton) btn.textContent = bp.nextButton;
             });
             
             // Buttons - Back
-            const backBtns = document.querySelectorAll('#backToStep1, #backToStep2, #backToStep3');
+            const backBtns = document.querySelectorAll('#backToStep1FromWorker, #backToStep2, #backToStep3, #backToStep4');
             backBtns.forEach(btn => {
                 if (bp.backButton) btn.textContent = bp.backButton;
             });
@@ -875,7 +875,7 @@
             renderTimeSlots(date);
             
             // Disable next button until time is selected
-            document.getElementById('toStep3Btn').disabled = true;
+            document.getElementById('toStep4Btn').disabled = true;
         }
 
         // ===== RENDER TIME SLOTS =====
@@ -976,7 +976,7 @@
             }
             
             // Enable next button
-            document.getElementById('toStep3Btn').disabled = false;
+            document.getElementById('toStep4Btn').disabled = false;
         }
 
         // ===== NAVIGATION =====
@@ -1219,7 +1219,7 @@
                 }
                 
                 // Go to success step
-                goToStep(5);
+                goToStep(6);
                 
                 // Fire confetti celebration! 🎉
                 if (typeof fireConfetti === 'function') {
@@ -1233,34 +1233,58 @@
             showLoading(false);
         }
 
+// ===== STEP NAVIGATION HELPERS =====
+        function workerStepActive() {
+            const bs = window.SITE_CONFIG?._bookingSettings || {};
+            const teamList = window.SITE_CONFIG?.barbersSection?.list || [];
+            return bs.autoAssignEmployee === false && teamList.length > 0;
+        }
+
         // ===== EVENT LISTENERS =====
         function setupEventListeners() {
             // Step navigation
             document.getElementById('toStep2Btn').addEventListener('click', () => {
                 if (BookingState.selectedServices.length > 0) {
+                    if (workerStepActive()) {
+                        goToStep(2);
+                    } else {
+                        goToStep(3);
+                        renderCalendar();
+                    }
+                }
+            });
+
+            document.getElementById('backToStep1FromWorker').addEventListener('click', () => goToStep(1));
+
+            document.getElementById('toStep3FromWorker').addEventListener('click', () => {
+                goToStep(3);
+                renderCalendar();
+            });
+
+            document.getElementById('backToStep2').addEventListener('click', () => {
+                if (workerStepActive()) {
                     goToStep(2);
-                    renderCalendar(); // Re-render with current service duration
+                } else {
+                    goToStep(1);
                 }
             });
-            
-            document.getElementById('backToStep1').addEventListener('click', () => goToStep(1));
-            
-            document.getElementById('toStep3Btn').addEventListener('click', () => {
-                if (BookingState.selectedDate && BookingState.selectedTime) {
-                    goToStep(3);
-                }
-            });
-            
-            document.getElementById('backToStep2').addEventListener('click', () => goToStep(2));
-            
+
             document.getElementById('toStep4Btn').addEventListener('click', () => {
-                if (validateCustomerInfo()) {
-                    updateSummary();
+                if (BookingState.selectedDate && BookingState.selectedTime) {
                     goToStep(4);
                 }
             });
-            
+
             document.getElementById('backToStep3').addEventListener('click', () => goToStep(3));
+
+            document.getElementById('toStep5Btn').addEventListener('click', () => {
+                if (validateCustomerInfo()) {
+                    updateSummary();
+                    goToStep(5);
+                }
+            });
+
+            document.getElementById('backToStep4').addEventListener('click', () => goToStep(4));
             
             document.getElementById('confirmBookingBtn').addEventListener('click', confirmBooking);
             
