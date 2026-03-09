@@ -391,9 +391,8 @@
         }
 
         /* ===== WEEK VIEW: NO INTERNAL SCROLL — expand to full content height ===== */
-        /* These rules appear last in this <style> block so they win over all earlier rules    */
-        /* including external calendar.css. FC never uses !important on inline styles,          */
-        /* so !important here beats FC's JS-applied inline height/overflow values.             */
+        /* Target FC's own .fc-timeGridWeek-view class (always present from first render)
+           AND our dynamic .view-timegrid-week class for double coverage.                 */
         #scheduleCalendar.view-timegrid-week,
         #scheduleCalendar.view-timegrid-week .fc,
         #scheduleCalendar.view-timegrid-week .fc-view-harness,
@@ -405,12 +404,42 @@
             min-height: 0 !important;
             overflow: visible !important;
         }
+        /* FC's own class on the timegrid root — covers first render before datesSet fires */
+        .fc-timeGridWeek-view.fc-timegrid {
+            height: auto !important;
+            min-height: 0 !important;
+            overflow: hidden !important;
+            overflow-y: visible !important;
+        }
+        .fc-timeGridWeek-view .fc-scroller-harness {
+            height: auto !important;
+            min-height: 0 !important;
+        }
+        .fc-timeGridWeek-view .fc-scroller {
+            overflow: hidden !important;
+            overflow-x: hidden !important;
+            overflow-y: visible !important;
+            height: auto !important;
+            max-height: none !important;
+        }
+        .fc-timeGridWeek-view .fc-scroller-liquid-absolute {
+            position: relative !important;
+            inset: auto !important;
+            top: auto !important; bottom: auto !important;
+            left: auto !important; right: auto !important;
+            overflow: visible !important;
+            height: auto !important;
+            max-height: none !important;
+        }
+        .fc-timeGridWeek-view .fc-scrollgrid-section-body > td {
+            height: auto !important;
+        }
         #scheduleCalendar.view-timegrid-week .fc-scroller-harness {
             height: auto !important;
             min-height: 0 !important;
         }
         #scheduleCalendar.view-timegrid-week .fc-scroller {
-            overflow: visible !important;
+            overflow: hidden !important;
             overflow-x: hidden !important;
             overflow-y: visible !important;
             height: auto !important;

@@ -278,18 +278,23 @@
 
 /* Strip FC's inline height/overflow from all scroller elements in week view.
    CSS !important beats FC's regular inline styles (FC never uses !important inline). */
-#scheduleCalendar.view-timegrid-week .fc-scroller-harness {
+/* Scope via our dynamic class AND FC's own class (.fc-timeGridWeek-view) so it works
+   before datesSet has a chance to add view-timegrid-week to the container. */
+#scheduleCalendar.view-timegrid-week .fc-scroller-harness,
+.fc-timeGridWeek-view .fc-scroller-harness {
   height: auto !important;
   min-height: 0 !important;
 }
-#scheduleCalendar.view-timegrid-week .fc-scroller {
-  overflow: visible !important;
+#scheduleCalendar.view-timegrid-week .fc-scroller,
+.fc-timeGridWeek-view .fc-scroller {
+  overflow: hidden !important;
   overflow-x: hidden !important;
   overflow-y: visible !important;
   height: auto !important;
   max-height: none !important;
 }
-#scheduleCalendar.view-timegrid-week .fc-scroller-liquid-absolute {
+#scheduleCalendar.view-timegrid-week .fc-scroller-liquid-absolute,
+.fc-timeGridWeek-view .fc-scroller-liquid-absolute {
   position: relative !important;
   top: auto !important;
   bottom: auto !important;
@@ -299,8 +304,16 @@
   height: auto !important;
   max-height: none !important;
 }
-#scheduleCalendar.view-timegrid-week .fc-scrollgrid-section-body > td {
+#scheduleCalendar.view-timegrid-week .fc-scrollgrid-section-body > td,
+.fc-timeGridWeek-view .fc-scrollgrid-section-body > td {
   height: auto !important;
+}
+/* Target the timegrid element itself — FC sets style="height:Xpx; overflow:hidden auto" on it */
+.fc-timeGridWeek-view.fc-timegrid {
+  height: auto !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+  overflow-y: visible !important;
 }
 
 #scheduleCalendar.view-timegrid-week .fc .fc-timegrid .fc-scrollgrid-section-body {
