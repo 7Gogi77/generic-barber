@@ -2829,6 +2829,10 @@
                     <p id="bookingDateTime" style="margin: 5px 0;">-</p>
                 </div>
                 <div style="margin-bottom: 15px;">
+                    <strong>Zaposleni:</strong>
+                    <p id="bookingWorker" style="margin: 5px 0;">-</p>
+                </div>
+                <div style="margin-bottom: 15px;">
                     <strong>Trajanje:</strong>
                     <p id="bookingDuration" style="margin: 5px 0;">-</p>
                 </div>
@@ -3863,7 +3867,44 @@
             bspRenderLocations();
             bspRenderServices();
             bspRenderTeam();
+            initCalWorkerFilter();
         }
+
+        function initCalWorkerFilter() {
+            const wrap    = document.getElementById('calWorkerFilterWrap');
+            const chipsEl = document.getElementById('calWorkerChips');
+            if (!wrap || !chipsEl) return;
+            const s    = _bspData || {};
+            const chk  = document.getElementById('autoAssignEmployee');
+            const isManual = chk ? !chk.checked : (s.autoAssignEmployee === false);
+            const list = (window.SITE_CONFIG?.barbersSection?.list?.length > 0)
+                ? window.SITE_CONFIG.barbersSection.list
+                : (s.employees || []);
+            if (isManual && list.length > 0) {
+                const all = [{ id: 'all', name: 'Vsi', img: '' }, ...list];
+                chipsEl.innerHTML = all.map((m, i) => {
+                    const isAll  = m.id === 'all';
+                    const hasImg = !isAll && m.img && m.img !== 'https://via.placeholder.com/300' && m.img.trim() !== '';
+                    const avatar = isAll
+                        ? `<div class="cwf-chip-placeholder" style="background:linear-gradient(135deg,#e5e5ea,#c7c7cc)"><i class="bi bi-people-fill" style="font-size:13px;"></i></div>`
+                        : hasImg
+                            ? `<img class="cwf-chip-avatar" src="${m.img}" alt="${m.name}" onerror="this.style.display='none'">`
+                            : `<div class="cwf-chip-placeholder">${(m.name||'?').charAt(0).toUpperCase()}</div>`;
+                    return `<div class="cwf-chip${i===0?' active':''}" data-wid="${m.id||m.name}" onclick="window.calFilterSelect(this)">${avatar}<span>${m.name}</span></div>`;
+                }).join('');
+                wrap.style.display = 'block';
+                window._calWorkerFilterId = 'all';
+            } else {
+                wrap.style.display = 'none';
+                window._calWorkerFilterId = 'all';
+            }
+        }
+        window.calFilterSelect = function(el) {
+            document.querySelectorAll('.cwf-chip').forEach(c => c.classList.remove('active'));
+            el.classList.add('active');
+            window._calWorkerFilterId = el.dataset.wid;
+            if (window.calendar && typeof window.calendar.refetchEvents === 'function') window.calendar.refetchEvents();
+        };
 
         // ── Dynamic list renderers ────────────────────────────────────────────────
         function bspRenderExceptions() {
@@ -4296,6 +4337,7 @@
                 if (id === 'peakPricingEnabled')         { const el = document.getElementById('peakPricingDetails');     if (el) el.style.display = v ? 'block' : 'none'; }
                 if (id === 'weekendPricingEnabled')      { const el = document.getElementById('weekendPricingDetails');  if (el) el.style.display = v ? 'block' : 'none'; }
                 if (id === 'preventFragmentation')       { const el = document.getElementById('fragmentGapRow');         if (el) el.style.display = v ? 'block' : 'none'; }
+                if (id === 'autoAssignEmployee') initCalWorkerFilter();
                 if (e.target.closest('#businessSettingsPanel')) _bspMarkDirty();
             });
             // Mark dirty on any text input in the settings panel
@@ -5335,7 +5377,12 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
             const endTime = event.end ? new Date(event.end).toLocaleTimeString('sl-SI', {hour: '2-digit', minute: '2-digit'}) : '';
             document.getElementById('bookingDateTime').textContent = `${startDate} ${startTime} - ${endTime}`;
             
-            document.getElementById('bookingDuration').textContent = `${booking.duration || 0} minut`;
+            const _durationMin = (event.start && event.end) ? Math.round((new Date(event.end) - new Date(event.start)) / 60000) : (booking.duration || 0);
+            document.getElementById('bookingDuration').textContent = `${_durationMin} minut`;
+            const _teamList = window.SITE_CONFIG?.barbersSection?.list || [];
+            const _wName = booking.workerName || (() => { const _wid = booking.worker; return _wid ? (_teamList.find(w => w.id === _wid)?.name || _wid) : ''; })();
+            const _workerEl = document.getElementById('bookingWorker');
+            if (_workerEl) _workerEl.textContent = _wName || '—';
             document.getElementById('bookingServices').textContent = booking.services ? booking.services.join(', ') : 'N/A';
             document.getElementById('bookingPrice').textContent = `${booking.price || 0}€`;
             const notesText = (booking.notes || booking.note || '').toString().trim();

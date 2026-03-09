@@ -1280,8 +1280,12 @@
             const chipsEl  = document.getElementById('calWorkerChips');
             if (!wrap || !chipsEl) return;
             const s    = _bspData || {};
-            const list = window.SITE_CONFIG?.barbersSection?.list || [];
-            if (s.autoAssignEmployee === false && list.length > 0) {
+            const chk  = document.getElementById('autoAssignEmployee');
+            const isManual = chk ? !chk.checked : (s.autoAssignEmployee === false);
+            const list = (window.SITE_CONFIG?.barbersSection?.list?.length > 0)
+                ? window.SITE_CONFIG.barbersSection.list
+                : (s.employees || []);
+            if (isManual && list.length > 0) {
                 const all = [{ id: 'all', name: 'Vsi', img: '' }, ...list];
                 chipsEl.innerHTML = all.map((m, i) => {
                     const isAll  = m.id === 'all';
@@ -1507,6 +1511,7 @@
                 if (id === 'peakPricingEnabled')         { const el = document.getElementById('peakPricingDetails');     if (el) el.style.display = v ? 'block' : 'none'; }
                 if (id === 'weekendPricingEnabled')      { const el = document.getElementById('weekendPricingDetails');  if (el) el.style.display = v ? 'block' : 'none'; }
                 if (id === 'preventFragmentation')       { const el = document.getElementById('fragmentGapRow');         if (el) el.style.display = v ? 'block' : 'none'; }
+                if (id === 'autoAssignEmployee') initCalWorkerFilter();
                 if (e.target.closest('#businessSettingsPanel')) _bspMarkDirty();
             });
             // Mark dirty on any text input in the settings panel
@@ -2507,7 +2512,12 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
             const endTime = event.end ? new Date(event.end).toLocaleTimeString('sl-SI', {hour: '2-digit', minute: '2-digit'}) : '';
             document.getElementById('bookingDateTime').textContent = `${startDate} ${startTime} - ${endTime}`;
             
-            document.getElementById('bookingDuration').textContent = `${booking.duration || 0} minut`;
+            const _durationMin = (event.start && event.end) ? Math.round((new Date(event.end) - new Date(event.start)) / 60000) : (booking.duration || 0);
+            document.getElementById('bookingDuration').textContent = `${_durationMin} minut`;
+            const _teamList = window.SITE_CONFIG?.barbersSection?.list || [];
+            const _wName = booking.workerName || (() => { const _wid = booking.worker; return _wid ? (_teamList.find(w => w.id === _wid)?.name || _wid) : ''; })();
+            const _workerEl = document.getElementById('bookingWorker');
+            if (_workerEl) _workerEl.textContent = _wName || '—';
             document.getElementById('bookingServices').textContent = booking.services ? booking.services.join(', ') : 'N/A';
             document.getElementById('bookingPrice').textContent = `${booking.price || 0}€`;
             const notesText = (booking.notes || booking.note || '').toString().trim();
