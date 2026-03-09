@@ -1279,9 +1279,11 @@
             const wrap     = document.getElementById('calWorkerFilterWrap');
             const chipsEl  = document.getElementById('calWorkerChips');
             if (!wrap || !chipsEl) return;
-            const s    = _bspData || {};
-            const chk  = document.getElementById('autoAssignEmployee');
-            const isManual = chk ? !chk.checked : (s.autoAssignEmployee === false);
+            // Load settings directly if the settings panel hasn't been opened yet
+            const s = _bspData || loadBookingSettings();
+            // Use live checkbox only when settings panel is open (_bspData set); otherwise use stored value
+            const chk = document.getElementById('autoAssignEmployee');
+            const isManual = (_bspData && chk) ? !chk.checked : (s.autoAssignEmployee === false);
             const list = (window.SITE_CONFIG?.barbersSection?.list?.length > 0)
                 ? window.SITE_CONFIG.barbersSection.list
                 : (s.employees || []);
@@ -3774,6 +3776,8 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                 window.calendar = calendar;
                 calendarInitialized = true;
                 debugLog('✓ Business calendar initialized');
+                // Show worker filter bar on load based on stored settings
+                initCalWorkerFilter();
                 
                 // DEBUG: Check if dayMaxEvents is set
 
