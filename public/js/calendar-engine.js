@@ -1068,6 +1068,30 @@ const CalendarEngine = {
             });
           }
 
+          // For week view: strip FC's inline overflow/height constraints so the view expands fully
+          const _argViewType = arg && arg.view && arg.view.type ? arg.view.type : '';
+          if (_argViewType === 'timeGridWeek') {
+            const _freeWeekDs = () => {
+              containerElement.querySelectorAll('.fc-scroller, .fc-scroller-liquid-absolute').forEach(s => {
+                s.style.overflow = 'visible'; s.style.overflowX = 'hidden'; s.style.overflowY = 'visible';
+                s.style.height = 'auto'; s.style.maxHeight = 'none';
+              });
+              containerElement.querySelectorAll('.fc-scroller-harness').forEach(h => {
+                h.style.height = 'auto';
+              });
+              containerElement.querySelectorAll('.fc-scroller-liquid-absolute').forEach(s => {
+                s.style.position = 'relative';
+                s.style.top = ''; s.style.bottom = ''; s.style.left = ''; s.style.right = '';
+              });
+              containerElement.querySelectorAll('.fc-scrollgrid-section-body td').forEach(td => {
+                td.style.height = 'auto';
+              });
+            };
+            setTimeout(_freeWeekDs, 0);
+            setTimeout(_freeWeekDs, 100);
+            setTimeout(_freeWeekDs, 300);
+          }
+
           // Update view-specific classes so styles can be scoped (dayGrid vs timeGrid)
           // Restore granular classes so week and day can have separate CSS
           try {
@@ -1688,11 +1712,33 @@ const CalendarEngine = {
               const scrollBodies = containerElement.querySelectorAll('.fc-scrollgrid-section-body');
 
               if (!isTimegrid) {
-                // Month / list views: clear any stale pixel heights and let FC size naturally
+                // Month / list / week views: clear any stale pixel heights and let FC size naturally
                 if (fcRoot) { fcRoot.style.height = ''; fcRoot.style.minHeight = ''; fcRoot.style.overflow = ''; }
                 if (viewHarness) { viewHarness.style.height = ''; viewHarness.style.minHeight = ''; }
                 try { if (calendar && typeof calendar.setOption === 'function') { calendar.setOption('height', 'auto'); calendar.setOption('contentHeight', 'auto'); } } catch (_) {}
                 if (calendar && typeof calendar.updateSize === 'function') calendar.updateSize();
+                // For week view: FC re-applies inline overflow/height on scrollers after updateSize — strip them
+                if (currentViewType === 'timeGridWeek') {
+                  const _freeWeek = () => {
+                    containerElement.querySelectorAll('.fc-scroller, .fc-scroller-liquid-absolute').forEach(s => {
+                      s.style.overflow = 'visible'; s.style.overflowX = 'hidden'; s.style.overflowY = 'visible';
+                      s.style.height = 'auto'; s.style.maxHeight = 'none';
+                    });
+                    containerElement.querySelectorAll('.fc-scroller-harness').forEach(h => {
+                      h.style.height = 'auto';
+                    });
+                    containerElement.querySelectorAll('.fc-scroller-liquid-absolute').forEach(s => {
+                      s.style.position = 'relative';
+                      s.style.top = ''; s.style.bottom = ''; s.style.left = ''; s.style.right = '';
+                    });
+                    containerElement.querySelectorAll('.fc-scrollgrid-section-body td').forEach(td => {
+                      td.style.height = 'auto';
+                    });
+                  };
+                  setTimeout(_freeWeek, 0);
+                  setTimeout(_freeWeek, 80);
+                  setTimeout(_freeWeek, 250);
+                }
                 return;
               }
 
