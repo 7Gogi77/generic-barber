@@ -1087,6 +1087,20 @@
     </style>
   <script type="module" crossorigin src="/assets/firebase-config-IgOxIlYG.js"></script>
   <link rel="stylesheet" crossorigin href="/assets/main-C86ovcfV.css">
+    <script>
+        /* Section visibility — inject CSS before body renders so nothing can undo it */
+        (function() {
+            try {
+                var hidden = JSON.parse(localStorage.getItem('site_hidden_sections') || 'null');
+                if (Array.isArray(hidden) && hidden.length) {
+                    var css = hidden.map(function(sel) { return sel + ' { display: none !important; }'; }).join('\n');
+                    var style = document.createElement('style');
+                    style.textContent = css;
+                    document.head.appendChild(style);
+                }
+            } catch(e) {}
+        })();
+    </script>
 </head>
 <body>
     <!-- Top promo announcement bar -->
