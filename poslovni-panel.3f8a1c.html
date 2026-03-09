@@ -9,6 +9,14 @@
     <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet" />
     <link href="https://unpkg.com/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet" onerror="this.remove()" />
     <link rel="stylesheet" href="css/poslovni-panel.css">
+    <style>
+        /* BSP Info Tooltip */
+        .bsp-tip-icon { color: #007aff; font-size: 12px; cursor: help; margin-left: 5px; vertical-align: middle; opacity: 0.7; position: relative; top: -1px; display: inline-block; }
+        .bsp-tip-icon:hover { opacity: 1; }
+        .bsp-tip-popup { position: fixed; background: #1c1c1e; color: #f2f2f7; font-size: 12.5px; line-height: 1.55; padding: 10px 14px; border-radius: 10px; max-width: 280px; z-index: 99999; pointer-events: none; box-shadow: 0 4px 20px rgba(0,0,0,0.45); display: none; word-break: break-word; }
+        .bsp-tip-popup .tip-desc { margin: 0 0 5px; }
+        .bsp-tip-popup .tip-ex { color: #aeaeb2; font-size: 11.5px; margin: 0; }
+    </style>
 </head>
 <body>
     <!-- SIDEBAR NAVIGATION -->
@@ -197,7 +205,7 @@
                     <div class="bsp-card">
                         <div class="bsp-card-header">
                             <div class="bsp-card-icon" style="background:#007aff1a;"><i class="bi bi-clock" style="color:#007aff;font-size:15px;"></i></div>
-                            <div><div class="bsp-card-title">Delovni čas po dnevih</div><div class="bsp-card-subtitle">Vklopi dan in nastavi ure ali več časovnih blokov</div></div>
+                            <div><div class="bsp-card-title">Delovni čas po dnevih<i class="bi bi-info-circle bsp-tip-icon" data-tip="Določite, ob katerih urah sprejemate stranke za vsak dan v tednu. Rezervacije so možne samo v tem času.|če nastavite ponedeljek 09:00–17:00, lahko stranke rezervirajo terme samo znotraj teh ur."></i></div><div class="bsp-card-subtitle">Vklopi dan in nastavi ure ali več časovnih blokov</div></div>
                         </div>
                         <div id="workingDaysGrid"></div>
                     </div>
@@ -209,16 +217,16 @@
                             <div><div class="bsp-card-title">Avtomatska malica (break)</div><div class="bsp-card-subtitle">Vsak delovni dan se doda zaklenjen odmor</div></div>
                         </div>
                         <label class="bsp-row">
-                            <div><div class="bsp-row-label">Omogoči avtomatski odmor</div><div class="bsp-row-hint">Blokira termin za malico vsak dan</div></div>
+                            <div><div class="bsp-row-label">Omogoči avtomatski odmor<i class="bi bi-info-circle bsp-tip-icon" data-tip="Sistem vsak dan samodejno blokira izbran čas za odmor, zato v tem času rezervacije niso možne.|če nastavite odmor 13:00–14:00, stranke v tem času ne morejo rezervirati termina."></i></div><div class="bsp-row-hint">Blokira termin za malico vsak dan</div></div>
                             <input type="checkbox" id="autoBreakEnabled" class="bsp-toggle">
                         </label>
                         <div id="autoBreakDetails" style="display:none;">
                             <div class="bsp-row">
-                                <div><div class="bsp-row-label">Naziv odmora</div></div>
+                                <div><div class="bsp-row-label">Naziv odmora<i class="bi bi-info-circle bsp-tip-icon" data-tip="Ime odmora, ki se prikaže v koledarju.|'Malica', 'Odmor', 'Interno delo'."></i></div></div>
                                 <input type="text" id="autoBreakLabel" class="bsp-input" style="max-width:130px;" value="Malica">
                             </div>
                             <div class="bsp-row">
-                                <div><div class="bsp-row-label">Od – Do</div></div>
+                                <div><div class="bsp-row-label">Od – Do<i class="bi bi-info-circle bsp-tip-icon" data-tip="Časovni interval, ko imate odmor in ne sprejemate rezervacij.|13:00–14:00 pomeni, da je ta ura v koledarju blokirana."></i></div></div>
                                 <div style="display:flex;align-items:center;gap:8px;">
                                     <input type="time" id="autoBreakStart" class="bsp-input" value="13:00">
                                     <span style="color:#8e8e93;font-size:12px;">–</span>
@@ -235,12 +243,12 @@
                             <div><div class="bsp-card-title">Večdnevne rezervacije</div><div class="bsp-card-subtitle">Termini, ki trajajo čez več dni</div></div>
                         </div>
                         <label class="bsp-row">
-                            <div><div class="bsp-row-label">Omogoči večdnevne termine</div><div class="bsp-row-hint">Npr. servis vozila, ki traja 2+ dni</div></div>
+                            <div><div class="bsp-row-label">Omogoči večdnevne termine<i class="bi bi-info-circle bsp-tip-icon" data-tip="Omogoča rezervacije, ki trajajo več dni.|servis vozila od ponedeljka do srede."></i></div><div class="bsp-row-hint">Npr. servis vozila, ki traja 2+ dni</div></div>
                             <input type="checkbox" id="allowMultiDayAppointments" class="bsp-toggle">
                         </label>
                         <div id="maxDaysRow" style="display:none;">
                             <div class="bsp-row">
-                                <div><div class="bsp-row-label">Največ dni</div><div class="bsp-row-hint">Maks. trajanje (1–14)</div></div>
+                                <div><div class="bsp-row-label">Največ dni<i class="bi bi-info-circle bsp-tip-icon" data-tip="Določa najdaljše trajanje ene rezervacije.|če nastavite 3 dni, rezervacija ne more trajati več kot tri dni."></i></div><div class="bsp-row-hint">Maks. trajanje (1–14)</div></div>
                                 <input type="number" id="maxAppointmentDays" min="1" max="14" value="4" class="bsp-input" style="width:72px;text-align:center;">
                             </div>
                         </div>
@@ -257,20 +265,20 @@
                             <div><div class="bsp-card-title">Sezonski urnik</div><div class="bsp-card-subtitle">Poletni / zimski urnik z drugačnimi urami</div></div>
                         </div>
                         <label class="bsp-row">
-                            <div><div class="bsp-row-label">Omogoči sezonski urnik</div><div class="bsp-row-hint">Avtomatsko preklopi ure glede na datum</div></div>
+                            <div><div class="bsp-row-label">Omogoči sezonski urnik<i class="bi bi-info-circle bsp-tip-icon" data-tip="Omogoča drugačen delovni čas v določenem delu leta. Sistem samodejno uporabi pravi urnik glede na datum.|poleti delate do 20:00, pozimi pa do 17:00."></i></div><div class="bsp-row-hint">Avtomatsko preklopi ure glede na datum</div></div>
                             <input type="checkbox" id="seasonalEnabled" class="bsp-toggle">
                         </label>
                         <div id="seasonalDetails" style="display:none;">
                             <div class="bsp-row">
-                                <div><div class="bsp-row-label">Poletna sezona od</div></div>
+                                <div><div class="bsp-row-label">Poletna sezona od<i class="bi bi-info-circle bsp-tip-icon" data-tip="Datum, ko začne veljati poletni urnik.|1.6. pomeni začetek poletnega urnika."></i></div></div>
                                 <input type="date" id="seasonSummerStart" class="bsp-input" value="2026-06-01">
                             </div>
                             <div class="bsp-row">
-                                <div><div class="bsp-row-label">Poletna sezona do</div></div>
+                                <div><div class="bsp-row-label">Poletna sezona do<i class="bi bi-info-circle bsp-tip-icon" data-tip="Datum, ko se poletni urnik konča.|31.8. pomeni konec poletnega urnika."></i></div></div>
                                 <input type="date" id="seasonSummerEnd" class="bsp-input" value="2026-08-31">
                             </div>
                             <div class="bsp-row">
-                                <div><div class="bsp-row-label">Poletni delovni čas</div><div class="bsp-row-hint">Hiter vnos za vse delovne dni (pon–pet)</div></div>
+                                <div><div class="bsp-row-label">Poletni delovni čas<i class="bi bi-info-circle bsp-tip-icon" data-tip="Delovni čas, ki velja v poletnem obdobju.|08:00–20:00 za vse delovne dni."></i></div><div class="bsp-row-hint">Hiter vnos za vse delovne dni (pon–pet)</div></div>
                                 <div style="display:flex;align-items:center;gap:8px;">
                                     <input type="time" id="seasonSummerStart_h" class="bsp-input" value="08:00">
                                     <span style="color:#8e8e93;font-size:12px;">–</span>
@@ -284,13 +292,13 @@
                     <div class="bsp-card">
                         <div class="bsp-card-header">
                             <div class="bsp-card-icon" style="background:#ff3b3020;"><i class="bi bi-calendar-x" style="color:#ff3b30;font-size:15px;"></i></div>
-                            <div><div class="bsp-card-title">Zaprti dnevi & prazniki</div><div class="bsp-card-subtitle">Datumi, ko ne sprejemate rezervacij</div></div>
+                            <div><div class="bsp-card-title">Zaprti dnevi in prazniki<i class="bi bi-info-circle bsp-tip-icon" data-tip="Datumi, ko je poslovanje zaprto in rezervacije niso možne.|1. januar ali dan kolektivnega dopusta."></i></div><div class="bsp-card-subtitle">Datumi, ko ne sprejemate rezervacij</div></div>
                         </div>
                         <div id="dateExceptionsList"></div>
                         <div class="bsp-inline-form" id="addExceptionForm">
-                            <div class="fg"><label>Datum</label><input type="date" id="newExceptionDate" class="bsp-input"></div>
-                            <div class="fg"><label>Naziv</label><input type="text" id="newExceptionLabel" class="bsp-input" placeholder="Npr. Novo leto" style="width:150px;"></div>
-                            <div class="fg"><label>Tip</label>
+                            <div class="fg"><label>Datum<i class="bi bi-info-circle bsp-tip-icon" data-tip="Datum, ko je poslovanje zaprto ali drugačno kot običajno.|25.12."></i></label><input type="date" id="newExceptionDate" class="bsp-input"></div>
+                            <div class="fg"><label>Naziv<i class="bi bi-info-circle bsp-tip-icon" data-tip="Kratek opis razloga zaprtja.|'Božič', 'Kolektivni dopust'."></i></label><input type="text" id="newExceptionLabel" class="bsp-input" placeholder="Npr. Novo leto" style="width:150px;"></div>
+                            <div class="fg"><label>Tip<i class="bi bi-info-circle bsp-tip-icon" data-tip="Vrsta zaprtja dneva.|praznik, dopust ali zaprt dan."></i></label>
                                 <select id="newExceptionType" class="bsp-select">
                                     <option value="closed">Zaprt</option>
                                     <option value="holiday">Praznik</option>
@@ -307,7 +315,7 @@
                     <div class="bsp-card">
                         <div class="bsp-card-header">
                             <div class="bsp-card-icon" style="background:#5ac8fa20;"><i class="bi bi-pencil-square" style="color:#5ac8fa;font-size:15px;"></i></div>
-                            <div><div class="bsp-card-title">Override za specifičen datum</div><div class="bsp-card-subtitle">Poseben delovni čas za določen dan</div></div>
+                            <div><div class="bsp-card-title">Poseben delovni čas za določen dan<i class="bi bi-info-circle bsp-tip-icon" data-tip="Omogoča, da za en dan nastavite drugačen urnik kot običajno.|običajno delate do 18:00, ta dan pa samo do 14:00."></i></div><div class="bsp-card-subtitle">Poseben delovni čas za določen dan</div></div>
                         </div>
                         <div id="dateOverridesList"></div>
                         <div class="bsp-inline-form" id="addOverrideForm">
@@ -332,11 +340,11 @@
                             <div><div class="bsp-card-title">Kapaciteta</div><div class="bsp-card-subtitle">Koliko terminov poteka hkrati</div></div>
                         </div>
                         <div class="bsp-row">
-                            <div><div class="bsp-row-label">Paralelne stranke (stoli)</div><div class="bsp-row-hint">Koliko rezervacij se lahko dogaja hkrati</div></div>
+                            <div><div class="bsp-row-label">Paralelne stranke (stoli)<i class="bi bi-info-circle bsp-tip-icon" data-tip="Koliko strank lahko sprejemate ob istem času.|če nastavite 2, lahko imata dve stranki termin ob isti uri."></i></div><div class="bsp-row-hint">Koliko rezervacij se lahko dogaja hkrati</div></div>
                             <input type="number" id="parallelClients" min="1" max="20" value="1" class="bsp-input" style="width:72px;text-align:center;">
                         </div>
                         <div class="bsp-row">
-                            <div><div class="bsp-row-label">Maks. rezervacij na dan</div><div class="bsp-row-hint">0 = brez omejitve</div></div>
+                            <div><div class="bsp-row-label">Maks. rezervacij na dan<i class="bi bi-info-circle bsp-tip-icon" data-tip="Omeji skupno število rezervacij v enem dnevu.|če nastavite 20, se po 20 rezervacijah tisti dan zapre za nove termine."></i></div><div class="bsp-row-hint">0 = brez omejitve</div></div>
                             <input type="number" id="maxBookingsPerDay" min="0" max="999" value="0" class="bsp-input" style="width:72px;text-align:center;">
                         </div>
                     </div>
@@ -348,7 +356,7 @@
                             <div><div class="bsp-card-title">Člani ekipe</div><div class="bsp-card-subtitle">Stranke izberejo zaposlenega ali sistem dodeli</div></div>
                         </div>
                         <label class="bsp-row">
-                            <div><div class="bsp-row-label">Avtomatska dodelitev</div><div class="bsp-row-hint">Sistem sam dodeli razpoložljivega zaposlenega</div></div>
+                            <div><div class="bsp-row-label">Avtomatska dodelitev<i class="bi bi-info-circle bsp-tip-icon" data-tip="Sistem samodejno izbere zaposlenega, ki je v tistem času prost.|stranka rezervira termin, sistem pa sam določi frizerja."></i></div><div class="bsp-row-hint">Sistem sam dodeli razpoložljivega zaposlenega</div></div>
                             <input type="checkbox" id="autoAssignEmployee" class="bsp-toggle" checked>
                         </label>
                         <p style="font-size:12px;color:#8e8e93;padding:8px 14px 12px;margin:0;">Člane ekipe upravljate v zavihku <strong>Ekipa</strong>.</p>
@@ -364,49 +372,49 @@
                             <div><div class="bsp-card-title">Časovna pravila</div><div class="bsp-card-subtitle">Kdaj in kako dolgo se lahko rezervira</div></div>
                         </div>
                         <div class="bsp-row">
-                            <div><div class="bsp-row-label">Buffer pred terminom</div><div class="bsp-row-hint">Minut pred vsakim terminom bo zaklenjen (prihod)</div></div>
+                            <div><div class="bsp-row-label">Čas priprave pred terminom<i class="bi bi-info-circle bsp-tip-icon" data-tip="Dodatni čas pred terminom, da se pripravite na naslednjo stranko.|če nastavite 10 minut, se termin ob 10:00 lahko začne šele ob 10:10."></i></div><div class="bsp-row-hint">Minut pred vsakim terminom bo zaklenjen (prihod)</div></div>
                             <div style="display:flex;align-items:center;gap:4px;">
                                 <input type="number" id="bufferBefore" min="0" max="120" value="0" class="bsp-input" style="width:65px;text-align:center;">
                                 <span style="font-size:12px;color:#8e8e93;">min</span>
                             </div>
                         </div>
                         <div class="bsp-row">
-                            <div><div class="bsp-row-label">Buffer po terminu</div><div class="bsp-row-hint">Čas čiščenja / priprave po terminu</div></div>
+                            <div><div class="bsp-row-label">Čas po terminu<i class="bi bi-info-circle bsp-tip-icon" data-tip="Čas po koncu termina za čiščenje ali pripravo.|če nastavite 15 minut, naslednji termin ne more začeti takoj."></i></div><div class="bsp-row-hint">Čas čiščenja / priprave po terminu</div></div>
                             <div style="display:flex;align-items:center;gap:4px;">
                                 <input type="number" id="bufferAfter" min="0" max="120" value="0" class="bsp-input" style="width:65px;text-align:center;">
                                 <span style="font-size:12px;color:#8e8e93;">min</span>
                             </div>
                         </div>
                         <div class="bsp-row">
-                            <div><div class="bsp-row-label">Minimalni čas pred rezervacijo</div><div class="bsp-row-hint">Ne sprejme rezervacij bližje kot X minut</div></div>
+                            <div><div class="bsp-row-label">Minimalni čas pred rezervacijo<i class="bi bi-info-circle bsp-tip-icon" data-tip="Določa, koliko časa prej mora stranka rezervirati termin.|če nastavite 120 minut, se termin ob 15:00 lahko rezervira najkasneje ob 13:00."></i></div><div class="bsp-row-hint">Ne sprejme rezervacij bližje kot X minut</div></div>
                             <div style="display:flex;align-items:center;gap:4px;">
                                 <input type="number" id="minLeadTime" min="0" max="10080" value="120" class="bsp-input" style="width:72px;text-align:center;">
                                 <span style="font-size:12px;color:#8e8e93;">min</span>
                             </div>
                         </div>
                         <div class="bsp-row">
-                            <div><div class="bsp-row-label">Maksimalno vnaprej</div><div class="bsp-row-hint">Ne sprejme rezervacij več kot X dni vnaprej</div></div>
+                            <div><div class="bsp-row-label">Največ dni vnaprej<i class="bi bi-info-circle bsp-tip-icon" data-tip="Določa, koliko dni vnaprej lahko stranke rezervirajo termin.|če nastavite 30 dni, lahko rezervirajo največ en mesec naprej."></i></div><div class="bsp-row-hint">Ne sprejme rezervacij več kot X dni vnaprej</div></div>
                             <div style="display:flex;align-items:center;gap:4px;">
                                 <input type="number" id="maxAdvanceDays" min="1" max="365" value="60" class="bsp-input" style="width:72px;text-align:center;">
                                 <span style="font-size:12px;color:#8e8e93;">dni</span>
                             </div>
                         </div>
                         <div class="bsp-row">
-                            <div><div class="bsp-row-label">Blokada konca delovnika</div><div class="bsp-row-hint">Zadnjih X minut dneva ni mogoče rezervirati</div></div>
+                            <div><div class="bsp-row-label">Brez rezervacij tik pred koncem dneva<i class="bi bi-info-circle bsp-tip-icon" data-tip="Zadnji del delovnega dne je blokiran za nove rezervacije.|če nastavite 30 minut in zaprete ob 18:00, zadnji termin je lahko ob 17:30."></i></div><div class="bsp-row-hint">Zadnjih X minut dneva ni mogoče rezervirati</div></div>
                             <div style="display:flex;align-items:center;gap:4px;">
                                 <input type="number" id="blockLastMinutes" min="0" max="120" value="0" class="bsp-input" style="width:65px;text-align:center;">
                                 <span style="font-size:12px;color:#8e8e93;">min</span>
                             </div>
                         </div>
                         <div class="bsp-row">
-                            <div><div class="bsp-row-label">Minimalna dolžina termina</div><div class="bsp-row-hint">Krajšega termina ni mogoče rezervirati</div></div>
+                            <div><div class="bsp-row-label">Minimalna dolžina termina<i class="bi bi-info-circle bsp-tip-icon" data-tip="Najkrajši dovoljen termin.|če nastavite 15 minut, stranka ne more rezervirati 10-minutnega termina."></i></div><div class="bsp-row-hint">Krajšega termina ni mogoče rezervirati</div></div>
                             <div style="display:flex;align-items:center;gap:4px;">
                                 <input type="number" id="minDuration" min="5" max="480" value="15" class="bsp-input" style="width:65px;text-align:center;">
                                 <span style="font-size:12px;color:#8e8e93;">min</span>
                             </div>
                         </div>
                         <div class="bsp-row">
-                            <div><div class="bsp-row-label">Maks. aktivnih rezervacij na stranko</div><div class="bsp-row-hint">0 = brez omejitve</div></div>
+                            <div><div class="bsp-row-label">Maks. aktivnih rezervacij na stranko<i class="bi bi-info-circle bsp-tip-icon" data-tip="Omeji, koliko rezervacij ima lahko ena stranka hkrati.|če nastavite 3, lahko ima stranka največ tri aktivne termine."></i></div><div class="bsp-row-hint">0 = brez omejitve</div></div>
                             <input type="number" id="maxActivePerClient" min="0" max="50" value="0" class="bsp-input" style="width:65px;text-align:center;">
                         </div>
                     </div>
@@ -425,16 +433,16 @@
                             <div><div class="bsp-card-title">Koničasta cena (Peak hours)</div><div class="bsp-card-subtitle">Višja cena v prometnih urah</div></div>
                         </div>
                         <label class="bsp-row">
-                            <div><div class="bsp-row-label">Omogoči peak-hour ceno</div></div>
+                            <div><div class="bsp-row-label">Omogoči višjo ceno v najbolj zasedenih urah<i class="bi bi-info-circle bsp-tip-icon" data-tip="Omogoča višjo ceno storitev v najbolj prometnih urah.|termin ob 18:00 je lahko dražji kot termin ob 10:00."></i></div></div>
                             <input type="checkbox" id="peakPricingEnabled" class="bsp-toggle">
                         </label>
                         <div id="peakPricingDetails" style="display:none;">
                             <div class="bsp-row">
-                                <div><div class="bsp-row-label">Množitelj cene</div><div class="bsp-row-hint">1.2 = +20%</div></div>
+                                <div><div class="bsp-row-label">Množitelj cene<i class="bi bi-info-circle bsp-tip-icon" data-tip="Koliko se cena poveča v teh urah.|1.2 pomeni 20 % višjo ceno."></i></div><div class="bsp-row-hint">1.2 = +20%</div></div>
                                 <input type="number" id="peakMultiplier" min="1" max="5" step="0.05" value="1.2" class="bsp-input" style="width:80px;text-align:center;">
                             </div>
                             <div class="bsp-row">
-                                <div><div class="bsp-row-label">Peak ure (Od – Do)</div></div>
+                                <div><div class="bsp-row-label">Ure večjega povpraševanja<i class="bi bi-info-circle bsp-tip-icon" data-tip="Čas dneva, ko velja višja cena.|16:00–19:00."></i></div></div>
                                 <div style="display:flex;align-items:center;gap:8px;">
                                     <input type="time" id="peakStart" class="bsp-input" value="12:00">
                                     <span style="color:#8e8e93;font-size:12px;">–</span>
@@ -451,7 +459,7 @@
                             <div><div class="bsp-card-title">Vikend / delavnik cena</div><div class="bsp-card-subtitle">Različna cena za vikend</div></div>
                         </div>
                         <label class="bsp-row">
-                            <div><div class="bsp-row-label">Omogoči vikend doplačilo</div></div>
+                            <div><div class="bsp-row-label">Omogoči vikend doplačilo<i class="bi bi-info-circle bsp-tip-icon" data-tip="Storitev ima lahko drugačno ceno ob vikendih.|striženje je med tednom 15 €, v soboto 17 €."></i></div></div>
                             <input type="checkbox" id="weekendPricingEnabled" class="bsp-toggle">
                         </label>
                         <div id="weekendPricingDetails" style="display:none;">
@@ -466,15 +474,15 @@
                     <div class="bsp-card">
                         <div class="bsp-card-header">
                             <div class="bsp-card-icon" style="background:#34c75920;"><i class="bi bi-tag" style="color:#34c759;font-size:15px;"></i></div>
-                            <div><div class="bsp-card-title">Akcijski intervali</div><div class="bsp-card-subtitle">Popust v specifičnem časovnem oknu</div></div>
+                            <div><div class="bsp-card-title">Akcijski intervali<i class="bi bi-info-circle bsp-tip-icon" data-tip="Nastavite popust za določeno obdobje.|10 % popust med 1. in 7. decembrom."></i></div><div class="bsp-card-subtitle">Popust v specifičnem časovnem oknu</div></div>
                         </div>
                         <div id="promoIntervalsList"></div>
                         <div class="bsp-inline-form">
                             <div class="fg"><label>Od datuma</label><input type="date" id="newPromoFrom" class="bsp-input"></div>
                             <div class="fg"><label>Do datuma</label><input type="date" id="newPromoTo" class="bsp-input"></div>
-                            <div class="fg"><label>Popust %</label><input type="number" id="newPromoDiscount" min="1" max="99" value="10" class="bsp-input" style="width:72px;"></div>
+                            <div class="fg"><label>Popust %<i class="bi bi-info-circle bsp-tip-icon" data-tip="Koliko popusta se uporabi pri rezervaciji.|20 % pomeni, da storitev za 50 € stane 40 €."></i></label><input type="number" id="newPromoDiscount" min="1" max="99" value="10" class="bsp-input" style="width:72px;"></div>
                             <div class="fg"><label>Opis</label><input type="text" id="newPromoLabel" class="bsp-input" placeholder="Npr. Black Friday" style="width:140px;"></div>
-                            <div class="fg" style="flex:1 1 100%;"><label>Besedilo bannerja <span style="color:#8e8e93;font-size:11px;">(neobvezno – kaj natanko se prikaže na vrhu strani)</span></label><input type="text" id="newPromoText" class="bsp-input" placeholder="Npr. Black Friday je tu! Ne zamudite ekskluzivnih popustov." style="width:100%;"></div>
+                            <div class="fg" style="flex:1 1 100%;"><label>Besedilo bannerja<i class="bi bi-info-circle bsp-tip-icon" data-tip="Obvestilo, ki se prikaže na vrhu rezervacijske strani.|'Poletna akcija – 15 % popusta ta teden.'"></i> <span style="color:#8e8e93;font-size:11px;">(neobvezno – kaj natanko se prikaže na vrhu strani)</span></label><input type="text" id="newPromoText" class="bsp-input" placeholder="Npr. Black Friday je tu! Ne zamudite ekskluzivnih popustov." style="width:100%;"></div>
                             <div class="fg" style="justify-content:flex-end;">
                                 <button class="bsp-add-btn" onclick="bspAddPromo()"><i class="bi bi-plus-circle"></i> Dodaj</button>
                             </div>
@@ -532,31 +540,14 @@
                             <div><div class="bsp-card-title">Potrditveni SMS</div><div class="bsp-card-subtitle">Sporočilo, ki ga stranka prejme ob naročilu</div></div>
                         </div>
                         <label class="bsp-row">
-                            <div><div class="bsp-row-label">Pošlji potrditveni SMS</div><div class="bsp-row-hint">Samodejno ob vsaki novi rezervaciji z veljavno telefonsko številko</div></div>
+                            <div><div class="bsp-row-label">Pošlji potrditveni SMS<i class="bi bi-info-circle bsp-tip-icon" data-tip="Stranka prejme SMS potrditev takoj po rezervaciji termina.|po rezervaciji termina ob 15:00 stranka prejme SMS z datumom in uro."></i></div><div class="bsp-row-hint">Samodejno ob vsaki novi rezervaciji z veljavno telefonsko številko</div></div>
                             <input type="checkbox" id="smsConfirmEnabled" class="bsp-toggle" checked>
                         </label>
                         <div class="bsp-row" style="align-items:flex-start;flex-direction:column;gap:6px;padding-top:10px;">
-                            <div class="bsp-row-label">Besedilo SMS</div>
+                            <div class="bsp-row-label">Besedilo SMS<i class="bi bi-info-circle bsp-tip-icon" data-tip="Sporočilo, ki ga prejme stranka po rezervaciji. Sistem sam vstavi podatke rezervacije.|'Hvala za rezervacijo pri Frizerskem salonu Ana. Termin imate 12.3. ob 15:00.'"></i></div>
                             <div class="bsp-row-hint" style="margin-bottom:4px;">Spremenljivke: <b>{ime}</b> ime stranke &nbsp;·&nbsp; <b>{posel}</b> naziv podjetja &nbsp;·&nbsp; <b>{datum}</b> datum &nbsp;·&nbsp; <b>{cas}</b> ura &nbsp;·&nbsp; <b>{link}</b> link za upravljanje</div>
                             <textarea id="smsConfirmTemplate" class="bsp-input" style="width:100%;min-height:80px;font-size:13px;padding:8px;resize:vertical;box-sizing:border-box;"></textarea>
                             <div style="font-size:12px;color:#8e8e93;">Znakov: <span id="smsConfirmCharCount">0</span></div>
-                        </div>
-                    </div>
-
-                    <div class="bsp-card">
-                        <div class="bsp-card-header">
-                            <div class="bsp-card-icon" style="background:#ff950020;"><i class="bi bi-bell" style="color:#ff9500;font-size:15px;"></i></div>
-                            <div><div class="bsp-card-title">Opomnik SMS (24h pred terminom)</div><div class="bsp-card-subtitle">Stranka prejme opozorilno sporočilo dan pred terminom</div></div>
-                        </div>
-                        <label class="bsp-row">
-                            <div><div class="bsp-row-label">Pošlji opomnik SMS</div><div class="bsp-row-hint">Ob naslednjem odprtju admin strani se pošljejo vsi opomniki, ki so dozoreli</div></div>
-                            <input type="checkbox" id="smsReminderEnabled" class="bsp-toggle">
-                        </label>
-                        <div class="bsp-row" style="align-items:flex-start;flex-direction:column;gap:6px;padding-top:10px;">
-                            <div class="bsp-row-label">Besedilo opomnika</div>
-                            <div class="bsp-row-hint" style="margin-bottom:4px;">Spremenljivke: <b>{ime}</b> ime stranke &nbsp;·&nbsp; <b>{posel}</b> naziv podjetja &nbsp;·&nbsp; <b>{datum}</b> datum &nbsp;·&nbsp; <b>{cas}</b> ura</div>
-                            <textarea id="smsReminderTemplate" class="bsp-input" style="width:100%;min-height:80px;font-size:13px;padding:8px;resize:vertical;box-sizing:border-box;"></textarea>
-                            <div style="font-size:12px;color:#8e8e93;">Znakov: <span id="smsReminderCharCount">0</span></div>
                         </div>
                     </div>
 
@@ -792,6 +783,39 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
     <!-- Dev debug controls removed for production/admin cleanup -->
+
+    <script>
+    (function(){
+        var box = document.createElement('div');
+        box.className = 'bsp-tip-popup';
+        document.body.appendChild(box);
+        function show(icon) {
+            var raw = icon.dataset.tip || '';
+            var parts = raw.split('|');
+            var desc = (parts[0] || '').trim();
+            var ex = (parts[1] || '').trim();
+            box.innerHTML = '<p class="tip-desc">' + desc + '</p>' + (ex ? '<p class="tip-ex">Primer: ' + ex + '</p>' : '');
+            box.style.display = 'block';
+            var r = icon.getBoundingClientRect();
+            var w = 280;
+            var bh = box.offsetHeight;
+            var left = r.left + r.width / 2 - w / 2;
+            left = Math.max(8, Math.min(left, window.innerWidth - w - 8));
+            var top = r.top - bh - 8;
+            if (top < 8) top = r.bottom + 8;
+            box.style.left = left + 'px';
+            box.style.top = top + 'px';
+        }
+        document.addEventListener('mouseover', function(e) {
+            var el = e.target.closest ? e.target.closest('.bsp-tip-icon') : null;
+            if (el) show(el);
+        });
+        document.addEventListener('mouseout', function(e) {
+            var el = e.target.closest ? e.target.closest('.bsp-tip-icon') : null;
+            if (el) box.style.display = 'none';
+        });
+    })();
+    </script>
 
     <!-- Unsaved changes bar -->
     <div id="bspUnsavedBar" style="display:none; position:fixed; bottom:0; left:72px; right:0; z-index:500; background:#fff3cd; border-top:2px solid #ffc107; padding:12px 20px; align-items:center; justify-content:space-between; box-shadow:0 -2px 12px rgba(0,0,0,0.12);">
