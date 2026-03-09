@@ -654,15 +654,16 @@ const CalendarEngine = {
         views: {
           dayGridMonth: { type: 'dayGridMonth', height: 'auto' }, // auto-size so last row is never clipped
           // On mobile: 1 slot per hour in week view to reduce scrolling
-          timeGridWeek: { type: 'timeGrid', slotMinTime: weekSlotMin, slotMaxTime: weekSlotMax, slotDuration: _isMobile ? '01:00:00' : '00:15:00' },
+          timeGridWeek: { type: 'timeGrid', contentHeight: 'auto', slotMinTime: weekSlotMin, slotMaxTime: weekSlotMax, slotDuration: _isMobile ? '01:00:00' : '00:15:00' },
           timeGridDay: { type: 'timeGrid', slotMinTime: weekSlotMin, slotMaxTime: weekSlotMax }
         },
         // Hide non-working days in the week view
         hiddenDays: weekHiddenDays,
         // Initial vertical scroll position in timeGrid views
         scrollTime: initialScrollTime,
-        height: _isMobile ? 'auto' : calcHeight,
-        // Remove contentHeight: 'auto' to enable scrolling in timegrid views
+        // Start with auto height; applySizing/datesSet sets pixel height for day view only
+        height: 'auto',
+        contentHeight: 'auto',
 
         // Load events - always fetch fresh from storage to avoid duplicates
         events: async (info, successCallback, failureCallback) => {
@@ -1112,6 +1113,8 @@ const CalendarEngine = {
             // Re-apply slot bounds in case FC reset them
             try {
               if (calendar) {
+                calendar.setOption('height', 'auto');
+                calendar.setOption('contentHeight', 'auto');
                 calendar.setOption('slotMinTime', weekSlotMin);
                 calendar.setOption('slotMaxTime', weekSlotMax);
                 calendar.setOption('hiddenDays', weekHiddenDays);
@@ -1743,9 +1746,6 @@ const CalendarEngine = {
                 if (fcRoot) { fcRoot.style.height = ''; fcRoot.style.minHeight = ''; fcRoot.style.overflow = ''; }
                 if (viewHarness) { viewHarness.style.height = ''; viewHarness.style.minHeight = ''; }
                 try { if (calendar && typeof calendar.setOption === 'function') { calendar.setOption('height', 'auto'); calendar.setOption('contentHeight', 'auto'); } } catch (_) {}
-                // Do NOT call calendar.updateSize() here — it re-triggers FC's inline style application
-                // which feeds back into the MutationObserver and causes an infinite loop.
-                // The MutationObserver (watchWeekScrollers) handles scroller overrides for week view.
                 return;
               }
 
