@@ -1166,6 +1166,18 @@ const CalendarEngine = {
             }
           } catch (e) { /* ignore */ }
 
+          // Month view shows all 7 days; week/day views hide non-working days
+          try {
+            const _vhd = arg && arg.view && arg.view.type ? arg.view.type : '';
+            if (calendar && typeof calendar.setOption === 'function') {
+              if (_vhd === 'dayGridMonth') {
+                calendar.setOption('hiddenDays', []);
+              } else {
+                calendar.setOption('hiddenDays', weekHiddenDays);
+              }
+            }
+          } catch(_) {}
+
           // Dynamic height: 'auto' for month/week so all rows show naturally (page scrolls);
           // pixel height for timeGridDay only so FC internal scroll works in day view
           try {
