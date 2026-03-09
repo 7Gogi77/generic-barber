@@ -73,7 +73,6 @@
             <div class="admin-header">
                 <h1>Administracijska Plošča</h1>
                 <div style="display:flex; gap:10px; align-items:center;">
-                    <button id="saveAllBtn" class="save-btn" title="Shrani vse nastavitve" onclick="saveAll()">Shrani vse</button>
                     <button class="logout-btn" onclick="window.location.href='index.html'">Nazaj na Stran</button>
                     <button class="logout-btn" onclick="handleLogout()">Odjava</button>
                 </div>
@@ -113,10 +112,6 @@
                             <img id="logoMiniPreview" src="" alt="Mini logo preview" style="max-height:50px; max-width:100px; margin-top:8px; display:block; object-fit: contain;">
                         </div>
                     </div>
-                    <div class="form-row">
-                        <button class="save-btn" onclick="saveLogo()">Shrani Logo Nastavitve</button>
-                        <button class="save-btn" onclick="saveAppearance()">Shrani Slike</button>
-                    </div>
                 </div>
 
                 <!-- SIMPLE THEME SETTINGS -->
@@ -132,7 +127,6 @@
                             </select>
                         </div>
                     </div>
-                    <button class="save-btn" onclick="saveTheme()">Shrani temo</button>
                 </div>
 
                 <!-- COLORS SECTION -->
@@ -180,7 +174,6 @@
                             </div>
                         </div>
                     </div>
-                    <button class="save-btn" onclick="saveTheme()">Shrani Barve</button>
                 </div>
 
                 <!-- TEXT COLORS SECTION -->
@@ -202,7 +195,6 @@
                             </div>
                         </div>
                     </div>
-                    <button class="save-btn" onclick="saveTextColors()">Shrani Barve Besedila</button>
                 </div>
 
                 <!-- FOOTER COLORS SECTION -->
@@ -224,7 +216,6 @@
                             </div>
                         </div>
                     </div>
-                    <button class="save-btn" onclick="saveFooterColors()">Shrani Nastavitve Noge</button>
                 </div>
 
                 <!-- SCROLLBAR COLORS SECTION -->
@@ -247,7 +238,6 @@
                             </div>
                         </div>
                     </div>
-                    <button class="save-btn" onclick="saveScrollbarColors()">Shrani Drsnik</button>
                 </div>
 
                 <!-- SECTION VISIBILITY -->
@@ -283,17 +273,10 @@
                             <span style="font-size:14px;font-weight:500;"><i class="bi bi-envelope" style="margin-right:8px;opacity:.6;"></i>Kontakt</span>
                             <label class="ios-toggle"><input type="checkbox" id="svToggle_contact" data-section="#contact" checked><span class="ios-toggle-slider"></span></label>
                         </div>
-                        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(128,128,128,0.12);">
+                        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;">
                             <span style="font-size:14px;font-weight:500;"><i class="bi bi-star" style="margin-right:8px;opacity:.6;"></i>Ocene</span>
                             <label class="ios-toggle"><input type="checkbox" id="svToggle_reviews" data-section="#reviews" checked><span class="ios-toggle-slider"></span></label>
                         </div>
-                        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;">
-                            <span style="font-size:14px;font-weight:500;"><i class="bi bi-megaphone" style="margin-right:8px;opacity:.6;"></i>CTA Banner</span>
-                            <label class="ios-toggle"><input type="checkbox" id="svToggle_cta" data-section=".cta-section" checked><span class="ios-toggle-slider"></span></label>
-                        </div>
-                    </div>
-                    <div style="margin-top:15px;">
-                        <button class="save-btn" onclick="saveSectionVisibility()">Shrani razdelke</button>
                     </div>
                 </div>
 
@@ -331,7 +314,6 @@
                             <input id="shopName" type="text" class="form-input-admin">
                         </div>
                     </div>
-                    <button class="save-btn" onclick="saveAppearance()">Shrani Ime</button>
                 </div>
 
                 <!-- HERO SECTION -->
@@ -437,7 +419,6 @@
                             <input id="ctaButtonText" type="text" class="form-input-admin" placeholder="Rezerviraj Zdaj">
                         </div>
                     </div>
-                    <button class="save-btn" onclick="saveCtaSection()">Shrani CTA</button>
                 </div>
 
                 <!-- CONTACT SECTION -->
@@ -470,7 +451,6 @@
                             <input id="contactEmail" type="text" class="form-input-admin" placeholder="info@podjetje.si">
                         </div>
                     </div>
-                    <button class="save-btn" onclick="saveContactSection()">Shrani Kontakt</button>
                 </div>
 
                 <!-- GOOGLE REVIEWS SECTION -->
@@ -525,7 +505,6 @@
                             <input id="review3Stars" type="number" min="1" max="5" class="form-input-admin" placeholder="5" style="margin-top:8px;">
                         </div>
                     </div>
-                    <button class="save-btn" onclick="saveReviewsSection()">Shrani Google Ocene</button>
                 </div>
 
                 <!-- FOOTER SECTION -->
@@ -538,7 +517,6 @@
                             <small style="color: #666; font-size: 11px;">Pred tekstom se samodejno doda "© leto ImePodjeta."</small>
                         </div>
                     </div>
-                    <button class="save-btn" onclick="saveFooterCopy()">Shrani Nogo</button>
                 </div>
 
                 <!-- BOOKING PAGE CONTENT SECTION -->
@@ -634,7 +612,6 @@
                         </div>
                     </div>
                     
-                    <button class="save-btn" onclick="saveBookingPageContent()">Shrani Vsebino Strani</button>
                 </div>
 
                 <!-- SECTION TITLES -->
@@ -650,7 +627,6 @@
                             <input id="bookingHeading" type="text" class="form-input-admin" placeholder="Request Appointment">
                         </div>
                     </div>
-                    <button class="save-btn" onclick="saveSectionTitles()">Shrani Naslove</button>
                 </div>
 
                 <!-- NAVIGATION BUTTON -->
@@ -674,7 +650,6 @@
                         <input id="imageInput" type="file" class="upload-input" accept="image/*" multiple>
                     </div>
                     <div class="image-gallery" id="imageGallery"></div>
-                    <button class="save-btn" onclick="saveGallery()">Shrani Galerijo</button>
                 </div>
 
             </div> <!-- END vsebina tab -->
@@ -895,7 +870,6 @@
                         </div>
                     </div>
                     <div class="form-row">
-                        <button class="save-btn" onclick="saveDiscount()">Shrani Popust</button>
                         <button class="save-btn" onclick="refreshBusinessPanel()">Osveži Panel</button>
                     </div>
                 </div>
@@ -1216,5 +1190,33 @@
       }
     </script>
     <!-- ========== END FULLCALENDAR SYSTEM ========== -->
+
+    <!-- Unsaved changes bar -->
+    <div id="apUnsavedBar" style="display:none; position:fixed; bottom:0; left:72px; right:0; z-index:9000; background:#fff3cd; border-top:2px solid #ffc107; padding:12px 20px; align-items:center; justify-content:space-between; box-shadow:0 -2px 12px rgba(0,0,0,0.12);">
+        <span style="font-size:14px; color:#1c1c1e; font-weight:500;">&#9888;&#65039; Spremembe niso shranjene</span>
+        <div style="display:flex; gap:10px;">
+            <button onclick="apDiscardChanges()" style="padding:8px 16px; font-size:14px; border-radius:10px; background:#8E8E93; color:#fff; border:none; cursor:pointer; font-weight:500;">Preklici</button>
+            <button onclick="apSaveChanges()" style="padding:8px 18px; font-size:14px; border-radius:10px; background:#007AFF; color:#fff; border:none; cursor:pointer; font-weight:600;">Shrani</button>
+        </div>
+    </div>
+    <script>
+        (function() {
+            function apMarkUnsaved() {
+                var bar = document.getElementById('apUnsavedBar');
+                if (bar) bar.style.display = 'flex';
+            }
+            window.apSaveChanges = function() {
+                if (typeof saveAll === 'function') saveAll();
+                var bar = document.getElementById('apUnsavedBar');
+                if (bar) bar.style.display = 'none';
+            };
+            window.apDiscardChanges = function() { location.reload(); };
+            document.addEventListener('DOMContentLoaded', function() {
+                var container = document.querySelector('.main-content') || document.body;
+                container.addEventListener('input', apMarkUnsaved);
+                container.addEventListener('change', apMarkUnsaved);
+            });
+        })();
+    </script>
 </body>
 </html>

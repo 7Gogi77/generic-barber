@@ -1629,8 +1629,7 @@
             { key: 'gallery',      selector: '#gallery' },
             { key: 'hours',        selector: '#business-hours' },
             { key: 'contact',      selector: '#contact' },
-            { key: 'reviews',      selector: '#reviews' },
-            { key: 'cta',          selector: '.cta-section' }
+            { key: 'reviews',      selector: '#reviews' }
         ];
 
         function saveSectionVisibility() {

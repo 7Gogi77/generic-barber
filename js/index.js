@@ -187,7 +187,9 @@
             // Navigation links
             const navContainer = document.getElementById('nav-links-container');
             navContainer.innerHTML = '';
+            const _navHidden = Array.isArray(SITE_CONFIG.hiddenSections) ? SITE_CONFIG.hiddenSections : [];
             (SITE_CONFIG.navLinks || []).forEach(item => {
+                if (_navHidden.includes(item.link)) return;
                 const link = document.createElement('a');
                 link.href = item.link;
                 link.innerText = item.name;
