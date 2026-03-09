@@ -406,13 +406,15 @@
                 }
             }
 
-            // Apply hidden sections from admin config
-            // Always read from localStorage directly — Firebase sync may be delayed
+            // Apply hidden sections — read from dedicated key which Firebase never overwrites
             const _hiddenSections = (() => {
                 try {
+                    const _dedicated = JSON.parse(localStorage.getItem('site_hidden_sections') || 'null');
+                    if (Array.isArray(_dedicated)) return _dedicated;
+                } catch(_) {}
+                try {
                     const _ls = JSON.parse(localStorage.getItem('site_config_backup') || '{}');
-                    if (Array.isArray(_ls.hiddenSections) && _ls.hiddenSections.length)
-                        return _ls.hiddenSections;
+                    if (Array.isArray(_ls.hiddenSections)) return _ls.hiddenSections;
                 } catch(_) {}
                 return Array.isArray(SITE_CONFIG.hiddenSections) ? SITE_CONFIG.hiddenSections : [];
             })();

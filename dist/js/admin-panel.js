@@ -1640,12 +1640,20 @@
                 if (cb && !cb.checked) hidden.push(s.selector);
             });
             SITE_CONFIG.hiddenSections = hidden;
+            // Also store in a dedicated key so Firebase sync can never overwrite it
+            localStorage.setItem('site_hidden_sections', JSON.stringify(hidden));
             saveConfig();
             showNotification('Vidnost razdelkov shranjena!', 'success');
         }
 
         function loadSectionVisibility() {
-            const hidden = Array.isArray(SITE_CONFIG.hiddenSections) ? SITE_CONFIG.hiddenSections : [];
+            const hidden = (() => {
+                try {
+                    const _d = JSON.parse(localStorage.getItem('site_hidden_sections') || 'null');
+                    if (Array.isArray(_d)) return _d;
+                } catch(_) {}
+                return Array.isArray(SITE_CONFIG.hiddenSections) ? SITE_CONFIG.hiddenSections : [];
+            })();
             _SV_SECTIONS.forEach(s => {
                 const cb = document.getElementById('svToggle_' + s.key);
                 if (cb) cb.checked = !hidden.includes(s.selector);
