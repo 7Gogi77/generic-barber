@@ -292,8 +292,9 @@
                             <label class="ios-toggle"><input type="checkbox" id="svToggle_cta-section" data-section="cta-section" checked><span class="ios-toggle-slider"></span></label>
                         </div>
                     </div>
-                    <div style="margin-top:15px;">
+                    <div style="margin-top:15px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
                         <button class="save-btn" onclick="saveSectionVisibility()">Shrani razdelke</button>
+                        <button class="save-btn" style="background:#FF3B30;" onclick="localStorage.removeItem('site_hidden_sections');document.querySelectorAll('#sectionVisibilityList input[type=checkbox]').forEach(function(c){c.checked=true;});if(typeof showNotification==='function')showNotification('Ponastavljeno — vsi razdelki vidni','success');">Počisti vse</button>
                     </div>
                 </div>
 
@@ -985,8 +986,52 @@
     </div> <!-- END adminPanel -->
 
     <script src="js/admin-panel.js"></script>
-
-    <!-- ========== FULLCALENDAR SCHEDULING SYSTEM ========== -->
+    <script>
+        // Section visibility — inline override to guarantee correct scope & keys
+        function saveSectionVisibility() {
+            var hidden = [];
+            document.querySelectorAll('#sectionVisibilityList input[type=checkbox][data-section]').forEach(function(cb) {
+                if (!cb.checked) {
+                    var sec = cb.getAttribute('data-section');
+                    // Convert bare id to selector; class sections start with 'testimonial' or 'cta'
+                    if (sec === 'testimonial-section' || sec === 'cta-section') {
+                        hidden.push('.' + sec);
+                    } else {
+                        hidden.push('#' + sec);
+                    }
+                }
+            });
+            localStorage.setItem('site_hidden_sections', JSON.stringify(hidden));
+            // Also update SITE_CONFIG
+            if (window.SITE_CONFIG) window.SITE_CONFIG.hiddenSections = hidden;
+            if (typeof saveConfig === 'function') saveConfig();
+            if (typeof showNotification === 'function') {
+                showNotification('Shranjeno: ' + (hidden.length ? hidden.join(', ') : 'vsi razdelki vidni'), 'success');
+            }
+        }
+        function loadSectionVisibility() {
+            var hidden = [];
+            try {
+                var d = JSON.parse(localStorage.getItem('site_hidden_sections') || 'null');
+                if (Array.isArray(d)) hidden = d;
+            } catch(e) {}
+            document.querySelectorAll('#sectionVisibilityList input[type=checkbox][data-section]').forEach(function(cb) {
+                var sec = cb.getAttribute('data-section');
+                var sel = (sec === 'testimonial-section' || sec === 'cta-section') ? ('.' + sec) : ('#' + sec);
+                cb.checked = !hidden.includes(sel);
+            });
+        }
+        // Re-hook loadAdminForms to also call loadSectionVisibility
+        var _origLoadAdminForms = typeof loadAdminForms === 'function' ? loadAdminForms : null;
+        window.loadAdminForms = function() {
+            if (_origLoadAdminForms) _origLoadAdminForms();
+            loadSectionVisibility();
+        };
+        // Also run on DOMContentLoaded in case panel is already open
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(loadSectionVisibility, 300);
+        });
+    </script> -->
     <!-- FullCalendar Library CSS from CDN -->
     <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css' rel='stylesheet' />
     
