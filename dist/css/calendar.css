@@ -287,9 +287,7 @@
 }
 #scheduleCalendar.view-timegrid-week .fc-scroller,
 .fc-timeGridWeek-view .fc-scroller {
-  overflow: hidden !important;
-  overflow-x: hidden !important;
-  overflow-y: visible !important;
+  overflow: visible !important;
   height: auto !important;
   max-height: none !important;
 }
@@ -308,12 +306,13 @@
 .fc-timeGridWeek-view .fc-scrollgrid-section-body > td {
   height: auto !important;
 }
-/* Target the timegrid element itself — FC sets style="height:Xpx; overflow:hidden auto" on it */
+/* Target the timegrid element itself — FC sets style="height:Xpx; overflow:hidden auto" on it.
+   overflow:hidden + overflow-y:visible is invalid (browser resets y to auto = scrollbar).
+   Must use overflow:visible outright. */
 .fc-timeGridWeek-view.fc-timegrid {
   height: auto !important;
   min-height: 0 !important;
-  overflow: hidden !important;
-  overflow-y: visible !important;
+  overflow: visible !important;
 }
 
 #scheduleCalendar.view-timegrid-week .fc .fc-timegrid .fc-scrollgrid-section-body {

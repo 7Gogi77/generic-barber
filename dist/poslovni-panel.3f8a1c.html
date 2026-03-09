@@ -404,21 +404,28 @@
             min-height: 0 !important;
             overflow: visible !important;
         }
-        /* FC's own class on the timegrid root — covers first render before datesSet fires */
+        /* FC's own class on the timegrid root — covers first render before datesSet fires.
+           NOTE: overflow: hidden + overflow-y: visible is invalid CSS (browser computes
+           overflow-y back to auto = scrollbar). Must use overflow: visible outright.        */
         .fc-timeGridWeek-view.fc-timegrid {
             height: auto !important;
             min-height: 0 !important;
-            overflow: hidden !important;
-            overflow-y: visible !important;
+            overflow: visible !important;
+        }
+        .fc-timeGridWeek-view .fc-view-harness,
+        .fc-timeGridWeek-view .fc-scrollgrid,
+        .fc-timeGridWeek-view .fc-scrollgrid-section,
+        .fc-timeGridWeek-view .fc-scrollgrid-section > td {
+            height: auto !important;
+            overflow: visible !important;
         }
         .fc-timeGridWeek-view .fc-scroller-harness {
             height: auto !important;
             min-height: 0 !important;
+            overflow: visible !important;
         }
         .fc-timeGridWeek-view .fc-scroller {
-            overflow: hidden !important;
-            overflow-x: hidden !important;
-            overflow-y: visible !important;
+            overflow: visible !important;
             height: auto !important;
             max-height: none !important;
         }
@@ -437,11 +444,10 @@
         #scheduleCalendar.view-timegrid-week .fc-scroller-harness {
             height: auto !important;
             min-height: 0 !important;
+            overflow: visible !important;
         }
         #scheduleCalendar.view-timegrid-week .fc-scroller {
-            overflow: hidden !important;
-            overflow-x: hidden !important;
-            overflow-y: visible !important;
+            overflow: visible !important;
             height: auto !important;
             max-height: none !important;
         }
