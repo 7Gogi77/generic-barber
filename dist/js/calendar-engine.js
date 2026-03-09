@@ -654,7 +654,7 @@ const CalendarEngine = {
         views: {
           dayGridMonth: { type: 'dayGridMonth', height: 'auto' }, // auto-size so last row is never clipped
           // On mobile: 1 slot per hour in week view to reduce scrolling
-          timeGridWeek: { type: 'timeGrid', slotMinTime: weekSlotMin, slotMaxTime: weekSlotMax, slotDuration: _isMobile ? '01:00:00' : '00:30:00' },
+          timeGridWeek: { type: 'timeGrid', slotMinTime: weekSlotMin, slotMaxTime: weekSlotMax, slotDuration: _isMobile ? '01:00:00' : '00:15:00' },
           timeGridDay: { type: 'timeGrid', slotMinTime: weekSlotMin, slotMaxTime: weekSlotMax }
         },
         // Hide non-working days in the week view
