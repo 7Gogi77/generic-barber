@@ -162,8 +162,10 @@
         }
 
         // Save all helper for non-technical users — calls known save functions if present
+        let _saveBulkMode = false;
         function saveAll() {
             try {
+                _saveBulkMode = true;
                 if (typeof saveAppearance === 'function') saveAppearance();
                 if (typeof saveLogo === 'function') saveLogo();
                 if (typeof saveTheme === 'function') saveTheme();
@@ -182,6 +184,9 @@
                 if (typeof saveSectionVisibility === 'function') saveSectionVisibility();
             } catch (err) {
                 alert('Prišlo je do napake pri shranjevanju. Preverite konzolo.');
+            } finally {
+                _saveBulkMode = false;
+                if (typeof syncToFirebase === 'function') syncToFirebase(SITE_CONFIG);
             }
         }
 
@@ -2081,23 +2086,17 @@
         }
         
         function saveConfig() {
-            // Save locally
             localStorage.setItem('site_config_backup', JSON.stringify(SITE_CONFIG));
+            if (_saveBulkMode) return;
 
-            // Attach current StorageManager schedule into SITE_CONFIG so it is
-            // also persisted to Firebase under site_config.schedule for visibility
             (async () => {
                 try {
                     if (typeof StorageManager !== 'undefined' && StorageManager.load) {
                         const schedule = await StorageManager.load('schedule');
                         SITE_CONFIG.schedule = schedule || { events: [] };
-                    } else {
                     }
                 } catch (err) {} finally {
-                    // Sync to Firebase REST API (simpler, no module issues)
                     syncToFirebase(SITE_CONFIG);
-                    showNotification('✅ Spremembe so bile shranjene in sinhronizirane', 'success');
-
                     if (typeof syncAppointmentsToSchedule === 'function') syncAppointmentsToSchedule();
                 }
             })();
