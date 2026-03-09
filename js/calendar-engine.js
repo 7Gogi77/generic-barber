@@ -561,13 +561,13 @@ const CalendarEngine = {
       if (_wkByDay) {
         const _enabled = Object.entries(_wkByDay).filter(([, d]) => d.enabled);
         if (_enabled.length) {
-          const _minH = Math.min(..._enabled.map(([, d]) => parseInt((d.start || '09:00').split(':')[0], 10)));
-          const _maxH = Math.max(..._enabled.map(([, d]) => {
-            const parts = (d.end || '19:00').split(':');
-            return parseInt(parts[0], 10) + (parseInt(parts[1] || '0', 10) > 0 ? 1 : 0);
-          }));
-          weekSlotMin = ('0' + _minH).slice(-2) + ':00:00';
-          weekSlotMax = ('0' + Math.min(_maxH, 24)).slice(-2) + ':00:00';
+          // Use exact HH:MM — rounding to full hours leaves empty slots at top/bottom
+          const _parseMinutes = t => { const p = (t || '00:00').split(':'); return parseInt(p[0],10)*60 + parseInt(p[1]||0,10); };
+          const _fmt = totalMins => ('0'+Math.floor(totalMins/60)).slice(-2)+':'+('0'+(totalMins%60)).slice(-2)+':00';
+          const _minMins = Math.min(..._enabled.map(([,d]) => _parseMinutes(d.start || '09:00')));
+          const _maxMins = Math.max(..._enabled.map(([,d]) => _parseMinutes(d.end   || '19:00')));
+          weekSlotMin = _fmt(_minMins);
+          weekSlotMax = _fmt(Math.min(_maxMins, 24*60));
         }
         weekHiddenDays = Object.entries(_wkByDay).filter(([, d]) => !d.enabled).map(([k]) => parseInt(k, 10));
       }
