@@ -16,13 +16,6 @@
         const FORMSPREE_ENDPOINT = "https://formspree.io/f/meegkorn";
     </script>
     <link rel="stylesheet" href="/css/index.css">
-    <script>
-        // Allow ?resetSections to clear stale hidden-sections data
-        if (location.search.includes('resetSections')) {
-            localStorage.removeItem('site_hidden_sections');
-            history.replaceState(null, '', location.pathname);
-        }
-    </script>
 </head>
 <body>
     <!-- Top promo announcement bar -->

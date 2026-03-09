@@ -405,24 +405,16 @@
                 }
             }
 
-            // Apply hidden sections — site_hidden_sections is the sole source of truth
-            // If the key doesn't exist (null), show everything; never fall back to Firebase-synced config
+            // Apply hidden sections from admin config
+            // Always read from localStorage directly — Firebase sync may be delayed
             const _hiddenSections = (() => {
                 try {
-                    const _raw = localStorage.getItem('site_hidden_sections');
-                    if (_raw !== null) {
-                        const _parsed = JSON.parse(_raw);
-                        if (Array.isArray(_parsed)) return _parsed;
-                    }
+                    const _ls = JSON.parse(localStorage.getItem('site_config_backup') || '{}');
+                    if (Array.isArray(_ls.hiddenSections) && _ls.hiddenSections.length)
+                        return _ls.hiddenSections;
                 } catch(_) {}
-                return []; // null key = show all
+                return Array.isArray(SITE_CONFIG.hiddenSections) ? SITE_CONFIG.hiddenSections : [];
             })();
-            // First restore all managed sections to visible
-            ['#about', '.testimonial-section', '#services', '#barbers', '#gallery',
-             '#business-hours', '#contact', '#reviews', '.cta-section'].forEach(sel => {
-                try { const el = document.querySelector(sel); if (el) el.style.display = ''; } catch(_) {}
-            });
-            // Then hide only the selected ones
             _hiddenSections.forEach(sel => {
                 try {
                     const el = document.querySelector(sel);
