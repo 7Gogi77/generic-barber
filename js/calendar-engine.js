@@ -1095,6 +1095,8 @@ const CalendarEngine = {
           const _argViewType = arg && arg.view && arg.view.type ? arg.view.type : '';
           if (_argViewType === 'timeGridWeek') {
             const _freeWeekDs = () => {
+              // Container must stay overflow:hidden so border-radius clips cell borders at corners
+              containerElement.style.setProperty('overflow', 'hidden', 'important');
               // Strip the view root itself — FC sets style="height:Xpx; overflow:hidden auto" here
               const viewRoot = containerElement.querySelector('.fc-timeGridWeek-view');
               if (viewRoot) {
