@@ -239,12 +239,11 @@
                     <div class="bsp-card">
                         <div class="bsp-card-header">
                             <div class="bsp-card-icon" style="background:#34c75920;"><i class="bi bi-calendar-range" style="color:#34c759;font-size:15px;"></i></div>
-                            <div><div class="bsp-card-title">Omogoči večdnevne termine</div></div>
+                            <label for="allowMultiDayAppointments" style="flex:1;cursor:pointer;margin:0;display:flex;align-items:center;justify-content:space-between;gap:10px;">
+                                <div class="bsp-card-title">Omogoči večdnevne termine<i class="bi bi-info-circle bsp-tip-icon" data-tip="Omogoča rezervacije, ki trajajo več dni.|servis vozila od ponedeljka do srede." onclick="event.preventDefault();event.stopPropagation();"></i></div>
+                                <input type="checkbox" id="allowMultiDayAppointments" class="bsp-toggle" onclick="event.stopPropagation()">
+                            </label>
                         </div>
-                        <label class="bsp-row">
-                            <div><div class="bsp-row-label">Omogoči večdnevne termine<i class="bi bi-info-circle bsp-tip-icon" data-tip="Omogoča rezervacije, ki trajajo več dni.|servis vozila od ponedeljka do srede."></i></div><div class="bsp-row-hint">Npr. servis vozila, ki traja 2+ dni</div></div>
-                            <input type="checkbox" id="allowMultiDayAppointments" class="bsp-toggle">
-                        </label>
                         <div id="maxDaysRow" style="display:none;">
                             <div class="bsp-row">
                                 <div><div class="bsp-row-label">Največ dni<i class="bi bi-info-circle bsp-tip-icon" data-tip="Določa najdaljše trajanje ene rezervacije.|če nastavite 3 dni, rezervacija ne more trajati več kot tri dni."></i></div><div class="bsp-row-hint">Maks. trajanje (1–14)</div></div>
@@ -261,12 +260,11 @@
                     <div class="bsp-card">
                         <div class="bsp-card-header">
                             <div class="bsp-card-icon" style="background:#af52de20;"><i class="bi bi-sun" style="color:#af52de;font-size:15px;"></i></div>
-                            <div><div class="bsp-card-title">Omogoči sezonski urnik</div></div>
+                            <label for="seasonalEnabled" style="flex:1;cursor:pointer;margin:0;display:flex;align-items:center;justify-content:space-between;gap:10px;">
+                                <div class="bsp-card-title">Omogoči sezonski urnik<i class="bi bi-info-circle bsp-tip-icon" data-tip="Omogoča drugačen delovni čas v določenem delu leta. Sistem samodejno uporabi pravi urnik glede na datum.|poleti delate do 20:00, pozimi pa do 17:00." onclick="event.preventDefault();event.stopPropagation();"></i></div>
+                                <input type="checkbox" id="seasonalEnabled" class="bsp-toggle" onclick="event.stopPropagation()">
+                            </label>
                         </div>
-                        <label class="bsp-row">
-                            <div><div class="bsp-row-label">Omogoči sezonski urnik<i class="bi bi-info-circle bsp-tip-icon" data-tip="Omogoča drugačen delovni čas v določenem delu leta. Sistem samodejno uporabi pravi urnik glede na datum.|poleti delate do 20:00, pozimi pa do 17:00."></i></div><div class="bsp-row-hint">Avtomatsko preklopi ure glede na datum</div></div>
-                            <input type="checkbox" id="seasonalEnabled" class="bsp-toggle">
-                        </label>
                         <div id="seasonalDetails" style="display:none;">
                             <div class="bsp-row">
                                 <div><div class="bsp-row-label">Poletna sezona od<i class="bi bi-info-circle bsp-tip-icon" data-tip="Datum, ko začne veljati poletni urnik.|1.6. pomeni začetek poletnega urnika."></i></div></div>
@@ -429,12 +427,11 @@
                     <div class="bsp-card">
                         <div class="bsp-card-header">
                             <div class="bsp-card-icon" style="background:#ff3b3020;"><i class="bi bi-graph-up-arrow" style="color:#ff3b30;font-size:15px;"></i></div>
-                            <div><div class="bsp-card-title">Ure večjega povpraševanja</div></div>
+                            <label for="peakPricingEnabled" style="flex:1;cursor:pointer;margin:0;display:flex;align-items:center;justify-content:space-between;gap:10px;">
+                                <div class="bsp-card-title">Ure večjega povpraševanja<i class="bi bi-info-circle bsp-tip-icon" data-tip="Omogoča višjo ceno storitev v najbolj prometnih urah.|termin ob 18:00 je lahko dražji kot termin ob 10:00." onclick="event.preventDefault();event.stopPropagation();"></i></div>
+                                <input type="checkbox" id="peakPricingEnabled" class="bsp-toggle" onclick="event.stopPropagation()">
+                            </label>
                         </div>
-                        <label class="bsp-row">
-                            <div><div class="bsp-row-label">Omogoči višjo ceno v najbolj zasedenih urah<i class="bi bi-info-circle bsp-tip-icon" data-tip="Omogoča višjo ceno storitev v najbolj prometnih urah.|termin ob 18:00 je lahko dražji kot termin ob 10:00."></i></div></div>
-                            <input type="checkbox" id="peakPricingEnabled" class="bsp-toggle">
-                        </label>
                         <div id="peakPricingDetails" style="display:none;">
                             <div class="bsp-row">
                                 <div><div class="bsp-row-label">Množitelj cene<i class="bi bi-info-circle bsp-tip-icon" data-tip="Koliko se cena poveča v teh urah.|1.2 pomeni 20 % višjo ceno."></i></div><div class="bsp-row-hint">1.2 = +20%</div></div>
@@ -455,12 +452,11 @@
                     <div class="bsp-card">
                         <div class="bsp-card-header">
                             <div class="bsp-card-icon" style="background:#af52de20;"><i class="bi bi-calendar-week" style="color:#af52de;font-size:15px;"></i></div>
-                            <div><div class="bsp-card-title">Omogoči vikend doplačilo</div></div>
+                            <label for="weekendPricingEnabled" style="flex:1;cursor:pointer;margin:0;display:flex;align-items:center;justify-content:space-between;gap:10px;">
+                                <div class="bsp-card-title">Omogoči vikend doplačilo<i class="bi bi-info-circle bsp-tip-icon" data-tip="Storitev ima lahko drugačno ceno ob vikendih.|striženje je med tednom 15 €, v soboto 17 €." onclick="event.preventDefault();event.stopPropagation();"></i></div>
+                                <input type="checkbox" id="weekendPricingEnabled" class="bsp-toggle" onclick="event.stopPropagation()">
+                            </label>
                         </div>
-                        <label class="bsp-row">
-                            <div><div class="bsp-row-label">Omogoči vikend doplačilo<i class="bi bi-info-circle bsp-tip-icon" data-tip="Storitev ima lahko drugačno ceno ob vikendih.|striženje je med tednom 15 €, v soboto 17 €."></i></div></div>
-                            <input type="checkbox" id="weekendPricingEnabled" class="bsp-toggle">
-                        </label>
                         <div id="weekendPricingDetails" style="display:none;">
                             <div class="bsp-row">
                                 <div><div class="bsp-row-label">Vikend množitelj</div><div class="bsp-row-hint">1.1 = +10%</div></div>
