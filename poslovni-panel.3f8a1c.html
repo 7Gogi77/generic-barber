@@ -485,51 +485,6 @@
                 <!-- ══════════ TAB 6: PAMETNE FUNKCIJE ══════════ -->
                 <div class="bsp-tab-panel" id="bspPanel-smart">
 
-                    <div class="bsp-card">
-                        <div class="bsp-card-header">
-                            <div class="bsp-card-icon" style="background:#007aff1a;"><i class="bi bi-list-ol" style="color:#007aff;font-size:15px;"></i></div>
-                            <div><div class="bsp-card-title">Čakalna vrsta (Waitlist)</div><div class="bsp-card-subtitle">Stranke se vpišejo na čakalni seznam</div></div>
-                        </div>
-                        <label class="bsp-row">
-                            <div><div class="bsp-row-label">Omogoči čakalno vrsto</div><div class="bsp-row-hint">Stranka se prijavi, če ni prostega termina</div></div>
-                            <input type="checkbox" id="waitlistEnabled" class="bsp-toggle">
-                        </label>
-                        <label class="bsp-row">
-                            <div><div class="bsp-row-label">Auto-ponudba ob odpovedi</div><div class="bsp-row-hint">Sistem samodejno obvesti naslednjega v vrsti</div></div>
-                            <input type="checkbox" id="autoOfferOnCancel" class="bsp-toggle">
-                        </label>
-                    </div>
-
-                    <div class="bsp-card">
-                        <div class="bsp-card-header">
-                            <div class="bsp-card-icon" style="background:#34c75920;"><i class="bi bi-magic" style="color:#34c759;font-size:15px;"></i></div>
-                            <div><div class="bsp-card-title">Optimizacija urnika</div><div class="bsp-card-subtitle">Inteligentno razporejanje terminov</div></div>
-                        </div>
-                        <label class="bsp-row">
-                            <div><div class="bsp-row-label">Auto-fill prostih terminov</div><div class="bsp-row-hint">Sistem predlaga polnjenje lukenj v urniku</div></div>
-                            <input type="checkbox" id="autoFillEnabled" class="bsp-toggle">
-                        </label>
-                        <label class="bsp-row">
-                            <div><div class="bsp-row-label">Preprečevanje fragmentacije</div><div class="bsp-row-hint">Izogibaj se kratkim luknjicam med termini</div></div>
-                            <input type="checkbox" id="preventFragmentation" class="bsp-toggle">
-                        </label>
-                        <label class="bsp-row">
-                            <div><div class="bsp-row-label">Prednostni termini za zasedenost</div><div class="bsp-row-hint">Prikazuj termine, ki optimizirajo zasedenost</div></div>
-                            <input type="checkbox" id="optimizeOccupancy" class="bsp-toggle">
-                        </label>
-                        <label class="bsp-row">
-                            <div><div class="bsp-row-label">Grupiranje daljših storitev</div><div class="bsp-row-hint">Daljše storitve se združi v zaporedne bloke</div></div>
-                            <input type="checkbox" id="groupServices" class="bsp-toggle">
-                        </label>
-                        <div class="bsp-row" id="fragmentGapRow" style="display:none;">
-                            <div><div class="bsp-row-label">Min. luknjica (za preprečevanje)</div></div>
-                            <div style="display:flex;align-items:center;gap:4px;">
-                                <input type="number" id="fragmentGapMinutes" min="5" max="120" value="30" class="bsp-input" style="width:65px;text-align:center;">
-                                <span style="font-size:12px;color:#8e8e93;">min</span>
-                            </div>
-                        </div>
-                    </div>
-
                     <!-- Locations -->
                     <div class="bsp-card">
                         <div class="bsp-card-header">
