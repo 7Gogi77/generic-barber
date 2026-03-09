@@ -502,7 +502,7 @@ const CalendarEngine = {
       containerElement.style.minWidth = '100%';
       containerElement.style.minHeight = `${window._minCalendarHeight}px`;
       containerElement.style.height = 'auto';
-      containerElement.style.overflow = 'visible';
+      containerElement.style.overflow = 'hidden'; // clips cell borders at rounded corners
 
 
       // Ensure parent can hold the height and width
@@ -1179,7 +1179,7 @@ const CalendarEngine = {
               try { if (calendar && typeof calendar.setOption === 'function') calendar.setOption('height', calcHeight); } catch(_){}
             } else {
               containerElement.style.height = 'auto';
-              containerElement.style.overflow = 'visible';
+              containerElement.style.overflow = 'hidden'; // clips cell borders at rounded corners
               try { if (calendar && typeof calendar.setOption === 'function') calendar.setOption('height', 'auto'); } catch(_){}
             }
           } catch (e) { /* ignore */ }
