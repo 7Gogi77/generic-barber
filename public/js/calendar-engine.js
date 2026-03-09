@@ -684,7 +684,11 @@ const CalendarEngine = {
             
             // Generate events with deletion filter applied
             const events = await CalendarEngine.generateCalendarEvents(freshScheduleData);
-            successCallback(events);
+            const _wf = window._calWorkerFilterId;
+            const _filtered = (!_wf || _wf === 'all')
+                ? events
+                : events.filter(e => !e.extendedProps?.worker || e.extendedProps.worker === _wf);
+            successCallback(_filtered);
           } catch (err) { failureCallback(err); }
         },
 

@@ -12,7 +12,8 @@
             currentMonth: new Date(),
             events: [], // Loaded from storage
             totalDuration: 0,
-            totalPrice: 0
+            totalPrice: 0,
+            selectedWorker: null
         };
 
         // ===== SLOVENIAN MONTHS =====
@@ -102,6 +103,7 @@
             
             // Load config from Firebase first
             await loadConfigFromFirebase();
+            renderWorkerPicker();
             
             // Set shop name
             if (window.SITE_CONFIG && window.SITE_CONFIG.shopName) {
@@ -1033,6 +1035,33 @@
         }
 
         // ===== UPDATE SUMMARY =====
+        function renderWorkerPicker() {
+            const bs   = window.SITE_CONFIG?._bookingSettings || {};
+            if (bs.autoAssignEmployee !== false) return;
+            const teamList = window.SITE_CONFIG?.barbersSection?.list || [];
+            if (teamList.length === 0) return;
+            const section = document.getElementById('workerPickerSection');
+            const grid    = document.getElementById('workerPickerGrid');
+            if (!section || !grid) return;
+            const workers = [{ id: 'any', name: 'Brez preference' },
+                             ...teamList.map(m => ({ id: m.id || m.name, name: m.name }))];
+            grid.innerHTML = workers.map(w =>
+                `<div class="worker-card" data-worker-id="${w.id}" data-worker-name="${w.name}"
+                      onclick="window.selectWorker(this)"
+                      style="border:2px solid #ddd;border-radius:10px;padding:12px 8px;text-align:center;cursor:pointer;font-size:13px;font-weight:500;"
+                 >${w.name}</div>`).join('');
+            section.style.display = 'block';
+            window.selectWorker(grid.querySelector('[data-worker-id="any"]'));
+        }
+        window.selectWorker = function selectWorker(el) {
+            document.querySelectorAll('.worker-card').forEach(c => {
+                c.style.borderColor = '#ddd'; c.style.background = ''; c.style.color = '';
+            });
+            el.style.borderColor = '#007aff';
+            el.style.background  = '#007aff10';
+            el.style.color       = '#007aff';
+            BookingState.selectedWorker = { id: el.dataset.workerId, name: el.dataset.workerName };
+        };
         function updateSummary() {
             // Services
             const servicesNames = BookingState.selectedServices.map(s => s.name).join(', ');
@@ -1085,6 +1114,17 @@
             } else if (_sumPromoRow) {
                 _sumPromoRow.style.display = 'none';
             }
+            // Worker
+            const _workerRow = document.getElementById('summaryWorkerRow');
+            const _workerEl  = document.getElementById('summaryWorker');
+            if (_workerRow && _workerEl) {
+                if (BookingState.selectedWorker && BookingState.selectedWorker.id !== 'any') {
+                    _workerEl.textContent = BookingState.selectedWorker.name;
+                    _workerRow.style.display = '';
+                } else {
+                    _workerRow.style.display = 'none';
+                }
+            }
             document.getElementById('summaryTotal').textContent = `${currency}${BookingState.totalPrice.toFixed(2)}`;
         }
 
@@ -1130,6 +1170,12 @@
                 // Only add notes if not empty
                 if (BookingState.customerInfo.notes && BookingState.customerInfo.notes.trim()) {
                     appointment.extendedProps.notes = BookingState.customerInfo.notes.trim();
+                }
+                
+                // Add worker assignment if not "any preference"
+                if (BookingState.selectedWorker && BookingState.selectedWorker.id !== 'any') {
+                    appointment.extendedProps.worker     = BookingState.selectedWorker.id;
+                    appointment.extendedProps.workerName = BookingState.selectedWorker.name;
                 }
                 
                 // Load current schedule and add appointment

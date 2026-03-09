@@ -2176,6 +2176,11 @@
 
     <div class="main-content">
         <div class="content-area">
+            <div id="calWorkerFilterWrap" style="display:none; padding:6px 8px 0; flex-shrink:0;">
+                <select id="calWorkerFilter" style="padding:6px 12px;border:1px solid #ddd;border-radius:8px;font-size:13px;color:#1c1c1e;background:#fff;cursor:pointer;">
+                    <option value="all">👥 Vsi zaposleni</option>
+                </select>
+            </div>
             <div id="scheduleCalendar">
                 <div class="calendar-loading">
                     <div class="calendar-spinner"></div>
@@ -3946,7 +3951,7 @@
             if (!el) return;
             const items = window.SITE_CONFIG?.servicesSection?.items || [];
             if (items.length === 0) {
-                el.innerHTML = '<p style="font-size:13px;color:#8e8e93;padding:8px 0;">Ni dodanih storitev. Klikni + Dodaj storitev.</p>';
+                el.innerHTML = '<p style="font-size:13px;color:#8e8e93;padding:8px 0 8px 16px;">Ni dodanih storitev. Klikni + Dodaj storitev.</p>';
                 return;
             }
             el.innerHTML = items.map((svc, i) => {
@@ -4028,7 +4033,7 @@
             if (!el) return;
             const list = window.SITE_CONFIG?.barbersSection?.list || [];
             if (list.length === 0) {
-                el.innerHTML = '<p style="font-size:13px;color:#8e8e93;padding:8px 0;">Ni dodanih članov ekipe. Klikni + Dodaj člana.</p>';
+                el.innerHTML = '<p style="font-size:13px;color:#8e8e93;padding:8px 0 8px 16px;">Ni dodanih članov ekipe. Klikni + Dodaj člana.</p>';
                 return;
             }
             el.innerHTML = list.map((m, i) => `

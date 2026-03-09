@@ -995,6 +995,7 @@
             bspRenderLocations();
             bspRenderServices();
             bspRenderTeam();
+            initCalWorkerFilter();
 
             // ── Tab 9: SMS ────────────────────────────────────────
             const smsT = s.smsTemplates || {};
@@ -1134,7 +1135,7 @@
             if (!el) return;
             const items = window.SITE_CONFIG?.servicesSection?.items || [];
             if (items.length === 0) {
-                el.innerHTML = '<p style="font-size:13px;color:#8e8e93;padding:8px 0;">Ni dodanih storitev. Klikni + Dodaj storitev.</p>';
+                el.innerHTML = '<p style="font-size:13px;color:#8e8e93;padding:8px 0 8px 16px;">Ni dodanih storitev. Klikni + Dodaj storitev.</p>';
                 return;
             }
             el.innerHTML = items.map((svc, i) => {
@@ -1216,11 +1217,11 @@
             if (!el) return;
             const list = window.SITE_CONFIG?.barbersSection?.list || [];
             if (list.length === 0) {
-                el.innerHTML = '<p style="font-size:13px;color:#8e8e93;padding:8px 0;">Ni dodanih članov ekipe. Klikni + Dodaj člana.</p>';
+                el.innerHTML = '<p style="font-size:13px;color:#8e8e93;padding:8px 0 8px 16px;">Ni dodanih članov ekipe. Klikni + Dodaj člana.</p>';
                 return;
             }
             el.innerHTML = list.map((m, i) => `
-                <div class="bsp-list-item" style="flex-direction:column;align-items:stretch;gap:8px;padding:12px 14px;" data-team-idx="${i}">
+                <div class="bsp-list-item" style="flex-direction:column;align-items:stretch;gap:8px;padding:12px 14px;" data-team-idx="${i}" data-team-id="${_escH(m.id||'')}">
                     <div style="display:flex;gap:8px;align-items:center;justify-content:space-between;">
                         <span style="font-size:12px;font-weight:600;color:#8e8e93;">Član ${i+1}</span>
                         <button class="bsp-list-del" onclick="bspDelTeamMember(${i})"><i class="bi bi-trash3"></i></button>
@@ -1243,7 +1244,8 @@
                 const name = row.querySelector('.team-name')?.value?.trim() || '';
                 const role = row.querySelector('.team-role')?.value?.trim() || '';
                 const img  = row.querySelector('.team-img')?.value?.trim() || '';
-                items.push({ name, role, img: img || 'https://via.placeholder.com/300' });
+                const id   = row.dataset.teamId || ('w_' + Date.now() + '_' + Math.random().toString(36).slice(2));
+                items.push({ name, role, img: img || 'https://via.placeholder.com/300', id });
             });
             return items;
         }
@@ -1258,7 +1260,7 @@
             if (!window.SITE_CONFIG) return;
             if (!window.SITE_CONFIG.barbersSection) window.SITE_CONFIG.barbersSection = { title: 'Ekipa', list: [] };
             window.SITE_CONFIG.barbersSection.list = bspCollectTeam();
-            window.SITE_CONFIG.barbersSection.list.push({ name: 'Nov član', role: 'Frizer', img: '' });
+            window.SITE_CONFIG.barbersSection.list.push({ name: 'Nov član', role: 'Frizer', img: '', id: 'w_' + Date.now() });
             bspRenderTeam();
         }
         async function bspSaveTeamToConfig() {
@@ -1271,6 +1273,26 @@
                 if (typeof showToast === 'function') showToast('✅ Ekipa shranjena!');
                 else alert('Ekipa shranjena.');
             } catch(e) { alert('Napaka pri shranjevanju: ' + e.message); }
+        }
+
+        function initCalWorkerFilter() {
+            const wrap = document.getElementById('calWorkerFilterWrap');
+            const sel  = document.getElementById('calWorkerFilter');
+            if (!wrap || !sel) return;
+            const s    = _bspData || {};
+            const list = window.SITE_CONFIG?.barbersSection?.list || [];
+            if (s.autoAssignEmployee === false && list.length > 0) {
+                sel.innerHTML = '<option value="all">👥 Vsi zaposleni</option>' +
+                    list.map(m => `<option value="${m.id||m.name}">${m.name}</option>`).join('');
+                wrap.style.display = 'block';
+                sel.onchange = () => {
+                    window._calWorkerFilterId = sel.value;
+                    if (window._calendarInstance?.refetchEvents) window._calendarInstance.refetchEvents();
+                };
+            } else {
+                wrap.style.display = 'none';
+                window._calWorkerFilterId = 'all';
+            }
         }
 
         function bspRenderLocations() {

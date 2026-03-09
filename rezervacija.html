@@ -81,6 +81,11 @@
                             <span id="totalPriceText">0 €</span>
                         </div>
                     </div>
+                    <!-- Worker Picker -->
+                    <div id="workerPickerSection" style="display:none; margin-top:20px; padding-top:16px; border-top:1px solid #eee;">
+                        <h3 style="font-size:15px;font-weight:600;margin:0 0 12px;color:#1c1c1e;">Izberite zaposlenega</h3>
+                        <div id="workerPickerGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;"></div>
+                    </div>
                 </div>
             </div>
             <button class="btn btn-primary" id="toStep2Btn" disabled>
@@ -198,8 +203,10 @@
                             <span class="summary-label" id="summaryLabelDuration">Trajanje</span>
                             <span class="summary-value" id="summaryDuration">-</span>
                         </div>
-                        <div class="summary-row">
-                            <span class="summary-label" id="summaryLabelCustomer">Stranka</span>
+                        <div class="summary-row" id="summaryWorkerRow" style="display:none;">
+                            <span class="summary-label">Zaposleni</span>
+                            <span class="summary-value" id="summaryWorker">-</span>
+                        </div>
                             <span class="summary-value" id="summaryCustomer">-</span>
                         </div>
                         <div class="summary-row">
