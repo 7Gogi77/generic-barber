@@ -406,17 +406,17 @@
                 }
             }
 
-            // Apply hidden sections — read from dedicated key which Firebase never overwrites
+            // Apply hidden sections — site_hidden_sections is the sole source of truth
+            // If the key doesn't exist (null), show everything; never fall back to Firebase-synced config
             const _hiddenSections = (() => {
                 try {
-                    const _dedicated = JSON.parse(localStorage.getItem('site_hidden_sections') || 'null');
-                    if (Array.isArray(_dedicated)) return _dedicated;
+                    const _raw = localStorage.getItem('site_hidden_sections');
+                    if (_raw !== null) {
+                        const _parsed = JSON.parse(_raw);
+                        if (Array.isArray(_parsed)) return _parsed;
+                    }
                 } catch(_) {}
-                try {
-                    const _ls = JSON.parse(localStorage.getItem('site_config_backup') || '{}');
-                    if (Array.isArray(_ls.hiddenSections)) return _ls.hiddenSections;
-                } catch(_) {}
-                return Array.isArray(SITE_CONFIG.hiddenSections) ? SITE_CONFIG.hiddenSections : [];
+                return []; // null key = show all
             })();
             // First restore all managed sections to visible
             ['#about', '.testimonial-section', '#services', '#barbers', '#gallery',
