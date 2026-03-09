@@ -17,18 +17,11 @@
     </script>
     <link rel="stylesheet" href="/css/index.css">
     <script>
-        /* Section visibility — inject CSS before body renders so nothing can undo it */
-        (function() {
-            try {
-                var hidden = JSON.parse(localStorage.getItem('site_hidden_sections') || 'null');
-                if (Array.isArray(hidden) && hidden.length) {
-                    var css = hidden.map(function(sel) { return sel + ' { display: none !important; }'; }).join('\n');
-                    var style = document.createElement('style');
-                    style.textContent = css;
-                    document.head.appendChild(style);
-                }
-            } catch(e) {}
-        })();
+        // Allow ?resetSections to clear stale hidden-sections data
+        if (location.search.includes('resetSections')) {
+            localStorage.removeItem('site_hidden_sections');
+            history.replaceState(null, '', location.pathname);
+        }
     </script>
 </head>
 <body>

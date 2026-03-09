@@ -1088,18 +1088,11 @@
   <script type="module" crossorigin src="/assets/firebase-config-IgOxIlYG.js"></script>
   <link rel="stylesheet" crossorigin href="/assets/main-C86ovcfV.css">
     <script>
-        /* Section visibility — inject CSS before body renders so nothing can undo it */
-        (function() {
-            try {
-                var hidden = JSON.parse(localStorage.getItem('site_hidden_sections') || 'null');
-                if (Array.isArray(hidden) && hidden.length) {
-                    var css = hidden.map(function(sel) { return sel + ' { display: none !important; }'; }).join('\n');
-                    var style = document.createElement('style');
-                    style.textContent = css;
-                    document.head.appendChild(style);
-                }
-            } catch(e) {}
-        })();
+        // Allow ?resetSections to clear stale hidden-sections data
+        if (location.search.includes('resetSections')) {
+            localStorage.removeItem('site_hidden_sections');
+            history.replaceState(null, '', location.pathname);
+        }
     </script>
 </head>
 <body>
@@ -1708,6 +1701,12 @@
                 } catch(_) {}
                 return Array.isArray(SITE_CONFIG.hiddenSections) ? SITE_CONFIG.hiddenSections : [];
             })();
+            // First restore all managed sections to visible
+            ['#about', '.testimonial-section', '#services', '#barbers', '#gallery',
+             '#business-hours', '#contact', '#reviews', '.cta-section'].forEach(sel => {
+                try { const el = document.querySelector(sel); if (el) el.style.display = ''; } catch(_) {}
+            });
+            // Then hide only the selected ones
             _hiddenSections.forEach(sel => {
                 try {
                     const el = document.querySelector(sel);

@@ -418,6 +418,12 @@
                 } catch(_) {}
                 return Array.isArray(SITE_CONFIG.hiddenSections) ? SITE_CONFIG.hiddenSections : [];
             })();
+            // First restore all managed sections to visible
+            ['#about', '.testimonial-section', '#services', '#barbers', '#gallery',
+             '#business-hours', '#contact', '#reviews', '.cta-section'].forEach(sel => {
+                try { const el = document.querySelector(sel); if (el) el.style.display = ''; } catch(_) {}
+            });
+            // Then hide only the selected ones
             _hiddenSections.forEach(sel => {
                 try {
                     const el = document.querySelector(sel);
