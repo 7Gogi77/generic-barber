@@ -1128,6 +1128,12 @@ const CalendarEngine = {
               containerElement.querySelectorAll('.fc-scrollgrid-section-body td').forEach(td => {
                 td.style.setProperty('height', 'auto', 'important');
               });
+              // TR.fc-scrollgrid-section-body is what FC sets style="height:789px; overflow:hidden auto" on
+              // — this is the direct cause of empty space at the bottom
+              containerElement.querySelectorAll('tr.fc-scrollgrid-section-body').forEach(tr => {
+                tr.style.setProperty('height', 'auto', 'important');
+                tr.style.setProperty('overflow', 'visible', 'important');
+              });
             };
             setTimeout(_freeWeekDs, 0);
             setTimeout(_freeWeekDs, 100);
