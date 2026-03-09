@@ -1092,19 +1092,35 @@ const CalendarEngine = {
           const _argViewType = arg && arg.view && arg.view.type ? arg.view.type : '';
           if (_argViewType === 'timeGridWeek') {
             const _freeWeekDs = () => {
+              // Strip the view root itself — FC sets style="height:Xpx; overflow:hidden auto" here
+              const viewRoot = containerElement.querySelector('.fc-timeGridWeek-view');
+              if (viewRoot) {
+                viewRoot.style.setProperty('height', 'auto', 'important');
+                viewRoot.style.setProperty('min-height', '0', 'important');
+                viewRoot.style.setProperty('overflow', 'visible', 'important');
+              }
+              // Strip view-harness height
+              containerElement.querySelectorAll('.fc-view-harness').forEach(el => {
+                el.style.setProperty('height', 'auto', 'important');
+                el.style.setProperty('overflow', 'visible', 'important');
+              });
+              // Strip scrollers — avoid mixed-axis (overflow-x:hidden + overflow-y:visible is invalid CSS)
               containerElement.querySelectorAll('.fc-scroller, .fc-scroller-liquid-absolute').forEach(s => {
-                s.style.overflow = 'visible'; s.style.overflowX = 'hidden'; s.style.overflowY = 'visible';
-                s.style.height = 'auto'; s.style.maxHeight = 'none';
+                s.style.setProperty('overflow', 'visible', 'important');
+                s.style.setProperty('height', 'auto', 'important');
+                s.style.setProperty('max-height', 'none', 'important');
               });
               containerElement.querySelectorAll('.fc-scroller-harness').forEach(h => {
-                h.style.height = 'auto';
+                h.style.setProperty('height', 'auto', 'important');
+                h.style.setProperty('min-height', '0', 'important');
+                h.style.setProperty('overflow', 'visible', 'important');
               });
               containerElement.querySelectorAll('.fc-scroller-liquid-absolute').forEach(s => {
-                s.style.position = 'relative';
-                s.style.top = ''; s.style.bottom = ''; s.style.left = ''; s.style.right = '';
+                s.style.setProperty('position', 'relative', 'important');
+                ['top', 'bottom', 'left', 'right'].forEach(p => s.style.setProperty(p, 'auto', 'important'));
               });
               containerElement.querySelectorAll('.fc-scrollgrid-section-body td').forEach(td => {
-                td.style.height = 'auto';
+                td.style.setProperty('height', 'auto', 'important');
               });
             };
             setTimeout(_freeWeekDs, 0);
