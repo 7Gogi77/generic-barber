@@ -1746,29 +1746,9 @@ const CalendarEngine = {
                 if (fcRoot) { fcRoot.style.height = ''; fcRoot.style.minHeight = ''; fcRoot.style.overflow = ''; }
                 if (viewHarness) { viewHarness.style.height = ''; viewHarness.style.minHeight = ''; }
                 try { if (calendar && typeof calendar.setOption === 'function') { calendar.setOption('height', 'auto'); calendar.setOption('contentHeight', 'auto'); } } catch (_) {}
-                if (calendar && typeof calendar.updateSize === 'function') calendar.updateSize();
-                // For week view: FC re-applies inline overflow/height on scrollers after updateSize — strip them
-                if (currentViewType === 'timeGridWeek') {
-                  const _freeWeek = () => {
-                    containerElement.querySelectorAll('.fc-scroller, .fc-scroller-liquid-absolute').forEach(s => {
-                      s.style.overflow = 'visible'; s.style.overflowX = 'hidden'; s.style.overflowY = 'visible';
-                      s.style.height = 'auto'; s.style.maxHeight = 'none';
-                    });
-                    containerElement.querySelectorAll('.fc-scroller-harness').forEach(h => {
-                      h.style.height = 'auto';
-                    });
-                    containerElement.querySelectorAll('.fc-scroller-liquid-absolute').forEach(s => {
-                      s.style.position = 'relative';
-                      s.style.top = ''; s.style.bottom = ''; s.style.left = ''; s.style.right = '';
-                    });
-                    containerElement.querySelectorAll('.fc-scrollgrid-section-body td').forEach(td => {
-                      td.style.height = 'auto';
-                    });
-                  };
-                  setTimeout(_freeWeek, 0);
-                  setTimeout(_freeWeek, 80);
-                  setTimeout(_freeWeek, 250);
-                }
+                // Do NOT call calendar.updateSize() here — it re-triggers FC's inline style application
+                // which feeds back into the MutationObserver and causes an infinite loop.
+                // The MutationObserver (watchWeekScrollers) handles scroller overrides for week view.
                 return;
               }
 
@@ -1789,6 +1769,10 @@ const CalendarEngine = {
 
           function attempt(n) {
             try {
+              // Week view is handled entirely by MutationObserver — no sizing attempts needed
+              const curView = calendar && calendar.view && calendar.view.type ? calendar.view.type : '';
+              if (curView === 'timeGridWeek') return;
+
               const toolbar = containerElement.querySelector('.fc-toolbar');
               const headerRow = containerElement.querySelector('.fc-col-header');
               const toolbarH = toolbar ? Math.ceil(toolbar.getBoundingClientRect().height) : 0;
@@ -1822,51 +1806,46 @@ const CalendarEngine = {
         })();
 
         // MutationObserver: permanently strip FC's inline height/overflow on week view scrollers.
-        // FC re-applies inline styles after every updateSize() call — this observer fires synchronously
-        // and immediately neutralises them so the week view always expands to full content height.
+        // Uses disconnect/reconnect to prevent re-entrancy (boolean flags are not safe across microtasks).
         (function watchWeekScrollers() {
           if (typeof MutationObserver === 'undefined') return;
-          let _moBlocked = false;
+          const _moConfig = { subtree: true, attributes: true, attributeFilter: ['style'] };
           const _mo = new MutationObserver((mutations) => {
-            if (_moBlocked) return;
             const viewType = calendar && calendar.view && calendar.view.type ? calendar.view.type : '';
             if (viewType !== 'timeGridWeek') return;
-            _moBlocked = true; // prevent re-entrancy
-            mutations.forEach(m => {
-              const el = m.target;
-              if (!el || !el.style) return;
-              const cls = el.classList;
-              if (cls.contains('fc-scroller') || cls.contains('fc-scroller-liquid-absolute') || cls.contains('fc-scroller-harness')) {
-                el.style.setProperty('overflow', 'visible', 'important');
-                el.style.setProperty('overflow-x', 'hidden', 'important');
-                el.style.setProperty('overflow-y', 'visible', 'important');
-                el.style.setProperty('height', 'auto', 'important');
-                el.style.setProperty('max-height', 'none', 'important');
-                if (cls.contains('fc-scroller-liquid-absolute')) {
-                  el.style.setProperty('position', 'relative', 'important');
-                  el.style.removeProperty('top');
-                  el.style.removeProperty('bottom');
-                  el.style.removeProperty('left');
-                  el.style.removeProperty('right');
+            // Disconnect first to prevent our own setProperty calls from re-triggering this callback
+            _mo.disconnect();
+            try {
+              mutations.forEach(m => {
+                const el = m.target;
+                if (!el || !el.style) return;
+                const cls = el.classList;
+                if (cls.contains('fc-scroller') || cls.contains('fc-scroller-liquid-absolute') || cls.contains('fc-scroller-harness')) {
+                  el.style.setProperty('overflow', 'visible', 'important');
+                  el.style.setProperty('overflow-x', 'hidden', 'important');
+                  el.style.setProperty('overflow-y', 'visible', 'important');
+                  el.style.setProperty('height', 'auto', 'important');
+                  el.style.setProperty('max-height', 'none', 'important');
+                  if (cls.contains('fc-scroller-liquid-absolute')) {
+                    el.style.setProperty('position', 'relative', 'important');
+                    el.style.removeProperty('top');
+                    el.style.removeProperty('bottom');
+                    el.style.removeProperty('left');
+                    el.style.removeProperty('right');
+                  }
                 }
-              }
-              if (cls.contains('fc-view-harness') || cls.contains('fc-timegrid') || cls.contains('fc')) {
-                el.style.removeProperty('height');
-                el.style.removeProperty('max-height');
-                el.style.removeProperty('min-height');
-              }
-            });
-            _moBlocked = false;
-          });
-          _mo.observe(containerElement, { subtree: true, attributes: true, attributeFilter: ['style'] });
-          // Also call setOption contentHeight:'auto' once on init for week view
-          try {
-            const initView = calendar && calendar.view && calendar.view.type ? calendar.view.type : '';
-            if (initView === 'timeGridWeek') {
-              calendar.setOption('height', 'auto');
-              calendar.setOption('contentHeight', 'auto');
+                if (cls.contains('fc-view-harness') || cls.contains('fc-timegrid')) {
+                  el.style.removeProperty('height');
+                  el.style.removeProperty('max-height');
+                  el.style.removeProperty('min-height');
+                }
+              });
+            } finally {
+              // Always reconnect, even if an error occurred
+              _mo.observe(containerElement, _moConfig);
             }
-          } catch(_) {}
+          });
+          _mo.observe(containerElement, _moConfig);
         })();
 
         // Safely process day cells (may not exist immediately after render).
