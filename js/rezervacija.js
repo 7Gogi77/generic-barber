@@ -44,33 +44,35 @@
             if (headerTitle && bp.pageTitle) headerTitle.textContent = bp.pageTitle;
             if (headerSubtitle && bp.pageSubtitle) headerSubtitle.textContent = bp.pageSubtitle;
             
-            // Step 1
+            // Step 1 (services) — unchanged
             const step1Title = document.querySelector('#step1 .card-header h2');
             const step1Desc = document.querySelector('#step1 .card-header p');
             if (step1Title && bp.step1Title) step1Title.textContent = bp.step1Title;
             if (step1Desc && bp.step1Desc) step1Desc.textContent = bp.step1Desc;
             
-            // Step 2
-            const step2Title = document.querySelector('#step2 .card-header h2');
-            const step2Desc = document.querySelector('#step2 .card-header p');
-            if (step2Title && bp.step2Title) step2Title.textContent = bp.step2Title;
-            if (step2Desc && bp.step2Desc) step2Desc.textContent = bp.step2Desc;
+            // Step 2 (worker) — no Firebase label, skip
             
-            // Step 3
+            // Step 3 (date) — was old step 2 in Firebase config
             const step3Title = document.querySelector('#step3 .card-header h2');
             const step3Desc = document.querySelector('#step3 .card-header p');
-            if (step3Title && bp.step3Title) step3Title.textContent = bp.step3Title;
-            if (step3Desc && bp.step3Desc) step3Desc.textContent = bp.step3Desc;
+            if (step3Title && bp.step2Title) step3Title.textContent = bp.step2Title;
+            if (step3Desc && bp.step2Desc) step3Desc.textContent = bp.step2Desc;
             
-            // Step 4
+            // Step 4 (contact) — was old step 3 in Firebase config
             const step4Title = document.querySelector('#step4 .card-header h2');
             const step4Desc = document.querySelector('#step4 .card-header p');
-            if (step4Title && bp.step4Title) step4Title.textContent = bp.step4Title;
-            if (step4Desc && bp.step4Desc) step4Desc.textContent = bp.step4Desc;
+            if (step4Title && bp.step3Title) step4Title.textContent = bp.step3Title;
+            if (step4Desc && bp.step3Desc) step4Desc.textContent = bp.step3Desc;
             
-            // Success step
-            const successTitle = document.querySelector('#step5 .success-title');
-            const successMessage = document.querySelector('#step5 .success-message');
+            // Step 5 (confirmation) — was old step 4 in Firebase config
+            const step5Title = document.querySelector('#step5 .card-header h2');
+            const step5Desc = document.querySelector('#step5 .card-header p');
+            if (step5Title && bp.step4Title) step5Title.textContent = bp.step4Title;
+            if (step5Desc && bp.step4Desc) step5Desc.textContent = bp.step4Desc;
+            
+            // Success step is now #step6
+            const successTitle = document.querySelector('#step6 .success-title');
+            const successMessage = document.querySelector('#step6 .success-message');
             if (successTitle && bp.successTitle) successTitle.textContent = bp.successTitle;
             if (successMessage && bp.successMessage) {
                 successMessage.innerHTML = bp.successMessage + '<br>Potrditev bo poslana na vaš e-poštni naslov.';
@@ -93,7 +95,7 @@
             if (confirmBtn && bp.confirmButton) confirmBtn.textContent = bp.confirmButton;
             
             // New booking button
-            const newBtn = document.querySelector('#step5 .btn-primary');
+            const newBtn = document.querySelector('#step6 .btn-primary');
             if (newBtn && bp.newButton) newBtn.textContent = bp.newButton;
         }
 
