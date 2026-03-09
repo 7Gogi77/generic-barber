@@ -1362,6 +1362,7 @@
             const nameInputs = document.querySelectorAll('.nav-link-name');
             const urlInputs = document.querySelectorAll('.nav-link-url');
             
+            if (nameInputs.length === 0) return; // inputs not rendered on this tab — skip to avoid clearing navLinks
             SITE_CONFIG.navLinks = [];
             nameInputs.forEach((input, i) => {
                 const name = input.value.trim();
