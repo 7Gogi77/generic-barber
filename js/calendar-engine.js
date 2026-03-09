@@ -652,29 +652,9 @@ const CalendarEngine = {
         slotDuration: slotDurationStr,
         slotLabelInterval: { hours: 1 },
         slotLabelFormat: { hour: '2-digit', minute: '2-digit', hour12: false },
-        // Hide the all-day row — multi-day events are shown as background strips across day columns
-        allDaySlot: false,
-        // Convert allDay/multi-day events into timed background events so they span visually
-        // across the day columns in the timeGrid without needing an all-day row
-        eventDataTransform: function(eventData) {
-          if (!eventData.allDay) return eventData;
-          try {
-            const _startD = eventData.start ? new Date(eventData.start) : null;
-            if (!_startD || isNaN(_startD)) return eventData;
-            let _endD = eventData.end ? new Date(eventData.end) : null;
-            if (!_endD || isNaN(_endD)) { _endD = new Date(_startD); _endD.setDate(_endD.getDate() + 1); }
-            // allDay end in FC is exclusive (day after last) — subtract 1 day for timed end
-            _endD.setDate(_endD.getDate() - 1);
-            const _pad = n => ('0' + n).slice(-2);
-            const _dateStr = d => d.getFullYear() + '-' + _pad(d.getMonth()+1) + '-' + _pad(d.getDate());
-            return Object.assign({}, eventData, {
-              allDay: false,
-              start: _dateStr(_startD) + 'T' + weekSlotMin,
-              end:   _dateStr(_endD)   + 'T' + weekSlotMax,
-              display: 'background'
-            });
-          } catch(_) { return eventData; }
-        },
+        // allDaySlot:true shows multi-day events in a compact row at top of week view (clickable)
+        // and they continue to span correctly in month view
+        allDaySlot: true,
         views: {
           dayGridMonth: { type: 'dayGridMonth', height: 'auto' }, // auto-size so last row is never clipped
           // On mobile: 1 slot per hour in week view to reduce scrolling
@@ -1456,8 +1436,8 @@ const CalendarEngine = {
         eventDisplay: 'auto',
         // Make overlapping events display side-by-side in timeGrid views
         slotEventOverlap: false,
-        // all-day slot off — multi-day events rendered as background strips via eventDataTransform
-        allDaySlot: false,
+        // all-day slot on — multi-day events span in the compact all-day row, clickable
+        allDaySlot: true,
         height: 'auto',
         contentHeight: 'auto'
       });

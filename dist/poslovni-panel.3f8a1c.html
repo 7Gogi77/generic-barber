@@ -488,6 +488,21 @@
             max-height: none !important;
         }
 
+        /* Compact all-day row in week/day view */
+        .fc-timegrid-divider { display: none !important; }
+        .fc-daygrid-body { min-height: 0 !important; }
+        #scheduleCalendar .fc-timegrid-axis-cushion { font-size: 11px; }
+        /* All-day row: compact height, no extra padding */
+        #scheduleCalendar .fc-daygrid-day-frame { min-height: 28px !important; }
+        #scheduleCalendar .fc-timegrid-slot-lane.fc-timegrid-slot-minor { border-top-style: dotted; }
+        /* All-day event pill style in week view */
+        #scheduleCalendar .fc-timegrid-event-harness-inset .fc-event,
+        #scheduleCalendar .fc-daygrid-event {
+            border-radius: 4px !important;
+            font-size: 12px !important;
+            padding: 1px 4px !important;
+        }
+
         /* View-scoped positioning - TimeGrid requires relative to contain absolutely positioned children */
         #scheduleCalendar.view-timegrid-week .fc-scroller-harness, #scheduleCalendar.view-timegrid-day .fc-scroller-harness { position: relative !important; }
 
