@@ -23,7 +23,6 @@
     <div id="bspLoginScreen" style="display:none; position:fixed; inset:0; z-index:99999; background:#f2f2f7; align-items:center; justify-content:center; flex-direction:column;">
         <div style="background:#fff; border-radius:20px; padding:40px 36px; width:340px; max-width:92vw; box-shadow:0 8px 40px rgba(0,0,0,0.12);">
             <div style="text-align:center; margin-bottom:28px;">
-                <div style="font-size:32px; margin-bottom:8px;">✂️</div>
                 <div style="font-size:22px; font-weight:700; color:#1c1c1e;">Prijava</div>
                 <div style="font-size:13px; color:#8e8e93; margin-top:4px;">Administratorski ali delavski račun</div>
             </div>
@@ -106,6 +105,10 @@
                 const isAdmin = await tryAdminLogin(username, password);
                 if (isAdmin) {
                     setSession({ role: 'admin', username: username });
+                    // Also set admin_token so admin-panel is auto-authenticated
+                    sessionStorage.setItem('admin_token', 'local-' + Date.now());
+                    sessionStorage.setItem('admin_authenticated', 'true');
+                    sessionStorage.setItem('admin_session_time', Date.now().toString());
                     showPanel();
                     return;
                 }
@@ -157,6 +160,11 @@
             if (form) form.addEventListener('submit', doLogin);
 
             var sess = getSession();
+            // Also accept a session established by admin-panel login
+            if (!sess && sessionStorage.getItem('admin_authenticated') === 'true') {
+                sess = { role: 'admin', username: 'admin' };
+                setSession(sess);
+            }
             if (!sess) {
                 showLogin();
             } else if (sess.role === 'worker') {
@@ -367,6 +375,7 @@
                 <button class="bsp-tab" data-tab="smart"><i class="bi bi-stars"></i> Pametne funkcije</button>
                 <button class="bsp-tab" data-tab="services"><i class="bi bi-bag"></i> Storitve</button>
                 <button class="bsp-tab" data-tab="team"><i class="bi bi-people-fill"></i> Ekipa</button>
+                <button class="bsp-tab" data-tab="workers"><i class="bi bi-person-badge"></i> Zaposleni</button>
                 <button class="bsp-tab" data-tab="sms"><i class="bi bi-chat-dots"></i> SMS</button>
             </div>
 
@@ -697,6 +706,51 @@
                         </div>
                         <div id="bspTeamList"></div>
                         <button class="bsp-add-btn" onclick="bspAddTeamMember()"><i class="bi bi-person-plus"></i> Dodaj člana</button>
+                    </div>
+                </div>
+
+                <!-- ══════════ TAB: ZAPOSLENI ══════════ -->
+                <div class="bsp-tab-panel" id="bspPanel-workers">
+                    <div class="bsp-card">
+                        <div class="bsp-card-header">
+                            <div class="bsp-card-icon" style="background:#007aff20;"><i class="bi bi-person-badge" style="color:#007aff;font-size:15px;"></i></div>
+                            <div><div class="bsp-card-title">Dodaj novega zaposlenega</div></div>
+                        </div>
+                        <div style="display:flex;flex-direction:column;gap:10px;">
+                            <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                                <div style="flex:1;min-width:160px;">
+                                    <div class="bsp-row-label" style="margin-bottom:4px;">Ime in priimek</div>
+                                    <input id="newWorkerName" type="text" class="bsp-input" placeholder="npr. Marko Novak" style="width:100%;box-sizing:border-box;">
+                                </div>
+                                <div style="flex:1;min-width:160px;">
+                                    <div class="bsp-row-label" style="margin-bottom:4px;">Uporabniško ime</div>
+                                    <input id="newWorkerUser" type="text" class="bsp-input" placeholder="npr. marko" autocomplete="off" style="width:100%;box-sizing:border-box;">
+                                </div>
+                                <div style="flex:1;min-width:160px;">
+                                    <div class="bsp-row-label" style="margin-bottom:4px;">Geslo</div>
+                                    <input id="newWorkerPass" type="password" class="bsp-input" placeholder="Geslo" autocomplete="new-password" style="width:100%;box-sizing:border-box;">
+                                </div>
+                            </div>
+                            <div>
+                                <div class="bsp-row-label" style="margin-bottom:8px;">Dovoljenja</div>
+                                <div style="display:flex;flex-wrap:wrap;gap:10px 24px;">
+                                    <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="checkbox" id="wpCanMove" style="width:15px;height:15px;"> Premikanje terminov</label>
+                                    <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="checkbox" id="wpCanAddBreaks" style="width:15px;height:15px;"> Dodajanje premorov</label>
+                                    <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="checkbox" id="wpCanDelete" style="width:15px;height:15px;"> Brisanje terminov</label>
+                                    <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="checkbox" id="wpCanViewAll" style="width:15px;height:15px;"> Ogled vseh terminov</label>
+                                    <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="checkbox" id="wpCanInvoice" style="width:15px;height:15px;"> Generiranje računov</label>
+                                </div>
+                            </div>
+                            <div id="newWorkerMsg" style="display:none;padding:8px 12px;border-radius:8px;font-size:13px;"></div>
+                            <button class="bsp-add-btn" onclick="addWorker()"><i class="bi bi-person-plus"></i> Dodaj zaposlenega</button>
+                        </div>
+                    </div>
+                    <div class="bsp-card" style="margin-top:14px;">
+                        <div class="bsp-card-header">
+                            <div class="bsp-card-icon" style="background:#34c75920;"><i class="bi bi-people" style="color:#34c759;font-size:15px;"></i></div>
+                            <div><div class="bsp-card-title">Seznam zaposlenih</div></div>
+                        </div>
+                        <div id="workersList"><div style="color:#8e8e93;font-size:14px;padding:10px 0;">Nalagam...</div></div>
                     </div>
                 </div>
 
