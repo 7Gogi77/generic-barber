@@ -2119,6 +2119,148 @@
     </style>
 </head>
 <body>
+    <!-- LOGIN SCREEN -->
+    <div id="bspLoginScreen" style="display:none; position:fixed; inset:0; z-index:99999; background:#f2f2f7; align-items:center; justify-content:center; flex-direction:column;">
+        <div style="background:#fff; border-radius:20px; padding:40px 36px; width:340px; max-width:92vw; box-shadow:0 8px 40px rgba(0,0,0,0.12);">
+            <div style="text-align:center; margin-bottom:28px;">
+                <div style="font-size:32px; margin-bottom:8px;">✂️</div>
+                <div style="font-size:22px; font-weight:700; color:#1c1c1e;">Prijava</div>
+                <div style="font-size:13px; color:#8e8e93; margin-top:4px;">Administratorski ali delavski račun</div>
+            </div>
+            <div id="bspLoginError" style="display:none; background:#fff2f2; border:1px solid #ff3b30; color:#ff3b30; border-radius:10px; padding:10px 14px; font-size:13px; margin-bottom:16px;"></div>
+            <form id="bspLoginForm" autocomplete="off">
+                <div style="margin-bottom:14px;">
+                    <label style="font-size:13px; font-weight:600; color:#1c1c1e; display:block; margin-bottom:6px;">Uporabniško ime</label>
+                    <input id="bspLoginUser" type="text" autocomplete="username" placeholder="Vnesite uporabniško ime" style="width:100%; padding:12px 14px; border:1.5px solid #e5e5ea; border-radius:10px; font-size:15px; outline:none; box-sizing:border-box;">
+                </div>
+                <div style="margin-bottom:22px;">
+                    <label style="font-size:13px; font-weight:600; color:#1c1c1e; display:block; margin-bottom:6px;">Geslo</label>
+                    <input id="bspLoginPass" type="password" autocomplete="current-password" placeholder="Vnesite geslo" style="width:100%; padding:12px 14px; border:1.5px solid #e5e5ea; border-radius:10px; font-size:15px; outline:none; box-sizing:border-box;">
+                </div>
+                <button type="submit" style="width:100%; padding:14px; background:#007aff; color:#fff; border:none; border-radius:12px; font-size:16px; font-weight:700; cursor:pointer;">Prijava</button>
+            </form>
+        </div>
+    </div>
+    <script>
+    // ── BSP WORKER AUTH ────────────────────────────────────────────────────────
+    (function() {
+        var FIREBASE_BASE = 'https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app/';
+
+        async function sha256(str) {
+            const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+            return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+        }
+
+        function getSession() {
+            try { return JSON.parse(sessionStorage.getItem('bsp_session') || 'null'); } catch(_) { return null; }
+        }
+        function setSession(data) {
+            sessionStorage.setItem('bsp_session', JSON.stringify(data));
+        }
+        function clearSession() {
+            sessionStorage.removeItem('bsp_session');
+        }
+
+        async function tryAdminLogin(username, password) {
+            if (!window.ADMIN_ENV || !window.ADMIN_ENV.passwordHash) return false;
+            const adminUser = window.ADMIN_ENV.username || 'admin';
+            if (username.toLowerCase() !== adminUser.toLowerCase()) return false;
+            const hash = await sha256(password);
+            return hash === window.ADMIN_ENV.passwordHash;
+        }
+
+        async function tryWorkerLogin(username, password) {
+            try {
+                const res = await fetch(FIREBASE_BASE + 'workers.json');
+                if (!res.ok) return null;
+                const workers = await res.json();
+                if (!workers) return null;
+                const hash = await sha256(password);
+                for (const id of Object.keys(workers)) {
+                    const w = workers[id];
+                    if (w.username && w.username.toLowerCase() === username.toLowerCase()) {
+                        if (w.passwordHash === hash) return { id, ...w };
+                    }
+                }
+                return null;
+            } catch(_) { return null; }
+        }
+
+        async function doLogin(e) {
+            e.preventDefault();
+            const username = document.getElementById('bspLoginUser').value.trim();
+            const password = document.getElementById('bspLoginPass').value;
+            const errEl = document.getElementById('bspLoginError');
+            const btn = document.querySelector('#bspLoginForm button[type=submit]');
+            if (!username || !password) {
+                errEl.textContent = 'Vnesite uporabniško ime in geslo.';
+                errEl.style.display = 'block';
+                return;
+            }
+            btn.disabled = true;
+            btn.textContent = 'Prijavljam...';
+            errEl.style.display = 'none';
+            try {
+                const isAdmin = await tryAdminLogin(username, password);
+                if (isAdmin) {
+                    setSession({ role: 'admin', username: username });
+                    showPanel();
+                    return;
+                }
+                const worker = await tryWorkerLogin(username, password);
+                if (worker) {
+                    setSession({ role: 'worker', username: worker.username, workerId: worker.id, workerName: worker.name, permissions: worker.permissions || {} });
+                    applyWorkerRestrictions(worker);
+                    showPanel();
+                    return;
+                }
+                errEl.textContent = 'Napačno uporabniško ime ali geslo.';
+                errEl.style.display = 'block';
+            } catch(err) {
+                errEl.textContent = 'Napaka pri prijavi. Poskusite znova.';
+                errEl.style.display = 'block';
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Prijava';
+            }
+        }
+
+        function applyWorkerRestrictions(worker) {
+            window._bspWorkerMode = true;
+            window._bspWorkerSession = { id: worker.id, name: worker.name, permissions: worker.permissions || {} };
+        }
+
+        function showPanel() {
+            var loginEl = document.getElementById('bspLoginScreen');
+            if (loginEl) loginEl.style.display = 'none';
+        }
+
+        function showLogin() {
+            var loginEl = document.getElementById('bspLoginScreen');
+            if (loginEl) loginEl.style.display = 'flex';
+        }
+
+        window.bspLogout = function() {
+            clearSession();
+            location.reload();
+        };
+
+        window.bspGetSession = getSession;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            var form = document.getElementById('bspLoginForm');
+            if (form) form.addEventListener('submit', doLogin);
+
+            var sess = getSession();
+            if (!sess) {
+                showLogin();
+            } else if (sess.role === 'worker') {
+                applyWorkerRestrictions({ id: sess.workerId, name: sess.workerName, permissions: sess.permissions || {} });
+            }
+        });
+    })();
+    </script>
+
     <!-- SIDEBAR NAVIGATION -->
     <div class="sidebar" id="sidebar">
         <button class="sidebar-toggle" id="sidebarToggle" title="Toggle menu">
@@ -2167,6 +2309,13 @@
                 <i class="bi bi-house"></i>
             </button>
             <span class="nav-label">Nazaj</span>
+        </div>
+
+        <div class="nav-item">
+            <button class="nav-icon" title="Odjava" aria-label="Odjava" onclick="bspLogout()">
+                <i class="bi bi-box-arrow-left"></i>
+            </button>
+            <span class="nav-label">Odjava</span>
         </div>
     </div>
 
@@ -2866,6 +3015,7 @@
     </div>
 
     <!-- SCRIPTS -->
+    <script src="/js/admin-env.js"></script>
     <script type="module" src="/js/firebase-config.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
         <script>

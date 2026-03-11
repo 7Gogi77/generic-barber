@@ -63,6 +63,8 @@
             if (event.currentTarget) {
                 event.currentTarget.classList.add('active');
             }
+            // Load workers list when switching to that tab
+            if (tabName === 'zaposleni' && typeof loadWorkers === 'function') loadWorkers();
         }
 
         // Sidebar toggle (match poslovni-panel UX)
@@ -2829,3 +2831,141 @@
                 renderScheduleList();
             }
         }
+
+        // ===== WORKER MANAGEMENT =============================================
+        const FIREBASE_WORKERS = 'https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app/workers.json';
+
+        async function sha256Worker(str) {
+            const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+            return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+        }
+
+        async function fetchWorkers() {
+            try {
+                const res = await fetch(FIREBASE_WORKERS);
+                if (!res.ok) return {};
+                const data = await res.json();
+                return data || {};
+            } catch(_) { return {}; }
+        }
+
+        async function saveWorkersToFirebase(workers) {
+            await fetch(FIREBASE_WORKERS, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(workers)
+            });
+        }
+
+        async function addWorker() {
+            const name     = document.getElementById('newWorkerName').value.trim();
+            const username = document.getElementById('newWorkerUser').value.trim().toLowerCase();
+            const password = document.getElementById('newWorkerPass').value;
+            const msgEl    = document.getElementById('newWorkerMsg');
+
+            function showMsg(text, isError) {
+                msgEl.textContent = text;
+                msgEl.style.background = isError ? '#fff2f2' : '#f0fff4';
+                msgEl.style.border = '1px solid ' + (isError ? '#ff3b30' : '#34c759');
+                msgEl.style.color = isError ? '#ff3b30' : '#1c7a40';
+                msgEl.style.display = 'block';
+            }
+
+            if (!name || !username || !password) { showMsg('Izpolnite vsa polja.', true); return; }
+            if (password.length < 4) { showMsg('Geslo mora imeti vsaj 4 znake.', true); return; }
+
+            const workers = await fetchWorkers();
+            const exists = Object.values(workers).some(w => w.username && w.username.toLowerCase() === username);
+            if (exists) { showMsg('Uporabni\u0161ko ime \u017ee obstaja.', true); return; }
+
+            const id = 'w_' + Date.now();
+            workers[id] = {
+                name: name,
+                username: username,
+                passwordHash: await sha256Worker(password),
+                permissions: {
+                    canMove:      document.getElementById('wpCanMove').checked,
+                    canAddBreaks: document.getElementById('wpCanAddBreaks').checked,
+                    canDelete:    document.getElementById('wpCanDelete').checked,
+                    canViewAll:   document.getElementById('wpCanViewAll').checked,
+                    canInvoice:   document.getElementById('wpCanInvoice').checked
+                }
+            };
+
+            try {
+                await saveWorkersToFirebase(workers);
+                showMsg('Zaposleni ' + name + ' uspešno dodan!', false);
+                document.getElementById('newWorkerName').value = '';
+                document.getElementById('newWorkerUser').value = '';
+                document.getElementById('newWorkerPass').value = '';
+                ['wpCanMove','wpCanAddBreaks','wpCanDelete','wpCanViewAll','wpCanInvoice'].forEach(pid => { document.getElementById(pid).checked = false; });
+                loadWorkers();
+            } catch(e) {
+                showMsg('Napaka pri shranjevanju. Poskusite znova.', true);
+            }
+        }
+
+        async function deleteWorker(id) {
+            if (!confirm('Izbriši tega zaposlenega?')) return;
+            const workers = await fetchWorkers();
+            delete workers[id];
+            await saveWorkersToFirebase(workers);
+            loadWorkers();
+        }
+
+        async function toggleWorkerPermission(id, perm, value) {
+            const workers = await fetchWorkers();
+            if (!workers[id]) return;
+            if (!workers[id].permissions) workers[id].permissions = {};
+            workers[id].permissions[perm] = value;
+            await saveWorkersToFirebase(workers);
+        }
+
+        function escapeHtmlWorker(text) {
+            const d = document.createElement('div');
+            d.textContent = text;
+            return d.innerHTML;
+        }
+
+        async function loadWorkers() {
+            const container = document.getElementById('workersList');
+            if (!container) return;
+            container.innerHTML = '<div style="color:var(--ios-text-secondary,#8e8e93); font-size:14px; padding:20px; text-align:center;">Nalagam...</div>';
+            const workers = await fetchWorkers();
+            const entries = Object.entries(workers);
+            if (entries.length === 0) {
+                container.innerHTML = '<div style="color:var(--ios-text-secondary,#8e8e93); font-size:14px; padding:20px; text-align:center;">Ni dodanih zaposlenih.</div>';
+                return;
+            }
+            const permLabels = {
+                canMove:      'Premikanje terminov',
+                canAddBreaks: 'Dodajanje premorov',
+                canDelete:    'Brisanje terminov',
+                canViewAll:   'Ogled vseh terminov',
+                canInvoice:   'Generiranje računov'
+            };
+            container.innerHTML = '';
+            entries.forEach(([wid, w]) => {
+                const perms = w.permissions || {};
+                const permHtml = Object.entries(permLabels).map(([key, label]) => `
+                    <label style="display:flex; align-items:center; gap:7px; font-size:13px; cursor:pointer; padding:3px 0;">
+                        <input type="checkbox" ${perms[key] ? 'checked' : ''} onchange="toggleWorkerPermission('${wid}','${key}',this.checked)" style="width:15px;height:15px;cursor:pointer;">
+                        ${label}
+                    </label>`).join('');
+                const card = document.createElement('div');
+                card.style.cssText = 'background:var(--ios-bg-secondary,#fff); border-radius:14px; padding:16px 18px; box-shadow:var(--ios-shadow-sm,0 1px 3px rgba(0,0,0,0.08)); border:1px solid var(--ios-separator,rgba(60,60,67,0.12));';
+                card.innerHTML = `
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
+                        <div>
+                            <div style="font-size:16px; font-weight:700; color:var(--ios-text-primary,#000);">${escapeHtmlWorker(w.name || '')}</div>
+                            <div style="font-size:13px; color:var(--ios-text-secondary,#8e8e93); margin-top:2px;">@${escapeHtmlWorker(w.username || '')}</div>
+                        </div>
+                        <button onclick="deleteWorker('${wid}')" style="background:var(--ios-red,#FF3B30); color:white; border:none; border-radius:8px; padding:6px 14px; font-size:13px; font-weight:600; cursor:pointer;">Izbriši</button>
+                    </div>
+                    <div style="font-size:12px; font-weight:700; color:var(--ios-text-secondary,#8e8e93); text-transform:uppercase; letter-spacing:.5px; margin-bottom:8px;">Dovoljenja</div>
+                    <div style="display:flex; flex-wrap:wrap; gap:4px 20px;">${permHtml}</div>
+                `;
+                container.appendChild(card);
+            });
+        }
+        // ====================================================================

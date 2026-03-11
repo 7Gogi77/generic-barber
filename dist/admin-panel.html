@@ -51,6 +51,13 @@
                 <span class="nav-label">Vsebina</span>
             </div>
 
+            <div class="nav-item">
+                <button class="nav-icon" title="Zaposleni" aria-label="Zaposleni" onclick="switchTab(event, 'zaposleni')">
+                    <i class="bi bi-people"></i>
+                </button>
+                <span class="nav-label">Zaposleni</span>
+            </div>
+
             <div style="flex:1;"></div>
 
             <div class="nav-item">
@@ -953,6 +960,65 @@
                 <!-- REMOVED: Stranke section no longer displayed in poslovni panel -->
 
             </div> <!-- END panel tab -->
+
+            <!-- ===== TAB: ZAPOSLENI ===== -->
+            <div id="zaposleni" class="tab-content" style="display:none;">
+                <h2 style="margin:0 0 20px 0; color:var(--ios-text-primary,#000); font-size:22px; font-weight:700;">Upravljanje Zaposlenih</h2>
+
+                <!-- Add new worker -->
+                <div class="admin-section">
+                    <h3 class="section-title" style="margin-bottom:16px;">Dodaj novega zaposlenega</h3>
+                    <div class="form-row">
+                        <div class="form-group-admin">
+                            <label class="form-label-admin">Ime in priimek</label>
+                            <input id="newWorkerName" type="text" class="form-input-admin" placeholder="npr. Marko Novak">
+                        </div>
+                        <div class="form-group-admin">
+                            <label class="form-label-admin">Uporabniško ime</label>
+                            <input id="newWorkerUser" type="text" class="form-input-admin" placeholder="npr. marko" autocomplete="off">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group-admin">
+                            <label class="form-label-admin">Geslo</label>
+                            <input id="newWorkerPass" type="password" class="form-input-admin" placeholder="Geslo zaposlenega" autocomplete="new-password">
+                        </div>
+                    </div>
+                    <h4 style="margin:16px 0 10px; font-size:14px; color:var(--ios-text-secondary,#8e8e93); font-weight:600; text-transform:uppercase; letter-spacing:.5px;">Dovoljenja</h4>
+                    <div style="display:flex; flex-wrap:wrap; gap:12px; margin-bottom:18px;">
+                        <label style="display:flex; align-items:center; gap:8px; font-size:14px; cursor:pointer;">
+                            <input type="checkbox" id="wpCanMove" style="width:16px;height:16px;cursor:pointer;">
+                            Premikanje terminov (drag &amp; drop)
+                        </label>
+                        <label style="display:flex; align-items:center; gap:8px; font-size:14px; cursor:pointer;">
+                            <input type="checkbox" id="wpCanAddBreaks" style="width:16px;height:16px;cursor:pointer;">
+                            Dodajanje premorov
+                        </label>
+                        <label style="display:flex; align-items:center; gap:8px; font-size:14px; cursor:pointer;">
+                            <input type="checkbox" id="wpCanDelete" style="width:16px;height:16px;cursor:pointer;">
+                            Brisanje terminov
+                        </label>
+                        <label style="display:flex; align-items:center; gap:8px; font-size:14px; cursor:pointer;">
+                            <input type="checkbox" id="wpCanViewAll" style="width:16px;height:16px;cursor:pointer;">
+                            Ogled vseh terminov (ne samo svojih)
+                        </label>
+                        <label style="display:flex; align-items:center; gap:8px; font-size:14px; cursor:pointer;">
+                            <input type="checkbox" id="wpCanInvoice" style="width:16px;height:16px;cursor:pointer;">
+                            Generiranje računov
+                        </label>
+                    </div>
+                    <div id="newWorkerMsg" style="display:none; margin-bottom:12px; padding:10px 14px; border-radius:10px; font-size:13px;"></div>
+                    <button class="save-btn" onclick="addWorker()" style="background:var(--ios-green,#34C759); padding:12px 24px;">+ Dodaj zaposlenega</button>
+                </div>
+
+                <!-- Workers list -->
+                <div class="admin-section" style="margin-top:20px;">
+                    <h3 class="section-title" style="margin-bottom:16px;">Seznam zaposlenih</h3>
+                    <div id="workersList" style="display:flex; flex-direction:column; gap:12px;">
+                        <div style="color:var(--ios-text-secondary,#8e8e93); font-size:14px; padding:20px; text-align:center;">Nalagam...</div>
+                    </div>
+                </div>
+            </div>
 
         </div> <!-- END admin-container -->
     </div> <!-- END main-content -->

@@ -3776,6 +3776,8 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                 window.calendar = calendar;
                 calendarInitialized = true;
                 debugLog('✓ Business calendar initialized');
+                // Apply worker access restrictions if logged in as worker
+                if (typeof window._bspApplyWorkerAccess === 'function') window._bspApplyWorkerAccess();
                 // Show worker filter bar on load based on stored settings
                 initCalWorkerFilter();
                 
@@ -4028,3 +4030,111 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
         // ===== CRITICAL OVERRIDE - AFTER ALL FUNCTION DEFINITIONS =====
         // Must be here, AFTER openAddEventModal is defined, to override function hoisting
         window.openAddEventModal = openAddEventModalWithTab;
+
+        // ===== WORKER ACCESS CONTROL =============================================
+        // Applied after init if the session is a worker account.
+        // Called from initializeBusinessCalendar() after calendar ready.
+        window._bspApplyWorkerAccess = function() {
+            var sess = window.bspGetSession ? window.bspGetSession() : null;
+            if (!sess || sess.role !== 'worker') return;
+            var perms = sess.permissions || {};
+            var workerName = sess.workerName || '';
+            var workerId   = sess.workerId  || '';
+
+            // ── 1. Filter calendar events to only this worker's appointments ──
+            if (window.calendar) {
+                window.calendar.getEvents().forEach(function(ev) {
+                    var ep = ev.extendedProps || {};
+                    var isBooking = ep.isBooking || ep.tab === 'customer' || ep.customer || ev.isBooking || (ev.id && String(ev.id).startsWith('apt_'));
+                    if (isBooking) {
+                        var evWorker = ep.worker || ep.workerId || ep.workerName || '';
+                        var evWorkerName = ep.workerName || '';
+                        var matchById   = workerId && evWorker === workerId;
+                        var matchByName = workerName && (evWorkerName === workerName || evWorker === workerName);
+                        if (!matchById && !matchByName) {
+                            ev.setProp('display', 'none');
+                        }
+                    }
+                    // Worker-type events (breaks, hours) — show only their own
+                    if (!isBooking) {
+                        var evW = ep.worker || (ev.title || '');
+                        if (workerName && evW !== workerName && evW !== workerId) {
+                            ev.setProp('display', 'none');
+                        }
+                    }
+                });
+            }
+
+            // ── 2. Hide / lock sidebar pages workers shouldn't see ──────────
+            // Hide analytics, booking-settings, visual-settings if not admin
+            var restrictedPages = ['analytics', 'booking-settings', 'settings'];
+            restrictedPages.forEach(function(page) {
+                var btn = document.querySelector('.nav-icon[data-page="' + page + '"]');
+                if (btn) {
+                    btn.closest('.nav-item').style.display = 'none';
+                }
+            });
+
+            // ── 3. Booking details modal — enforce permissions ───────────────
+            // Wrap deleteBtn: only show if perm canDelete
+            var origOpen = window.openBookingDetailsModal;
+            if (typeof origOpen === 'function') {
+                window.openBookingDetailsModal = function(event) {
+                    origOpen(event);
+                    // After modal opens, adjust buttons
+                    setTimeout(function() {
+                        var deleteBtn = document.getElementById('bookingDeleteBtn');
+                        var editBtn   = document.getElementById('bookingEditBtn');
+                        if (deleteBtn) deleteBtn.style.display = perms.canDelete ? '' : 'none';
+                        if (editBtn)   editBtn.style.display   = perms.canMove   ? '' : 'none';
+                    }, 0);
+                };
+            }
+
+            // ── 4. Disable drag/drop if canMove=false ────────────────────────
+            if (window.calendar && !perms.canMove) {
+                window.calendar.setOption('editable', false);
+                window.calendar.setOption('eventDurationEditable', false);
+            }
+
+            // ── 5. Disable add event modal "Worker" tab if canAddBreaks=false ─
+            if (!perms.canAddBreaks) {
+                // Override modal opener: only show customer tab
+                var origModal = window.openAddEventModal;
+                if (typeof origModal === 'function') {
+                    window.openAddEventModal = function(startDate, endDate, retry, tab, startTime, endTime) {
+                        origModal(startDate, endDate, retry, 'customer', startTime, endTime);
+                        // hide worker tab button
+                        setTimeout(function() {
+                            var tabBtn = document.getElementById('tabWorker');
+                            if (tabBtn) tabBtn.style.display = 'none';
+                        }, 50);
+                    };
+                }
+            }
+
+            // ── 6. Hide invoice button if canInvoice=false ──────────────────
+            if (!perms.canInvoice) {
+                // Intercept openBookingDetailsModal again to hide invoice button if present
+                var origOpen2 = window.openBookingDetailsModal;
+                if (typeof origOpen2 === 'function') {
+                    window.openBookingDetailsModal = function(event) {
+                        origOpen2(event);
+                        setTimeout(function() {
+                            var invBtn = document.getElementById('bookingInvoiceBtn');
+                            if (invBtn) invBtn.style.display = 'none';
+                        }, 0);
+                    };
+                }
+            }
+
+            // ── 7. Show worker identity badge in panel ───────────────────────
+            var sidebar = document.getElementById('sidebar');
+            if (sidebar && workerName) {
+                var badge = document.createElement('div');
+                badge.style.cssText = 'padding:8px 0 6px; text-align:center; font-size:11px; color:#8e8e93; font-weight:600; border-top:1px solid rgba(0,0,0,0.08); margin-top:4px; word-break:break-word;';
+                badge.textContent = workerName;
+                sidebar.insertBefore(badge, sidebar.lastElementChild.nextSibling || null);
+            }
+        };
+        // ====================================================================
