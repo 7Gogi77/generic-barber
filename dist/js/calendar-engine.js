@@ -572,24 +572,49 @@ const CalendarEngine = {
       const _isMobile = window.innerWidth <= 768;
 
       // ── MONTH VIEW VIEWPORT SIZING ─────────────────────────────────────────
-      // Sizes the calendar to a fraction of the viewport height so all rows
-      // fit on screen without scrolling, scaling proportionally with screen size.
+      // Sets the calendar to a fraction of vh AND forces all week rows to
+      // exactly the same height so no row expands with event content.
       function _applyMonthViewHeight() {
         try {
           if (!calendar || !calendar.view || calendar.view.type !== 'dayGridMonth') return;
           const vh = window.innerHeight || document.documentElement.clientHeight;
-          // 60% of viewport height on desktop leaves ~40% for panel chrome (header,
-          // tabs, worker filter, calendar toolbar). Capped at 820px for large screens.
           const fraction = _isMobile ? 0.62 : 0.60;
-          const availH = Math.min(820, Math.max(340, Math.floor(vh * fraction)));
-          containerElement.style.height = availH + 'px';
+          const totalH = Math.min(820, Math.max(340, Math.floor(vh * fraction)));
+          containerElement.style.height = totalH + 'px';
           containerElement.style.overflow = 'hidden';
           if (calendar && typeof calendar.setOption === 'function') {
-            calendar.setOption('height', availH);
+            calendar.setOption('height', totalH);
           }
           if (calendar && typeof calendar.updateSize === 'function') {
             calendar.updateSize();
           }
+          // Force all week rows to identical height so events can't expand any single row
+          function equalizeRows() {
+            try {
+              const toolbar = containerElement.querySelector('.fc-header-toolbar');
+              const colHeaderEl = containerElement.querySelector('.fc-col-header');
+              const toolbarH = toolbar ? Math.ceil(toolbar.getBoundingClientRect().height) : 52;
+              const headerH = colHeaderEl ? Math.ceil(colHeaderEl.getBoundingClientRect().height) : 35;
+              const daygridBody = containerElement.querySelector('.fc-daygrid-body');
+              if (!daygridBody) return;
+              const rows = Array.from(daygridBody.querySelectorAll('tbody > tr.fc-daygrid-row'));
+              if (rows.length === 0) return;
+              const rowsAvail = Math.max(totalH - toolbarH - headerH - 4, 200);
+              const rowH = Math.floor(rowsAvail / rows.length);
+              rows.forEach(row => {
+                row.style.setProperty('height', rowH + 'px', 'important');
+                Array.from(row.querySelectorAll('td.fc-daygrid-day')).forEach(td => {
+                  td.style.setProperty('height', rowH + 'px', 'important');
+                });
+                Array.from(row.querySelectorAll('.fc-daygrid-day-frame')).forEach(frame => {
+                  frame.style.setProperty('height', rowH + 'px', 'important');
+                  frame.style.setProperty('overflow', 'hidden', 'important');
+                });
+              });
+            } catch(_) {}
+          }
+          setTimeout(equalizeRows, 30);
+          setTimeout(equalizeRows, 260);
         } catch(_) {}
       }
 
@@ -1230,14 +1255,16 @@ const CalendarEngine = {
             }
           } catch(_) {}
 
-          // Dynamic height: 'auto' for month/week so all rows show naturally (page scrolls);
-          // pixel height for timeGridDay only so FC internal scroll works in day view
+          // Dynamic height: viewport-based for month, auto for week, pixel for day
           try {
             const vForH = arg && arg.view && arg.view.type ? arg.view.type : '';
             if (vForH === 'timeGridDay') {
               containerElement.style.height = `${calcHeight}px`;
               containerElement.style.overflow = 'hidden';
               try { if (calendar && typeof calendar.setOption === 'function') calendar.setOption('height', calcHeight); } catch(_){}
+            } else if (vForH === 'dayGridMonth') {
+              // Month view: let _applyMonthViewHeight control the height (prevents overwrite to auto)
+              _applyMonthViewHeight();
             } else {
               containerElement.style.height = 'auto';
               containerElement.style.overflow = 'hidden'; // clips cell borders at rounded corners
@@ -1839,7 +1866,13 @@ const CalendarEngine = {
               const scrollBodies = containerElement.querySelectorAll('.fc-scrollgrid-section-body');
 
               if (!isTimegrid) {
-                // Month / list / week views: clear any stale pixel heights and let FC size naturally
+              if (!isTimegrid) {
+                if (currentViewType === 'dayGridMonth') {
+                  // Month view: delegate to viewport-based height with row equalization
+                  _applyMonthViewHeight();
+                  return;
+                }
+                // Week / list views: clear any stale pixel heights and let FC size naturally
                 if (fcRoot) { fcRoot.style.height = ''; fcRoot.style.minHeight = ''; fcRoot.style.overflow = ''; }
                 if (viewHarness) { viewHarness.style.height = ''; viewHarness.style.minHeight = ''; }
                 try { if (calendar && typeof calendar.setOption === 'function') { calendar.setOption('height', 'auto'); calendar.setOption('contentHeight', 'auto'); } } catch (_) {}
