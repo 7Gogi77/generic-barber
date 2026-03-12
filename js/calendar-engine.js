@@ -589,14 +589,20 @@ const CalendarEngine = {
           if (rows.length === 0) return;
           const toolbar   = containerElement.querySelector('.fc-header-toolbar');
           const colHeader = containerElement.querySelector('.fc-col-header');
-          // Compute available height from the viewport rather than offsetHeight.
-          // offsetHeight can return a stale FC-auto value before the CSS calc(100dvh-32px)
-          // rule has settled, causing rows to be sized for a larger container than what
-          // the CSS will ultimately clip to — hiding the last row.
           const rect      = containerElement.getBoundingClientRect();
           const topInset  = (rect && rect.top >= 0) ? rect.top : 16;
           const botPad    = 16; // .content-area padding-bottom
-          const containerH = Math.max(200, Math.floor(window.innerHeight - topInset - botPad));
+          const targetH   = Math.max(200, Math.floor(window.innerHeight - topInset - botPad));
+          // Drive the container height through a CSS custom property on <html>.
+          // JS can't reliably set inline !important on the container (FC or other scripts may
+          // clear it), and CSS dvh/vh units can diverge from window.innerHeight in environments
+          // with DevTools, OS display scaling, or browser chrome. The CSS variable is set on
+          // documentElement which nothing touches, and our !important rule at specificity (1,1,0)
+          // beats calendar.css's height:auto!important at (1,0,0).
+          document.documentElement.style.setProperty('--cal-h', targetH + 'px');
+          // Reading offsetHeight forces a synchronous browser reflow so we measure the
+          // actual committed height (should now equal targetH from the CSS rule).
+          const containerH = containerElement.offsetHeight || targetH;
           const toolbarH   = toolbar    ? toolbar.offsetHeight    : 52;
           const headerH    = colHeader  ? colHeader.offsetHeight  : 35;
           if (containerH < 100 || toolbarH < 1) return;
@@ -673,13 +679,13 @@ const CalendarEngine = {
       function _applyMonthViewHeight() {
         try {
           if (!calendar || !calendar.view || calendar.view.type !== 'dayGridMonth') return;
-          // The container height is owned by the parent layout (flex/grid). Any inline height
-          // we set is overridden by the parent's stretch behaviour, so we stop fighting it.
-          // We only enforce overflow:hidden so the FC content is clipped at the container edge.
-          _monthViewTargetH = 0;
-          containerElement.style.removeProperty('height');
-          containerElement.style.removeProperty('max-height');
-          containerElement.style.setProperty('overflow', 'hidden', 'important');
+          const rect     = containerElement.getBoundingClientRect();
+          const topInset = (rect && rect.top >= 0) ? rect.top : 16;
+          const botPad   = 16;
+          const targetH  = Math.max(200, Math.floor(window.innerHeight - topInset - botPad));
+          _monthViewTargetH = targetH;
+          // Prime --cal-h early so the container shrinks before the equalize timeouts fire.
+          document.documentElement.style.setProperty('--cal-h', targetH + 'px');
           // Remove any old injected style tag left from a previous version
           const oldStyle = document.getElementById('_calMonthHeightStyle');
           if (oldStyle) oldStyle.remove();

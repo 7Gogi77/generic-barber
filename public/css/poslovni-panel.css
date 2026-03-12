@@ -383,13 +383,15 @@
         /* View-scoped positioning - TimeGrid requires relative to contain absolutely positioned children */
         #scheduleCalendar.view-timegrid-week .fc-scroller-harness, #scheduleCalendar.view-timegrid-day .fc-scroller-harness { position: relative !important; }
 
-        /* iOS-Style Column Headers */
-        /* In month view, size the container to fill the viewport exactly.
-           Specificity (1,1,0) beats calendar.css's #scheduleCalendar{height:auto!important} (1,0,0).
-           100dvh - 32px = viewport height minus .content-area top+bottom padding (16px each). */
+        /* In month view, pin the container height to the true visible viewport.
+           --cal-h is set by JS from window.innerHeight (the only reliable source).
+           Specificity (1,1,0) beats calendar.css #scheduleCalendar rules at (1,0,0),
+           so both height:auto!important and overflow-y:visible!important are overridden. */
         #scheduleCalendar.view-daygrid {
-            height: calc(100dvh - 32px) !important;
-            max-height: calc(100dvh - 32px) !important;
+            height: var(--cal-h, calc(100dvh - 32px)) !important;
+            max-height: var(--cal-h, calc(100dvh - 32px)) !important;
+            overflow: hidden !important;
+            overflow-y: hidden !important;
         }
 
         #scheduleCalendar.view-daygrid .fc .fc-col-header-cell {
