@@ -138,7 +138,6 @@ async function displayAppointmentDetails(event) {
         <div class="detail-row"><span class="detail-label"><i class="bi bi-calendar"></i> Datum:</span><span class="detail-value">${dateStr}</span></div>
         <div class="detail-row"><span class="detail-label"><i class="bi bi-clock"></i> Ura:</span><span class="detail-value">${timeStr}</span></div>
         <div class="detail-row"><span class="detail-label"><i class="bi bi-briefcase"></i> Storitve:</span><span class="detail-value">${services || '-'}</span></div>
-        ${event.extendedProps.workerName ? `<div class="detail-row"><span class="detail-label"><i class="bi bi-person-badge-fill"></i> Zaposleni:</span><span class="detail-value">${event.extendedProps.workerName}</span></div>` : ''}
         <div class="detail-row"><span class="detail-label"><i class="bi bi-cash-coin"></i> Cena:</span><span class="detail-value">${price}</span></div>
         <div class="detail-row"><span class="detail-label"><i class="bi bi-envelope"></i> Email:</span><span class="detail-value" style="font-size:12px">${event.extendedProps.email || '-'}</span></div>
         <div class="detail-row"><span class="detail-label"><i class="bi bi-telephone"></i> Telefon:</span><span class="detail-value">${event.extendedProps.phone || '-'}</span></div>
@@ -331,8 +330,15 @@ async function confirmReschedule() {
 
         const dateLabel = selectedDate.toLocaleDateString('sl-SI');
         const biz = window.SITE_CONFIG?.businessName || 'naši storitvi';
-        await trySend(currentAppointment.extendedProps.phone,
-            `Termin pri ${biz} je bil spremenjen na: ${dateLabel} ob ${selectedTime}. Hvala!`);
+        // Use custom reschedule SMS template if set in admin settings
+        const _smsT = (() => { try { return JSON.parse(localStorage.getItem('bookingSettings') || '{}').smsTemplates || {}; } catch(_) { return {}; } })();
+        const _reschedTpl = _smsT.rescheduleMessage || 'Termin pri {posel} je bil spremenjen na: {datum} ob {cas}. Hvala!';
+        const _reschedMsg = _reschedTpl
+            .replace(/\{ime\}/g, currentAppointment.extendedProps.customer || '')
+            .replace(/\{posel\}/g, biz)
+            .replace(/\{datum\}/g, dateLabel)
+            .replace(/\{cas\}/g, selectedTime);
+        await trySend(currentAppointment.extendedProps.phone, _reschedMsg);
         await trySend(window.SITE_CONFIG?.ownerPhone,
             `Termin je bil spremenjen. Stranka: ${currentAppointment.extendedProps.customer}, Nov termin: ${dateLabel} ob ${selectedTime}`);
 
@@ -359,7 +365,15 @@ async function cancelAppointment() {
         try { localStorage.setItem('schedule', JSON.stringify(data)); } catch {}
 
         const biz = window.SITE_CONFIG?.businessName || 'naši storitvi';
-        await trySend(ep.phone, `Vaš termin pri ${biz} je bil odpovedan. Kontaktirajte nas za novo rezervacijo.`);
+        // Use custom cancel SMS template if set in admin settings
+        const _smsTc = (() => { try { return JSON.parse(localStorage.getItem('bookingSettings') || '{}').smsTemplates || {}; } catch(_) { return {}; } })();
+        const _cancelTpl = _smsTc.cancelMessage || 'Vaš termin pri {posel} je bil odpovedan. Kontaktirajte nas za novo rezervacijo.';
+        const _cancelMsg = _cancelTpl
+            .replace(/\{ime\}/g, ep.customer || '')
+            .replace(/\{posel\}/g, biz)
+            .replace(/\{datum\}/g, '')
+            .replace(/\{cas\}/g, '');
+        await trySend(ep.phone, _cancelMsg);
         await trySend(window.SITE_CONFIG?.ownerPhone,
             `Termin je bil odpovedan. Stranka: ${ep.customer}, Email: ${ep.email}, Tel: ${ep.phone}`);
 

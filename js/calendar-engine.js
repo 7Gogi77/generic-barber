@@ -521,8 +521,6 @@ const CalendarEngine = {
       containerElement.style.overflow = 'auto';
 
       // ── Merge saved booking settings from localStorage into SITE_CONFIG ──
-      // poslovni-panel saves to localStorage; we need to apply those settings
-      // before computing slotMinTime/slotMaxTime and businessHours below.
       try {
         const _savedBS = JSON.parse(localStorage.getItem('bookingSettings') || 'null');
         if (_savedBS && window.SITE_CONFIG && window.SITE_CONFIG.booking) {
@@ -535,7 +533,6 @@ const CalendarEngine = {
               const _endH   = Math.max(..._enabledKeys.map(k => parseInt((_days[k].end   || '19:00').split(':')[0], 10)));
               window.SITE_CONFIG.booking.businessHours = { start: _startH, end: _endH };
             }
-            // Store per-day map for use in the businessHours FC option below
             window.SITE_CONFIG.booking._workingHoursByDay = _days;
           }
           if (_savedBS.allowMultiDayAppointments !== undefined)
@@ -597,11 +594,36 @@ const CalendarEngine = {
         locale: 'sl',
         firstDay: 1,
         nowIndicator: true,
-        dayMaxEvents: _isMobile ? 1 : 2, // On mobile show max 1 event per cell; rest shown as +X more
-        dayMaxEventRows: 2, // Limit rows to prevent overlap
+        fixedWeekCount: false, // Only show rows for actual weeks in the month — prevents empty rows
+        dayMaxEvents: _isMobile ? 1 : 3, // On mobile show max 1 event per cell; rest shown as +X more
+        dayMaxEventRows: false, // Let FullCalendar limit via dayMaxEvents instead
+        // Show abbreviated month name on first cell of each month (e.g. "1 Mar")
+        dayCellContent: function(arg) {
+          const d = arg.date;
+          const dayNum = d.getDate();
+          // Show month abbreviation only on the 1st of the month
+          if (dayNum === 1) {
+            const monthNames = ['Jan','Feb','Mar','Apr','Maj','Jun','Jul','Avg','Sep','Okt','Nov','Dec'];
+            return { html: `<div class="fc-daygrid-day-number" style="font-weight:700;">${dayNum} <span style="font-size:0.85em;opacity:0.75;">${monthNames[d.getMonth()]}</span></div>` };
+          }
+          return { html: `<div class="fc-daygrid-day-number">${dayNum}</div>` };
+        },
         moreLinkClick: function(info) {
           window._moreLinkJustClicked = true;
           setTimeout(() => { window._moreLinkJustClicked = false; }, 100);
+          // Reposition popover after it renders so it stays inside the viewport
+          setTimeout(() => {
+            const popover = document.querySelector('.fc-popover');
+            if (!popover) return;
+            const rect = popover.getBoundingClientRect();
+            const vh = window.innerHeight || document.documentElement.clientHeight;
+            if (rect.bottom > vh - 10) {
+              // Popover overflows at the bottom — flip it upward
+              const overflow = rect.bottom - (vh - 10);
+              const currentTop = parseInt(popover.style.top || '0', 10) || rect.top;
+              popover.style.top = Math.max(10, currentTop - overflow - 10) + 'px';
+            }
+          }, 30);
           return 'popover'; // Show popover when clicking more-link
         },
         // Prioritize multi-day events first, then by start time

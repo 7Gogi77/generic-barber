@@ -1030,7 +1030,8 @@
                 name,
                 email,
                 phone,
-                notes: document.getElementById('customerNotes').value.trim()
+                notes: document.getElementById('customerNotes').value.trim(),
+                coupon: (document.getElementById('customerCoupon')?.value || '').trim().toUpperCase() || null
             };
             
             return true;
@@ -1107,6 +1108,17 @@
             document.getElementById('summaryCustomer').textContent = BookingState.customerInfo.name || '-';
             document.getElementById('summaryContact').textContent = 
                 `${BookingState.customerInfo.email}\n${BookingState.customerInfo.phone}`;
+            // Coupon code row
+            const _couponRow = document.getElementById('summaryCouponRow');
+            const _couponEl  = document.getElementById('summaryCoupon');
+            if (_couponRow && _couponEl) {
+                if (BookingState.customerInfo.coupon) {
+                    _couponEl.textContent = BookingState.customerInfo.coupon;
+                    _couponRow.style.display = '';
+                } else {
+                    _couponRow.style.display = 'none';
+                }
+            }
             
             // Total
             const currency = window.SITE_CONFIG?.currency || '€';
@@ -1179,6 +1191,10 @@
                 // Only add notes if not empty
                 if (BookingState.customerInfo.notes && BookingState.customerInfo.notes.trim()) {
                     appointment.extendedProps.notes = BookingState.customerInfo.notes.trim();
+                }
+                // Only add coupon if provided
+                if (BookingState.customerInfo.coupon) {
+                    appointment.extendedProps.coupon = BookingState.customerInfo.coupon;
                 }
                 
                 // Add worker assignment if not "any preference"

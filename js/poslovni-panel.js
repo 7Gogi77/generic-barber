@@ -868,7 +868,9 @@
                     confirmationEnabled: true,
                     confirmationMessage: 'Hvala za vaše naročilo na termin pri {posel}! Upravljanje: {link}',
                     reminderEnabled: false,
-                    reminderMessage: '{ime}, jutri ob {cas} imate termin pri {posel}. Se vidimo!'
+                    reminderMessage: '{ime}, jutri ob {cas} imate termin pri {posel}. Se vidimo!',
+                    cancelMessage: 'Vaš termin pri {posel} je bil odpovedan. Kontaktirajte nas za novo rezervacijo.',
+                    rescheduleMessage: 'Termin pri {posel} je bil spremenjen na: {datum} ob {cas}. Hvala!'
                 }
             };
             let raw = {};
@@ -1014,6 +1016,20 @@
                 const smsRemCnt = document.getElementById('smsReminderCharCount');
                 if (smsRemCnt) smsRemCnt.textContent = smsRemEl.value.length;
                 smsRemEl.oninput = () => { if (smsRemCnt) smsRemCnt.textContent = smsRemEl.value.length; };
+            }
+            const smsCancelEl = document.getElementById('smsCancelTemplate');
+            if (smsCancelEl) {
+                smsCancelEl.value = smsT.cancelMessage || 'Vaš termin pri {posel} je bil odpovedan. Kontaktirajte nas za novo rezervacijo.';
+                const smsCancelCnt = document.getElementById('smsCancelCharCount');
+                if (smsCancelCnt) smsCancelCnt.textContent = smsCancelEl.value.length;
+                smsCancelEl.oninput = () => { if (smsCancelCnt) smsCancelCnt.textContent = smsCancelEl.value.length; };
+            }
+            const smsReschedEl = document.getElementById('smsRescheduleTemplate');
+            if (smsReschedEl) {
+                smsReschedEl.value = smsT.rescheduleMessage || 'Termin pri {posel} je bil spremenjen na: {datum} ob {cas}. Hvala!';
+                const smsReschedCnt = document.getElementById('smsRescheduleCharCount');
+                if (smsReschedCnt) smsReschedCnt.textContent = smsReschedEl.value.length;
+                smsReschedEl.oninput = () => { if (smsReschedCnt) smsReschedCnt.textContent = smsReschedEl.value.length; };
             }
         }
 
@@ -1428,7 +1444,9 @@
                 confirmationEnabled: getC('smsConfirmEnabled'),
                 confirmationMessage: (document.getElementById('smsConfirmTemplate')?.value || '').trim() || 'Hvala za vaše naročilo na termin pri {posel}! Upravljanje: {link}',
                 reminderEnabled: getC('smsReminderEnabled'),
-                reminderMessage: (document.getElementById('smsReminderTemplate')?.value || '').trim() || '{ime}, jutri ob {cas} imate termin pri {posel}. Se vidimo!'
+                reminderMessage: (document.getElementById('smsReminderTemplate')?.value || '').trim() || '{ime}, jutri ob {cas} imate termin pri {posel}. Se vidimo!',
+                cancelMessage: (document.getElementById('smsCancelTemplate')?.value || '').trim() || 'Vaš termin pri {posel} je bil odpovedan. Kontaktirajte nas za novo rezervacijo.',
+                rescheduleMessage: (document.getElementById('smsRescheduleTemplate')?.value || '').trim() || 'Termin pri {posel} je bil spremenjen na: {datum} ob {cas}. Hvala!'
             };
 
             // ── Persist ───────────────────────────────────────────
@@ -1500,6 +1518,7 @@
                     document.querySelectorAll('.bsp-tab').forEach(t => t.classList.toggle('active', t === tab));
                     document.querySelectorAll('.bsp-tab-panel').forEach(p => p.classList.toggle('active', p.id === 'bspPanel-' + key));
                     if (key === 'workers' && typeof loadWorkers === 'function') loadWorkers();
+                    if (key === 'workers' && typeof bspRenderTeam === 'function') bspRenderTeam();
                 }
             });
             // Toggle visibility of dependent sections via event delegation
@@ -2403,6 +2422,10 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
 
         // Modal functions
         function openAddEventModal(startDate = null, endDate = null) {
+            // Worker permission check  block entirely if worker lacks canAddBreaks
+            const _bspWrkSess = window.bspGetSession ? window.bspGetSession() : null;
+            if (_bspWrkSess && _bspWrkSess.role === 'worker' && !(_bspWrkSess.permissions || {}).canAddBreaks) return;
+
             const form = document.getElementById('addEventForm');
             if (form) form.reset();
             // Always restore default times after reset (form.reset() sets time inputs to '00:00')
@@ -2523,6 +2546,17 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
             document.getElementById('bookingPrice').textContent = `${booking.price || 0}€`;
             const notesText = (booking.notes || booking.note || '').toString().trim();
             document.getElementById('bookingNotes').textContent = notesText ? notesText : '—';
+            // Show coupon code if present
+            const _couponRowEl = document.getElementById('bookingCouponRow');
+            const _couponTextEl = document.getElementById('bookingCoupon');
+            if (_couponRowEl && _couponTextEl) {
+                if (booking.coupon) {
+                    _couponTextEl.textContent = booking.coupon;
+                    _couponRowEl.style.display = '';
+                } else {
+                    _couponRowEl.style.display = 'none';
+                }
+            }
             
             const modal = document.getElementById('bookingDetailsModal');
             // attach delete handler
@@ -2558,6 +2592,14 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                 };
             }
             modal.classList.add('show');
+
+            // Enforce worker permissions on modal action buttons
+            const _bspWrkSess2 = window.bspGetSession ? window.bspGetSession() : null;
+            if (_bspWrkSess2 && _bspWrkSess2.role === 'worker') {
+                const _wp = _bspWrkSess2.permissions || {};
+                if (deleteBtn) deleteBtn.style.display = _wp.canDelete ? '' : 'none';
+                if (editBtn) editBtn.style.display = _wp.canMove ? '' : 'none';
+            }
         }
 
         function closeBookingDetailsModal() {
@@ -4169,8 +4211,10 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
         // ====================================================================
 
         // ===== WORKER ACCESS CONTROL =============================================
-        // Applied after init if the session is a worker account.
-        // Called from initializeBusinessCalendar() after calendar ready.
+        // Applied after calendar init when the session is a worker account.
+        // Called from initializeBusinessCalendar() after calendar is ready.
+        // NOTE: openAddEventModal and openBookingDetailsModal enforce permissions
+        // directly inside themselves (reliable for local/direct callsites).
         window._bspApplyWorkerAccess = function() {
             var sess = window.bspGetSession ? window.bspGetSession() : null;
             if (!sess || sess.role !== 'worker') return;
@@ -4192,6 +4236,7 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                             ev.setProp('display', 'none');
                         }
                     }
+                    // Worker-type events (breaks, hours) — show only their own
                     if (!isBooking) {
                         var evW = ep.worker || (ev.title || '');
                         if (workerName && evW !== workerName && evW !== workerId) {
@@ -4201,64 +4246,28 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                 });
             }
 
-            // ── 2. Hide / lock sidebar pages workers shouldn't see ──────────
+            // ── 2. Hide sidebar pages workers shouldn't access ──────────────
             var restrictedPages = ['analytics', 'booking-settings', 'settings'];
             restrictedPages.forEach(function(page) {
                 var btn = document.querySelector('.nav-icon[data-page="' + page + '"]');
-                if (btn) {
+                if (btn && btn.closest('.nav-item')) {
                     btn.closest('.nav-item').style.display = 'none';
                 }
             });
 
-            // ── 3. Booking details modal — enforce permissions ───────────
-            var origOpen = window.openBookingDetailsModal;
-            if (typeof origOpen === 'function') {
-                window.openBookingDetailsModal = function(event) {
-                    origOpen(event);
-                    setTimeout(function() {
-                        var deleteBtn = document.getElementById('bookingDeleteBtn');
-                        var editBtn   = document.getElementById('bookingEditBtn');
-                        if (deleteBtn) deleteBtn.style.display = perms.canDelete ? '' : 'none';
-                        if (editBtn)   editBtn.style.display   = perms.canMove   ? '' : 'none';
-                    }, 0);
-                };
-            }
-
-            // ── 4. Disable drag/drop if canMove=false ──────────────────
+            // ── 3. Disable drag/drop if canMove=false ───────────────────────
             if (window.calendar && !perms.canMove) {
                 window.calendar.setOption('editable', false);
                 window.calendar.setOption('eventDurationEditable', false);
             }
 
-            // ── 5. Disable add event modal "Worker" tab if canAddBreaks=false ─
+            // ── 4. Hide mobile FAB if worker cannot add events ──────────────
             if (!perms.canAddBreaks) {
-                var origModal = window.openAddEventModal;
-                if (typeof origModal === 'function') {
-                    window.openAddEventModal = function(startDate, endDate, retry, tab, startTime, endTime) {
-                        origModal(startDate, endDate, retry, 'customer', startTime, endTime);
-                        setTimeout(function() {
-                            var tabBtn = document.getElementById('tabWorker');
-                            if (tabBtn) tabBtn.style.display = 'none';
-                        }, 50);
-                    };
-                }
+                var fab = document.getElementById('mobileFab');
+                if (fab) fab.style.display = 'none';
             }
 
-            // ── 6. Hide invoice button if canInvoice=false ──────────────
-            if (!perms.canInvoice) {
-                var origOpen2 = window.openBookingDetailsModal;
-                if (typeof origOpen2 === 'function') {
-                    window.openBookingDetailsModal = function(event) {
-                        origOpen2(event);
-                        setTimeout(function() {
-                            var invBtn = document.getElementById('bookingInvoiceBtn');
-                            if (invBtn) invBtn.style.display = 'none';
-                        }, 0);
-                    };
-                }
-            }
-
-            // ── 7. Show worker identity badge in panel ─────────────────
+            // ── 5. Show worker identity badge in sidebar ────────────────────
             var sidebar = document.getElementById('sidebar');
             if (sidebar && workerName) {
                 var badge = document.createElement('div');

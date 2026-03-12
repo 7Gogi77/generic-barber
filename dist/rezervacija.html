@@ -186,6 +186,10 @@
                         <label class="form-label" id="labelNotes">Opombe (neobvezno)</label>
                         <textarea class="form-input" id="customerNotes" placeholder="Posebne želje ali opombe..."></textarea>
                     </div>
+                    <div class="form-group">
+                        <label class="form-label" id="labelCoupon">Kupon koda (neobvezno)</label>
+                        <input type="text" class="form-input" id="customerCoupon" placeholder="Vnesite kupon kodo..." autocomplete="off" style="text-transform:uppercase;">
+                    </div>
                 </div>
             </div>
             <div class="btn-group">
@@ -230,6 +234,10 @@
                         <div class="summary-row">
                             <span class="summary-label">Kontakt</span>
                             <span class="summary-value" id="summaryContact">-</span>
+                        </div>
+                        <div class="summary-row" id="summaryCouponRow" style="display:none;">
+                            <span class="summary-label">Kupon koda</span>
+                            <span class="summary-value" id="summaryCoupon">-</span>
                         </div>
                         <div class="summary-total">
                             <span class="summary-label">Skupaj</span>

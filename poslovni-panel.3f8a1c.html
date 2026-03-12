@@ -148,6 +148,9 @@
 
         window.bspLogout = function() {
             clearSession();
+            sessionStorage.removeItem('admin_token');
+            sessionStorage.removeItem('admin_authenticated');
+            sessionStorage.removeItem('admin_session_time');
             location.reload();
         };
 
@@ -374,8 +377,7 @@
                 <button class="bsp-tab" data-tab="pricing"><i class="bi bi-currency-euro"></i> Cenovanje</button>
                 <button class="bsp-tab" data-tab="smart"><i class="bi bi-stars"></i> Pametne funkcije</button>
                 <button class="bsp-tab" data-tab="services"><i class="bi bi-bag"></i> Storitve</button>
-                <button class="bsp-tab" data-tab="team"><i class="bi bi-people-fill"></i> Ekipa</button>
-                <button class="bsp-tab" data-tab="workers"><i class="bi bi-person-badge"></i> Zaposleni</button>
+                <button class="bsp-tab" data-tab="workers"><i class="bi bi-people-fill"></i> Ekipa &amp; Zaposleni</button>
                 <button class="bsp-tab" data-tab="sms"><i class="bi bi-chat-dots"></i> SMS</button>
             </div>
 
@@ -697,20 +699,18 @@
                     </div>
                 </div>
 
-                <!-- ══════════ TAB 8: EKIPA ══════════ -->
-                <div class="bsp-tab-panel" id="bspPanel-team">
+                <!-- ══════════ TAB: EKIPA & ZAPOSLENI ══════════ -->
+                <div class="bsp-tab-panel" id="bspPanel-workers">
+
+                    <!-- Team profiles (shown on website) -->
                     <div class="bsp-card">
                         <div class="bsp-card-header">
                             <div class="bsp-card-icon" style="background:#af52de20;"><i class="bi bi-people-fill" style="color:#af52de;font-size:15px;"></i></div>
-                            <div><div class="bsp-card-title">Ekipa in Profili</div></div>
+                            <div><div class="bsp-card-title">Ekipa in Profili</div><div class="bsp-card-subtitle" style="font-size:11px;color:#8e8e93;">Profili prikazani na spletni strani</div></div>
                         </div>
                         <div id="bspTeamList"></div>
                         <button class="bsp-add-btn" onclick="bspAddTeamMember()"><i class="bi bi-person-plus"></i> Dodaj člana</button>
                     </div>
-                </div>
-
-                <!-- ══════════ TAB: ZAPOSLENI ══════════ -->
-                <div class="bsp-tab-panel" id="bspPanel-workers">
                     <div class="bsp-card">
                         <div class="bsp-card-header">
                             <div class="bsp-card-icon" style="background:#007aff20;"><i class="bi bi-person-badge" style="color:#007aff;font-size:15px;"></i></div>
@@ -771,6 +771,32 @@
                             <div class="bsp-row-hint" style="margin-bottom:4px;">Spremenljivke: <b>{ime}</b> ime stranke &nbsp;·&nbsp; <b>{posel}</b> naziv podjetja &nbsp;·&nbsp; <b>{datum}</b> datum &nbsp;·&nbsp; <b>{cas}</b> ura &nbsp;·&nbsp; <b>{link}</b> link za upravljanje</div>
                             <textarea id="smsConfirmTemplate" class="bsp-input" style="width:100%;min-height:80px;font-size:13px;padding:8px;resize:vertical;box-sizing:border-box;"></textarea>
                             <div style="font-size:12px;color:#8e8e93;">Znakov: <span id="smsConfirmCharCount">0</span></div>
+                        </div>
+                    </div>
+
+                    <div class="bsp-card">
+                        <div class="bsp-card-header">
+                            <div class="bsp-card-icon" style="background:#ff3b3020;"><i class="bi bi-calendar-x" style="color:#ff3b30;font-size:15px;"></i></div>
+                            <div><div class="bsp-card-title">SMS ob odpovedi termina</div></div>
+                        </div>
+                        <div class="bsp-row" style="align-items:flex-start;flex-direction:column;gap:6px;padding-top:10px;">
+                            <div class="bsp-row-label">Besedilo SMS stranki ob odpovedi</div>
+                            <div class="bsp-row-hint" style="margin-bottom:4px;">Spremenljivke: <b>{ime}</b> &nbsp;·&nbsp; <b>{posel}</b> &nbsp;·&nbsp; <b>{datum}</b> &nbsp;·&nbsp; <b>{cas}</b></div>
+                            <textarea id="smsCancelTemplate" class="bsp-input" style="width:100%;min-height:80px;font-size:13px;padding:8px;resize:vertical;box-sizing:border-box;"></textarea>
+                            <div style="font-size:12px;color:#8e8e93;">Znakov: <span id="smsCancelCharCount">0</span></div>
+                        </div>
+                    </div>
+
+                    <div class="bsp-card">
+                        <div class="bsp-card-header">
+                            <div class="bsp-card-icon" style="background:#007aff20;"><i class="bi bi-calendar-check" style="color:#007aff;font-size:15px;"></i></div>
+                            <div><div class="bsp-card-title">SMS ob spremembi termina</div></div>
+                        </div>
+                        <div class="bsp-row" style="align-items:flex-start;flex-direction:column;gap:6px;padding-top:10px;">
+                            <div class="bsp-row-label">Besedilo SMS stranki ob spremembi termina</div>
+                            <div class="bsp-row-hint" style="margin-bottom:4px;">Spremenljivke: <b>{ime}</b> &nbsp;·&nbsp; <b>{posel}</b> &nbsp;·&nbsp; <b>{datum}</b> &nbsp;·&nbsp; <b>{cas}</b></div>
+                            <textarea id="smsRescheduleTemplate" class="bsp-input" style="width:100%;min-height:80px;font-size:13px;padding:8px;resize:vertical;box-sizing:border-box;"></textarea>
+                            <div style="font-size:12px;color:#8e8e93;">Znakov: <span id="smsRescheduleCharCount">0</span></div>
                         </div>
                     </div>
 
@@ -977,6 +1003,10 @@
                 <div style="margin-bottom: 15px;">
                     <strong>Opombe:</strong>
                     <p id="bookingNotes" style="margin: 5px 0; white-space: pre-wrap;">-</p>
+                </div>
+                <div id="bookingCouponRow" style="margin-bottom: 15px; display:none;">
+                    <strong>Kupon koda:</strong>
+                    <p id="bookingCoupon" style="margin: 5px 0; font-family: monospace; font-size: 14px; color: #27ae60;">-</p>
                 </div>
                 <div style="margin-top: 20px; display:flex; gap:10px;">
                     <button type="button" id="bookingEditBtn" class="btn btn-primary" style="flex:1;">Uredi</button>
