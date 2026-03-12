@@ -642,6 +642,8 @@ const CalendarEngine = {
           const totalH = Math.max(340, Math.floor(vh - topOffset - bottomPad));
           _monthViewTargetH = totalH;
           // Inject/update a <style> tag — this always wins over any !important in static CSS.
+          // We do NOT call setOption('height', px) here because that triggers a FullCalendar
+          // internal re-render which resets all row heights, creating a fight with equalizeRows.
           let styleEl = document.getElementById('_calMonthHeightStyle');
           if (!styleEl) {
             styleEl = document.createElement('style');
@@ -651,14 +653,9 @@ const CalendarEngine = {
           styleEl.textContent =
             `#scheduleCalendar.view-daygrid{height:${totalH}px!important;` +
             `max-height:${totalH}px!important;overflow:hidden!important;}`;
-          if (calendar && typeof calendar.setOption === 'function') {
-            calendar.setOption('height', totalH);
-          }
-          // Equalize rows — staggered delays so the toolbar has time to finish rendering
-          // before we measure it (first render can show toolbar taller due to button wrapping).
-          setTimeout(_equalizeMonthRows, 150);
-          setTimeout(_equalizeMonthRows, 500);
-          setTimeout(_equalizeMonthRows, 1200);
+          // Equalize rows — two passes: one quick, one after toolbar has settled
+          setTimeout(_equalizeMonthRows, 80);
+          setTimeout(_equalizeMonthRows, 600);
         } catch(_) {}
       }
 
@@ -1825,6 +1822,27 @@ const CalendarEngine = {
         const renderResult = calendar.render();
         // Expose calendar globally for debug helpers
         try { window.calendar = calendar; } catch (err) { /* ignore */ }
+
+        // Watch the toolbar for height changes (buttons wrap on first render, then unwrap).
+        // Re-equalize rows the moment the toolbar settles to its final height.
+        try {
+          if (typeof ResizeObserver !== 'undefined') {
+            const _toolbar = containerElement.querySelector('.fc-header-toolbar');
+            if (_toolbar) {
+              let _lastToolbarH = 0;
+              const _toolbarRO = new ResizeObserver(() => {
+                const h = _toolbar.offsetHeight;
+                if (h !== _lastToolbarH && h > 0) {
+                  _lastToolbarH = h;
+                  if (calendar && calendar.view && calendar.view.type === 'dayGridMonth') {
+                    _scheduleEqualize();
+                  }
+                }
+              });
+              _toolbarRO.observe(_toolbar);
+            }
+          }
+        } catch(_) {}
 
         // Diagnostic helpers: inspect computed styles for rendered events (call from console)
         try {
