@@ -589,7 +589,10 @@ const CalendarEngine = {
           if (rows.length === 0) return;
           const toolbar   = containerElement.querySelector('.fc-header-toolbar');
           const colHeader = containerElement.querySelector('.fc-col-header');
-          const containerH = _monthViewTargetH || containerElement.offsetHeight;
+          // Always use the live rendered height — the parent layout (flex/grid) controls
+          // the container size and overrides any inline height we try to set. Measuring the
+          // actual offsetHeight after layout gives us the true available space to fill.
+          const containerH = containerElement.offsetHeight;
           const toolbarH   = toolbar    ? toolbar.offsetHeight    : 52;
           const headerH    = colHeader  ? colHeader.offsetHeight  : 35;
           if (containerH < 100 || toolbarH < 1) return;
@@ -658,19 +661,13 @@ const CalendarEngine = {
       function _applyMonthViewHeight() {
         try {
           if (!calendar || !calendar.view || calendar.view.type !== 'dayGridMonth') return;
-          const vh = window.innerHeight || document.documentElement.clientHeight;
-          const rect = containerElement.getBoundingClientRect();
-          const topOffset = (rect && rect.top > 20) ? rect.top : vh * 0.18;
-          const bottomPad = 24;
-          const totalH = Math.max(340, Math.floor(vh - topOffset - bottomPad));
-          _monthViewTargetH = totalH;
-          // Inline style with 'important' priority — this is the absolute highest priority in
-          // the CSS cascade (inline !important beats every stylesheet rule, including !important
-          // rules in external CSS files). We do NOT call setOption('height', px) because that
-          // triggers a FullCalendar internal re-render which resets all row heights.
-          containerElement.style.setProperty('height',     totalH + 'px', 'important');
-          containerElement.style.setProperty('max-height', totalH + 'px', 'important');
-          containerElement.style.setProperty('overflow',   'hidden',       'important');
+          // The container height is owned by the parent layout (flex/grid). Any inline height
+          // we set is overridden by the parent's stretch behaviour, so we stop fighting it.
+          // We only enforce overflow:hidden so the FC content is clipped at the container edge.
+          _monthViewTargetH = 0;
+          containerElement.style.removeProperty('height');
+          containerElement.style.removeProperty('max-height');
+          containerElement.style.setProperty('overflow', 'hidden', 'important');
           // Remove any old injected style tag left from a previous version
           const oldStyle = document.getElementById('_calMonthHeightStyle');
           if (oldStyle) oldStyle.remove();
