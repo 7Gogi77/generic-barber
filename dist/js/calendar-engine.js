@@ -589,10 +589,14 @@ const CalendarEngine = {
           if (rows.length === 0) return;
           const toolbar   = containerElement.querySelector('.fc-header-toolbar');
           const colHeader = containerElement.querySelector('.fc-col-header');
-          // Always use the live rendered height — the parent layout (flex/grid) controls
-          // the container size and overrides any inline height we try to set. Measuring the
-          // actual offsetHeight after layout gives us the true available space to fill.
-          const containerH = containerElement.offsetHeight;
+          // Compute available height from the viewport rather than offsetHeight.
+          // offsetHeight can return a stale FC-auto value before the CSS calc(100dvh-32px)
+          // rule has settled, causing rows to be sized for a larger container than what
+          // the CSS will ultimately clip to — hiding the last row.
+          const rect      = containerElement.getBoundingClientRect();
+          const topInset  = (rect && rect.top >= 0) ? rect.top : 16;
+          const botPad    = 16; // .content-area padding-bottom
+          const containerH = Math.max(200, Math.floor(window.innerHeight - topInset - botPad));
           const toolbarH   = toolbar    ? toolbar.offsetHeight    : 52;
           const headerH    = colHeader  ? colHeader.offsetHeight  : 35;
           if (containerH < 100 || toolbarH < 1) return;
@@ -612,7 +616,6 @@ const CalendarEngine = {
           const bodySelectors = [
             'tr.fc-scrollgrid-section-body',
             'tr.fc-scrollgrid-section-body > td',
-            '.fc-scrollgrid-section-body .fc-scroller',
             '.fc-scrollgrid-section-body .fc-scroller-harness',
             '.fc-daygrid-body',
             '.fc-daygrid-body > table',
@@ -624,6 +627,15 @@ const CalendarEngine = {
               el.style.setProperty('max-height', bodyH + 'px', 'important');
               el.style.setProperty('overflow',   'hidden',     'important');
             });
+          });
+          // The fc-scroller is FC's designated scroll container. Give it overflow-y: auto
+          // so that if rows ever exceed bodyH (e.g. due to a late toolbar wrap), the user
+          // can scroll rather than having the last row silently clipped.
+          containerElement.querySelectorAll('.fc-scrollgrid-section-body .fc-scroller').forEach(el => {
+            el.style.setProperty('height',     bodyH + 'px', 'important');
+            el.style.setProperty('max-height', bodyH + 'px', 'important');
+            el.style.setProperty('overflow-y', 'auto',       'important');
+            el.style.setProperty('overflow-x', 'hidden',     'important');
           });
 
           // 3. Distribute bodyH precisely across all rows.
