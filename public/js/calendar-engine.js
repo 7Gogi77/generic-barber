@@ -582,39 +582,11 @@ const CalendarEngine = {
           const totalH = Math.min(820, Math.max(340, Math.floor(vh * fraction)));
           containerElement.style.height = totalH + 'px';
           containerElement.style.overflow = 'hidden';
+          // setOption('height', pixel) tells FullCalendar to distribute rows equally.
+          // Per-view height:'auto' override has been removed so this value is honoured.
           if (calendar && typeof calendar.setOption === 'function') {
             calendar.setOption('height', totalH);
           }
-          if (calendar && typeof calendar.updateSize === 'function') {
-            calendar.updateSize();
-          }
-          // Force all week rows to identical height so events can't expand any single row
-          function equalizeRows() {
-            try {
-              const toolbar = containerElement.querySelector('.fc-header-toolbar');
-              const colHeaderEl = containerElement.querySelector('.fc-col-header');
-              const toolbarH = toolbar ? Math.ceil(toolbar.getBoundingClientRect().height) : 52;
-              const headerH = colHeaderEl ? Math.ceil(colHeaderEl.getBoundingClientRect().height) : 35;
-              const daygridBody = containerElement.querySelector('.fc-daygrid-body');
-              if (!daygridBody) return;
-              const rows = Array.from(daygridBody.querySelectorAll('tbody > tr.fc-daygrid-row'));
-              if (rows.length === 0) return;
-              const rowsAvail = Math.max(totalH - toolbarH - headerH - 4, 200);
-              const rowH = Math.floor(rowsAvail / rows.length);
-              rows.forEach(row => {
-                row.style.setProperty('height', rowH + 'px', 'important');
-                Array.from(row.querySelectorAll('td.fc-daygrid-day')).forEach(td => {
-                  td.style.setProperty('height', rowH + 'px', 'important');
-                });
-                Array.from(row.querySelectorAll('.fc-daygrid-day-frame')).forEach(frame => {
-                  frame.style.setProperty('height', rowH + 'px', 'important');
-                  frame.style.setProperty('overflow', 'hidden', 'important');
-                });
-              });
-            } catch(_) {}
-          }
-          setTimeout(equalizeRows, 30);
-          setTimeout(equalizeRows, 260);
         } catch(_) {}
       }
 
@@ -725,7 +697,7 @@ const CalendarEngine = {
         // and they continue to span correctly in month view
         allDaySlot: true,
         views: {
-          dayGridMonth: { type: 'dayGridMonth', height: 'auto' }, // auto-size so last row is never clipped
+          dayGridMonth: { type: 'dayGridMonth' }, // height set dynamically by _applyMonthViewHeight
           // On mobile: 1 slot per hour in week view to reduce scrolling
           timeGridWeek: { type: 'timeGrid', contentHeight: 'auto', slotMinTime: weekSlotMin, slotMaxTime: weekSlotMax, slotDuration: _isMobile ? '01:00:00' : '00:15:00' },
           timeGridDay: { type: 'timeGrid', slotMinTime: weekSlotMin, slotMaxTime: weekSlotMax }
@@ -1406,38 +1378,10 @@ const CalendarEngine = {
               if (rows.length > 0) {
                 try {
                   if (isMonthView) {
-                    // MONTH VIEW: apply viewport-based height then let FC distribute rows evenly
+                    // MONTH VIEW: just trigger height application; do NOT clear row heights
+                    // because FullCalendar sets height:1px on rows to equalise them and
+                    // clearing that breaks the native equalization.
                     setTimeout(_applyMonthViewHeight, 50);
-                    daygridBody.style.overflowY = 'visible';
-                    daygridBody.style.webkitOverflowScrolling = 'touch';
-                    rows.forEach((row) => {
-                      row.style.height = '';
-                      row.style.minHeight = '';
-                      row.style.maxHeight = '';
-                      row.style.overflow = 'visible';
-                      row.querySelectorAll('.fc-daygrid-day-cell').forEach(cell => {
-                        cell.style.height = '';
-                        cell.style.minHeight = '';
-                        cell.style.maxHeight = '';
-                        cell.style.overflow = 'visible';
-
-                        // Clear events container sizing overrides
-                        const eventsContainer = cell.querySelector('.fc-daygrid-day-events');
-                        if (eventsContainer) {
-                          eventsContainer.style.height = '';
-                          eventsContainer.style.maxHeight = '';
-                          eventsContainer.style.overflow = '';
-                          eventsContainer.style.display = '';
-                          eventsContainer.style.flexDirection = '';
-                          eventsContainer.style.flex = '';
-                          eventsContainer.style.minHeight = '';
-                          eventsContainer.style.boxSizing = '';
-                        }
-
-                        const moreEl = cell.querySelector('.fc-daygrid-day-more');
-                        if (moreEl) { moreEl.style.marginBottom = ''; moreEl.style.paddingBottom = ''; }
-                      });
-                    });
                   } else {
                     // Other views: clear forced sizing to allow natural heights
                     daygridBody.style.overflowY = 'auto';
