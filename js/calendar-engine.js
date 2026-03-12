@@ -620,11 +620,13 @@ const CalendarEngine = {
           // Fallback to a fraction if the element isn't laid out yet (top === 0).
           const rect = containerElement.getBoundingClientRect();
           const topOffset = (rect && rect.top > 20) ? rect.top : vh * 0.18;
-          const bottomPad = 24; // breathing room at the bottom of the page
+          const bottomPad = 24;
           const totalH = Math.max(340, Math.floor(vh - topOffset - bottomPad));
-          containerElement.style.height = totalH + 'px';
-          containerElement.style.overflow = 'hidden';
+          // CSS has `height: auto !important` on #scheduleCalendar which overrides inline style.
+          // Use a CSS custom property that the .view-daygrid rule picks up instead.
+          containerElement.style.setProperty('--cal-month-h', totalH + 'px');
           if (calendar && typeof calendar.setOption === 'function') {
+            calendar.setOption('contentHeight', totalH); // override contentHeight:'auto' from init config
             calendar.setOption('height', totalH);
           }
           // Equalize rows at staggered delays to catch both fast and slow event renders

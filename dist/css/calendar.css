@@ -40,6 +40,13 @@
   overflow-x: clip !important;
 }
 
+/* Month view: height is controlled by JS via --cal-month-h custom property */
+#scheduleCalendar.view-daygrid {
+  height: var(--cal-month-h, auto) !important;
+  max-height: var(--cal-month-h, none) !important;
+  overflow-y: hidden !important;
+}
+
 /* Week/Day timegrid: container scrolls, month does not */
 #scheduleCalendar.view-timegrid-week {
   height: auto !important;
@@ -1955,4 +1962,54 @@
     padding: 6px;
     font-size: 10px;
   }
+}
+
+/* ============================================
+   CALENDAR ROW HEIGHTS — UNIFORM
+   ============================================ */
+
+/* Clip events that exceed the cell height — no min-height so FC can distribute
+   rows evenly within the fixed total height set by _applyMonthViewHeight() */
+#scheduleCalendar.view-daygrid .fc .fc-daygrid-day-frame {
+  overflow: hidden !important;
+}
+
+/* Events container: fill the cell vertically, clip overflow */
+#scheduleCalendar.view-daygrid .fc .fc-daygrid-day-events {
+  overflow: hidden !important;
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+}
+
+/* Individual event chips: keep compact so more fit per cell */
+#scheduleCalendar.view-daygrid .fc .fc-daygrid-event {
+  margin-bottom: 2px !important;
+  overflow: hidden !important;
+}
+
+/* ============================================
+   +X MORE POPOVER — KEEP IN VIEWPORT
+   ============================================ */
+
+/* Ensure the popover doesn't clip beyond the bottom of the screen */
+.fc-more-popover {
+  max-height: 60vh !important;
+  overflow-y: auto !important;
+  /* If FullCalendar positions it below viewport, flip it upward */
+  bottom: auto;
+}
+
+/* Popover anchor fix: when placed near the bottom, browser clips it.
+   We force it to be contained within the scroll parent. */
+.fc-popover {
+  max-height: 60vh !important;
+  overflow-y: auto !important;
+  z-index: 9999 !important;
+  position: absolute !important;
+}
+
+/* Ensure popover in the last row is visible (override FC inline bottom:0 anchoring) */
+#scheduleCalendar .fc-popover {
+  max-height: 55vh !important;
+  overflow-y: auto !important;
 }
