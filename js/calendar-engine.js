@@ -574,6 +574,44 @@ const CalendarEngine = {
       // ── MONTH VIEW VIEWPORT SIZING ─────────────────────────────────────────
       // Sets the calendar to a fraction of vh AND forces all week rows to
       // exactly the same height so no row expands with event content.
+      // Force all month-view rows to identical height using live DOM measurements.
+      // Must run AFTER events render, which is why it's also triggered from eventDidMount.
+      function _equalizeMonthRows() {
+        try {
+          if (!calendar || !calendar.view || calendar.view.type !== 'dayGridMonth') return;
+          const daygridBody = containerElement.querySelector('.fc-daygrid-body');
+          if (!daygridBody) return;
+          const rows = Array.from(daygridBody.querySelectorAll('tbody > tr'));
+          if (rows.length === 0) return;
+          const toolbar  = containerElement.querySelector('.fc-header-toolbar');
+          const colHeader = containerElement.querySelector('.fc-col-header');
+          const totalH   = Math.round(containerElement.getBoundingClientRect().height) || containerElement.offsetHeight;
+          const toolbarH = toolbar    ? Math.ceil(toolbar.getBoundingClientRect().height)    : 52;
+          const headerH  = colHeader  ? Math.ceil(colHeader.getBoundingClientRect().height)  : 35;
+          const rowH = Math.floor(Math.max(totalH - toolbarH - headerH - 4, 200) / rows.length);
+          rows.forEach(row => {
+            row.style.setProperty('height',     rowH + 'px', 'important');
+            row.style.setProperty('max-height', rowH + 'px', 'important');
+            Array.from(row.querySelectorAll('td')).forEach(td => {
+              td.style.setProperty('height',     rowH + 'px', 'important');
+              td.style.setProperty('max-height', rowH + 'px', 'important');
+              td.style.setProperty('overflow',   'hidden',    'important');
+            });
+            Array.from(row.querySelectorAll('.fc-daygrid-day-frame')).forEach(frame => {
+              frame.style.setProperty('height',     rowH + 'px', 'important');
+              frame.style.setProperty('max-height', rowH + 'px', 'important');
+              frame.style.setProperty('overflow',   'hidden',    'important');
+            });
+          });
+        } catch(_) {}
+      }
+
+      let _equalizeTimer = null;
+      function _scheduleEqualize() {
+        clearTimeout(_equalizeTimer);
+        _equalizeTimer = setTimeout(_equalizeMonthRows, 300);
+      }
+
       function _applyMonthViewHeight() {
         try {
           if (!calendar || !calendar.view || calendar.view.type !== 'dayGridMonth') return;
@@ -582,11 +620,13 @@ const CalendarEngine = {
           const totalH = Math.min(820, Math.max(340, Math.floor(vh * fraction)));
           containerElement.style.height = totalH + 'px';
           containerElement.style.overflow = 'hidden';
-          // setOption('height', pixel) tells FullCalendar to distribute rows equally.
-          // Per-view height:'auto' override has been removed so this value is honoured.
           if (calendar && typeof calendar.setOption === 'function') {
             calendar.setOption('height', totalH);
           }
+          // Equalize rows at staggered delays to catch both fast and slow event renders
+          setTimeout(_equalizeMonthRows,  50);
+          setTimeout(_equalizeMonthRows, 350);
+          setTimeout(_equalizeMonthRows, 1000);
         } catch(_) {}
       }
 
@@ -914,6 +954,8 @@ const CalendarEngine = {
         },
         
         eventDidMount: (info) => {
+          // Re-equalize month rows 300 ms after the last event mounts (debounced)
+          try { if (calendar && calendar.view && calendar.view.type === 'dayGridMonth') _scheduleEqualize(); } catch(_) {}
           try {
             const isBooking = info.event.extendedProps?.isBooking || info.event.extendedProps?.tab === 'customer' || info.event.extendedProps?.customer;
             const type = info.event.extendedProps?.type || info.event.type || 'unknown';
