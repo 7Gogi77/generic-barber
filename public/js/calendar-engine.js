@@ -1,4 +1,4 @@
-﻿/**
+/**
  * FullCalendar Integration - Event generation and configuration
  * Converts schedule data into FullCalendar events
  */
@@ -223,7 +223,7 @@ const CalendarEngine = {
         displayEnd = endDate.toISOString().split('T')[0] + 'T00:00:00';
       }
     } catch (err) {
-      // Fallback to attempt gentle parsing; do not throw — return null when unfixable
+      // Fallback to attempt gentle parsing; do not throw � return null when unfixable
       startDate = new Date(event.start || Date.now());
       endDate = new Date(event.end || event.start || Date.now());
     }
@@ -454,7 +454,7 @@ const CalendarEngine = {
             }
           }
           if (moreDiv) {
-            moreDiv.textContent = `+${hiddenCount} više`;
+            moreDiv.textContent = `+${hiddenCount} vi�e`;
           }
         }
       });
@@ -476,10 +476,22 @@ const CalendarEngine = {
     try {
       // Clear container
       containerElement.innerHTML = '';
-      containerElement.style.width = '100%';
-      containerElement.style.overflow = 'hidden';
 
-      // ── Merge saved booking settings from localStorage into SITE_CONFIG ──
+      // �� COMPUTE CALENDAR HEIGHT �����������������������������������������
+      // viewport minus 32px (16px top + 16px bottom padding of .content-area)
+      function _computeCalHeight() {
+        return Math.max(300, window.innerHeight - 32);
+      }
+
+      // �� SIZE THE MONTH VIEW ���������������������������������������������
+      // Sets a pixel height on the container AND tells FC to expand rows.
+      function _sizeMonthView() {
+        if (!calendar) return;
+        var h = _computeCalHeight();
+        containerElement.style.height = h + 'px';
+        calendar.setOption('height', h);
+        calendar.setOption('expandRows', true);
+      }
       try {
         const _savedBS = JSON.parse(localStorage.getItem('bookingSettings') || 'null');
         if (_savedBS && window.SITE_CONFIG && window.SITE_CONFIG.booking) {
@@ -499,7 +511,7 @@ const CalendarEngine = {
           if (_savedBS.maxAppointmentDays !== undefined)
             window.SITE_CONFIG.booking.maxAppointmentDays = _savedBS.maxAppointmentDays;
         }
-      } catch(_e) { console.warn('⚠ Could not apply saved booking settings', _e); }
+      } catch(_e) { console.warn('? Could not apply saved booking settings', _e); }
 
       // Compute slot duration from SITE_CONFIG if present
       const slotMinutes = (window.SITE_CONFIG && window.SITE_CONFIG.booking && window.SITE_CONFIG.booking.slotDuration) ? window.SITE_CONFIG.booking.slotDuration : 30;
@@ -517,7 +529,7 @@ const CalendarEngine = {
       if (_wkByDay) {
         const _enabled = Object.entries(_wkByDay).filter(([, d]) => d.enabled);
         if (_enabled.length) {
-          // Use exact HH:MM — rounding to full hours leaves empty slots at top/bottom
+          // Use exact HH:MM � rounding to full hours leaves empty slots at top/bottom
           const _parseMinutes = t => { const p = (t || '00:00').split(':'); return parseInt(p[0],10)*60 + parseInt(p[1]||0,10); };
           const _fmt = totalMins => ('0'+Math.floor(totalMins/60)).slice(-2)+':'+('0'+(totalMins%60)).slice(-2)+':00';
           const _minMins = Math.min(..._enabled.map(([,d]) => _parseMinutes(d.start || '09:00')));
@@ -530,24 +542,10 @@ const CalendarEngine = {
 
       const _isMobile = window.innerWidth <= 768;
 
-      // ── MONTH VIEW HEIGHT ─────────────────────────────────────────────────
-      // Measures the container's actual top offset from the viewport and fills
-      // the remaining space down to 16px from the bottom.
-      // requestAnimationFrame ensures the DOM has settled before we measure.
-      function _applyMonthViewHeight() {
-        requestAnimationFrame(function() {
-          try {
-            if (!calendar || !containerElement) return;
-            if (!calendar.view || calendar.view.type !== 'dayGridMonth') return;
-            var rect = containerElement.getBoundingClientRect();
-            var h = Math.max(300, Math.floor(window.innerHeight - rect.top - 16));
-            containerElement.style.height = h + 'px';
-            calendar.setOption('expandRows', true);
-            calendar.setOption('height', h);
-            calendar.updateSize();
-          } catch(e) {}
-        });
-      }
+      // �� INITIALIZE FULLCALENDAR �����������������������������������������
+      // Set height to a computed pixel value at init time so expandRows works.
+      const _initHeight = _computeCalHeight();
+      containerElement.style.height = _initHeight + 'px';
 
       const calendar = new FullCalendar.Calendar(containerElement, {
         initialView: options.initialView || 'dayGridMonth',
@@ -572,7 +570,7 @@ const CalendarEngine = {
         locale: 'sl',
         firstDay: 1,
         nowIndicator: true,
-        fixedWeekCount: false, // Only show rows for actual weeks in the month — prevents empty rows
+        fixedWeekCount: false, // Only show rows for actual weeks in the month � prevents empty rows
         dayMaxEvents: _isMobile ? 1 : 3, // On mobile show max 1 event per cell; rest shown as +X more
         dayMaxEventRows: false, // Let FullCalendar limit via dayMaxEvents instead
         // Show abbreviated month name on first cell of each month (e.g. "1 Mar")
@@ -596,7 +594,7 @@ const CalendarEngine = {
             const rect = popover.getBoundingClientRect();
             const vh = window.innerHeight || document.documentElement.clientHeight;
             if (rect.bottom > vh - 10) {
-              // Popover overflows at the bottom — flip it upward
+              // Popover overflows at the bottom � flip it upward
               const overflow = rect.bottom - (vh - 10);
               const currentTop = parseInt(popover.style.top || '0', 10) || rect.top;
               popover.style.top = Math.max(10, currentTop - overflow - 10) + 'px';
@@ -628,7 +626,7 @@ const CalendarEngine = {
           const bDuration = bEnd - bStart;
           return bDuration - aDuration;
         },
-        // Business hours (visual only — shades non-working cells in timeGrid views)
+        // Business hours (visual only � shades non-working cells in timeGrid views)
         businessHours: (() => {
           const _byDay = window.SITE_CONFIG && window.SITE_CONFIG.booking && window.SITE_CONFIG.booking._workingHoursByDay;
           if (_byDay) {
@@ -665,9 +663,9 @@ const CalendarEngine = {
         hiddenDays: weekHiddenDays,
         // Initial vertical scroll position in timeGrid views
         scrollTime: initialScrollTime,
-        // Start with auto height; applySizing/datesSet sets pixel height for day view only
-        height: 'auto',
-        contentHeight: 'auto',
+        // Use exact pixel height so expandRows distributes rows equally
+        height: _initHeight,
+        expandRows: true,
 
         // Load events - always fetch fresh from storage to avoid duplicates
         events: async (info, successCallback, failureCallback) => {
@@ -714,7 +712,7 @@ const CalendarEngine = {
         // Event handling - NOTE: These are overridden by poslovni-panel.html
         // Only used in admin-panel.html - check if modal exists before calling
         select: (selectInfo) => {
-          // On mobile: completely disable selection — no highlights, no modal, nothing
+          // On mobile: completely disable selection � no highlights, no modal, nothing
           if (_isMobile) return false;
           if (window._skipNextFcSelect) {
             window._skipNextFcSelect = false;
@@ -762,7 +760,7 @@ const CalendarEngine = {
             selEndTime   = extractTime(selectInfo.endStr);
             // endDate is the same date as startDate in most cases; no -1 shift needed
           } else {
-            // Month view: all-day selection — FullCalendar end is exclusive, subtract 1 day
+            // Month view: all-day selection � FullCalendar end is exclusive, subtract 1 day
             endDate = shiftDateString(endDate, -1);
 
             // Highlight selected day cells
@@ -837,7 +835,7 @@ const CalendarEngine = {
             const view = arg.view?.type || '';
             const isMobileView = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(max-width: 768px)').matches;
             
-            // On mobile: render only the icon — user taps event to see details
+            // On mobile: render only the icon � user taps event to see details
             if (isMobileView) {
               return { html: `<div style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;padding:1px;"><i class="bi ${iconClass}" style="font-size:13px;line-height:1;"></i></div>` };
             }
@@ -1091,7 +1089,7 @@ const CalendarEngine = {
         datesSet: (arg) => {
 
           // On mobile: clear any inline backgroundColor that may have been set by a previous
-          // select/scroll event — this prevents stale blue cell highlights from persisting
+          // select/scroll event � this prevents stale blue cell highlights from persisting
           if (_isMobile) {
             containerElement.querySelectorAll('[data-date]').forEach(cell => {
               cell.style.backgroundColor = '';
@@ -1104,14 +1102,14 @@ const CalendarEngine = {
             const _freeWeekDs = () => {
               // Container must stay overflow:hidden so border-radius clips cell borders at corners
               containerElement.style.setProperty('overflow', 'hidden', 'important');
-              // Strip the view root itself — FC sets style="height:Xpx; overflow:hidden auto" here
+              // Strip the view root itself � FC sets style="height:Xpx; overflow:hidden auto" here
               const viewRoot = containerElement.querySelector('.fc-timeGridWeek-view');
               if (viewRoot) {
                 viewRoot.style.setProperty('height', 'auto', 'important');
                 viewRoot.style.setProperty('min-height', '0', 'important');
                 viewRoot.style.setProperty('overflow', 'visible', 'important');
               }
-              // Strip .fc itself — height:100% on it expands beyond grid content leaving empty space
+              // Strip .fc itself � height:100% on it expands beyond grid content leaving empty space
               const fcEl = containerElement.querySelector('.fc');
               if (fcEl) {
                 fcEl.style.setProperty('height', 'auto', 'important');
@@ -1122,7 +1120,7 @@ const CalendarEngine = {
                 el.style.setProperty('height', 'auto', 'important');
                 el.style.setProperty('overflow', 'visible', 'important');
               });
-              // Strip scrollers — avoid mixed-axis (overflow-x:hidden + overflow-y:visible is invalid CSS)
+              // Strip scrollers � avoid mixed-axis (overflow-x:hidden + overflow-y:visible is invalid CSS)
               containerElement.querySelectorAll('.fc-scroller, .fc-scroller-liquid-absolute').forEach(s => {
                 s.style.setProperty('overflow', 'visible', 'important');
                 s.style.setProperty('height', 'auto', 'important');
@@ -1141,7 +1139,7 @@ const CalendarEngine = {
                 td.style.setProperty('height', 'auto', 'important');
               });
               // TR.fc-scrollgrid-section-body is what FC sets style="height:789px; overflow:hidden auto" on
-              // — this is the direct cause of empty space at the bottom
+              // � this is the direct cause of empty space at the bottom
               containerElement.querySelectorAll('tr.fc-scrollgrid-section-body').forEach(tr => {
                 tr.style.setProperty('height', 'auto', 'important');
                 tr.style.setProperty('overflow', 'visible', 'important');
@@ -1188,21 +1186,15 @@ const CalendarEngine = {
             }
           } catch(_) {}
 
-          // Dynamic height: viewport-based for month, auto for week, pixel for day
+          // Dynamic height: viewport-based for all views
           try {
             const vForH = arg && arg.view && arg.view.type ? arg.view.type : '';
-            if (vForH === 'timeGridDay') {
-              const _dayH = Math.max(520, window.innerHeight - 32);
-              containerElement.style.height = `${_dayH}px`;
-              containerElement.style.overflow = 'hidden';
-              try { if (calendar && typeof calendar.setOption === 'function') calendar.setOption('height', _dayH); } catch(_){}
-            } else if (vForH === 'dayGridMonth') {
-              // Month view: let _applyMonthViewHeight control the height (prevents overwrite to auto)
-              _applyMonthViewHeight();
+            var _h = _computeCalHeight();
+            containerElement.style.height = _h + 'px';
+            if (vForH === 'dayGridMonth') {
+              _sizeMonthView();
             } else {
-              containerElement.style.height = 'auto';
-              containerElement.style.overflow = 'hidden'; // clips cell borders at rounded corners
-              try { if (calendar && typeof calendar.setOption === 'function') calendar.setOption('height', 'auto'); } catch(_){}
+              try { if (calendar && typeof calendar.setOption === 'function') calendar.setOption('height', _h); } catch(_){}
             }
           } catch (e) { /* ignore */ }
 
@@ -1250,7 +1242,7 @@ const CalendarEngine = {
           // After view renders, apply viewport-based height to month view
           setTimeout(() => {
             if (arg.view.type === 'dayGridMonth') {
-              _applyMonthViewHeight();
+              _sizeMonthView();
             }
             
             // For timeGridWeek only, ensure timegrid and scroll bodies are sized (skip Day to avoid fallbacks there)
@@ -1343,7 +1335,7 @@ const CalendarEngine = {
                     // MONTH VIEW: just trigger height application; do NOT clear row heights
                     // because FullCalendar sets height:1px on rows to equalise them and
                     // clearing that breaks the native equalization.
-                    setTimeout(_applyMonthViewHeight, 50);
+                    setTimeout(_sizeMonthView, 50);
                   } else {
                     // Other views: clear forced sizing to allow natural heights
                     daygridBody.style.overflowY = 'auto';
@@ -1403,7 +1395,7 @@ const CalendarEngine = {
 
                     // If there are timed events but nothing rendered in the timeGrid, it's likely FullCalendar DOM failed to create time slot or event nodes
                     if (timedEvents.length > 0 && timegridEventEls.length === 0) {
-                      // Timed events exist but no elements in timeGrid — remediation disabled (no automatic remake)
+                      // Timed events exist but no elements in timeGrid � remediation disabled (no automatic remake)
                       return;
                     }
 
@@ -1432,7 +1424,7 @@ const CalendarEngine = {
         eventDisplay: 'auto',
         // Make overlapping events display side-by-side in timeGrid views
         slotEventOverlap: false,
-        // all-day slot on — multi-day events span in the compact all-day row, clickable
+        // all-day slot on � multi-day events span in the compact all-day row, clickable
         allDaySlot: true,
         height: 'auto',
         contentHeight: 'auto'
@@ -1535,7 +1527,7 @@ const CalendarEngine = {
       
       // Detect drag-to-select: only if pointerdown is on empty cell/day-top, NOT on an event
       document.addEventListener('pointerdown', (e) => {
-        // Disable entire drag-select on mobile — FAB (+) is the only add trigger
+        // Disable entire drag-select on mobile � FAB (+) is the only add trigger
         if (_isMobile) return;
 
         isDraggingCells = false;
@@ -1546,7 +1538,7 @@ const CalendarEngine = {
           return;
         }
 
-        // In timeGrid (week / day) views the user drags hour/minute slots — let FullCalendar
+        // In timeGrid (week / day) views the user drags hour/minute slots � let FullCalendar
         // handle the native timed selection entirely; our custom day-cell drag must not intercept.
         if (e.target.closest('.fc-timegrid-body') || e.target.closest('.fc-timegrid-slot') ||
             e.target.closest('.fc-timegrid-col') || e.target.closest('.fc-timegrid-col-events')) {
@@ -1726,7 +1718,7 @@ const CalendarEngine = {
                 if (h !== _lastToolbarH && h > 0) {
                   _lastToolbarH = h;
                   if (calendar && calendar.view && calendar.view.type === 'dayGridMonth') {
-                    _applyMonthViewHeight();
+                    _sizeMonthView();
                   }
                 }
               });
@@ -1774,7 +1766,7 @@ const CalendarEngine = {
             containerElement.classList.toggle('view-daygrid', initView === 'dayGridMonth');
           }
         } catch (e) { /* ignore */ }
-        // Defer sizing — run a few attempts with increasing delays to allow FullCalendar DOM to settle
+        // Defer sizing � run a few attempts with increasing delays to allow FullCalendar DOM to settle
         (function robustSizing() {
           const delays = [50, 150, 350, 700];
           const maxAttempts = delays.length;
@@ -1795,7 +1787,7 @@ const CalendarEngine = {
               if (!isTimegrid) {
                 if (currentViewType === 'dayGridMonth') {
                   // Month view: delegate to viewport-based height with row equalization
-                  _applyMonthViewHeight();
+                  _sizeMonthView();
                   return;
                 }
                 // Week / list views: clear any stale pixel heights and let FC size naturally
@@ -1822,7 +1814,7 @@ const CalendarEngine = {
 
           function attempt(n) {
             try {
-              // Week view is handled entirely by MutationObserver — no sizing attempts needed
+              // Week view is handled entirely by MutationObserver � no sizing attempts needed
               const curView = calendar && calendar.view && calendar.view.type ? calendar.view.type : '';
               if (curView === 'timeGridWeek') return;
 
@@ -1928,37 +1920,17 @@ const CalendarEngine = {
       window.addEventListener('resize', () => {
         clearTimeout(resizeTimeout);
         resizeTimeout = setTimeout(() => {
-          
-          // Always use auto for month; pixel for timegrid
           const currentViewType = (calendar && calendar.view && calendar.view.type) ? calendar.view.type : '';
-          const isTimegrid = currentViewType.startsWith('timeGrid');
-
-          // Month view: recalculate viewport-based cell height on resize
           if (currentViewType === 'dayGridMonth') {
-            _applyMonthViewHeight();
-            return;
-          }
-          
-          // Apply to container
-          containerElement.style.minHeight = isTimegrid ? `${Math.max(520, window.innerHeight - 32)}px` : 'auto';
-          containerElement.style.height = isTimegrid ? `${Math.max(520, window.innerHeight - 32)}px` : 'auto';
-          
-          // Apply to FC elements
-          const fcView = containerElement.querySelector('.fc');
-          if (fcView) {
-            fcView.style.height = isTimegrid ? `${Math.max(520, window.innerHeight - 32)}px` : '';
-            const fcRoot = containerElement.querySelector('.fc-root');
-            if (fcRoot) fcRoot.style.height = isTimegrid ? `${Math.max(520, window.innerHeight - 32)}px` : '';
-            const fcViewHarness = containerElement.querySelector('.fc-view-harness');
-            if (fcViewHarness) fcViewHarness.style.height = isTimegrid ? `${Math.max(520, window.innerHeight - 32)}px` : '';
-          }
-          
-          // Update calendar size
-          if (calendar.updateSize) {
+            _sizeMonthView();
+          } else {
+            // For timegrid/day views, set pixel height and let FC handle it
+            var h = _computeCalHeight();
+            containerElement.style.height = h + 'px';
+            calendar.setOption('height', h);
             calendar.updateSize();
           }
-          
-        }, 250); // Debounce resize events
+        }, 200);
       });
 
       return calendar;
@@ -2124,7 +2096,7 @@ const CalendarEngine = {
 
 
       if (!start || !end) {
-        alert('Vnesite datum in čas početka in konca');
+        alert('Vnesite datum in �as po�etka in konca');
         return;
       }
 
@@ -2218,7 +2190,7 @@ const CalendarEngine = {
     // Handle delete
     deleteBtn.onclick = async (e) => {
       e.preventDefault();
-      if (!confirm('Izbriši ta dogodek?')) return;
+      if (!confirm('Izbri�i ta dogodek?')) return;
 
       const eventId = event && (event.id || event.extendedProps?.eventId);
       if (!eventId) {
@@ -2226,7 +2198,7 @@ const CalendarEngine = {
         return;
       }
 
-      alert(`🗑️  DELETING (calendar-engine): ${eventId}`);
+      alert(`???  DELETING (calendar-engine): ${eventId}`);
 
       // STEP 1: Mark as deleted FIRST
       if (typeof window.markEventDeleted === 'function') {
@@ -2308,7 +2280,7 @@ const CalendarEngine = {
     if (!listContainer) return;
 
     if (!scheduleData.events || scheduleData.events.length === 0) {
-      listContainer.innerHTML = '<p style="color: #95a5a6; text-align: center; padding: 20px;">Nema događaja - dodajte novi klikanjem na kalendarijum!</p>';
+      listContainer.innerHTML = '<p style="color: #95a5a6; text-align: center; padding: 20px;">Nema doga�aja - dodajte novi klikanjem na kalendarijum!</p>';
       return;
     }
 
@@ -2362,12 +2334,12 @@ function saveWorkingHours() {
   const endTime = document.getElementById('workEndTime').value;
   
   if (!startTime || !endTime) {
-    alert('⚠️ Molim postavi vrijeme početka i kraja rada!');
+    alert('?? Molim postavi vrijeme po�etka i kraja rada!');
     return;
   }
   
   if (startTime >= endTime) {
-    alert('⚠️ Vrijeme početka mora biti prije vremena kraja rada!');
+    alert('?? Vrijeme po�etka mora biti prije vremena kraja rada!');
     return;
   }
   
@@ -2406,15 +2378,15 @@ function debugLog(msg) {
 
 // Load appointments from bookings (global function)
 async function loadAppointmentsToCalendarNow() {
-  debugLog('🔄 Loading bookings from StorageManager schedule');
+  debugLog('?? Loading bookings from StorageManager schedule');
   try {
     if (window.calendar) {
       // Simply refetch events - the events callback will load fresh data
       window.calendar.refetchEvents();
-      debugLog(`✅ Calendar events refetched`);
+      debugLog(`? Calendar events refetched`);
     }
   } catch (error) {
-    debugLog(`❌ loadAppointmentsToCalendarNow error: ${error.message}`);
+    debugLog(`? loadAppointmentsToCalendarNow error: ${error.message}`);
   }
 }
 
@@ -2424,7 +2396,7 @@ async function createWorkingHoursEvents(startTime, endTime) {
     const schedule = await StorageManager.load('schedule');
     
     // Remove existing "Delo" events
-    schedule.events = schedule.events.filter(e => e.type !== 'working_hours' || e.title !== '💼 Delo');
+    schedule.events = schedule.events.filter(e => e.type !== 'working_hours' || e.title !== '?? Delo');
     
     // Get current and next 365 days
     const today = new Date();
@@ -2441,7 +2413,7 @@ async function createWorkingHoursEvents(startTime, endTime) {
       // Create working hours event for this day
       const event = {
         id: 'delo_' + dateStr,
-        title: 'Delovni čas',
+        title: 'Delovni �as',
         type: 'working_hours',
         start: `${dateStr}T${startTime}`,
         end: `${dateStr}T${endTime}`,
