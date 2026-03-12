@@ -227,7 +227,7 @@
         #scheduleCalendar {
             background: var(--ios-bg-secondary);
             width: 100%;
-            overflow: hidden; /* clips cell borders at rounded corners */
+            overflow: visible; /* JS controls clipping via view-harness */
             padding: 0;
             border-radius: var(--ios-radius-lg);
             box-shadow: var(--ios-shadow-md);
@@ -410,20 +410,17 @@
             position: relative;
         }
 
+        /* Row and cell heights are set dynamically by JS (_equalizeMonthRows).
+           Do NOT set fixed px heights here — they fight the dynamic calculation. */
         .fc-daygrid-row {
-            height: 100px !important;
-            min-height: 100px !important;
-            flex: 0 0 100px !important;
             position: relative;
-            overflow: visible !important;
+            overflow: hidden !important;
         }
 
         .fc-daygrid-day-cell {
             background: var(--ios-bg-secondary);
             transition: background 0.15s ease;
-            height: 100px !important;
-            min-height: 100px !important;
-            overflow: visible !important;
+            overflow: hidden !important;
             flex: 1 !important;
             position: relative;
         }
@@ -431,9 +428,7 @@
         .fc-daygrid-day {
             background: var(--ios-bg-secondary);
             transition: background 0.15s ease;
-            height: 100px !important;
-            min-height: 100px !important;
-            overflow: visible !important;
+            overflow: hidden !important;
             flex: 1 1 auto !important;
             position: relative;
         }
