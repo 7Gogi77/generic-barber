@@ -587,19 +587,22 @@ const CalendarEngine = {
           if (!daygridBody) return;
           const rows = Array.from(daygridBody.querySelectorAll('tbody > tr'));
           if (rows.length === 0) return;
-          const toolbar   = containerElement.querySelector('.fc-header-toolbar');
-          const rect      = containerElement.getBoundingClientRect();
-          const topInset  = (rect && rect.top >= 0) ? rect.top : 16;
-          const botPad    = 16; // .content-area padding-bottom
-          const targetH   = Math.max(200, Math.floor(window.innerHeight - topInset - botPad));
-          document.documentElement.style.setProperty('--cal-h', targetH + 'px');
-          const containerH = targetH;
-          const toolbarH   = toolbar    ? toolbar.offsetHeight    : 52;
-          if (containerH < 100 || toolbarH < 1) return;
-          const harnessH = containerH - toolbarH;
+          const toolbar = containerElement.querySelector('.fc-header-toolbar');
 
-          // 1. View harness — set first. Reading a rect after this write forces a
-          //    synchronous browser reflow so the subsequent measurement is accurate.
+          // --- Step 1: pin container to true visible height via CSS var ---
+          const cRect    = containerElement.getBoundingClientRect();
+          const topInset = (cRect && cRect.top >= 0) ? cRect.top : 16;
+          const targetH  = Math.max(200, Math.floor(window.innerHeight - topInset - 16));
+          document.documentElement.style.setProperty('--cal-h', targetH + 'px');
+
+          // --- Step 2: read actual rendered container height (post-CSS) ---
+          // getBoundingClientRect forces a synchronous reflow so we get the true value.
+          const containerH = Math.round(containerElement.getBoundingClientRect().height) || targetH;
+          const toolbarH   = toolbar ? toolbar.offsetHeight : 52;
+          if (containerH < 100 || toolbarH < 1) return;
+
+          // --- Step 3: view-harness fills everything below the toolbar ---
+          const harnessH    = containerH - toolbarH;
           const viewHarness = containerElement.querySelector('.fc-view-harness');
           if (viewHarness) {
             viewHarness.style.setProperty('height',     harnessH + 'px', 'important');
@@ -607,17 +610,17 @@ const CalendarEngine = {
             viewHarness.style.setProperty('overflow',   'hidden',        'important');
           }
 
-          // 2. Measure the true header overhead by reading daygrid-body top relative
-          //    to view-harness top. This captures col-header height + FC's internal
-          //    scrollgrid table border-spacing/padding exactly, with no guessing.
-          const harnessTop     = viewHarness ? viewHarness.getBoundingClientRect().top
-                                             : rect.top + toolbarH;
+          // --- Step 4: measure exact space from harness top to grid-body top ---
+          // (captures col-header + all FC internal table borders/padding in one shot)
+          const harnessTop     = viewHarness
+            ? viewHarness.getBoundingClientRect().top  // forces reflow
+            : cRect.top + toolbarH;
           const bodyTopPx      = daygridBody.getBoundingClientRect().top;
-          const headerOverhead = Math.max(0, Math.round(bodyTopPx - harnessTop));
+          const headerOverhead = Math.max(20, Math.round(bodyTopPx - harnessTop));
           const bodyH          = Math.max(80, harnessH - headerOverhead);
 
-          // 2. Every element in the scrollgrid body chain must be pinned to bodyH
-          //    so FC can't keep them at their auto content size.
+          // --- Step 5: pin the scrollgrid body chain to bodyH ---
+          // scroller gets overflow-y:auto so rows that don't fit get a scrollbar
           const bodySelectors = [
             'tr.fc-scrollgrid-section-body',
             'tr.fc-scrollgrid-section-body > td',
@@ -633,9 +636,6 @@ const CalendarEngine = {
               el.style.setProperty('overflow',   'hidden',     'important');
             });
           });
-          // The fc-scroller is FC's designated scroll container. Give it overflow-y: auto
-          // so that if rows ever exceed bodyH (e.g. due to a late toolbar wrap), the user
-          // can scroll rather than having the last row silently clipped.
           containerElement.querySelectorAll('.fc-scrollgrid-section-body .fc-scroller').forEach(el => {
             el.style.setProperty('height',     bodyH + 'px', 'important');
             el.style.setProperty('max-height', bodyH + 'px', 'important');
@@ -643,11 +643,7 @@ const CalendarEngine = {
             el.style.setProperty('overflow-x', 'hidden',     'important');
           });
 
-          // 3. Distribute bodyH precisely across all rows.
-          //    We use bodyH (our computed budget) directly — NOT tbodyEl.offsetHeight, because
-          //    <tbody> offsetHeight returns its content height, not the constrained height, which
-          //    would make rows oversized and push the last row completely outside the visible area.
-          //    The last row absorbs any remainder pixels so rows always sum exactly to bodyH.
+          // --- Step 6: distribute bodyH equally across rows ---
           const baseRowH = Math.floor(bodyH / rows.length);
           const lastRowH = bodyH - baseRowH * (rows.length - 1);
           if (baseRowH < 20) return;
@@ -663,6 +659,11 @@ const CalendarEngine = {
             Array.from(row.querySelectorAll('.fc-daygrid-day-frame')).forEach(frame => {
               frame.style.setProperty('height',     h + 'px', 'important');
               frame.style.setProperty('max-height', h + 'px', 'important');
+              frame.style.setProperty('overflow',   'hidden', 'important');
+            });
+          });
+        } catch(_) {}
+      }
               frame.style.setProperty('overflow',   'hidden', 'important');
             });
           });
