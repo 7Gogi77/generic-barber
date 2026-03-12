@@ -478,19 +478,42 @@ const CalendarEngine = {
       containerElement.innerHTML = '';
 
       // �� COMPUTE CALENDAR HEIGHT �����������������������������������������
-      // viewport minus 32px (16px top + 16px bottom padding of .content-area)
+      // Compute available height for the calendar container
       function _computeCalHeight() {
+        // Use the content-area's actual available height if possible
+        var parent = containerElement.parentElement;
+        if (parent && parent.clientHeight > 100) {
+          return parent.clientHeight;
+        }
+        // Fallback: viewport minus content-area padding
         return Math.max(300, window.innerHeight - 32);
       }
 
       // �� SIZE THE MONTH VIEW ���������������������������������������������
       // Sets a pixel height on the container AND tells FC to expand rows.
+      // Also strips any lingering inline styles left by the week-view handler.
       function _sizeMonthView() {
         if (!calendar) return;
         var h = _computeCalHeight();
         containerElement.style.height = h + 'px';
+        // Strip any leftover inline height:auto !important from week-view handler
+        var _stripSels = ['.fc', '.fc-view-harness', '.fc-scroller', '.fc-scroller-liquid-absolute', '.fc-scroller-harness', '.fc-scrollgrid-section-body td', 'tr.fc-scrollgrid-section-body'];
+        _stripSels.forEach(function(sel) {
+          containerElement.querySelectorAll(sel).forEach(function(el) {
+            el.style.removeProperty('height');
+            el.style.removeProperty('min-height');
+            el.style.removeProperty('max-height');
+            el.style.removeProperty('overflow');
+            el.style.removeProperty('position');
+            el.style.removeProperty('top');
+            el.style.removeProperty('bottom');
+            el.style.removeProperty('left');
+            el.style.removeProperty('right');
+          });
+        });
         calendar.setOption('height', h);
         calendar.setOption('expandRows', true);
+        calendar.updateSize();
       }
       try {
         const _savedBS = JSON.parse(localStorage.getItem('bookingSettings') || 'null');
@@ -871,8 +894,7 @@ const CalendarEngine = {
         },
         
         eventDidMount: (info) => {
-          // Trigger a size update when events mount in month view
-          try { if (calendar && calendar.view && calendar.view.type === 'dayGridMonth') calendar.updateSize(); } catch(_) {}
+          // Size update on event mount removed — _sizeMonthView handles sizing
           try {
             const isBooking = info.event.extendedProps?.isBooking || info.event.extendedProps?.tab === 'customer' || info.event.extendedProps?.customer;
             const type = info.event.extendedProps?.type || info.event.type || 'unknown';
@@ -1151,8 +1173,6 @@ const CalendarEngine = {
             // Re-apply slot bounds in case FC reset them
             try {
               if (calendar) {
-                calendar.setOption('height', 'auto');
-                calendar.setOption('contentHeight', 'auto');
                 calendar.setOption('slotMinTime', weekSlotMin);
                 calendar.setOption('slotMaxTime', weekSlotMax);
                 calendar.setOption('hiddenDays', weekHiddenDays);
@@ -1424,10 +1444,8 @@ const CalendarEngine = {
         eventDisplay: 'auto',
         // Make overlapping events display side-by-side in timeGrid views
         slotEventOverlap: false,
-        // all-day slot on � multi-day events span in the compact all-day row, clickable
-        allDaySlot: true,
-        height: 'auto',
-        contentHeight: 'auto'
+        // all-day slot on - multi-day events span in the compact all-day row, clickable
+        allDaySlot: true
       });
 
 
@@ -1793,7 +1811,6 @@ const CalendarEngine = {
                 // Week / list views: clear any stale pixel heights and let FC size naturally
                 if (fcRoot) { fcRoot.style.height = ''; fcRoot.style.minHeight = ''; fcRoot.style.overflow = ''; }
                 if (viewHarness) { viewHarness.style.height = ''; viewHarness.style.minHeight = ''; }
-                try { if (calendar && typeof calendar.setOption === 'function') { calendar.setOption('height', 'auto'); calendar.setOption('contentHeight', 'auto'); } } catch (_) {}
                 return;
               }
 
