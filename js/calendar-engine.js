@@ -572,18 +572,16 @@ const CalendarEngine = {
       const _isMobile = window.innerWidth <= 768;
 
       // ── MONTH VIEW VIEWPORT SIZING ─────────────────────────────────────────
-      // Calculates available screen height and tells FullCalendar to fill it
-      // in dayGridMonth view. FC then distributes rows evenly, so all week
-      // rows are the same height, scaling with the device screen size.
+      // Sizes the calendar to a fraction of the viewport height so all rows
+      // fit on screen without scrolling, scaling proportionally with screen size.
       function _applyMonthViewHeight() {
         try {
           if (!calendar || !calendar.view || calendar.view.type !== 'dayGridMonth') return;
-          const rect = containerElement.getBoundingClientRect();
           const vh = window.innerHeight || document.documentElement.clientHeight;
-          // topOffset: how far the container starts from the viewport top
-          const topOffset = Math.max(rect.top, 0);
-          const bottomPad = _isMobile ? 16 : 28; // breathing room at the bottom
-          const availH = Math.max(400, Math.floor(vh - topOffset - bottomPad));
+          // 72% of viewport on desktop (leaves ~28% for panel header, tabs, filter row).
+          // 68% on mobile. Capped at 900 px so cells don't become enormous on 4K screens.
+          const fraction = _isMobile ? 0.68 : 0.72;
+          const availH = Math.min(900, Math.max(380, Math.floor(vh * fraction)));
           containerElement.style.height = availH + 'px';
           containerElement.style.overflow = 'hidden';
           if (calendar && typeof calendar.setOption === 'function') {
