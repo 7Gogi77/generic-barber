@@ -583,84 +583,11 @@ const CalendarEngine = {
       function _equalizeMonthRows() {
         try {
           if (!calendar || !calendar.view || calendar.view.type !== 'dayGridMonth') return;
-          const daygridBody = containerElement.querySelector('.fc-daygrid-body');
-          if (!daygridBody) return;
-          const rows = Array.from(daygridBody.querySelectorAll('tbody > tr'));
-          if (rows.length === 0) return;
-          const toolbar = containerElement.querySelector('.fc-header-toolbar');
-
-          // --- Step 1: pin container to true visible height via CSS var ---
-          const cRect    = containerElement.getBoundingClientRect();
-          const topInset = (cRect && cRect.top >= 0) ? cRect.top : 16;
-          const targetH  = Math.max(200, Math.floor(window.innerHeight - topInset - 16));
-          document.documentElement.style.setProperty('--cal-h', targetH + 'px');
-
-          // --- Step 2: read actual rendered container height (post-CSS) ---
-          // getBoundingClientRect forces a synchronous reflow so we get the true value.
-          const containerH = Math.round(containerElement.getBoundingClientRect().height) || targetH;
-          const toolbarH   = toolbar ? toolbar.offsetHeight : 52;
-          if (containerH < 100 || toolbarH < 1) return;
-
-          // --- Step 3: view-harness fills everything below the toolbar ---
-          const harnessH    = containerH - toolbarH;
-          const viewHarness = containerElement.querySelector('.fc-view-harness');
-          if (viewHarness) {
-            viewHarness.style.setProperty('height',     harnessH + 'px', 'important');
-            viewHarness.style.setProperty('max-height', harnessH + 'px', 'important');
-            viewHarness.style.setProperty('overflow',   'hidden',        'important');
-          }
-
-          // --- Step 4: measure exact space from harness top to grid-body top ---
-          // (captures col-header + all FC internal table borders/padding in one shot)
-          const harnessTop     = viewHarness
-            ? viewHarness.getBoundingClientRect().top  // forces reflow
-            : cRect.top + toolbarH;
-          const bodyTopPx      = daygridBody.getBoundingClientRect().top;
-          const headerOverhead = Math.max(20, Math.round(bodyTopPx - harnessTop));
-          const bodyH          = Math.max(80, harnessH - headerOverhead);
-
-          // --- Step 5: pin the scrollgrid body chain to bodyH ---
-          // scroller gets overflow-y:auto so rows that don't fit get a scrollbar
-          const bodySelectors = [
-            'tr.fc-scrollgrid-section-body',
-            'tr.fc-scrollgrid-section-body > td',
-            '.fc-scrollgrid-section-body .fc-scroller-harness',
-            '.fc-daygrid-body',
-            '.fc-daygrid-body > table',
-            '.fc-daygrid-body > table > tbody'
-          ];
-          bodySelectors.forEach(sel => {
-            containerElement.querySelectorAll(sel).forEach(el => {
-              el.style.setProperty('height',     bodyH + 'px', 'important');
-              el.style.setProperty('max-height', bodyH + 'px', 'important');
-              el.style.setProperty('overflow',   'hidden',     'important');
-            });
-          });
+          // FC's expandRows:true handles equal row heights. This function only ensures
+          // the body scroller is scrollable as a safety net if anything overflows.
           containerElement.querySelectorAll('.fc-scrollgrid-section-body .fc-scroller').forEach(el => {
-            el.style.setProperty('height',     bodyH + 'px', 'important');
-            el.style.setProperty('max-height', bodyH + 'px', 'important');
-            el.style.setProperty('overflow-y', 'auto',       'important');
-            el.style.setProperty('overflow-x', 'hidden',     'important');
-          });
-
-          // --- Step 6: distribute bodyH equally across rows ---
-          const baseRowH = Math.floor(bodyH / rows.length);
-          const lastRowH = bodyH - baseRowH * (rows.length - 1);
-          if (baseRowH < 20) return;
-          rows.forEach((row, i) => {
-            const h = (i === rows.length - 1) ? lastRowH : baseRowH;
-            row.style.setProperty('height',     h + 'px', 'important');
-            row.style.setProperty('max-height', h + 'px', 'important');
-            Array.from(row.querySelectorAll('td')).forEach(td => {
-              td.style.setProperty('height',     h + 'px', 'important');
-              td.style.setProperty('max-height', h + 'px', 'important');
-              td.style.setProperty('overflow',   'hidden', 'important');
-            });
-            Array.from(row.querySelectorAll('.fc-daygrid-day-frame')).forEach(frame => {
-              frame.style.setProperty('height',     h + 'px', 'important');
-              frame.style.setProperty('max-height', h + 'px', 'important');
-              frame.style.setProperty('overflow',   'hidden', 'important');
-            });
+            el.style.setProperty('overflow-y', 'auto',   'important');
+            el.style.setProperty('overflow-x', 'hidden', 'important');
           });
         } catch(_) {}
       }
@@ -676,17 +603,22 @@ const CalendarEngine = {
           if (!calendar || !calendar.view || calendar.view.type !== 'dayGridMonth') return;
           const rect     = containerElement.getBoundingClientRect();
           const topInset = (rect && rect.top >= 0) ? rect.top : 16;
-          const botPad   = 16;
-          const targetH  = Math.max(200, Math.floor(window.innerHeight - topInset - botPad));
+          const targetH  = Math.max(340, Math.floor(window.innerHeight - topInset - 16));
           _monthViewTargetH = targetH;
-          // Prime --cal-h early so the container shrinks before the equalize timeouts fire.
+          // Pin the container via CSS custom property. Our CSS rule:
+          //   #scheduleCalendar.view-daygrid { height: var(--cal-h) !important }
+          // has specificity (1,1,0) which beats any (1,0,0) stylesheet rule.
           document.documentElement.style.setProperty('--cal-h', targetH + 'px');
-          // Remove any old injected style tag left from a previous version
-          const oldStyle = document.getElementById('_calMonthHeightStyle');
-          if (oldStyle) oldStyle.remove();
-          // Equalize rows — two passes: one quick, one after toolbar has settled
-          setTimeout(_equalizeMonthRows, 80);
-          setTimeout(_equalizeMonthRows, 600);
+          // Tell FC to fill 100% of its container and expand rows to fill available space.
+          // This is FC's built-in mechanism — far more reliable than manual DOM pinning.
+          // expandRows:true makes FC distribute row heights equally to fill the container.
+          if (calendar && typeof calendar.setOption === 'function') {
+            calendar.setOption('height', '100%');
+            calendar.setOption('expandRows', true);
+            calendar.updateSize();
+          }
+          // Safety net: ensure the body scroller can scroll if anything still overflows.
+          setTimeout(_equalizeMonthRows, 200);
         } catch(_) {}
       }
 
@@ -797,7 +729,7 @@ const CalendarEngine = {
         // and they continue to span correctly in month view
         allDaySlot: true,
         views: {
-          dayGridMonth: { type: 'dayGridMonth' }, // height set dynamically by _applyMonthViewHeight
+          dayGridMonth: { type: 'dayGridMonth', expandRows: true }, // expandRows fills available height equally
           // On mobile: 1 slot per hour in week view to reduce scrolling
           timeGridWeek: { type: 'timeGrid', contentHeight: 'auto', slotMinTime: weekSlotMin, slotMaxTime: weekSlotMax, slotDuration: _isMobile ? '01:00:00' : '00:15:00' },
           timeGridDay: { type: 'timeGrid', slotMinTime: weekSlotMin, slotMaxTime: weekSlotMax }
