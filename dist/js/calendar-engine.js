@@ -1866,7 +1866,6 @@ const CalendarEngine = {
               const scrollBodies = containerElement.querySelectorAll('.fc-scrollgrid-section-body');
 
               if (!isTimegrid) {
-              if (!isTimegrid) {
                 if (currentViewType === 'dayGridMonth') {
                   // Month view: delegate to viewport-based height with row equalization
                   _applyMonthViewHeight();
