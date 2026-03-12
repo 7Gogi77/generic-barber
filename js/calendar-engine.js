@@ -588,30 +588,33 @@ const CalendarEngine = {
           const rows = Array.from(daygridBody.querySelectorAll('tbody > tr'));
           if (rows.length === 0) return;
           const toolbar   = containerElement.querySelector('.fc-header-toolbar');
-          const colHeader = containerElement.querySelector('.fc-col-header');
           const rect      = containerElement.getBoundingClientRect();
           const topInset  = (rect && rect.top >= 0) ? rect.top : 16;
           const botPad    = 16; // .content-area padding-bottom
           const targetH   = Math.max(200, Math.floor(window.innerHeight - topInset - botPad));
-          // Set --cal-h on <html> so the CSS rule #scheduleCalendar.view-daygrid{
-          //   height: var(--cal-h) !important } clips the container to the true viewport size.
-          // We also use targetH directly for all calculations below — never reading back
-          // offsetHeight, which can be stale if the CSS paint hasn't happened yet.
           document.documentElement.style.setProperty('--cal-h', targetH + 'px');
           const containerH = targetH;
           const toolbarH   = toolbar    ? toolbar.offsetHeight    : 52;
-          const headerH    = colHeader  ? colHeader.offsetHeight  : 35;
           if (containerH < 100 || toolbarH < 1) return;
-          const harnessH = containerH - toolbarH;       // height for .fc-view-harness
-          const bodyH    = harnessH - headerH;          // height for the body section (below col header)
+          const harnessH = containerH - toolbarH;
 
-          // 1. View harness
+          // 1. View harness — set first. Reading a rect after this write forces a
+          //    synchronous browser reflow so the subsequent measurement is accurate.
           const viewHarness = containerElement.querySelector('.fc-view-harness');
           if (viewHarness) {
             viewHarness.style.setProperty('height',     harnessH + 'px', 'important');
             viewHarness.style.setProperty('max-height', harnessH + 'px', 'important');
             viewHarness.style.setProperty('overflow',   'hidden',        'important');
           }
+
+          // 2. Measure the true header overhead by reading daygrid-body top relative
+          //    to view-harness top. This captures col-header height + FC's internal
+          //    scrollgrid table border-spacing/padding exactly, with no guessing.
+          const harnessTop     = viewHarness ? viewHarness.getBoundingClientRect().top
+                                             : rect.top + toolbarH;
+          const bodyTopPx      = daygridBody.getBoundingClientRect().top;
+          const headerOverhead = Math.max(0, Math.round(bodyTopPx - harnessTop));
+          const bodyH          = Math.max(80, harnessH - headerOverhead);
 
           // 2. Every element in the scrollgrid body chain must be pinned to bodyH
           //    so FC can't keep them at their auto content size.
