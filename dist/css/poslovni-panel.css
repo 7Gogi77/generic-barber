@@ -264,28 +264,9 @@
             to { transform: rotate(360deg); }
         }
 
-        #scheduleCalendar .fc-root {
-            flex: 1;
-            min-height: 0;
-            display: flex;
-            flex-direction: column;
-        }
-
-        #scheduleCalendar .fc {
-            height: 100% !important;
-            min-height: 0 !important;
-            display: flex !important;
-            flex-direction: column !important;
-        }
-
         /* iOS-Style FullCalendar */
         .fc {
             font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif;
-            height: 100% !important;
-        }
-
-        .fc-root {
-            height: 100% !important;
         }
 
         /* iOS Toolbar Styling */
@@ -377,11 +358,6 @@
             background: rgba(0, 122, 255, 0.1) !important;
         }
 
-        /* Default harness sizing inside the calendar container */
-        #scheduleCalendar .fc-scroller-harness {
-            height: 100% !important;
-        }
-
         /* View-scoped positioning - TimeGrid requires relative to contain absolutely positioned children */
         #scheduleCalendar.view-timegrid-week .fc-scroller-harness, #scheduleCalendar.view-timegrid-day .fc-scroller-harness { position: relative !important; }
 
@@ -406,38 +382,10 @@
             color: var(--ios-text-secondary);
         }
 
-        /* Fix month view cell heights - prevent expanding based on content */
-        #scheduleCalendar.view-daygrid .fc {
-            height: 100% !important;
-        }
-
-        .fc-daygrid-body {
-            height: 100% !important;
-            overflow-y: hidden !important;
-            position: relative;
-        }
-
-        /* Row and cell heights are set dynamically by JS (_equalizeMonthRows).
-           Do NOT set fixed px heights here — they fight the dynamic calculation. */
-        .fc-daygrid-row {
-            position: relative;
-            overflow: hidden !important;
-        }
-
-        .fc-daygrid-day-cell {
-            background: var(--ios-bg-secondary);
-            transition: background 0.15s ease;
-            overflow: hidden !important;
-            flex: 1 !important;
-            position: relative;
-        }
-
+        /* Month view day cells — visual styling only, FC handles sizing */
         .fc-daygrid-day {
             background: var(--ios-bg-secondary);
             transition: background 0.15s ease;
-            overflow: hidden !important;
-            flex: 1 1 auto !important;
-            position: relative;
         }
 
         #scheduleCalendar.view-daygrid .fc .fc-daygrid-day:hover {
@@ -450,33 +398,6 @@
 
         #scheduleCalendar.view-daygrid .fc .fc-daygrid-day.fc-day-today {
             background: rgba(0, 122, 255, 0.05) !important;
-        }
-
-        /* FullCalendar Selection Highlight - Show when dragging to select dates */
-        #scheduleCalendar.view-daygrid .fc .fc-daygrid-body {
-            position: relative;
-        }
-
-        /* DEBUG: Test if element exists */
-        .fc-daygrid-bg {
-            outline: 5px solid yellow !important;
-        }
-
-        #scheduleCalendar.view-daygrid .fc .fc-daygrid-bg {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            width: 100% !important;
-            z-index: 6;
-            outline: 3px solid orange !important; /* DEBUG: See bg layer */
-        }
-
-        #scheduleCalendar.view-daygrid .fc .fc-daygrid-bg table,
-        #scheduleCalendar.view-daygrid .fc .fc-daygrid-bg .fc-scrollgrid-sync-table {
-            width: 100% !important;
-            table-layout: fixed !important;
         }
 
         /* Suppress FullCalendar's native highlight in month (dayGrid) view only — we use JS inline styles there */
@@ -503,24 +424,12 @@
             font-weight: 600 !important;
         }
 
-        /* Ensure the background harness doesn't clip highlights */
-        #scheduleCalendar.view-daygrid .fc-daygrid-bg-harness {
-            overflow: visible !important;
-        }
-
-        #scheduleCalendar.view-daygrid .fc-daygrid-day-bg {
-            overflow: visible !important;
-        }
-
-        /* iOS-Style Day Numbers - Consistent height for perfect alignment */
+        /* iOS-Style Day Numbers */
         #scheduleCalendar.view-daygrid .fc .fc-daygrid-day-top {
-            height: 40px !important;
-            min-height: 40px !important;
-            max-height: 40px !important;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 0;
+            padding: 4px 0;
         }
 
         #scheduleCalendar.view-daygrid .fc .fc-daygrid-day-number {
@@ -543,14 +452,9 @@
             padding: 0;
         }
 
-        /* Ensure events start at exact same position in all day cells */
+        /* Event container in month view cells */
         #scheduleCalendar.view-daygrid .fc-daygrid-day-events {
-            display: flex !important;
-            flex-direction: column !important;
-            gap: 2px !important;
-            padding-top: 4px !important;
-            height: calc(100% - 40px) !important;
-            overflow: visible !important;
+            padding: 2px 4px 4px !important;
         }
 
         /* iOS-Style Events */

@@ -572,44 +572,16 @@ const CalendarEngine = {
       const _isMobile = window.innerWidth <= 768;
 
       // ── MONTH VIEW VIEWPORT SIZING ─────────────────────────────────────────
-      // Sets the calendar to a fraction of vh AND forces all week rows to
-      // exactly the same height so no row expands with event content.
-      // Stores the intended pixel height set by _applyMonthViewHeight so _equalizeMonthRows
-      // always uses the correct value even before the browser has painted the new CSS height.
-      let _monthViewTargetH = 0;
-
-      // Force all month-view rows to identical height using live DOM measurements.
-      // Must run AFTER events render, which is why it's also triggered from eventDidMount.
-      function _equalizeMonthRows() {
-        try {
-          if (!calendar || !calendar.view || calendar.view.type !== 'dayGridMonth') return;
-          // FC's expandRows:true handles equal row heights. This function only ensures
-          // the body scroller is scrollable as a safety net if anything overflows.
-          containerElement.querySelectorAll('.fc-scrollgrid-section-body .fc-scroller').forEach(el => {
-            el.style.setProperty('overflow-y', 'auto',   'important');
-            el.style.setProperty('overflow-x', 'hidden', 'important');
-          });
-        } catch(_) {}
-      }
-
-      let _equalizeTimer = null;
-      function _scheduleEqualize() {
-        clearTimeout(_equalizeTimer);
-        _equalizeTimer = setTimeout(_equalizeMonthRows, 300);
-      }
-
+      // Apply month view height: tell FC to fill its container and expand rows equally.
+      // The container (#scheduleCalendar) is sized by the CSS flex chain.
       function _applyMonthViewHeight() {
         try {
           if (!calendar || !calendar.view || calendar.view.type !== 'dayGridMonth') return;
-          // The container is now sized by pure CSS flex chain (body > main-content >
-          // content-area > #scheduleCalendar all have height:100%/flex:1/min-height:0).
-          // We just tell FC to fill its container and expand rows equally.
-          if (calendar && typeof calendar.setOption === 'function') {
+          if (typeof calendar.setOption === 'function') {
             calendar.setOption('height', '100%');
             calendar.setOption('expandRows', true);
             calendar.updateSize();
           }
-          setTimeout(_equalizeMonthRows, 300);
         } catch(_) {}
       }
 
@@ -937,8 +909,8 @@ const CalendarEngine = {
         },
         
         eventDidMount: (info) => {
-          // Re-equalize month rows 300 ms after the last event mounts (debounced)
-          try { if (calendar && calendar.view && calendar.view.type === 'dayGridMonth') _scheduleEqualize(); } catch(_) {}
+          // Trigger a size update when events mount in month view
+          try { if (calendar && calendar.view && calendar.view.type === 'dayGridMonth') calendar.updateSize(); } catch(_) {}
           try {
             const isBooking = info.event.extendedProps?.isBooking || info.event.extendedProps?.tab === 'customer' || info.event.extendedProps?.customer;
             const type = info.event.extendedProps?.type || info.event.type || 'unknown';
@@ -1999,10 +1971,6 @@ const CalendarEngine = {
           // Month view: recalculate viewport-based cell height on resize
           if (currentViewType === 'dayGridMonth') {
             _applyMonthViewHeight();
-            // updateSize can wipe row heights, so re-equalize after it
-            if (calendar.updateSize) calendar.updateSize();
-            setTimeout(_equalizeMonthRows, 100);
-            setTimeout(_equalizeMonthRows, 500);
             return;
           }
           
