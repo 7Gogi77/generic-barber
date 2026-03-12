@@ -595,8 +595,6 @@ const CalendarEngine = {
           if (containerH < 100 || toolbarH < 1) return;
           const harnessH = containerH - toolbarH;       // height for .fc-view-harness
           const bodyH    = harnessH - headerH;          // height for the body section (below col header)
-          const rowH     = Math.floor((bodyH - 4) / rows.length);
-          if (rowH < 40) return;
 
           // 1. View harness
           const viewHarness = containerElement.querySelector('.fc-view-harness');
@@ -625,19 +623,28 @@ const CalendarEngine = {
             });
           });
 
-          // 3. Individual rows, cells, frames
-          rows.forEach(row => {
-            row.style.setProperty('height',     rowH + 'px', 'important');
-            row.style.setProperty('max-height', rowH + 'px', 'important');
+          // 3. Distribute the actual tbody height precisely.
+          //    Reading offsetHeight after pinning the body chain forces a synchronous
+          //    browser reflow, so we get the true rendered height — no gap at the bottom.
+          //    The last row absorbs any remainder pixels so rows always sum exactly to actualBodyH.
+          const tbodyEl     = containerElement.querySelector('.fc-daygrid-body > table > tbody');
+          const actualBodyH = (tbodyEl && tbodyEl.offsetHeight > 40) ? tbodyEl.offsetHeight : bodyH;
+          const baseRowH    = Math.floor(actualBodyH / rows.length);
+          const lastRowH    = actualBodyH - baseRowH * (rows.length - 1);
+          if (baseRowH < 20) return;
+          rows.forEach((row, i) => {
+            const h = (i === rows.length - 1) ? lastRowH : baseRowH;
+            row.style.setProperty('height',     h + 'px', 'important');
+            row.style.setProperty('max-height', h + 'px', 'important');
             Array.from(row.querySelectorAll('td')).forEach(td => {
-              td.style.setProperty('height',     rowH + 'px', 'important');
-              td.style.setProperty('max-height', rowH + 'px', 'important');
-              td.style.setProperty('overflow',   'hidden',    'important');
+              td.style.setProperty('height',     h + 'px', 'important');
+              td.style.setProperty('max-height', h + 'px', 'important');
+              td.style.setProperty('overflow',   'hidden', 'important');
             });
             Array.from(row.querySelectorAll('.fc-daygrid-day-frame')).forEach(frame => {
-              frame.style.setProperty('height',     rowH + 'px', 'important');
-              frame.style.setProperty('max-height', rowH + 'px', 'important');
-              frame.style.setProperty('overflow',   'hidden',    'important');
+              frame.style.setProperty('height',     h + 'px', 'important');
+              frame.style.setProperty('max-height', h + 'px', 'important');
+              frame.style.setProperty('overflow',   'hidden', 'important');
             });
           });
         } catch(_) {}
