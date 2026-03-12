@@ -571,6 +571,30 @@ const CalendarEngine = {
 
       const _isMobile = window.innerWidth <= 768;
 
+      // ── MONTH VIEW VIEWPORT SIZING ─────────────────────────────────────────
+      // Calculates available screen height and tells FullCalendar to fill it
+      // in dayGridMonth view. FC then distributes rows evenly, so all week
+      // rows are the same height, scaling with the device screen size.
+      function _applyMonthViewHeight() {
+        try {
+          if (!calendar || !calendar.view || calendar.view.type !== 'dayGridMonth') return;
+          const rect = containerElement.getBoundingClientRect();
+          const vh = window.innerHeight || document.documentElement.clientHeight;
+          // topOffset: how far the container starts from the viewport top
+          const topOffset = Math.max(rect.top, 0);
+          const bottomPad = _isMobile ? 16 : 28; // breathing room at the bottom
+          const availH = Math.max(400, Math.floor(vh - topOffset - bottomPad));
+          containerElement.style.height = availH + 'px';
+          containerElement.style.overflow = 'hidden';
+          if (calendar && typeof calendar.setOption === 'function') {
+            calendar.setOption('height', availH);
+          }
+          if (calendar && typeof calendar.updateSize === 'function') {
+            calendar.updateSize();
+          }
+        } catch(_) {}
+      }
+
       const calendar = new FullCalendar.Calendar(containerElement, {
         initialView: options.initialView || 'dayGridMonth',
         headerToolbar: _isMobile ? {
@@ -1264,9 +1288,10 @@ const CalendarEngine = {
             }
           } catch (_) { /* ignore */ }
 
-          // After view renders, limit timed events to 3 per day
+          // After view renders, apply viewport-based height to month view
           setTimeout(() => {
             if (arg.view.type === 'dayGridMonth') {
+              _applyMonthViewHeight();
             }
             
             // For timeGridWeek only, ensure timegrid and scroll bodies are sized (skip Day to avoid fallbacks there)
@@ -1356,7 +1381,8 @@ const CalendarEngine = {
               if (rows.length > 0) {
                 try {
                   if (isMonthView) {
-                    // MONTH VIEW: clear any forced sizing so rows expand naturally
+                    // MONTH VIEW: apply viewport-based height then let FC distribute rows evenly
+                    setTimeout(_applyMonthViewHeight, 50);
                     daygridBody.style.overflowY = 'visible';
                     daygridBody.style.webkitOverflowScrolling = 'touch';
                     rows.forEach((row) => {
@@ -1949,6 +1975,13 @@ const CalendarEngine = {
           // Always use auto for month; pixel for timegrid
           const currentViewType = (calendar && calendar.view && calendar.view.type) ? calendar.view.type : '';
           const isTimegrid = currentViewType.startsWith('timeGrid');
+
+          // Month view: recalculate viewport-based cell height on resize
+          if (currentViewType === 'dayGridMonth') {
+            _applyMonthViewHeight();
+            if (calendar.updateSize) calendar.updateSize();
+            return;
+          }
           
           // Apply to container
           containerElement.style.minHeight = isTimegrid ? `${Math.max(520, window.innerHeight - 140)}px` : 'auto';

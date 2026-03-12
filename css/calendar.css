@@ -1967,6 +1967,21 @@
 }
 #scheduleCalendar.view-daygrid .fc .fc-daygrid-day-frame {
   min-height: 90px !important;
+  overflow: hidden !important; /* clip events that exceed the cell height */
+}
+
+/* Events container: fill the cell vertically, clip overflow */
+#scheduleCalendar.view-daygrid .fc .fc-daygrid-day-events {
+  overflow: hidden !important;
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+}
+
+/* Individual event chips: keep compact so more fit per cell */
+#scheduleCalendar.view-daygrid .fc .fc-daygrid-event {
+  margin-bottom: 2px !important;
+  min-height: 20px !important;
+  overflow: hidden !important;
 }
 
 /* ============================================
