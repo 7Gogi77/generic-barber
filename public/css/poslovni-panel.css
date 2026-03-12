@@ -384,6 +384,14 @@
         #scheduleCalendar.view-timegrid-week .fc-scroller-harness, #scheduleCalendar.view-timegrid-day .fc-scroller-harness { position: relative !important; }
 
         /* iOS-Style Column Headers */
+        /* In month view, size the container to fill the viewport exactly.
+           Specificity (1,1,0) beats calendar.css's #scheduleCalendar{height:auto!important} (1,0,0).
+           100dvh - 32px = viewport height minus .content-area top+bottom padding (16px each). */
+        #scheduleCalendar.view-daygrid {
+            height: calc(100dvh - 32px) !important;
+            max-height: calc(100dvh - 32px) !important;
+        }
+
         #scheduleCalendar.view-daygrid .fc .fc-col-header-cell {
             background: var(--ios-bg-secondary);
             color: var(--ios-text-secondary);
