@@ -1961,13 +1961,10 @@
    CALENDAR ROW HEIGHTS — UNIFORM
    ============================================ */
 
-/* All month-view rows get the same min-height so they look uniform */
-#scheduleCalendar.view-daygrid .fc .fc-daygrid-body tr {
-  height: auto !important;
-}
+/* Clip events that exceed the cell height — no min-height so FC can distribute
+   rows evenly within the fixed total height set by _applyMonthViewHeight() */
 #scheduleCalendar.view-daygrid .fc .fc-daygrid-day-frame {
-  min-height: 90px !important;
-  overflow: hidden !important; /* clip events that exceed the cell height */
+  overflow: hidden !important;
 }
 
 /* Events container: fill the cell vertically, clip overflow */
@@ -1980,7 +1977,6 @@
 /* Individual event chips: keep compact so more fit per cell */
 #scheduleCalendar.view-daygrid .fc .fc-daygrid-event {
   margin-bottom: 2px !important;
-  min-height: 20px !important;
   overflow: hidden !important;
 }
 

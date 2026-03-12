@@ -578,10 +578,10 @@ const CalendarEngine = {
         try {
           if (!calendar || !calendar.view || calendar.view.type !== 'dayGridMonth') return;
           const vh = window.innerHeight || document.documentElement.clientHeight;
-          // 72% of viewport on desktop (leaves ~28% for panel header, tabs, filter row).
-          // 68% on mobile. Capped at 900 px so cells don't become enormous on 4K screens.
-          const fraction = _isMobile ? 0.68 : 0.72;
-          const availH = Math.min(900, Math.max(380, Math.floor(vh * fraction)));
+          // 60% of viewport height on desktop leaves ~40% for panel chrome (header,
+          // tabs, worker filter, calendar toolbar). Capped at 820px for large screens.
+          const fraction = _isMobile ? 0.62 : 0.60;
+          const availH = Math.min(820, Math.max(340, Math.floor(vh * fraction)));
           containerElement.style.height = availH + 'px';
           containerElement.style.overflow = 'hidden';
           if (calendar && typeof calendar.setOption === 'function') {
