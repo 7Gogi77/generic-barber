@@ -623,14 +623,13 @@ const CalendarEngine = {
             });
           });
 
-          // 3. Distribute the actual tbody height precisely.
-          //    Reading offsetHeight after pinning the body chain forces a synchronous
-          //    browser reflow, so we get the true rendered height — no gap at the bottom.
-          //    The last row absorbs any remainder pixels so rows always sum exactly to actualBodyH.
-          const tbodyEl     = containerElement.querySelector('.fc-daygrid-body > table > tbody');
-          const actualBodyH = (tbodyEl && tbodyEl.offsetHeight > 40) ? tbodyEl.offsetHeight : bodyH;
-          const baseRowH    = Math.floor(actualBodyH / rows.length);
-          const lastRowH    = actualBodyH - baseRowH * (rows.length - 1);
+          // 3. Distribute bodyH precisely across all rows.
+          //    We use bodyH (our computed budget) directly — NOT tbodyEl.offsetHeight, because
+          //    <tbody> offsetHeight returns its content height, not the constrained height, which
+          //    would make rows oversized and push the last row completely outside the visible area.
+          //    The last row absorbs any remainder pixels so rows always sum exactly to bodyH.
+          const baseRowH = Math.floor(bodyH / rows.length);
+          const lastRowH = bodyH - baseRowH * (rows.length - 1);
           if (baseRowH < 20) return;
           rows.forEach((row, i) => {
             const h = (i === rows.length - 1) ? lastRowH : baseRowH;
