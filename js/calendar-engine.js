@@ -616,8 +616,12 @@ const CalendarEngine = {
         try {
           if (!calendar || !calendar.view || calendar.view.type !== 'dayGridMonth') return;
           const vh = window.innerHeight || document.documentElement.clientHeight;
-          const fraction = _isMobile ? 0.62 : 0.60;
-          const totalH = Math.min(820, Math.max(340, Math.floor(vh * fraction)));
+          // Measure how far down the calendar sits so we fill exactly what remains.
+          // Fallback to a fraction if the element isn't laid out yet (top === 0).
+          const rect = containerElement.getBoundingClientRect();
+          const topOffset = (rect && rect.top > 20) ? rect.top : vh * 0.18;
+          const bottomPad = 24; // breathing room at the bottom of the page
+          const totalH = Math.max(340, Math.floor(vh - topOffset - bottomPad));
           containerElement.style.height = totalH + 'px';
           containerElement.style.overflow = 'hidden';
           if (calendar && typeof calendar.setOption === 'function') {
