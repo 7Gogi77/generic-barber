@@ -589,7 +589,7 @@ const CalendarEngine = {
           if (rows.length === 0) return;
           const toolbar   = containerElement.querySelector('.fc-header-toolbar');
           const colHeader = containerElement.querySelector('.fc-col-header');
-          const containerH = containerElement.offsetHeight || _monthViewTargetH;
+          const containerH = _monthViewTargetH || containerElement.offsetHeight;
           const toolbarH   = toolbar    ? toolbar.offsetHeight    : 52;
           const headerH    = colHeader  ? colHeader.offsetHeight  : 35;
           if (containerH < 100 || toolbarH < 1) return;
@@ -658,18 +658,16 @@ const CalendarEngine = {
           const bottomPad = 24;
           const totalH = Math.max(340, Math.floor(vh - topOffset - bottomPad));
           _monthViewTargetH = totalH;
-          // Inject/update a <style> tag — this always wins over any !important in static CSS.
-          // We do NOT call setOption('height', px) here because that triggers a FullCalendar
-          // internal re-render which resets all row heights, creating a fight with equalizeRows.
-          let styleEl = document.getElementById('_calMonthHeightStyle');
-          if (!styleEl) {
-            styleEl = document.createElement('style');
-            styleEl.id = '_calMonthHeightStyle';
-            document.head.appendChild(styleEl);
-          }
-          styleEl.textContent =
-            `#scheduleCalendar.view-daygrid{height:${totalH}px!important;` +
-            `max-height:${totalH}px!important;overflow:hidden!important;}`;
+          // Inline style with 'important' priority — this is the absolute highest priority in
+          // the CSS cascade (inline !important beats every stylesheet rule, including !important
+          // rules in external CSS files). We do NOT call setOption('height', px) because that
+          // triggers a FullCalendar internal re-render which resets all row heights.
+          containerElement.style.setProperty('height',     totalH + 'px', 'important');
+          containerElement.style.setProperty('max-height', totalH + 'px', 'important');
+          containerElement.style.setProperty('overflow',   'hidden',       'important');
+          // Remove any old injected style tag left from a previous version
+          const oldStyle = document.getElementById('_calMonthHeightStyle');
+          if (oldStyle) oldStyle.remove();
           // Equalize rows — two passes: one quick, one after toolbar has settled
           setTimeout(_equalizeMonthRows, 80);
           setTimeout(_equalizeMonthRows, 600);
@@ -1852,7 +1850,7 @@ const CalendarEngine = {
                 if (h !== _lastToolbarH && h > 0) {
                   _lastToolbarH = h;
                   if (calendar && calendar.view && calendar.view.type === 'dayGridMonth') {
-                    _scheduleEqualize();
+                    _applyMonthViewHeight();
                   }
                 }
               });
