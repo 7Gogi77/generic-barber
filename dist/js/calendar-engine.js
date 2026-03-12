@@ -574,6 +574,10 @@ const CalendarEngine = {
       // ── MONTH VIEW VIEWPORT SIZING ─────────────────────────────────────────
       // Sets the calendar to a fraction of vh AND forces all week rows to
       // exactly the same height so no row expands with event content.
+      // Stores the intended pixel height set by _applyMonthViewHeight so _equalizeMonthRows
+      // always uses the correct value even before the browser has painted the new CSS height.
+      let _monthViewTargetH = 0;
+
       // Force all month-view rows to identical height using live DOM measurements.
       // Must run AFTER events render, which is why it's also triggered from eventDidMount.
       function _equalizeMonthRows() {
@@ -585,7 +589,9 @@ const CalendarEngine = {
           if (rows.length === 0) return;
           const toolbar  = containerElement.querySelector('.fc-header-toolbar');
           const colHeader = containerElement.querySelector('.fc-col-header');
-          const totalH   = Math.round(containerElement.getBoundingClientRect().height) || containerElement.offsetHeight;
+          // Use stored target height — getBoundingClientRect may reflect old height if the
+          // injected <style> tag hasn't been painted yet (happens at the 50ms timeout).
+          const totalH = _monthViewTargetH || Math.round(containerElement.getBoundingClientRect().height) || containerElement.offsetHeight;
           const toolbarH = toolbar    ? Math.ceil(toolbar.getBoundingClientRect().height)    : 52;
           const headerH  = colHeader  ? Math.ceil(colHeader.getBoundingClientRect().height)  : 35;
           const rowH = Math.floor(Math.max(totalH - toolbarH - headerH - 4, 200) / rows.length);
@@ -620,6 +626,8 @@ const CalendarEngine = {
           const topOffset = (rect && rect.top > 20) ? rect.top : vh * 0.18;
           const bottomPad = 24;
           const totalH = Math.max(340, Math.floor(vh - topOffset - bottomPad));
+          // Store so _equalizeMonthRows uses the correct value before the browser paints.
+          _monthViewTargetH = totalH;
           // Inject/update a <style> tag — this always wins over any !important in static CSS.
           let styleEl = document.getElementById('_calMonthHeightStyle');
           if (!styleEl) {
