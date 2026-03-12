@@ -616,17 +616,21 @@ const CalendarEngine = {
         try {
           if (!calendar || !calendar.view || calendar.view.type !== 'dayGridMonth') return;
           const vh = window.innerHeight || document.documentElement.clientHeight;
-          // Measure how far down the calendar sits so we fill exactly what remains.
-          // Fallback to a fraction if the element isn't laid out yet (top === 0).
           const rect = containerElement.getBoundingClientRect();
           const topOffset = (rect && rect.top > 20) ? rect.top : vh * 0.18;
           const bottomPad = 24;
           const totalH = Math.max(340, Math.floor(vh - topOffset - bottomPad));
-          // CSS has `height: auto !important` on #scheduleCalendar which overrides inline style.
-          // Use a CSS custom property that the .view-daygrid rule picks up instead.
-          containerElement.style.setProperty('--cal-month-h', totalH + 'px');
+          // Inject/update a <style> tag — this always wins over any !important in static CSS.
+          let styleEl = document.getElementById('_calMonthHeightStyle');
+          if (!styleEl) {
+            styleEl = document.createElement('style');
+            styleEl.id = '_calMonthHeightStyle';
+            document.head.appendChild(styleEl);
+          }
+          styleEl.textContent =
+            `#scheduleCalendar.view-daygrid{height:${totalH}px!important;` +
+            `max-height:${totalH}px!important;overflow:hidden!important;}`;
           if (calendar && typeof calendar.setOption === 'function') {
-            calendar.setOption('contentHeight', totalH); // override contentHeight:'auto' from init config
             calendar.setOption('height', totalH);
           }
           // Equalize rows at staggered delays to catch both fast and slow event renders

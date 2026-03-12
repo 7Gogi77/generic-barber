@@ -40,13 +40,6 @@
   overflow-x: clip !important;
 }
 
-/* Month view: height is controlled by JS via --cal-month-h custom property */
-#scheduleCalendar.view-daygrid {
-  height: var(--cal-month-h, auto) !important;
-  max-height: var(--cal-month-h, none) !important;
-  overflow-y: hidden !important;
-}
-
 /* Week/Day timegrid: container scrolls, month does not */
 #scheduleCalendar.view-timegrid-week {
   height: auto !important;
