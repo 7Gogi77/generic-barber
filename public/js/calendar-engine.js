@@ -601,24 +601,14 @@ const CalendarEngine = {
       function _applyMonthViewHeight() {
         try {
           if (!calendar || !calendar.view || calendar.view.type !== 'dayGridMonth') return;
-          const rect     = containerElement.getBoundingClientRect();
-          const topInset = (rect && rect.top >= 0) ? rect.top : 16;
-          const targetH  = Math.max(340, Math.floor(window.innerHeight - topInset - 16));
-          _monthViewTargetH = targetH;
-          // Pin container via CSS variable
-          document.documentElement.style.setProperty('--cal-h', targetH + 'px');
-          // Force a synchronous browser layout flush so the CSS --cal-h is applied
-          // BEFORE any FC measurement happens below.
-          containerElement.getBoundingClientRect();
-          // Pass targetH as an explicit pixel value — FC no longer needs to measure
-          // the container itself, eliminating the timing race where FC measured the
-          // stale (pre-CSS) container height and sized rows for the wrong budget.
+          // The container is now sized by pure CSS flex chain (body > main-content >
+          // content-area > #scheduleCalendar all have height:100%/flex:1/min-height:0).
+          // We just tell FC to fill its container and expand rows equally.
           if (calendar && typeof calendar.setOption === 'function') {
-            calendar.setOption('height', targetH);
+            calendar.setOption('height', '100%');
             calendar.setOption('expandRows', true);
             calendar.updateSize();
           }
-          // Ensure body scroller can scroll as a safety net
           setTimeout(_equalizeMonthRows, 300);
         } catch(_) {}
       }

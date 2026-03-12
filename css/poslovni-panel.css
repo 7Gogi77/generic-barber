@@ -53,8 +53,8 @@
 
         html, body {
             width: 100%;
-            min-height: 100%;
-            overflow-y: auto;
+            height: 100%;
+            overflow: hidden;
             margin: 0;
             padding: 0;
         }
@@ -192,11 +192,11 @@
             margin-left: 72px;
             display: flex;
             flex-direction: column;
-            overflow: visible;
+            overflow: hidden;
             transition: margin-left 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
             width: calc(100% - 72px);
-            min-height: 100vh;
-            height: auto;
+            height: 100%;
+            min-height: 0;
             background: var(--ios-bg-primary);
         }
 
@@ -211,12 +211,11 @@
 
         .content-area {
             flex: 1;
-            overflow-y: visible;
-            overflow-x: hidden;
+            overflow: hidden;
             padding: 16px;
             background: var(--ios-bg-primary);
             width: 100%;
-            height: auto;
+            height: 100%;
             min-height: 0;
             display: flex;
             flex-direction: column;
@@ -227,11 +226,14 @@
         #scheduleCalendar {
             background: var(--ios-bg-secondary);
             width: 100%;
+            flex: 1;
+            min-height: 0;
             overflow: hidden;
             padding: 0;
             border-radius: var(--ios-radius-lg);
             box-shadow: var(--ios-shadow-md);
-            display: block;
+            display: flex;
+            flex-direction: column;
             border: none;
         }
         
@@ -383,13 +385,8 @@
         /* View-scoped positioning - TimeGrid requires relative to contain absolutely positioned children */
         #scheduleCalendar.view-timegrid-week .fc-scroller-harness, #scheduleCalendar.view-timegrid-day .fc-scroller-harness { position: relative !important; }
 
-        /* In month view, pin the container height to the true visible viewport.
-           --cal-h is set by JS from window.innerHeight (the only reliable source).
-           Specificity (1,1,0) beats calendar.css #scheduleCalendar rules at (1,0,0),
-           so both height:auto!important and overflow-y:visible!important are overridden. */
+        /* In month view FC needs height:100% so expandRows fills the container */
         #scheduleCalendar.view-daygrid {
-            height: var(--cal-h, calc(100dvh - 32px)) !important;
-            max-height: var(--cal-h, calc(100dvh - 32px)) !important;
             overflow: hidden !important;
             overflow-y: hidden !important;
         }
