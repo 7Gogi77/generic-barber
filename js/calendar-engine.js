@@ -605,20 +605,21 @@ const CalendarEngine = {
           const topInset = (rect && rect.top >= 0) ? rect.top : 16;
           const targetH  = Math.max(340, Math.floor(window.innerHeight - topInset - 16));
           _monthViewTargetH = targetH;
-          // Pin the container via CSS custom property. Our CSS rule:
-          //   #scheduleCalendar.view-daygrid { height: var(--cal-h) !important }
-          // has specificity (1,1,0) which beats any (1,0,0) stylesheet rule.
+          // Pin container via CSS variable
           document.documentElement.style.setProperty('--cal-h', targetH + 'px');
-          // Tell FC to fill 100% of its container and expand rows to fill available space.
-          // This is FC's built-in mechanism — far more reliable than manual DOM pinning.
-          // expandRows:true makes FC distribute row heights equally to fill the container.
+          // Force a synchronous browser layout flush so the CSS --cal-h is applied
+          // BEFORE any FC measurement happens below.
+          containerElement.getBoundingClientRect();
+          // Pass targetH as an explicit pixel value — FC no longer needs to measure
+          // the container itself, eliminating the timing race where FC measured the
+          // stale (pre-CSS) container height and sized rows for the wrong budget.
           if (calendar && typeof calendar.setOption === 'function') {
-            calendar.setOption('height', '100%');
+            calendar.setOption('height', targetH);
             calendar.setOption('expandRows', true);
             calendar.updateSize();
           }
-          // Safety net: ensure the body scroller can scroll if anything still overflows.
-          setTimeout(_equalizeMonthRows, 200);
+          // Ensure body scroller can scroll as a safety net
+          setTimeout(_equalizeMonthRows, 300);
         } catch(_) {}
       }
 
