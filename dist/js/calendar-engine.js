@@ -587,14 +587,25 @@ const CalendarEngine = {
           if (!daygridBody) return;
           const rows = Array.from(daygridBody.querySelectorAll('tbody > tr'));
           if (rows.length === 0) return;
-          const toolbar  = containerElement.querySelector('.fc-header-toolbar');
+          const toolbar   = containerElement.querySelector('.fc-header-toolbar');
           const colHeader = containerElement.querySelector('.fc-col-header');
-          // Use stored target height — getBoundingClientRect may reflect old height if the
-          // injected <style> tag hasn't been painted yet (happens at the 50ms timeout).
-          const totalH = _monthViewTargetH || Math.round(containerElement.getBoundingClientRect().height) || containerElement.offsetHeight;
+          const totalH   = _monthViewTargetH || Math.round(containerElement.getBoundingClientRect().height) || containerElement.offsetHeight;
           const toolbarH = toolbar    ? Math.ceil(toolbar.getBoundingClientRect().height)    : 52;
           const headerH  = colHeader  ? Math.ceil(colHeader.getBoundingClientRect().height)  : 35;
-          const rowH = Math.floor(Math.max(totalH - toolbarH - headerH - 4, 200) / rows.length);
+          // 8px buffer so rounding never cuts the last row
+          const rowH = Math.floor((totalH - toolbarH - headerH - 8) / rows.length);
+          if (rowH < 40) return; // sanity check
+          // Constrain the view harness so FC's own content-height doesn't overflow the container
+          const viewHarness = containerElement.querySelector('.fc-view-harness');
+          if (viewHarness) {
+            viewHarness.style.setProperty('height',     (totalH - toolbarH) + 'px', 'important');
+            viewHarness.style.setProperty('max-height', (totalH - toolbarH) + 'px', 'important');
+            viewHarness.style.setProperty('overflow',   'hidden', 'important');
+          }
+          // Clip the scroller so FC doesn't add internal scroll
+          containerElement.querySelectorAll('.fc-daygrid .fc-scroller, .fc-scrollgrid-section-body .fc-scroller').forEach(s => {
+            s.style.setProperty('overflow', 'hidden', 'important');
+          });
           rows.forEach(row => {
             row.style.setProperty('height',     rowH + 'px', 'important');
             row.style.setProperty('max-height', rowH + 'px', 'important');
