@@ -1995,7 +1995,10 @@ const CalendarEngine = {
           // Month view: recalculate viewport-based cell height on resize
           if (currentViewType === 'dayGridMonth') {
             _applyMonthViewHeight();
+            // updateSize can wipe row heights, so re-equalize after it
             if (calendar.updateSize) calendar.updateSize();
+            setTimeout(_equalizeMonthRows, 100);
+            setTimeout(_equalizeMonthRows, 500);
             return;
           }
           
