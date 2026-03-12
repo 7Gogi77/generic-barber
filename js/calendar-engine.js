@@ -593,16 +593,12 @@ const CalendarEngine = {
           const topInset  = (rect && rect.top >= 0) ? rect.top : 16;
           const botPad    = 16; // .content-area padding-bottom
           const targetH   = Math.max(200, Math.floor(window.innerHeight - topInset - botPad));
-          // Drive the container height through a CSS custom property on <html>.
-          // JS can't reliably set inline !important on the container (FC or other scripts may
-          // clear it), and CSS dvh/vh units can diverge from window.innerHeight in environments
-          // with DevTools, OS display scaling, or browser chrome. The CSS variable is set on
-          // documentElement which nothing touches, and our !important rule at specificity (1,1,0)
-          // beats calendar.css's height:auto!important at (1,0,0).
+          // Set --cal-h on <html> so the CSS rule #scheduleCalendar.view-daygrid{
+          //   height: var(--cal-h) !important } clips the container to the true viewport size.
+          // We also use targetH directly for all calculations below — never reading back
+          // offsetHeight, which can be stale if the CSS paint hasn't happened yet.
           document.documentElement.style.setProperty('--cal-h', targetH + 'px');
-          // Reading offsetHeight forces a synchronous browser reflow so we measure the
-          // actual committed height (should now equal targetH from the CSS rule).
-          const containerH = containerElement.offsetHeight || targetH;
+          const containerH = targetH;
           const toolbarH   = toolbar    ? toolbar.offsetHeight    : 52;
           const headerH    = colHeader  ? colHeader.offsetHeight  : 35;
           if (containerH < 100 || toolbarH < 1) return;
