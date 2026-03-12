@@ -474,51 +474,10 @@ const CalendarEngine = {
     this.currentScheduleData = scheduleData;
 
     try {
-      // Clear container first
+      // Clear container
       containerElement.innerHTML = '';
-      
-      // Get actual available width
-      const parentWidth = containerElement.parentElement?.offsetWidth || window.innerWidth;
-      
-      // Calculate responsive height based on screen size - use a pixel height so timeGrid has space
-      const topOffset = 140; // header + toolbars + margins
-      const viewportH = window.innerHeight || document.documentElement.clientHeight || 800;
-      const _isMobileHeight = window.innerWidth <= 768;
-      // On mobile use 'auto' so the month grid can grow to show all rows without clipping
-      const calcHeight = _isMobileHeight ? 'auto' : Math.max(520, viewportH - topOffset);
-
-      // Store on window object so it can be accessed in other functions
-      window._calendarHeight = calcHeight;
-      window._minCalendarHeight = _isMobileHeight ? 400 : 520;
-
-
-      // Set container dimensions - give it a fixed height in px so FullCalendar can render timeGrid
-      containerElement.style.padding = '0';
-      containerElement.style.margin = '0';
-      containerElement.style.boxSizing = 'border-box';
-      containerElement.style.display = 'block';
       containerElement.style.width = '100%';
-      containerElement.style.maxWidth = '100%';
-      containerElement.style.minWidth = '100%';
-      containerElement.style.minHeight = `${window._minCalendarHeight}px`;
-      containerElement.style.height = 'auto';
-      containerElement.style.overflow = 'hidden'; // clips cell borders at rounded corners
-
-
-      // Ensure parent can hold the height and width
-      if (containerElement.parentElement) {
-        containerElement.parentElement.style.overflow = 'visible';
-        containerElement.parentElement.style.width = '100%';
-        containerElement.parentElement.style.minWidth = '100%';
-        containerElement.parentElement.style.maxWidth = '100%';
-        // Keep parent's height flexible but allow it to size to its contents
-        containerElement.parentElement.style.display = 'block';
-      }
-
-      // Allow container to fill available space
-      containerElement.style.flex = '0 0 auto';
-      containerElement.style.width = '100%';
-      containerElement.style.overflow = 'auto';
+      containerElement.style.overflow = 'hidden';
 
       // ── Merge saved booking settings from localStorage into SITE_CONFIG ──
       try {
@@ -571,17 +530,18 @@ const CalendarEngine = {
 
       const _isMobile = window.innerWidth <= 768;
 
-      // ── MONTH VIEW VIEWPORT SIZING ─────────────────────────────────────────
-      // Apply month view height: tell FC to fill its container and expand rows equally.
-      // The container (#scheduleCalendar) is sized by the CSS flex chain.
+      // ── MONTH VIEW HEIGHT ─────────────────────────────────────────────────
+      // Compute pixel height = viewport height minus .content-area padding (16px top + 16px bottom).
+      // body{overflow:hidden} ensures window.innerHeight equals the true viewport with no scroll.
       function _applyMonthViewHeight() {
         try {
-          if (!calendar || !calendar.view || calendar.view.type !== 'dayGridMonth') return;
-          if (typeof calendar.setOption === 'function') {
-            calendar.setOption('height', '100%');
-            calendar.setOption('expandRows', true);
-            calendar.updateSize();
-          }
+          if (!calendar || !containerElement) return;
+          if (!calendar.view || calendar.view.type !== 'dayGridMonth') return;
+          const availH = Math.max(300, window.innerHeight - 32); // 32 = 16px top + 16px bottom padding
+          containerElement.style.height = availH + 'px';
+          calendar.setOption('height', availH);
+          calendar.setOption('expandRows', true);
+          calendar.updateSize();
         } catch(_) {}
       }
 
@@ -1228,9 +1188,10 @@ const CalendarEngine = {
           try {
             const vForH = arg && arg.view && arg.view.type ? arg.view.type : '';
             if (vForH === 'timeGridDay') {
-              containerElement.style.height = `${calcHeight}px`;
+              const _dayH = Math.max(520, window.innerHeight - 32);
+              containerElement.style.height = `${_dayH}px`;
               containerElement.style.overflow = 'hidden';
-              try { if (calendar && typeof calendar.setOption === 'function') calendar.setOption('height', calcHeight); } catch(_){}
+              try { if (calendar && typeof calendar.setOption === 'function') calendar.setOption('height', _dayH); } catch(_){}
             } else if (vForH === 'dayGridMonth') {
               // Month view: let _applyMonthViewHeight control the height (prevents overwrite to auto)
               _applyMonthViewHeight();
@@ -1975,17 +1936,17 @@ const CalendarEngine = {
           }
           
           // Apply to container
-          containerElement.style.minHeight = isTimegrid ? `${Math.max(520, window.innerHeight - 140)}px` : 'auto';
-          containerElement.style.height = isTimegrid ? `${Math.max(520, window.innerHeight - 140)}px` : 'auto';
+          containerElement.style.minHeight = isTimegrid ? `${Math.max(520, window.innerHeight - 32)}px` : 'auto';
+          containerElement.style.height = isTimegrid ? `${Math.max(520, window.innerHeight - 32)}px` : 'auto';
           
           // Apply to FC elements
           const fcView = containerElement.querySelector('.fc');
           if (fcView) {
-            fcView.style.height = isTimegrid ? `${Math.max(520, window.innerHeight - 140)}px` : '';
+            fcView.style.height = isTimegrid ? `${Math.max(520, window.innerHeight - 32)}px` : '';
             const fcRoot = containerElement.querySelector('.fc-root');
-            if (fcRoot) fcRoot.style.height = isTimegrid ? `${Math.max(520, window.innerHeight - 140)}px` : '';
+            if (fcRoot) fcRoot.style.height = isTimegrid ? `${Math.max(520, window.innerHeight - 32)}px` : '';
             const fcViewHarness = containerElement.querySelector('.fc-view-harness');
-            if (fcViewHarness) fcViewHarness.style.height = isTimegrid ? `${Math.max(520, window.innerHeight - 140)}px` : '';
+            if (fcViewHarness) fcViewHarness.style.height = isTimegrid ? `${Math.max(520, window.innerHeight - 32)}px` : '';
           }
           
           // Update calendar size
