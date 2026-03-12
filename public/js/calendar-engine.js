@@ -589,17 +589,20 @@ const CalendarEngine = {
           if (rows.length === 0) return;
           const toolbar   = containerElement.querySelector('.fc-header-toolbar');
           const colHeader = containerElement.querySelector('.fc-col-header');
-          const totalH   = _monthViewTargetH || Math.round(containerElement.getBoundingClientRect().height) || containerElement.offsetHeight;
-          const toolbarH = toolbar    ? Math.ceil(toolbar.getBoundingClientRect().height)    : 52;
-          const headerH  = colHeader  ? Math.ceil(colHeader.getBoundingClientRect().height)  : 35;
-          // 8px buffer so rounding never cuts the last row
-          const rowH = Math.floor((totalH - toolbarH - headerH - 8) / rows.length);
+          // Always read live dimensions — toolbar height changes as the layout stabilises
+          // (e.g. buttons wrap on first render then unwrap once widths are known).
+          const containerH = containerElement.offsetHeight || _monthViewTargetH;
+          const toolbarH   = toolbar    ? toolbar.offsetHeight    : 52;
+          const headerH    = colHeader  ? colHeader.offsetHeight  : 35;
+          if (containerH < 100 || toolbarH < 1) return; // not ready yet
+          const harnessH = containerH - toolbarH;
+          const rowH = Math.floor((harnessH - headerH - 8) / rows.length);
           if (rowH < 40) return; // sanity check
           // Constrain the view harness so FC's own content-height doesn't overflow the container
           const viewHarness = containerElement.querySelector('.fc-view-harness');
           if (viewHarness) {
-            viewHarness.style.setProperty('height',     (totalH - toolbarH) + 'px', 'important');
-            viewHarness.style.setProperty('max-height', (totalH - toolbarH) + 'px', 'important');
+            viewHarness.style.setProperty('height',     harnessH + 'px', 'important');
+            viewHarness.style.setProperty('max-height', harnessH + 'px', 'important');
             viewHarness.style.setProperty('overflow',   'hidden', 'important');
           }
           // Clip the scroller so FC doesn't add internal scroll
@@ -637,7 +640,6 @@ const CalendarEngine = {
           const topOffset = (rect && rect.top > 20) ? rect.top : vh * 0.18;
           const bottomPad = 24;
           const totalH = Math.max(340, Math.floor(vh - topOffset - bottomPad));
-          // Store so _equalizeMonthRows uses the correct value before the browser paints.
           _monthViewTargetH = totalH;
           // Inject/update a <style> tag — this always wins over any !important in static CSS.
           let styleEl = document.getElementById('_calMonthHeightStyle');
@@ -652,10 +654,11 @@ const CalendarEngine = {
           if (calendar && typeof calendar.setOption === 'function') {
             calendar.setOption('height', totalH);
           }
-          // Equalize rows at staggered delays to catch both fast and slow event renders
-          setTimeout(_equalizeMonthRows,  50);
-          setTimeout(_equalizeMonthRows, 350);
-          setTimeout(_equalizeMonthRows, 1000);
+          // Equalize rows — staggered delays so the toolbar has time to finish rendering
+          // before we measure it (first render can show toolbar taller due to button wrapping).
+          setTimeout(_equalizeMonthRows, 150);
+          setTimeout(_equalizeMonthRows, 500);
+          setTimeout(_equalizeMonthRows, 1200);
         } catch(_) {}
       }
 
