@@ -531,18 +531,22 @@ const CalendarEngine = {
       const _isMobile = window.innerWidth <= 768;
 
       // ── MONTH VIEW HEIGHT ─────────────────────────────────────────────────
-      // Compute pixel height = viewport height minus .content-area padding (16px top + 16px bottom).
-      // body{overflow:hidden} ensures window.innerHeight equals the true viewport with no scroll.
+      // Measures the container's actual top offset from the viewport and fills
+      // the remaining space down to 16px from the bottom.
+      // requestAnimationFrame ensures the DOM has settled before we measure.
       function _applyMonthViewHeight() {
-        try {
-          if (!calendar || !containerElement) return;
-          if (!calendar.view || calendar.view.type !== 'dayGridMonth') return;
-          const availH = Math.max(300, window.innerHeight - 32); // 32 = 16px top + 16px bottom padding
-          containerElement.style.height = availH + 'px';
-          calendar.setOption('height', availH);
-          calendar.setOption('expandRows', true);
-          calendar.updateSize();
-        } catch(_) {}
+        requestAnimationFrame(function() {
+          try {
+            if (!calendar || !containerElement) return;
+            if (!calendar.view || calendar.view.type !== 'dayGridMonth') return;
+            var rect = containerElement.getBoundingClientRect();
+            var h = Math.max(300, Math.floor(window.innerHeight - rect.top - 16));
+            containerElement.style.height = h + 'px';
+            calendar.setOption('expandRows', true);
+            calendar.setOption('height', h);
+            calendar.updateSize();
+          } catch(e) {}
+        });
       }
 
       const calendar = new FullCalendar.Calendar(containerElement, {

@@ -555,61 +555,6 @@
             border: none !important;
         }
 
-        /* max-height override for timeGrid views only (week/day need scrolling) */
-        #scheduleCalendar.view-timegrid-week .fc *,
-        #scheduleCalendar.view-timegrid-day .fc * {
-            max-height: none !important;
-        }
-
-        .fc-toolbar {
-            flex-shrink: 0;
-            height: auto;
-        }
-
-        .fc-view-harness {
-            flex: 1 !important;
-            min-height: 0 !important; /* Allow shrinking */
-            overflow: hidden;
-            border-radius: 0 0 var(--ios-radius-lg) var(--ios-radius-lg);
-        }
-
-        .fc-view-harness-active {
-            flex: 1 !important;
-            min-height: 0 !important;
-            overflow: hidden;
-        }
-
-        /* Make views fill the harness and use internal scrolling */
-        .fc-view-harness > .fc-view {
-            height: 100% !important;
-            min-height: 0 !important;
-        }
-
-        .fc-timegrid {
-            height: 100% !important;
-            min-height: 0 !important;
-            display: flex !important;
-            flex-direction: column !important;
-        }
-
-        .fc-scrollgrid {
-            flex: 1 !important;
-            min-height: 0 !important;
-        }
-
-        /* MONTH VIEW: Keep scrollgrid filling container, but rows stay fixed at 140px */
-        #scheduleCalendar.view-daygrid .fc-scrollgrid {
-            flex: 1 !important;
-            min-height: 0 !important;
-        }
-
-        /* Ensure daygrid scroller clips properly */
-        .fc-daygrid-body,
-        .fc-scrollgrid,
-        .fc-scroller-liquid-absolute {
-            border-radius: 0 0 var(--ios-radius-lg) var(--ios-radius-lg);
-        }
-
         /* ============================================
            TIMEGRID (WEEK/DAY) - ENABLE VERTICAL SCROLLING
            ============================================ */
