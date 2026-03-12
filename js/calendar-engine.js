@@ -664,11 +664,6 @@ const CalendarEngine = {
           });
         } catch(_) {}
       }
-              frame.style.setProperty('overflow',   'hidden', 'important');
-            });
-          });
-        } catch(_) {}
-      }
 
       let _equalizeTimer = null;
       function _scheduleEqualize() {
