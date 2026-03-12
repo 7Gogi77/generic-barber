@@ -589,26 +589,43 @@ const CalendarEngine = {
           if (rows.length === 0) return;
           const toolbar   = containerElement.querySelector('.fc-header-toolbar');
           const colHeader = containerElement.querySelector('.fc-col-header');
-          // Always read live dimensions — toolbar height changes as the layout stabilises
-          // (e.g. buttons wrap on first render then unwrap once widths are known).
           const containerH = containerElement.offsetHeight || _monthViewTargetH;
           const toolbarH   = toolbar    ? toolbar.offsetHeight    : 52;
           const headerH    = colHeader  ? colHeader.offsetHeight  : 35;
-          if (containerH < 100 || toolbarH < 1) return; // not ready yet
-          const harnessH = containerH - toolbarH;
-          const rowH = Math.floor((harnessH - headerH - 8) / rows.length);
-          if (rowH < 40) return; // sanity check
-          // Constrain the view harness so FC's own content-height doesn't overflow the container
+          if (containerH < 100 || toolbarH < 1) return;
+          const harnessH = containerH - toolbarH;       // height for .fc-view-harness
+          const bodyH    = harnessH - headerH;          // height for the body section (below col header)
+          const rowH     = Math.floor((bodyH - 4) / rows.length);
+          if (rowH < 40) return;
+
+          // 1. View harness
           const viewHarness = containerElement.querySelector('.fc-view-harness');
           if (viewHarness) {
             viewHarness.style.setProperty('height',     harnessH + 'px', 'important');
             viewHarness.style.setProperty('max-height', harnessH + 'px', 'important');
-            viewHarness.style.setProperty('overflow',   'hidden', 'important');
+            viewHarness.style.setProperty('overflow',   'hidden',        'important');
           }
-          // Clip the scroller so FC doesn't add internal scroll
-          containerElement.querySelectorAll('.fc-daygrid .fc-scroller, .fc-scrollgrid-section-body .fc-scroller').forEach(s => {
-            s.style.setProperty('overflow', 'hidden', 'important');
+
+          // 2. Every element in the scrollgrid body chain must be pinned to bodyH
+          //    so FC can't keep them at their auto content size.
+          const bodySelectors = [
+            'tr.fc-scrollgrid-section-body',
+            'tr.fc-scrollgrid-section-body > td',
+            '.fc-scrollgrid-section-body .fc-scroller',
+            '.fc-scrollgrid-section-body .fc-scroller-harness',
+            '.fc-daygrid-body',
+            '.fc-daygrid-body > table',
+            '.fc-daygrid-body > table > tbody'
+          ];
+          bodySelectors.forEach(sel => {
+            containerElement.querySelectorAll(sel).forEach(el => {
+              el.style.setProperty('height',     bodyH + 'px', 'important');
+              el.style.setProperty('max-height', bodyH + 'px', 'important');
+              el.style.setProperty('overflow',   'hidden',     'important');
+            });
           });
+
+          // 3. Individual rows, cells, frames
           rows.forEach(row => {
             row.style.setProperty('height',     rowH + 'px', 'important');
             row.style.setProperty('max-height', rowH + 'px', 'important');
