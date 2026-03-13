@@ -245,7 +245,7 @@ const CalendarEngine = {
     }
 
     const durationMs = endDate - startDate;
-    const isMultiDay = Number.isFinite(durationMs) && durationMs > (24 * 60 * 60 * 1000);
+    const isMultiDay = Number.isFinite(durationMs) && durationMs >= (24 * 60 * 60 * 1000);
 
     // More robust all-day detection:
     // - If both original strings lacked time parts -> all-day
@@ -530,11 +530,10 @@ const CalendarEngine = {
             tr.style.setProperty('max-height', rowHpx, 'important');
           });
 
-          // Keep per-cell event stack inside fixed row height.
-          var eventsMax = Math.max(24, px - 28);
+          // Do not clip day-events container; clipping breaks multi-day span rendering.
           containerElement.querySelectorAll('.fc-daygrid-day-events').forEach(function(el) {
-            el.style.setProperty('max-height', eventsMax + 'px', 'important');
-            el.style.setProperty('overflow', 'hidden', 'important');
+            el.style.removeProperty('max-height');
+            el.style.setProperty('overflow', 'visible', 'important');
           });
         }
 
@@ -581,10 +580,13 @@ const CalendarEngine = {
         containerElement.querySelectorAll('.fc-scroller-harness').forEach(function(el) {
           el.style.removeProperty('overflow');
         });
-        // Update dayMaxEvents based on current screen width
+        // Update month event capacity based on viewport.
+        // Mobile stays strict (1), larger screens auto-fit by cell height.
         var w = window.innerWidth;
-        var maxEv = w <= 768 ? 1 : (w <= 1600 ? 2 : 3);
+        var maxEv = w <= 768 ? 1 : true;
+        var maxRows = w <= 768 ? 1 : true;
         calendar.setOption('dayMaxEvents', maxEv);
+        calendar.setOption('dayMaxEventRows', maxRows);
         calendar.setOption('height', h);
         calendar.setOption('expandRows', true);
         calendar.updateSize();
@@ -678,8 +680,8 @@ const CalendarEngine = {
         firstDay: 1,
         nowIndicator: true,
         fixedWeekCount: true, // Always 6 rows for equal row heights like LimeBooking
-        dayMaxEvents: _isMobile ? 1 : (window.innerWidth <= 1600 ? 2 : 3), // Laptop: 2, Desktop: 3
-        dayMaxEventRows: false,
+        dayMaxEvents: _isMobile ? 1 : true, // Mobile fixed, laptop/desktop auto-fit per cell
+        dayMaxEventRows: _isMobile ? 1 : true,
         moreLinkContent: function() {
           return { html: 'Prikaži vse...' };
         },
@@ -720,8 +722,8 @@ const CalendarEngine = {
           const bStart = new Date(b.start);
           const bEnd = new Date(b.end || b.start);
           
-          const aMultiDay = Math.abs(aEnd - aStart) > (24 * 60 * 60 * 1000);
-          const bMultiDay = Math.abs(bEnd - bStart) > (24 * 60 * 60 * 1000);
+          const aMultiDay = Math.abs(aEnd - aStart) >= (24 * 60 * 60 * 1000);
+          const bMultiDay = Math.abs(bEnd - bStart) >= (24 * 60 * 60 * 1000);
           
           // Multi-day events come first
           if (aMultiDay && !bMultiDay) return -1;

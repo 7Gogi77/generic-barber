@@ -487,7 +487,7 @@
         #scheduleCalendar.view-daygrid .fc-daygrid-day-events {
             padding: 0 2px 2px !important;
             margin-top: -1px !important;
-            overflow: hidden !important;
+            overflow: visible !important;
         }
 
         /* Let FC handle row distribution via expandRows; dayMaxEvents limits visible events */
