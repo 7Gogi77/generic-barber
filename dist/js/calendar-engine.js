@@ -516,29 +516,35 @@ const CalendarEngine = {
         }
 
         var rowCount = rows.length;
-        var rowH = Math.max(72, Math.floor((bodyH - 1) / rowCount));
-        var bodyFitH = rowH * rowCount;
+        // Table rows are separated by horizontal borders; reserve that pixel budget first.
+        var borderBudget = rowCount + 1;
+        var usableRowsH = Math.max(120, bodyH - borderBudget);
+        var rowH = Math.max(72, usableRowsH / rowCount);
+        var bodyFitH = rowH * rowCount + borderBudget;
 
-        containerElement.style.setProperty('--month-row-h', rowH + 'px');
-        containerElement.style.setProperty('--month-body-h', bodyFitH + 'px');
+        var rowHpx = rowH.toFixed(3) + 'px';
+        var bodyHpx = bodyFitH.toFixed(3) + 'px';
+
+        containerElement.style.setProperty('--month-row-h', rowHpx);
+        containerElement.style.setProperty('--month-body-h', bodyHpx);
 
         var table = containerElement.querySelector('.fc-daygrid-body .fc-scrollgrid-sync-table');
         if (table) {
-          table.style.setProperty('height', bodyFitH + 'px', 'important');
-          table.style.setProperty('min-height', bodyFitH + 'px', 'important');
-          table.style.setProperty('max-height', bodyFitH + 'px', 'important');
+          table.style.setProperty('height', bodyHpx, 'important');
+          table.style.setProperty('min-height', bodyHpx, 'important');
+          table.style.setProperty('max-height', bodyHpx, 'important');
         }
 
         rows.forEach(function(tr) {
-          tr.style.setProperty('height', rowH + 'px', 'important');
-          tr.style.setProperty('min-height', rowH + 'px', 'important');
-          tr.style.setProperty('max-height', rowH + 'px', 'important');
+          tr.style.setProperty('height', rowHpx, 'important');
+          tr.style.setProperty('min-height', rowHpx, 'important');
+          tr.style.setProperty('max-height', rowHpx, 'important');
         });
 
         // Keep per-cell event stack inside fixed row height.
         var eventsMax = Math.max(24, rowH - 30);
         containerElement.querySelectorAll('.fc-daygrid-day-events').forEach(function(el) {
-          el.style.setProperty('max-height', eventsMax + 'px', 'important');
+          el.style.setProperty('max-height', eventsMax.toFixed(3) + 'px', 'important');
           el.style.setProperty('overflow', 'hidden', 'important');
         });
       }
