@@ -520,11 +520,15 @@ const CalendarEngine = {
           el.style.right = '0';
           el.style.bottom = '0';
           el.style.left = '0';
-          el.style.overflow = 'hidden auto';
+          el.style.overflow = 'hidden';
         });
         // Restore FC scroller harness to relative (FC default)
         containerElement.querySelectorAll('.fc-scroller-harness').forEach(function(el) {
           el.style.removeProperty('overflow');
+        });
+        // Kill scrollbar on header row (body has no scrollbar, so no gutter compensation needed)
+        containerElement.querySelectorAll('.fc-scrollgrid-section-header .fc-scroller').forEach(function(el) {
+          el.style.overflow = 'hidden';
         });
         calendar.setOption('height', h);
         calendar.setOption('expandRows', true);
@@ -618,9 +622,9 @@ const CalendarEngine = {
           // Show month abbreviation only on the 1st of the month
           if (dayNum === 1) {
             const monthNames = ['Jan','Feb','Mar','Apr','Maj','Jun','Jul','Avg','Sep','Okt','Nov','Dec'];
-            return { html: `<div class="fc-daygrid-day-number" style="font-weight:700;">${dayNum} <span style="font-size:0.85em;opacity:0.75;">${monthNames[d.getMonth()]}</span></div>` };
+            return { html: `<span style="font-weight:700;">${dayNum} <span style="font-size:0.85em;opacity:0.75;">${monthNames[d.getMonth()]}</span></span>` };
           }
-          return { html: `<div class="fc-daygrid-day-number">${dayNum}</div>` };
+          return { html: `<span>${dayNum}</span>` };
         },
         moreLinkClick: function(info) {
           window._moreLinkJustClicked = true;
