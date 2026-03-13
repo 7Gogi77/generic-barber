@@ -353,15 +353,16 @@
         #scheduleCalendar.view-timegrid-week .fc-scroller-harness,
         #scheduleCalendar.view-timegrid-day .fc-scroller-harness { position: relative !important; }
 
-        /* Month view: kill ALL scrollbars — expandRows means no scroll is needed */
-        #scheduleCalendar.view-daygrid .fc .fc-scroller {
+        /* Month view: hide scrollbar visually but let FC's layout engine work for expandRows */
+        #scheduleCalendar.view-daygrid .fc .fc-scrollgrid-section-header .fc-scroller {
             overflow: hidden !important;
+        }
+        #scheduleCalendar.view-daygrid .fc .fc-scrollgrid-section-body .fc-scroller {
             scrollbar-width: none !important;
         }
-        #scheduleCalendar.view-daygrid .fc .fc-scroller::-webkit-scrollbar {
+        #scheduleCalendar.view-daygrid .fc .fc-scrollgrid-section-body .fc-scroller::-webkit-scrollbar {
             display: none !important;
             width: 0 !important;
-            height: 0 !important;
         }
 
         /* Month view column headers */

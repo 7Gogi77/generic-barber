@@ -509,16 +509,17 @@ const CalendarEngine = {
           });
         });
         // Restore FC's absolute scroller positioning (week-view sets position:relative)
+        // Do NOT set overflow — let FC manage it for expandRows to calculate row heights
         containerElement.querySelectorAll('.fc-scroller-liquid-absolute').forEach(function(el) {
           el.style.removeProperty('height');
           el.style.removeProperty('min-height');
           el.style.removeProperty('max-height');
+          el.style.removeProperty('overflow');
           el.style.position = 'absolute';
           el.style.top = '0';
           el.style.right = '0';
           el.style.bottom = '0';
           el.style.left = '0';
-          el.style.overflow = 'hidden';
         });
         containerElement.querySelectorAll('.fc-scroller-harness').forEach(function(el) {
           el.style.removeProperty('overflow');
@@ -530,7 +531,7 @@ const CalendarEngine = {
         calendar.setOption('height', h);
         calendar.setOption('expandRows', true);
         calendar.updateSize();
-        // Kill header scrollbar AFTER updateSize
+        // Kill header scrollbar AFTER updateSize (FC adds scrollbar-gutter compensation)
         setTimeout(function() {
           containerElement.querySelectorAll('.fc-scrollgrid-section-header .fc-scroller').forEach(function(el) {
             el.style.setProperty('overflow', 'hidden', 'important');
