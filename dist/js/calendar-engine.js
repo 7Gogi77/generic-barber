@@ -616,17 +616,19 @@ const CalendarEngine = {
         locale: 'sl',
         firstDay: 1,
         nowIndicator: true,
-        fixedWeekCount: false, // Only show rows for actual weeks in the month � prevents empty rows
+        fixedWeekCount: true, // Always 6 rows for equal row heights like LimeBooking
         dayMaxEvents: _isMobile ? 1 : (window.innerWidth <= 1600 ? 2 : 3), // Laptop: 2, Desktop: 3
         dayMaxEventRows: false,
+        moreLinkContent: function() {
+          return { html: 'Prikaži vse...' };
+        },
         // Show abbreviated month name on first cell of each month (e.g. "1 Mar")
         dayCellContent: function(arg) {
           const d = arg.date;
           const dayNum = d.getDate();
-          // Show month abbreviation only on the 1st of the month
           if (dayNum === 1) {
             const monthNames = ['Jan','Feb','Mar','Apr','Maj','Jun','Jul','Avg','Sep','Okt','Nov','Dec'];
-            return { html: `<span style="font-weight:700;">${dayNum} <span style="font-size:0.85em;opacity:0.75;">${monthNames[d.getMonth()]}</span></span>` };
+            return { html: `<span>${dayNum} ${monthNames[d.getMonth()]}</span>` };
           }
           return { html: `<span>${dayNum}</span>` };
         },
@@ -905,25 +907,23 @@ const CalendarEngine = {
             const isLaptop = window.innerWidth <= 1366;
 
             if (isMonthView && isLaptop) {
-              // LAPTOP: single line - icon + name + time
+              // LAPTOP: single line — icon + name left, time right (LimeBooking style)
               return {
-                html: `<div style="display:flex;align-items:center;gap:3px;padding:1px 4px;font-size:11px;line-height:1.3;white-space:nowrap;overflow:hidden;">
+                html: `<div style="display:flex;align-items:center;gap:3px;font-size:11px;line-height:1.3;white-space:nowrap;overflow:hidden;">
                   <i class="bi ${iconClass}" style="font-size:10px;flex-shrink:0;"></i>
-                  <span style="font-weight:600;overflow:hidden;text-overflow:ellipsis;">${displayName}</span>
-                  ${timeText ? `<span style="opacity:0.7;font-size:10px;flex-shrink:0;">${timeText}</span>` : ''}
+                  <span style="font-weight:500;overflow:hidden;text-overflow:ellipsis;flex:1;">${displayName}</span>
+                  ${startTime ? `<span style="opacity:0.65;font-size:10px;flex-shrink:0;margin-left:auto;">${startTime}</span>` : ''}
                 </div>`
               };
             }
 
             if (isMonthView) {
-              // DESKTOP (>1366px): two lines - icon + name, then time below
+              // DESKTOP: single line — icon + name left, time right (LimeBooking style)
               return {
-                html: `<div style="display:flex;flex-direction:column;gap:1px;padding:2px 4px;">
-                  <div style="display:flex;align-items:center;gap:3px;min-height:14px;">
-                    <i class="bi ${iconClass}" style="font-size:11px;flex-shrink:0;"></i>
-                    <span style="font-size:11px;font-weight:600;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${displayName}</span>
-                  </div>
-                  ${timeText ? `<div style="font-size:10px;opacity:0.7;padding-left:14px;line-height:1.1;">${timeText}</div>` : ''}
+                html: `<div style="display:flex;align-items:center;gap:4px;font-size:12px;line-height:1.4;white-space:nowrap;overflow:hidden;">
+                  <i class="bi ${iconClass}" style="font-size:11px;flex-shrink:0;"></i>
+                  <span style="font-weight:500;overflow:hidden;text-overflow:ellipsis;flex:1;">${displayName}</span>
+                  ${startTime ? `<span style="opacity:0.55;font-size:11px;flex-shrink:0;margin-left:auto;">${startTime}</span>` : ''}
                 </div>`
               };
             }
@@ -953,15 +953,15 @@ const CalendarEngine = {
             
             if (!info.el) return;
             
-            // Define color schemes for different event types
+            // LimeBooking-style color schemes: light fill + left border accent
             const colorSchemes = {
-              booking: { bg: 'rgba(52, 152, 219, 0.15)', border: '#3498db', text: '#2c3e50' },           // Blue - Customer booking
-              working_hours: { bg: 'rgba(46, 204, 113, 0.15)', border: '#27ae60', text: '#1e5631' },    // Green - Working hours
-              vacation: { bg: 'rgba(241, 196, 15, 0.15)', border: '#f39c12', text: '#7d5f0f' },         // Yellow - Vacation
-              break: { bg: 'rgba(155, 89, 182, 0.15)', border: '#8e44ad', text: '#5a2e7f' },            // Purple - Break
-              lunch: { bg: 'rgba(230, 126, 34, 0.15)', border: '#d35400', text: '#7a2f09' },            // Orange - Lunch
-              sick_leave: { bg: 'rgba(231, 76, 60, 0.15)', border: '#e74c3c', text: '#a02f1f' },        // Red - Sick leave
-              day_off: { bg: 'rgba(189, 195, 199, 0.15)', border: '#95a5a6', text: '#52585c' }         // Gray - Day off
+              booking: { bg: '#e8f4fd', border: '#3498db', text: '#333' },           // Blue - Customer booking
+              working_hours: { bg: '#e8f8ef', border: '#27ae60', text: '#333' },     // Green - Working hours
+              vacation: { bg: '#fef9e7', border: '#f1c40f', text: '#333' },          // Yellow - Vacation
+              break: { bg: '#f4ecf7', border: '#8e44ad', text: '#333' },             // Purple - Break
+              lunch: { bg: '#fef0e4', border: '#e67e22', text: '#333' },             // Orange - Lunch
+              sick_leave: { bg: '#fdeded', border: '#e74c3c', text: '#333' },        // Red - Sick leave
+              day_off: { bg: '#f0f0f0', border: '#95a5a6', text: '#555' }           // Gray - Day off
             };
             
             // Select color scheme
@@ -972,24 +972,23 @@ const CalendarEngine = {
               scheme = colorSchemes[type];
             }
             
-            // Apply styling
+            // Flat LimeBooking style: left border accent only
             info.el.style.backgroundColor = scheme.bg;
-            info.el.style.borderColor = scheme.border;
-            info.el.style.borderWidth = '2px';
-            info.el.style.borderStyle = 'solid';
-            info.el.style.borderRadius = '6px';
+            info.el.style.border = 'none';
+            info.el.style.borderLeft = '3px solid ' + scheme.border;
+            info.el.style.borderRadius = '3px';
             info.el.style.color = scheme.text;
             info.el.style.overflow = 'hidden';
-            info.el.style.fontWeight = '500';
-            info.el.style.boxShadow = `0 1px 3px ${scheme.border}40`;
-            info.el.style.transition = 'all 0.2s ease';
+            info.el.style.fontWeight = '400';
+            info.el.style.boxShadow = 'none';
+            info.el.style.transition = 'background 0.15s ease';
 
-            // Normalize single-day vs multi-day event sizing in month view
+            // Month view: normalize sizing
             if (info.view && info.view.type === 'dayGridMonth') {
-              info.el.style.padding = '1px 3px';
-              info.el.style.margin = '0';
-              info.el.style.lineHeight = '1.3';
-              info.el.style.fontSize = '11px';
+              info.el.style.padding = '3px 6px';
+              info.el.style.margin = '1px 3px';
+              info.el.style.lineHeight = '1.4';
+              info.el.style.fontSize = '12px';
               info.el.style.display = 'block';
               // Hide FC's default dot element if present
               var dot = info.el.querySelector('.fc-daygrid-event-dot');
@@ -1000,16 +999,6 @@ const CalendarEngine = {
                 harness.style.marginBottom = '1px';
               }
             }
-            
-            // Hover effect
-            info.el.addEventListener('mouseenter', () => {
-              info.el.style.boxShadow = `0 2px 8px ${scheme.border}60`;
-              info.el.style.transform = 'translateY(-1px)';
-            });
-            info.el.addEventListener('mouseleave', () => {
-              info.el.style.boxShadow = `0 1px 3px ${scheme.border}40`;
-              info.el.style.transform = 'translateY(0px)';
-            });
             
           } catch (err) {}
         },
