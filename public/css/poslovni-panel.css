@@ -542,7 +542,8 @@
         }
 
         /* Hide the duplicate day number inside the +more popover (header already shows the date) */
-        .fc-popover .fc-popover-body .fc-daygrid-day-top {
+        .fc-popover .fc-popover-body .fc-daygrid-day-top,
+        .fc-popover .fc-more-popover-misc {
             display: none !important;
         }
 

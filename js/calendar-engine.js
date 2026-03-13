@@ -634,8 +634,7 @@ const CalendarEngine = {
             const popover = document.querySelector('.fc-popover');
             if (!popover) return;
             // Remove the duplicate day number from the popover body
-            var dayTop = popover.querySelector('.fc-daygrid-day-top');
-            if (dayTop) dayTop.remove();
+            popover.querySelectorAll('.fc-daygrid-day-top, .fc-more-popover-misc').forEach(function(el) { el.remove(); });
             const rect = popover.getBoundingClientRect();
             const vh = window.innerHeight || document.documentElement.clientHeight;
             if (rect.bottom > vh - 10) {
