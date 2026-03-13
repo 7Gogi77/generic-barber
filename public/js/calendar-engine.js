@@ -500,8 +500,6 @@ const CalendarEngine = {
         var h = _computeCalHeight();
         containerElement.style.height = h + 'px';
         // Strip leftover inline height/overflow from week-view handler
-        // ONLY strip height-related props; do NOT touch position/top/bottom/left/right
-        // because FC needs position:absolute on .fc-scroller-liquid-absolute for expandRows
         ['.fc', '.fc-view-harness', '.fc-scroller-harness', '.fc-scrollgrid-section-body td', 'tr.fc-scrollgrid-section-body'].forEach(function(sel) {
           containerElement.querySelectorAll(sel).forEach(function(el) {
             el.style.removeProperty('height');
@@ -522,14 +520,17 @@ const CalendarEngine = {
           el.style.left = '0';
           el.style.overflow = 'hidden';
         });
-        // Restore FC scroller harness to relative (FC default)
         containerElement.querySelectorAll('.fc-scroller-harness').forEach(function(el) {
           el.style.removeProperty('overflow');
         });
+        // Update dayMaxEvents based on current screen width
+        var w = window.innerWidth;
+        var maxEv = w <= 768 ? 1 : (w <= 1600 ? 2 : 3);
+        calendar.setOption('dayMaxEvents', maxEv);
         calendar.setOption('height', h);
         calendar.setOption('expandRows', true);
         calendar.updateSize();
-        // Kill scrollbars AFTER updateSize (FC re-applies inline overflow on updateSize)
+        // Kill header scrollbar AFTER updateSize
         setTimeout(function() {
           containerElement.querySelectorAll('.fc-scrollgrid-section-header .fc-scroller').forEach(function(el) {
             el.style.setProperty('overflow', 'hidden', 'important');
