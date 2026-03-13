@@ -526,9 +526,13 @@ const CalendarEngine = {
         containerElement.querySelectorAll('.fc-scroller-harness').forEach(function(el) {
           el.style.removeProperty('overflow');
         });
-        // Kill scrollbar on header row (body has no scrollbar, so no gutter compensation needed)
-        containerElement.querySelectorAll('.fc-scrollgrid-section-header .fc-scroller').forEach(function(el) {
+        // Kill scrollbar on header and footer rows
+        containerElement.querySelectorAll('.fc-scrollgrid-section-header .fc-scroller, .fc-scrollgrid-section-footer .fc-scroller').forEach(function(el) {
           el.style.overflow = 'hidden';
+        });
+        // Force body scroller to hide scrollbar (expandRows means no scroll needed)
+        containerElement.querySelectorAll('.fc-scroller-liquid-absolute').forEach(function(el2) {
+          el2.style.scrollbarWidth = 'none';
         });
         calendar.setOption('height', h);
         calendar.setOption('expandRows', true);

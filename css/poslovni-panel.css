@@ -354,8 +354,17 @@
         #scheduleCalendar.view-timegrid-day .fc-scroller-harness { position: relative !important; }
 
         /* Month view: kill header scrollbar (body has overflow:hidden so no compensation needed) */
-        #scheduleCalendar.view-daygrid .fc .fc-scrollgrid-section-header .fc-scroller {
+        #scheduleCalendar.view-daygrid .fc .fc-scrollgrid-section-header .fc-scroller,
+        #scheduleCalendar.view-daygrid .fc .fc-scrollgrid-section-header .fc-scroller-harness,
+        #scheduleCalendar.view-daygrid .fc .fc-scrollgrid-section-footer .fc-scroller {
             overflow: hidden !important;
+            scrollbar-width: none !important;
+        }
+        #scheduleCalendar.view-daygrid .fc .fc-scrollgrid-section-header .fc-scroller::-webkit-scrollbar,
+        #scheduleCalendar.view-daygrid .fc .fc-scrollgrid-section-footer .fc-scroller::-webkit-scrollbar {
+            display: none !important;
+            width: 0 !important;
+            height: 0 !important;
         }
 
         /* Month view column headers */
@@ -1922,6 +1931,14 @@
     .fc .fc-col-header-cell {
         padding: 4px 0 !important;
         font-size: 12px !important;
+    }
+    /* Smaller +more link on laptop to match compact event size */
+    #scheduleCalendar.view-daygrid .fc-daygrid-more-link {
+        font-size: 10px !important;
+        padding: 1px 5px !important;
+        border-width: 1px !important;
+        border-radius: 10px !important;
+        line-height: 1.2 !important;
     }
 }
 
