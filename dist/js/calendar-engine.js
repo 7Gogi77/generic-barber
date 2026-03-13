@@ -519,22 +519,37 @@ const CalendarEngine = {
         // Keep a small safety budget so borders/subpixel rounding never push the last row outside.
         var safeBody = Math.max(120, bodyH - 8);
         var rowH = Math.max(72, Math.floor(safeBody / rowCount));
-        var rowHpx = rowH + 'px';
 
-        containerElement.style.setProperty('--month-row-h', rowHpx);
+        function applyRowHeight(px) {
+          var rowHpx = px + 'px';
+          containerElement.style.setProperty('--month-row-h', rowHpx);
 
-        rows.forEach(function(tr) {
-          tr.style.setProperty('height', rowHpx, 'important');
-          tr.style.setProperty('min-height', rowHpx, 'important');
-          tr.style.setProperty('max-height', rowHpx, 'important');
-        });
+          rows.forEach(function(tr) {
+            tr.style.setProperty('height', rowHpx, 'important');
+            tr.style.setProperty('min-height', rowHpx, 'important');
+            tr.style.setProperty('max-height', rowHpx, 'important');
+          });
 
-        // Keep per-cell event stack inside fixed row height.
-        var eventsMax = Math.max(24, rowH - 30);
-        containerElement.querySelectorAll('.fc-daygrid-day-events').forEach(function(el) {
-          el.style.setProperty('max-height', eventsMax + 'px', 'important');
-          el.style.setProperty('overflow', 'hidden', 'important');
-        });
+          // Keep per-cell event stack inside fixed row height.
+          var eventsMax = Math.max(24, px - 28);
+          containerElement.querySelectorAll('.fc-daygrid-day-events').forEach(function(el) {
+            el.style.setProperty('max-height', eventsMax + 'px', 'important');
+            el.style.setProperty('overflow', 'hidden', 'important');
+          });
+        }
+
+        applyRowHeight(rowH);
+
+        // Final safeguard: if last row still clips below the white body, trim row height to fit.
+        if (bodyScroller && rows.length) {
+          var lastRow = rows[rows.length - 1];
+          var over = Math.ceil(lastRow.getBoundingClientRect().bottom - bodyScroller.getBoundingClientRect().bottom);
+          if (over > 0) {
+            var reduce = Math.max(1, Math.ceil(over / rowCount));
+            rowH = Math.max(64, rowH - reduce);
+            applyRowHeight(rowH);
+          }
+        }
       }
 
       function _sizeMonthView() {
