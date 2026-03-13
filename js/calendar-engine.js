@@ -633,10 +633,12 @@ const CalendarEngine = {
           setTimeout(() => {
             const popover = document.querySelector('.fc-popover');
             if (!popover) return;
+            // Remove the duplicate day number from the popover body
+            var dayTop = popover.querySelector('.fc-daygrid-day-top');
+            if (dayTop) dayTop.remove();
             const rect = popover.getBoundingClientRect();
             const vh = window.innerHeight || document.documentElement.clientHeight;
             if (rect.bottom > vh - 10) {
-              // Popover overflows at the bottom � flip it upward
               const overflow = rect.bottom - (vh - 10);
               const currentTop = parseInt(popover.style.top || '0', 10) || rect.top;
               popover.style.top = Math.max(10, currentTop - overflow - 10) + 'px';
