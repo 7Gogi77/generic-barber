@@ -2196,39 +2196,9 @@
     }
 }
 
-/* ===== MOBILE CALENDAR HEIGHT + HIGHLIGHT FIX ===== */
+/* ===== MOBILE TOUCH/HIGHLIGHT TWEAKS (layout-safe) ===== */
 @media (max-width: 768px) {
-    /* Let layout scroll naturally so month view shows all rows */
-    .main-content {
-        height: auto !important;
-        max-height: none !important;
-        overflow-y: auto !important;
-        overflow-x: hidden !important;
-    }
-    .content-area {
-        overflow: visible !important;
-        height: auto !important;
-        min-height: 0 !important;
-    }
-    #scheduleCalendar {
-        overflow: visible !important;
-        max-height: none !important;
-        height: auto !important;
-        flex: 0 0 auto !important;
-    }
-    /* Force month grid to natural height, never clip rows */
-    #scheduleCalendar.view-daygrid .fc,
-    #scheduleCalendar .fc {
-        height: auto !important;
-    }
-    .fc-daygrid-body {
-        height: auto !important;
-        overflow-y: visible !important;
-    }
-    .fc .fc-scrollgrid-section-body > td {
-        height: auto !important;
-    }
-    /* Kill ALL cell selection/highlight colours on mobile */
+    /* Keep selection overlays subtle on touch */
     .fc .fc-highlight {
         background: transparent !important;
         opacity: 0 !important;
