@@ -615,7 +615,7 @@ const CalendarEngine = {
         firstDay: 1,
         nowIndicator: true,
         fixedWeekCount: false, // Only show rows for actual weeks in the month � prevents empty rows
-        dayMaxEvents: _isMobile ? 1 : 3, // Show max 3 events per cell; rest as +X more
+        dayMaxEvents: _isMobile ? 1 : (window.innerWidth <= 1600 ? 2 : 3), // Laptop: 2, Desktop: 3
         dayMaxEventRows: false,
         // Show abbreviated month name on first cell of each month (e.g. "1 Mar")
         dayCellContent: function(arg) {
