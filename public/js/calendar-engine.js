@@ -499,26 +499,35 @@ const CalendarEngine = {
         if (!calendar) return;
         var h = _computeCalHeight();
         containerElement.style.height = h + 'px';
-        // Strip any leftover inline height:auto !important from week-view handler
-        var _stripSels = ['.fc', '.fc-view-harness', '.fc-scroller', '.fc-scroller-liquid-absolute', '.fc-scroller-harness', '.fc-scrollgrid-section-body td', 'tr.fc-scrollgrid-section-body'];
-        _stripSels.forEach(function(sel) {
+        // Strip leftover inline height/overflow from week-view handler
+        // ONLY strip height-related props; do NOT touch position/top/bottom/left/right
+        // because FC needs position:absolute on .fc-scroller-liquid-absolute for expandRows
+        ['.fc', '.fc-view-harness', '.fc-scroller-harness', '.fc-scrollgrid-section-body td', 'tr.fc-scrollgrid-section-body'].forEach(function(sel) {
           containerElement.querySelectorAll(sel).forEach(function(el) {
             el.style.removeProperty('height');
             el.style.removeProperty('min-height');
             el.style.removeProperty('max-height');
             el.style.removeProperty('overflow');
-            el.style.removeProperty('position');
-            el.style.removeProperty('top');
-            el.style.removeProperty('bottom');
-            el.style.removeProperty('left');
-            el.style.removeProperty('right');
           });
         });
-        // Only update FC options if height actually changed to avoid datesSet loop
-        var curH = calendar.getOption('height');
-        if (curH !== h) {
-          calendar.setOption('height', h);
-        }
+        // Restore FC's absolute scroller positioning (week-view sets position:relative)
+        containerElement.querySelectorAll('.fc-scroller-liquid-absolute').forEach(function(el) {
+          el.style.removeProperty('height');
+          el.style.removeProperty('min-height');
+          el.style.removeProperty('max-height');
+          el.style.position = 'absolute';
+          el.style.top = '0';
+          el.style.right = '0';
+          el.style.bottom = '0';
+          el.style.left = '0';
+          el.style.overflow = 'hidden auto';
+        });
+        // Restore FC scroller harness to relative (FC default)
+        containerElement.querySelectorAll('.fc-scroller-harness').forEach(function(el) {
+          el.style.removeProperty('overflow');
+        });
+        calendar.setOption('height', h);
+        calendar.setOption('expandRows', true);
         calendar.updateSize();
       }
       try {

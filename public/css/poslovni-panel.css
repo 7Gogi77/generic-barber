@@ -444,13 +444,7 @@
             padding: 1px 2px 2px !important;
         }
 
-        /* Force equal row heights in month view via CSS table distribution */
-        #scheduleCalendar.view-daygrid .fc-scrollgrid-sync-table {
-            height: 100% !important;
-        }
-        #scheduleCalendar.view-daygrid .fc-daygrid-body {
-            height: 100% !important;
-        }
+        /* Let FC handle row distribution via expandRows; just clip overflowing cell content */
         #scheduleCalendar.view-daygrid .fc-daygrid-day-frame {
             overflow: hidden !important;
             min-height: 0 !important;
