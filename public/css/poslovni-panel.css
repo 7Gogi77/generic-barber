@@ -429,6 +429,8 @@
             justify-content: flex-end;
             padding: 1px 4px 0 0;
             line-height: 1;
+            position: relative;
+            z-index: 6;
         }
 
         #scheduleCalendar.view-daygrid .fc .fc-daygrid-day-number {
@@ -501,9 +503,9 @@
             margin-bottom: 0 !important;
         }
 
-        /* Multi-day events that span across cells */
+        /* Multi-day events that span across cells — keep below day numbers */
         #scheduleCalendar.view-daygrid .fc-daygrid-event-harness-abs {
-            z-index: 5 !important;
+            z-index: 4 !important;
             overflow: visible !important;
         }
 
