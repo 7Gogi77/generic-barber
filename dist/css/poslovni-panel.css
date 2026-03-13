@@ -541,6 +541,11 @@
             padding: 8px !important;
         }
 
+        /* Hide the duplicate day number inside the +more popover (header already shows the date) */
+        .fc-popover .fc-popover-body .fc-daygrid-day-top {
+            display: none !important;
+        }
+
         /* Only hide events that FullCalendar explicitly marks with visibility:hidden inline style */
         #scheduleCalendar.view-daygrid .fc-daygrid-event-harness-abs[style*="visibility: hidden"],
         #scheduleCalendar.view-daygrid .fc-daygrid-event-harness-abs[style*="visibility:hidden"] {
