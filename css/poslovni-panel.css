@@ -441,7 +441,19 @@
 
         /* Event container in month view cells */
         #scheduleCalendar.view-daygrid .fc-daygrid-day-events {
-            padding: 2px 4px 4px !important;
+            padding: 1px 2px 2px !important;
+        }
+
+        /* Force equal row heights in month view via CSS table distribution */
+        #scheduleCalendar.view-daygrid .fc-scrollgrid-sync-table {
+            height: 100% !important;
+        }
+        #scheduleCalendar.view-daygrid .fc-daygrid-body {
+            height: 100% !important;
+        }
+        #scheduleCalendar.view-daygrid .fc-daygrid-day-frame {
+            overflow: hidden !important;
+            min-height: 0 !important;
         }
 
         /* iOS-Style Events - compact for equal row heights */
@@ -1884,8 +1896,8 @@
     #mobileFab { display: none !important; }
 }
 
-/* ===== LAPTOP COMPACT TOOLBAR (769px - 1366px) ===== */
-@media (min-width: 769px) and (max-width: 1366px) {
+/* ===== LAPTOP COMPACT TOOLBAR (769px - 1600px) ===== */
+@media (min-width: 769px) and (max-width: 1600px) {
     .fc .fc-toolbar {
         padding: 6px 10px !important;
         gap: 4px !important;

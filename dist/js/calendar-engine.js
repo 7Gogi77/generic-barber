@@ -480,10 +480,13 @@ const CalendarEngine = {
       // �� COMPUTE CALENDAR HEIGHT �����������������������������������������
       // Compute available height for the calendar container
       function _computeCalHeight() {
-        // Use the content-area's actual available height if possible
+        // Use the content-area's actual inner height (subtract padding)
         var parent = containerElement.parentElement;
         if (parent && parent.clientHeight > 100) {
-          return parent.clientHeight;
+          var cs = getComputedStyle(parent);
+          var pt = parseFloat(cs.paddingTop) || 0;
+          var pb = parseFloat(cs.paddingBottom) || 0;
+          return parent.clientHeight - pt - pb;
         }
         // Fallback: viewport minus content-area padding
         return Math.max(300, window.innerHeight - 32);
@@ -511,8 +514,11 @@ const CalendarEngine = {
             el.style.removeProperty('right');
           });
         });
-        calendar.setOption('height', h);
-        calendar.setOption('expandRows', true);
+        // Only update FC options if height actually changed to avoid datesSet loop
+        var curH = calendar.getOption('height');
+        if (curH !== h) {
+          calendar.setOption('height', h);
+        }
         calendar.updateSize();
       }
       try {
