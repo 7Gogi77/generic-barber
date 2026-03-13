@@ -467,6 +467,14 @@
         /* Month grid equal-height lock (updated by JS per viewport) */
         #scheduleCalendar.view-daygrid {
             --month-row-h: 128px;
+            --month-body-h: 768px;
+        }
+
+        #scheduleCalendar.view-daygrid .fc .fc-daygrid-body .fc-scrollgrid-sync-table {
+            height: var(--month-body-h) !important;
+            min-height: var(--month-body-h) !important;
+            max-height: var(--month-body-h) !important;
+            table-layout: fixed !important;
         }
 
         #scheduleCalendar.view-daygrid .fc .fc-daygrid-body .fc-scrollgrid-sync-table tbody tr {

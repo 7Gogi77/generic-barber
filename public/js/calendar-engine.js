@@ -500,14 +500,35 @@ const CalendarEngine = {
         var rows = containerElement.querySelectorAll('.fc-daygrid-body tbody tr');
         if (!rows || !rows.length) return;
 
-        var toolbar = containerElement.querySelector('.fc-toolbar');
-        var colHeader = containerElement.querySelector('.fc-col-header');
-        var toolbarH = toolbar ? Math.ceil(toolbar.getBoundingClientRect().height) : 0;
-        var headerH = colHeader ? Math.ceil(colHeader.getBoundingClientRect().height) : 0;
-        var usable = Math.max(240, totalHeight - toolbarH - headerH - 10);
-        var rowH = Math.max(88, Math.floor(usable / rows.length));
+        // Measure the real rendered body area instead of estimating from toolbar/header.
+        var bodyScroller = containerElement.querySelector('.fc-scrollgrid-section-body .fc-scroller');
+        var bodyH = bodyScroller ? Math.floor(bodyScroller.clientHeight) : 0;
+        if (!bodyH) {
+          var daygridBody = containerElement.querySelector('.fc-daygrid-body');
+          if (daygridBody) bodyH = Math.floor(daygridBody.getBoundingClientRect().height);
+        }
+        if (!bodyH) {
+          var toolbar = containerElement.querySelector('.fc-toolbar');
+          var colHeader = containerElement.querySelector('.fc-col-header');
+          var toolbarH = toolbar ? Math.ceil(toolbar.getBoundingClientRect().height) : 0;
+          var headerH = colHeader ? Math.ceil(colHeader.getBoundingClientRect().height) : 0;
+          bodyH = Math.max(240, totalHeight - toolbarH - headerH - 10);
+        }
+
+        var rowCount = rows.length;
+        var rowH = Math.max(72, Math.floor((bodyH - 1) / rowCount));
+        var bodyFitH = rowH * rowCount;
 
         containerElement.style.setProperty('--month-row-h', rowH + 'px');
+        containerElement.style.setProperty('--month-body-h', bodyFitH + 'px');
+
+        var table = containerElement.querySelector('.fc-daygrid-body .fc-scrollgrid-sync-table');
+        if (table) {
+          table.style.setProperty('height', bodyFitH + 'px', 'important');
+          table.style.setProperty('min-height', bodyFitH + 'px', 'important');
+          table.style.setProperty('max-height', bodyFitH + 'px', 'important');
+        }
+
         rows.forEach(function(tr) {
           tr.style.setProperty('height', rowH + 'px', 'important');
           tr.style.setProperty('min-height', rowH + 'px', 'important');
