@@ -464,14 +464,32 @@
             font-weight: 600;
         }
 
+        /* Month grid equal-height lock (updated by JS per viewport) */
+        #scheduleCalendar.view-daygrid {
+            --month-row-h: 128px;
+        }
+
+        #scheduleCalendar.view-daygrid .fc .fc-daygrid-body .fc-scrollgrid-sync-table tbody tr {
+            height: var(--month-row-h) !important;
+            min-height: var(--month-row-h) !important;
+            max-height: var(--month-row-h) !important;
+        }
+
+        #scheduleCalendar.view-daygrid .fc .fc-daygrid-day {
+            height: var(--month-row-h) !important;
+        }
+
         /* Event container in month view cells */
         #scheduleCalendar.view-daygrid .fc-daygrid-day-events {
             padding: 1px 2px 2px !important;
+            overflow: hidden !important;
         }
 
         /* Let FC handle row distribution via expandRows; dayMaxEvents limits visible events */
         #scheduleCalendar.view-daygrid .fc-daygrid-day-frame {
             min-height: 0 !important;
+            height: var(--month-row-h) !important;
+            max-height: var(--month-row-h) !important;
         }
 
         /* Events — flat LimeBooking style with left accent border */

@@ -495,6 +495,33 @@ const CalendarEngine = {
       // �� SIZE THE MONTH VIEW ���������������������������������������������
       // Sets a pixel height on the container AND tells FC to expand rows.
       // Also strips any lingering inline styles left by the week-view handler.
+      function _lockMonthRowHeights(totalHeight) {
+        if (!calendar) return;
+        var rows = containerElement.querySelectorAll('.fc-daygrid-body tbody tr');
+        if (!rows || !rows.length) return;
+
+        var toolbar = containerElement.querySelector('.fc-toolbar');
+        var colHeader = containerElement.querySelector('.fc-col-header');
+        var toolbarH = toolbar ? Math.ceil(toolbar.getBoundingClientRect().height) : 0;
+        var headerH = colHeader ? Math.ceil(colHeader.getBoundingClientRect().height) : 0;
+        var usable = Math.max(240, totalHeight - toolbarH - headerH - 10);
+        var rowH = Math.max(88, Math.floor(usable / rows.length));
+
+        containerElement.style.setProperty('--month-row-h', rowH + 'px');
+        rows.forEach(function(tr) {
+          tr.style.setProperty('height', rowH + 'px', 'important');
+          tr.style.setProperty('min-height', rowH + 'px', 'important');
+          tr.style.setProperty('max-height', rowH + 'px', 'important');
+        });
+
+        // Keep per-cell event stack inside fixed row height.
+        var eventsMax = Math.max(24, rowH - 30);
+        containerElement.querySelectorAll('.fc-daygrid-day-events').forEach(function(el) {
+          el.style.setProperty('max-height', eventsMax + 'px', 'important');
+          el.style.setProperty('overflow', 'hidden', 'important');
+        });
+      }
+
       function _sizeMonthView() {
         if (!calendar) return;
         var h = _computeCalHeight();
@@ -531,12 +558,15 @@ const CalendarEngine = {
         calendar.setOption('height', h);
         calendar.setOption('expandRows', true);
         calendar.updateSize();
-        // Kill header scrollbar AFTER updateSize (FC adds scrollbar-gutter compensation)
+        // Post-render pass: lock all month rows and kill header scrollbar compensation.
         setTimeout(function() {
+          _lockMonthRowHeights(h);
           containerElement.querySelectorAll('.fc-scrollgrid-section-header .fc-scroller').forEach(function(el) {
             el.style.setProperty('overflow', 'hidden', 'important');
           });
         }, 0);
+        setTimeout(function() { _lockMonthRowHeights(h); }, 80);
+        setTimeout(function() { _lockMonthRowHeights(h); }, 180);
       }
       try {
         const _savedBS = JSON.parse(localStorage.getItem('bookingSettings') || 'null');
