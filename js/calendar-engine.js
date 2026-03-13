@@ -594,8 +594,8 @@ const CalendarEngine = {
         firstDay: 1,
         nowIndicator: true,
         fixedWeekCount: false, // Only show rows for actual weeks in the month � prevents empty rows
-        dayMaxEvents: _isMobile ? 1 : 3, // On mobile show max 1 event per cell; rest shown as +X more
-        dayMaxEventRows: false, // Let FullCalendar limit via dayMaxEvents instead
+        dayMaxEvents: _isMobile ? 1 : true, // true = auto-fit events into equal-height rows
+        dayMaxEventRows: false,
         // Show abbreviated month name on first cell of each month (e.g. "1 Mar")
         dayCellContent: function(arg) {
           const d = arg.date;
@@ -858,34 +858,62 @@ const CalendarEngine = {
             const view = arg.view?.type || '';
             const isMobileView = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(max-width: 768px)').matches;
             
-            // On mobile: render only the icon � user taps event to see details
+            // On mobile: render only the icon - user taps event to see details
             if (isMobileView) {
               return { html: `<div style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;padding:1px;"><i class="bi ${iconClass}" style="font-size:13px;line-height:1;"></i></div>` };
             }
-            
+
             // For short events in week view, show compact format
-            const duration = arg.event.start && arg.event.end ? 
+            const duration = arg.event.start && arg.event.end ?
               Math.round((new Date(arg.event.end) - new Date(arg.event.start)) / (1000 * 60)) : 0;
-            
+
             if (view === 'timeGridWeek' && duration < 60 && duration > 0) {
               return {
-                html: `<div style="display: flex; align-items: center; gap: 4px; padding: 1px 3px; font-size: 11px; line-height: 1.2;">
-                  <i class="bi ${iconClass}" style="font-size: 10px; flex-shrink: 0;"></i>
-                  <span style="font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${startTime}</span>
+                html: `<div style="display:flex;align-items:center;gap:4px;padding:1px 3px;font-size:11px;line-height:1.2;">
+                  <i class="bi ${iconClass}" style="font-size:10px;flex-shrink:0;"></i>
+                  <span style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${startTime}</span>
                 </div>`
               };
             }
-            
-            // Full format for day/month views or longer events
+
+            // Month view: detect laptop vs large desktop
+            const isMonthView = view === 'dayGridMonth';
+            const isLaptop = window.innerWidth <= 1366;
+
+            if (isMonthView && isLaptop) {
+              // LAPTOP: single line - icon + name + time
+              return {
+                html: `<div style="display:flex;align-items:center;gap:3px;padding:1px 4px;font-size:11px;line-height:1.3;white-space:nowrap;overflow:hidden;">
+                  <i class="bi ${iconClass}" style="font-size:10px;flex-shrink:0;"></i>
+                  <span style="font-weight:600;overflow:hidden;text-overflow:ellipsis;">${displayName}</span>
+                  ${timeText ? `<span style="opacity:0.7;font-size:10px;flex-shrink:0;">${timeText}</span>` : ''}
+                </div>`
+              };
+            }
+
+            if (isMonthView) {
+              // DESKTOP (>1366px): two lines - icon + name, then time below
+              return {
+                html: `<div style="display:flex;flex-direction:column;gap:1px;padding:2px 4px;">
+                  <div style="display:flex;align-items:center;gap:3px;min-height:14px;">
+                    <i class="bi ${iconClass}" style="font-size:11px;flex-shrink:0;"></i>
+                    <span style="font-size:11px;font-weight:600;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${displayName}</span>
+                  </div>
+                  ${timeText ? `<div style="font-size:10px;opacity:0.7;padding-left:14px;line-height:1.1;">${timeText}</div>` : ''}
+                </div>`
+              };
+            }
+
+            // Day/week views or longer events: full format
             return {
-              html: `<div style="display: flex; flex-direction: column; gap: 3px; padding: 3px; height: 100%;">
-                <div style="display: flex; align-items: flex-start; gap: 4px; min-height: 16px;">
-                  <i class="bi ${iconClass}" style="font-size: 12px; flex-shrink: 0; margin-top: 1px;"></i>
-                  <div style="flex: 1; font-size: 12px; font-weight: 600; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; max-lines: 2;">
+              html: `<div style="display:flex;flex-direction:column;gap:2px;padding:2px 4px;height:100%;">
+                <div style="display:flex;align-items:flex-start;gap:4px;min-height:16px;">
+                  <i class="bi ${iconClass}" style="font-size:12px;flex-shrink:0;margin-top:1px;"></i>
+                  <div style="flex:1;font-size:12px;font-weight:600;line-height:1.3;overflow:hidden;text-overflow:ellipsis;">
                     ${displayName}
                   </div>
                 </div>
-                ${timeText ? `<div style="font-size: 10px; color: rgba(0,0,0,0.6); padding-left: 16px; line-height: 1.2;">${timeText}</div>` : ''}
+                ${timeText ? `<div style="font-size:10px;color:rgba(0,0,0,0.6);padding-left:16px;line-height:1.2;">${timeText}</div>` : ''}
               </div>`
             };
           } catch (e) {

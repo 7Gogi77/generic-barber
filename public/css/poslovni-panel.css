@@ -444,25 +444,27 @@
             padding: 2px 4px 4px !important;
         }
 
-        /* iOS-Style Events */
+        /* iOS-Style Events - compact for equal row heights */
         #scheduleCalendar.view-daygrid .fc .fc-event {
             background: linear-gradient(135deg, var(--ios-blue) 0%, #5856D6 100%);
             border: none;
             color: white;
             font-size: 11px;
             font-weight: 500;
-            padding: 3px 6px;
-            border-radius: 6px;
-            box-shadow: 0 1px 3px rgba(0, 122, 255, 0.3);
+            padding: 1px 2px;
+            border-radius: 5px;
+            box-shadow: 0 1px 2px rgba(0, 122, 255, 0.25);
             transition: all 0.2s ease;
-            margin-bottom: 2px !important;
+            margin-bottom: 1px !important;
             display: block !important;
             position: relative !important;
+            line-height: 1.3;
+            overflow: hidden;
         }
 
         /* Ensure events are properly stacked without overlap */
         #scheduleCalendar.view-daygrid .fc-daygrid-event-harness {
-            margin-bottom: 2px !important;
+            margin-bottom: 1px !important;
         }
 
         /* Multi-day events that span across cells */
