@@ -1430,8 +1430,9 @@
 
             #scheduleCalendar {
                 border-radius: var(--ios-radius-md);
-                margin-top: 6px;
-                height: auto;
+                margin-top: 0;
+                /* JS sets exact pixel height — this is just a safe paint-before-JS fallback */
+                min-height: 400px;
             }
 
             .sidebar {
@@ -1488,11 +1489,9 @@
                 white-space: nowrap;
             }
 
-            /* Day cells - FIXED HEIGHT FOR MONTH VIEW */
-            .fc .fc-daygrid-day-frame {
-                min-height: 80px !important;
-                max-height: 80px !important;
-                height: 80px !important;
+            /* Day cells - month view on mobile: let JS-driven --month-row-h control height.
+               Do NOT hard-code 80px here — it conflicts with #scheduleCalendar.view-daygrid rules. */
+            #scheduleCalendar.view-daygrid .fc-daygrid-day-frame {
                 overflow: visible !important;
             }
 
@@ -1553,8 +1552,7 @@
             #scheduleCalendar {
                 border-radius: var(--ios-radius-md);
                 margin-top: 0;
-                height: auto;
-                min-height: 0;
+                /* JS controls height — remove height:auto so inline style from JS takes effect */
             }
 
             /* Hide sidebar completely, show hamburger only */
@@ -1656,9 +1654,9 @@
                 margin-bottom: 0 !important;
             }
 
-            /* Hide less important view buttons on very small screens */
+            /* Keep month/list toggle available on very small screens */
             .fc .fc-listWeek-button {
-                display: none !important;
+                display: inline-flex !important;
             }
 
             /* Day headers - iOS style */
@@ -1716,9 +1714,7 @@
             .fc .fc-timegrid-event .fc-event-title,
             .fc .fc-timegrid-event .fc-event-time,
             .fc .fc-event-title-container,
-            .fc .fc-event-main-frame,
-            .fc .fc-list-event-title,
-            .fc .fc-list-event-time {
+            .fc .fc-event-main-frame {
                 display: none !important;
             }
 
@@ -1986,54 +1982,116 @@
 @media (max-width: 768px) {
     #mobileFab { display: flex !important; }
 
-    /* Fill available screen height */
+    /* Fill available screen height — CSS fallback only (JS overrides via inline style) */
     #scheduleCalendar {
-        height: calc(100dvh - 60px) !important;
+        height: calc(100dvh - 56px);
         min-height: 0 !important;
         max-height: none !important;
     }
 
-    /* Bigger list rows — easy to tap */
-    .fc .fc-list-event td {
-        padding: 12px 14px !important;
-        font-size: 14px !important;
+    /* ===== MOBILE LIST (AGENDA) VIEW ===== */
+    .fc .fc-list-table {
+        border: none !important;
     }
-    .fc .fc-list-event-title a {
-        font-size: 14px !important;
-        font-weight: 600 !important;
+
+    .fc .fc-list-day th {
+        background: transparent !important;
+        padding: 0 !important;
+        border: none !important;
     }
-    .fc .fc-list-event-time {
-        font-size: 12px !important;
-        white-space: nowrap;
-        padding-right: 10px !important;
-    }
+
     .fc .fc-list-day-cushion {
-        padding: 8px 14px !important;
-        font-size: 13px !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+        padding: 10px 14px 6px !important;
+        font-size: 12px !important;
         font-weight: 700 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.6px !important;
+        color: #8e8e93 !important;
         background: #f2f2f7 !important;
         position: sticky;
         top: 0;
-        z-index: 2;
-    }
-    .fc .fc-list-empty {
-        font-size: 15px !important;
-        padding: 40px 16px !important;
+        z-index: 4;
+        border-bottom: 1px solid rgba(0,0,0,0.06) !important;
     }
 
-    /* Hide today button — prev/next is enough on small screen */
+    .fc .fc-list-day.fc-day-today .fc-list-day-cushion {
+        color: #007aff !important;
+        background: rgba(0,122,255,0.07) !important;
+    }
+
+    .fc .fc-list-day.fc-day-today .fc-list-day-cushion .fc-list-day-text,
+    .fc .fc-list-day.fc-day-today .fc-list-day-cushion .fc-list-day-side-text {
+        color: #007aff !important;
+    }
+
+    .fc .fc-list-event {
+        background: #fff !important;
+        border: none !important;
+        border-bottom: 1px solid rgba(0,0,0,0.06) !important;
+        transition: background 0.15s ease;
+        cursor: pointer;
+    }
+
+    .fc .fc-list-event:active {
+        background: rgba(0,122,255,0.06) !important;
+    }
+
+    .fc .fc-list-event-graphic {
+        display: none !important;
+    }
+
+    .fc .fc-list-event-time {
+        display: none !important;
+    }
+
+    .fc .fc-list-event td {
+        padding: 10px 14px !important;
+        font-size: 14px !important;
+        border: none !important;
+        vertical-align: middle !important;
+    }
+
+    .fc .fc-list-event-title {
+        width: 100% !important;
+    }
+
+    .fc .fc-list-event-title a {
+        font-size: 13px !important;
+        font-weight: 500 !important;
+        color: #1c1c1e !important;
+        text-decoration: none !important;
+    }
+
+    .fc .fc-list-empty,
+    .fc .fc-list-empty-cushion {
+        font-size: 15px !important;
+        color: #8e8e93 !important;
+        text-align: center !important;
+    }
+
+    .fc .fc-list-empty {
+        padding: 60px 20px !important;
+    }
+
+    /* Hide today button — compact mobile toolbar */
     .fc .fc-today-button { display: none !important; }
 
-    /* Compact time slots — 30-min increment at 24px keeps the full day visible without excessive scrolling */
+    /* Compact time slots in week/day view */
     .fc .fc-timegrid-slot { height: 24px !important; }
     .fc .fc-timegrid-axis-cushion { font-size: 11px !important; }
 
     /* Pad bottom so FAB doesn't cover last event */
-    .fc .fc-scroller-liquid-absolute { padding-bottom: 80px !important; }
     .fc .fc-list-table tbody::after {
         content: '';
         display: block;
         height: 80px;
+    }
+
+    #scheduleCalendar.view-daygrid .fc .fc-scroller-liquid-absolute {
+        padding-bottom: 70px !important;
     }
 }
 

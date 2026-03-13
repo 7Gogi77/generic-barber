@@ -480,6 +480,10 @@ const CalendarEngine = {
       // �� COMPUTE CALENDAR HEIGHT �����������������������������������������
       // Compute available height for the calendar container
       function _computeCalHeight() {
+        // On mobile, use viewport height directly — parent may not be painted yet
+        if (window.innerWidth <= 768) {
+          return Math.max(400, window.innerHeight - 56);
+        }
         // Use the content-area's actual inner height (subtract padding)
         var parent = containerElement.parentElement;
         if (parent && parent.clientHeight > 100) {
@@ -555,6 +559,21 @@ const CalendarEngine = {
         if (!calendar) return;
         var h = _computeCalHeight();
         containerElement.style.height = h + 'px';
+
+        // Mobile: lightweight resize — do NOT touch FC internal scroller positioning.
+        // Forcing position:absolute without a sized parent chain collapses the grid to 0.
+        if (window.innerWidth <= 768) {
+          calendar.setOption('dayMaxEvents', 1);
+          calendar.setOption('dayMaxEventRows', 1);
+          calendar.setOption('height', h);
+          calendar.setOption('expandRows', true);
+          calendar.updateSize();
+          setTimeout(function() { _lockMonthRowHeights(h); }, 50);
+          setTimeout(function() { _lockMonthRowHeights(h); }, 250);
+          setTimeout(function() { _lockMonthRowHeights(h); }, 500);
+          return;
+        }
+
         // Strip leftover inline height/overflow from week-view handler
         ['.fc', '.fc-view-harness', '.fc-scroller-harness', '.fc-scrollgrid-section-body td', 'tr.fc-scrollgrid-section-body'].forEach(function(sel) {
           containerElement.querySelectorAll(sel).forEach(function(el) {
@@ -657,11 +676,11 @@ const CalendarEngine = {
       containerElement.style.height = _initHeight + 'px';
 
       const calendar = new FullCalendar.Calendar(containerElement, {
-        initialView: options.initialView || 'dayGridMonth',
+        initialView: options.initialView || (_isMobile ? 'listWeek' : 'dayGridMonth'),
         headerToolbar: _isMobile ? {
-          left: 'prev,next today',
+          left: 'prev,next',
           center: 'title',
-          right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
+          right: 'dayGridMonth,listWeek'
         } : {
           left: 'prev,next today',
           center: 'title',
@@ -947,7 +966,18 @@ const CalendarEngine = {
             const view = arg.view?.type || '';
             const isMobileView = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(max-width: 768px)').matches;
             
-            // On mobile: render only the icon - user taps event to see details
+            // List view (mobile agenda): icon + name + time in a compact row
+            if (view.startsWith('list')) {
+              return {
+                html: `<div style="display:flex;align-items:center;gap:8px;width:100%;padding:1px 0;overflow:hidden;">
+                  <i class="bi ${iconClass}" style="font-size:14px;flex-shrink:0;"></i>
+                  <span style="font-weight:500;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${displayName}</span>
+                  ${timeText ? `<span style="font-size:12px;opacity:0.65;white-space:nowrap;flex-shrink:0;">${timeText}</span>` : ''}
+                </div>`
+              };
+            }
+
+            // On mobile month view: render only the icon — cells are tiny
             if (isMobileView) {
               return { html: `<div style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;padding:1px;"><i class="bi ${iconClass}" style="font-size:13px;line-height:1;"></i></div>` };
             }
@@ -1045,6 +1075,15 @@ const CalendarEngine = {
             info.el.style.fontWeight = '400';
             info.el.style.boxShadow = 'none';
             info.el.style.transition = 'background 0.15s ease';
+
+            // List view (mobile agenda): slightly larger padding, full-width pill
+            if (info.view && info.view.type && info.view.type.startsWith('list')) {
+              info.el.style.setProperty('border-radius', '6px', 'important');
+              info.el.style.setProperty('padding', '4px 8px', 'important');
+              info.el.style.setProperty('margin', '0', 'important');
+              info.el.style.setProperty('font-size', '13px', 'important');
+              info.el.style.setProperty('border-left-width', '4px', 'important');
+            }
 
             // Month view: normalize sizing
             if (info.view && info.view.type === 'dayGridMonth') {
