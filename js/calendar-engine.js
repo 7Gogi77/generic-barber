@@ -981,6 +981,23 @@ const CalendarEngine = {
             info.el.style.fontWeight = '500';
             info.el.style.boxShadow = `0 1px 3px ${scheme.border}40`;
             info.el.style.transition = 'all 0.2s ease';
+
+            // Normalize single-day vs multi-day event sizing in month view
+            if (info.view && info.view.type === 'dayGridMonth') {
+              info.el.style.padding = '1px 3px';
+              info.el.style.margin = '0';
+              info.el.style.lineHeight = '1.3';
+              info.el.style.fontSize = '11px';
+              info.el.style.display = 'block';
+              // Hide FC's default dot element if present
+              var dot = info.el.querySelector('.fc-daygrid-event-dot');
+              if (dot) dot.style.display = 'none';
+              // Normalize the harness (parent) sizing
+              var harness = info.el.closest('.fc-daygrid-event-harness');
+              if (harness && !harness.classList.contains('fc-daygrid-event-harness-abs')) {
+                harness.style.marginBottom = '1px';
+              }
+            }
             
             // Hover effect
             info.el.addEventListener('mouseenter', () => {
