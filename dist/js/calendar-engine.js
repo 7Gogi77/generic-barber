@@ -897,7 +897,7 @@ const CalendarEngine = {
               return {
                 html: `<div style="display:flex;align-items:center;gap:4px;padding:1px 3px;font-size:11px;line-height:1.2;">
                   <i class="bi ${iconClass}" style="font-size:10px;flex-shrink:0;"></i>
-                  <span style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${startTime}</span>
+                  <span style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${timeText}</span>
                 </div>`
               };
             }
@@ -912,7 +912,7 @@ const CalendarEngine = {
                 html: `<div style="display:flex;align-items:center;gap:3px;font-size:11px;line-height:1.3;white-space:nowrap;overflow:hidden;">
                   <i class="bi ${iconClass}" style="font-size:10px;flex-shrink:0;"></i>
                   <span style="font-weight:500;overflow:hidden;text-overflow:ellipsis;flex:1;">${displayName}</span>
-                  ${startTime ? `<span style="opacity:0.65;font-size:10px;flex-shrink:0;margin-left:auto;">${startTime}</span>` : ''}
+                  ${timeText ? `<span style="opacity:0.65;font-size:10px;flex-shrink:0;margin-left:auto;">${timeText}</span>` : ''}
                 </div>`
               };
             }
@@ -923,7 +923,7 @@ const CalendarEngine = {
                 html: `<div style="display:flex;align-items:center;gap:4px;font-size:12px;line-height:1.4;white-space:nowrap;overflow:hidden;">
                   <i class="bi ${iconClass}" style="font-size:11px;flex-shrink:0;"></i>
                   <span style="font-weight:500;overflow:hidden;text-overflow:ellipsis;flex:1;">${displayName}</span>
-                  ${startTime ? `<span style="opacity:0.55;font-size:11px;flex-shrink:0;margin-left:auto;">${startTime}</span>` : ''}
+                  ${timeText ? `<span style="opacity:0.55;font-size:11px;flex-shrink:0;margin-left:auto;">${timeText}</span>` : ''}
                 </div>`
               };
             }
