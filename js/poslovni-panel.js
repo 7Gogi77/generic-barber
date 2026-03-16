@@ -4510,22 +4510,24 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                 window.calendar.getEvents().forEach(function(ev) {
                     var ep = ev.extendedProps || {};
                     var isBooking = ep.isBooking || ep.tab === 'customer' || ep.customer || ev.isBooking || (ev.id && String(ev.id).startsWith('apt_'));
+                    var shouldHide = false;
                     if (isBooking) {
                         var evWorker = ep.worker || ep.workerId || ep.workerName || '';
                         var evWorkerName = ep.workerName || '';
                         var matchById   = workerId && evWorker === workerId;
                         var matchByName = workerName && (evWorkerName === workerName || evWorker === workerName);
                         if (!matchById && !matchByName) {
-                            ev.setProp('display', 'none');
+                            shouldHide = true;
                         }
-                    }
-                    // Worker-type events (breaks, hours) — show only their own
-                    if (!isBooking) {
+                    } else {
+                        // Worker-type events (breaks, hours) — show only their own
                         var evW = ep.worker || (ev.title || '');
                         if (workerName && evW !== workerName && evW !== workerId) {
-                            ev.setProp('display', 'none');
+                            shouldHide = true;
                         }
                     }
+                    // Always reset display first, then hide if needed
+                    ev.setProp('display', shouldHide ? 'none' : 'auto');
                 });
             }
 
@@ -4560,10 +4562,11 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                 if (fab) fab.style.display = 'none';
             }
 
-            // ── 5. Show worker identity badge in sidebar ────────────────────
+            // ── 5. Show worker identity badge in sidebar (only once) ──────
             var sidebar = document.getElementById('sidebar');
-            if (sidebar && workerName) {
+            if (sidebar && workerName && !document.getElementById('bspWorkerBadge')) {
                 var badge = document.createElement('div');
+                badge.id = 'bspWorkerBadge';
                 badge.style.cssText = 'padding:8px 0 6px; text-align:center; font-size:11px; color:#8e8e93; font-weight:600; border-top:1px solid rgba(0,0,0,0.08); margin-top:4px; word-break:break-word;';
                 badge.textContent = workerName;
                 sidebar.insertBefore(badge, sidebar.lastElementChild.nextSibling || null);
