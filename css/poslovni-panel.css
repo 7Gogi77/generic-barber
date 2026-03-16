@@ -704,19 +704,29 @@
             max-height: none !important;
         }
 
-        /* Hide scrollbar on the all-day ("Cel dan") section in timeGrid views */
-        .fc-timegrid .fc-scrollgrid-section.fc-scrollgrid-section-header .fc-scroller {
+        /* Hide scrollbar on the all-day ("Cel dan") section in timeGrid views.
+           FC's timeGrid has: thead (col headers), tbody (all-day with fc-daygrid-body),
+           tbody (time slots). Target the scroller INSIDE the all-day section and
+           collapse the scrollbar-filler td next to it. */
+        .fc-timegrid .fc-daygrid-body .fc-scroller {
             overflow: hidden !important;
         }
-        /* Hide the scrollbar-compensation column FC adds to the right of the all-day area */
-        .fc-timegrid td.fc-timegrid-divider,
-        .fc-timegrid .fc-scrollgrid table > thead td[role="presentation"],
-        .fc-timegrid .fc-scrollgrid > thead .fc-scroller-harness ~ td[role="presentation"] {
+        /* The all-day section's scroller harness parent */
+        .fc-timegrid .fc-scrollgrid-section:not(.fc-scrollgrid-section-body):not(.fc-scrollgrid-section-footer) .fc-scroller {
+            overflow: hidden !important;
+        }
+        /* Collapse ALL scrollbar-filler td[role=presentation] EXCEPT in the main time body section */
+        .fc-timegrid .fc-scrollgrid > * > tr > td[role="presentation"] {
             width: 0 !important;
             min-width: 0 !important;
             padding: 0 !important;
             border: none !important;
             overflow: hidden !important;
+        }
+        /* Re-show the filler in the main scrollable body so columns stay aligned with the scrollbar */
+        .fc-timegrid .fc-scrollgrid > .fc-scrollgrid-section-body:last-of-type > tr > td[role="presentation"] {
+            width: auto !important;
+            min-width: auto !important;
         }
 
         /* TimeGrid scroll — ensure FC native scrolling works */
