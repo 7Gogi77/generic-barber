@@ -1354,6 +1354,7 @@ const CalendarEngine = {
               // For timeGrid views: clean month styles and let FC handle layout
               _cleanMonthStyles();
               if (calendar && typeof calendar.setOption === 'function') {
+                calendar.setOption('expandRows', false);
                 calendar.setOption('height', _h);
               }
               if (calendar && typeof calendar.updateSize === 'function') {
