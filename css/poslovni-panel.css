@@ -454,7 +454,8 @@
             text-decoration: none;
         }
 
-        .fc .fc-daygrid-day.fc-day-today .fc-daygrid-day-number {
+        /* Today's day number — blue circle only in month view */
+        #scheduleCalendar.view-daygrid .fc .fc-daygrid-day.fc-day-today .fc-daygrid-day-number {
             background: var(--ios-blue);
             color: white !important;
             border-radius: 50%;
@@ -467,6 +468,16 @@
             padding: 0;
             font-size: 12px;
             font-weight: 600;
+        }
+
+        /* Hide today circle in timeGrid allDay section — highlight is on column header instead */
+        #scheduleCalendar.view-timegrid-week .fc .fc-daygrid-day.fc-day-today .fc-daygrid-day-number,
+        #scheduleCalendar.view-timegrid-day .fc .fc-daygrid-day.fc-day-today .fc-daygrid-day-number {
+            background: none;
+            color: inherit;
+            border-radius: 0;
+            width: auto;
+            height: auto;
         }
 
         /* Month grid equal-height lock (updated by JS per viewport) */
@@ -635,6 +646,15 @@
             color: var(--ios-text-secondary);
             font-weight: 600;
             border-bottom: 1px solid var(--ios-separator);
+        }
+
+        /* Today column header highlight — blue pill in week/day header */
+        .fc .fc-col-header-cell.fc-day-today .fc-col-header-cell-cushion {
+            background: var(--ios-blue, #007aff);
+            color: #fff !important;
+            border-radius: 20px;
+            padding: 4px 10px !important;
+            display: inline-block;
         }
 
         #scheduleCalendar.view-timegrid-week .fc .fc-timegrid-slot,
@@ -1748,20 +1768,28 @@
             }
 
             .fc .fc-daygrid-day.fc-day-today .fc-daygrid-day-number {
-                width: 24px;
-                height: 24px;
-                font-size: 11px !important;
+                width: 22px;
+                height: 22px;
+                font-size: 10px !important;
+            }
+
+            /* Mobile today column header highlight */
+            .fc .fc-col-header-cell.fc-day-today .fc-col-header-cell-cushion {
+                background: var(--ios-blue, #007aff);
+                color: #fff !important;
+                border-radius: 14px;
+                padding: 2px 6px !important;
             }
 
             /* Events - compact but readable */
             .fc-event {
                 font-size: 9px !important;
-                padding: 2px 4px !important;
+                padding: 1px 2px !important;
                 line-height: 1.2 !important;
                 border-radius: 4px !important;
                 display: flex;
-                align-items: center;
-                justify-content: center;
+                align-items: flex-start;
+                justify-content: flex-start;
             }
 
             /* Mobile: ensure event bars size correctly and show emoji-only */

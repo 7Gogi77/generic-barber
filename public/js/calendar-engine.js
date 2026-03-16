@@ -676,7 +676,7 @@ const CalendarEngine = {
       containerElement.style.height = _initHeight + 'px';
 
       const calendar = new FullCalendar.Calendar(containerElement, {
-        initialView: options.initialView || (_isMobile ? 'listWeek' : 'dayGridMonth'),
+        initialView: options.initialView || 'dayGridMonth',
         headerToolbar: _isMobile ? {
           left: 'prev,next',
           center: 'title',
@@ -988,36 +988,36 @@ const CalendarEngine = {
               };
             }
 
-            // On mobile timeGrid (week/day): show name, surname, duration vertically
+            // On mobile timeGrid (week/day): top-left name / surname / time-range
             if (isMobileView && (view === 'timeGridWeek' || view === 'timeGridDay')) {
               const nameParts = displayName.split(' ');
               const firstName = nameParts[0] || '';
               const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : '';
-              const dur = arg.event.start && arg.event.end ? Math.round((new Date(arg.event.end) - new Date(arg.event.start)) / (1000 * 60)) : 0;
-              const durText = dur > 0 ? `${dur} min` : '';
               return {
-                html: `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;height:100%;padding:1px 2px;gap:0;overflow:hidden;text-align:center;line-height:1.15;">
+                html: `<div style="display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-start;width:100%;height:100%;padding:2px 3px;gap:0;overflow:hidden;line-height:1.2;">
                   <span style="font-size:9px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;">${firstName}</span>
                   ${lastName ? `<span style="font-size:8px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;opacity:0.85;">${lastName}</span>` : ''}
-                  ${durText ? `<span style="font-size:7px;font-weight:500;opacity:0.6;white-space:nowrap;">${durText}</span>` : ''}
+                  ${timeText ? `<span style="font-size:7px;font-weight:500;opacity:0.65;white-space:nowrap;">${timeText}</span>` : ''}
                 </div>`
               };
             }
 
-            // On mobile month view: render only the icon — cells are tiny
+            // On mobile month view: show first name + icon
             if (isMobileView) {
-              return { html: `<div style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;padding:1px;"><i class="bi ${iconClass}" style="font-size:13px;line-height:1;"></i></div>` };
+              const mFirstName = displayName.split(' ')[0] || '';
+              return { html: `<div style="display:flex;align-items:center;gap:2px;width:100%;padding:0 2px;overflow:hidden;line-height:1.2;"><i class="bi ${iconClass}" style="font-size:9px;flex-shrink:0;"></i><span style="font-size:9px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${mFirstName}</span></div>` };
             }
 
-            // For short events in week view, show compact format
-            const duration = arg.event.start && arg.event.end ?
-              Math.round((new Date(arg.event.end) - new Date(arg.event.start)) / (1000 * 60)) : 0;
-
-            if (view === 'timeGridWeek' && duration < 60 && duration > 0) {
+            // Desktop timeGrid (week/day): top-left aligned name / surname / time range
+            if (view === 'timeGridWeek' || view === 'timeGridDay') {
+              const nameParts = displayName.split(' ');
+              const firstName = nameParts[0] || '';
+              const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : '';
               return {
-                html: `<div style="display:flex;align-items:center;gap:4px;padding:1px 3px;font-size:11px;line-height:1.2;">
-                  <i class="bi ${iconClass}" style="font-size:10px;flex-shrink:0;"></i>
-                  <span style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${timeText}</span>
+                html: `<div style="display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-start;width:100%;height:100%;padding:3px 5px;gap:1px;overflow:hidden;line-height:1.25;">
+                  <span style="font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;">${firstName}</span>
+                  ${lastName ? `<span style="font-size:11px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;opacity:0.85;">${lastName}</span>` : ''}
+                  ${timeText ? `<span style="font-size:10px;font-weight:500;opacity:0.6;white-space:nowrap;">${timeText}</span>` : ''}
                 </div>`
               };
             }
@@ -1048,16 +1048,12 @@ const CalendarEngine = {
               };
             }
 
-            // Day/week views or longer events: full format
+            // Fallback: list/other views
             return {
-              html: `<div style="display:flex;flex-direction:column;gap:2px;padding:2px 4px;height:100%;">
-                <div style="display:flex;align-items:flex-start;gap:4px;min-height:16px;">
-                  <i class="bi ${iconClass}" style="font-size:12px;flex-shrink:0;margin-top:1px;"></i>
-                  <div style="flex:1;font-size:12px;font-weight:600;line-height:1.3;overflow:hidden;text-overflow:ellipsis;">
-                    ${displayName}
-                  </div>
-                </div>
-                ${timeText ? `<div style="font-size:10px;color:rgba(0,0,0,0.6);padding-left:16px;line-height:1.2;">${timeText}</div>` : ''}
+              html: `<div style="display:flex;align-items:center;gap:4px;padding:2px 4px;font-size:12px;overflow:hidden;">
+                <i class="bi ${iconClass}" style="font-size:11px;flex-shrink:0;"></i>
+                <span style="font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;">${displayName}</span>
+                ${timeText ? `<span style="font-size:10px;opacity:0.6;white-space:nowrap;flex-shrink:0;">${timeText}</span>` : ''}
               </div>`
             };
           } catch (e) {
