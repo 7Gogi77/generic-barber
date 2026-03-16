@@ -2091,24 +2091,47 @@ const CalendarEngine = {
       // Store calendar reference
       this.calendar = calendar;
       this.containerElement = containerElement;
+
+      function relayoutIfVisible() {
+        if (!calendar || !containerElement) return;
+        var isVisible = containerElement.offsetParent !== null && getComputedStyle(containerElement).display !== 'none';
+        if (!isVisible) return;
+
+        var currentViewType = (calendar && calendar.view && calendar.view.type) ? calendar.view.type : '';
+        if (currentViewType === 'dayGridMonth') {
+          _sizeMonthView();
+        } else {
+          var h = _computeCalHeight();
+          containerElement.style.height = h + 'px';
+          calendar.setOption('height', h);
+          calendar.updateSize();
+        }
+      }
       
       // Add window resize handler for responsive resizing
       let resizeTimeout;
       window.addEventListener('resize', () => {
         clearTimeout(resizeTimeout);
-        resizeTimeout = setTimeout(() => {
-          const currentViewType = (calendar && calendar.view && calendar.view.type) ? calendar.view.type : '';
-          if (currentViewType === 'dayGridMonth') {
-            _sizeMonthView();
-          } else {
-            // For timegrid/day views, set pixel height and let FC handle it
-            var h = _computeCalHeight();
-            containerElement.style.height = h + 'px';
-            calendar.setOption('height', h);
-            calendar.updateSize();
-          }
-        }, 200);
+        resizeTimeout = setTimeout(relayoutIfVisible, 200);
       });
+
+      // When the page/tab becomes visible again, recalc layout in case FC was hidden before.
+      document.addEventListener('visibilitychange', function() {
+        if (!document.hidden) {
+          setTimeout(relayoutIfVisible, 80);
+          setTimeout(relayoutIfVisible, 260);
+        }
+      });
+
+      // If container style/class changes (display none/block), relayout once visible.
+      try {
+        if (typeof MutationObserver !== 'undefined') {
+          var _visObserver = new MutationObserver(function() {
+            setTimeout(relayoutIfVisible, 40);
+          });
+          _visObserver.observe(containerElement, { attributes: true, attributeFilter: ['style', 'class'] });
+        }
+      } catch (_) {}
 
       return calendar;
     } catch (error) {

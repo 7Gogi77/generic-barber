@@ -393,6 +393,50 @@
                 closeBusinessSettingsPanel();
             }
 
+            // Keep calendar mounted and force a robust relayout when returning from side panels.
+            function forceCalendarRelayout(reason) {
+                const calEl = document.getElementById('scheduleCalendar');
+                if (!calEl) return;
+
+                calEl.style.display = 'block';
+                calEl.style.visibility = 'visible';
+                calEl.style.opacity = '1';
+
+                const pass = () => {
+                    const cal = window.calendar;
+                    if (!cal) return;
+
+                    const viewType = (cal.view && cal.view.type) ? cal.view.type : 'dayGridMonth';
+                    const currentDate = (typeof cal.getDate === 'function') ? cal.getDate() : new Date();
+
+                    try {
+                        if (viewType === 'dayGridMonth' && typeof cal.changeView === 'function') {
+                            // Re-enter same view to trigger FullCalendar datesSet/month sizing path.
+                            cal.changeView('dayGridMonth', currentDate);
+                        }
+                    } catch (_) {}
+
+                    try {
+                        if (typeof cal.updateSize === 'function') cal.updateSize();
+                    } catch (_) {}
+
+                    // Mobile safety: if the rendered body is still collapsed, switch to listWeek.
+                    if (window.innerWidth <= 768) {
+                        try {
+                            const bodies = calEl.querySelectorAll('.fc-scrollgrid-section-body');
+                            const collapsed = bodies.length > 0 && Array.from(bodies).every(el => el.getBoundingClientRect().height < 12);
+                            if (collapsed && typeof cal.changeView === 'function') {
+                                cal.changeView('listWeek', currentDate);
+                                if (typeof cal.updateSize === 'function') cal.updateSize();
+                            }
+                        } catch (_) {}
+                    }
+                };
+
+                [0, 120, 360, 720].forEach(delay => setTimeout(pass, delay));
+            }
+            window.forceCalendarRelayout = forceCalendarRelayout;
+
             (function(){
                 const sidebar = document.getElementById('sidebar');
                 const sidebarToggle = document.getElementById('sidebarToggle');
@@ -420,9 +464,7 @@
                     });
                     // Re-render calendar after the sidebar CSS transition (350ms) finishes
                     setTimeout(() => {
-                        if (window.calendar && typeof window.calendar.updateSize === 'function') {
-                            window.calendar.updateSize();
-                        }
+                        forceCalendarRelayout('sidebar-toggle');
                     }, 370);
                 });
 
@@ -452,7 +494,6 @@
                             localStorage.setItem('sidebarExpanded', 'false');
                         }
                         
-                        // Hide calendar whenever leaving calendar page
                         const _cal = document.getElementById('scheduleCalendar');
 
                         if (page === 'home') { window.location.href = 'admin-panel.html'; }
@@ -461,7 +502,7 @@
                         }
                         else if (page === 'booking-settings') {
                             // Close the other two panels only — not the one we're opening
-                            if (_cal) _cal.style.display = 'none';
+                            if (_cal) _cal.style.display = 'block';
                             closeCustomerPanel();
                             closeAnalyticsPanel();
                             showBusinessSettingsPanel();
@@ -471,21 +512,20 @@
                             closeAnalyticsPanel();
                             closeBusinessSettingsPanel();
                             if (_cal) _cal.style.display = 'block';
-                            // Re-measure after the panel transition so FC fills the correct width
-                            setTimeout(() => {
-                                if (window.calendar && typeof window.calendar.updateSize === 'function') {
-                                    window.calendar.updateSize();
-                                }
-                            }, 370);
+                            if (!window.calendar && !calendarInitialized) {
+                                initializeBusinessCalendar();
+                            }
+                            // Re-measure after panel transitions so month/list views reappear reliably.
+                            forceCalendarRelayout('nav-calendar');
                         }
                         else if (page === 'customers') {
-                            if (_cal) _cal.style.display = 'none';
+                            if (_cal) _cal.style.display = 'block';
                             closeAnalyticsPanel();
                             closeBusinessSettingsPanel();
                             showCustomerListPanel();
                         }
                         else if (page === 'analytics') {
-                            if (_cal) _cal.style.display = 'none';
+                            if (_cal) _cal.style.display = 'block';
                             closeCustomerPanel();
                             closeBusinessSettingsPanel();
                             showAnalyticsPanel();
