@@ -729,58 +729,10 @@
                     <div class="bsp-card">
                         <div class="bsp-card-header">
                             <div class="bsp-card-icon" style="background:#af52de20;"><i class="bi bi-people-fill" style="color:#af52de;font-size:15px;"></i></div>
-                            <div><div class="bsp-card-title">Ekipa in Profili</div><div class="bsp-card-subtitle" style="font-size:11px;color:#8e8e93;">Profili prikazani na spletni strani</div></div>
+                            <div><div class="bsp-card-title">Ekipa in Profili</div><div class="bsp-card-subtitle" style="font-size:11px;color:#8e8e93;">Profili prikazani na spletni strani · račun za vpis v urnik se nastavi na vsakem članu</div></div>
                         </div>
                         <div id="bspTeamList"></div>
                         <button class="bsp-add-btn" onclick="bspAddTeamMember()"><i class="bi bi-person-plus"></i> Dodaj Člana</button>
-
-                        <!-- Inline worker account toggle -->
-                        <div style="border-top:1px solid #f2f2f7;margin-top:12px;padding-top:14px;">
-                            <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:0 18px 8px;">
-                                <input type="checkbox" id="showAddWorkerForm" class="bsp-toggle" onclick="document.getElementById('addWorkerFormWrap').style.display=this.checked?'':'none'">
-                                <div>
-                                    <div class="bsp-row-label" style="margin:0;">Naredi račun za vpis v svoj urnik</div>
-                                    <div class="bsp-row-hint">Ustvari prijavo za zaposlenega, da lahko upravlja svoj urnik</div>
-                                </div>
-                            </label>
-                            <div id="addWorkerFormWrap" style="display:none;padding:10px 18px 4px;">
-                                <div style="display:flex;gap:10px;flex-wrap:wrap;">
-                                    <div style="flex:1;min-width:160px;">
-                                        <div class="bsp-row-label" style="margin-bottom:4px;">Ime in priimek</div>
-                                        <input id="newWorkerName" type="text" class="bsp-input" placeholder="npr. Marko Novak" style="width:100%;box-sizing:border-box;">
-                                    </div>
-                                    <div style="flex:1;min-width:160px;">
-                                        <div class="bsp-row-label" style="margin-bottom:4px;">Uporabniško ime</div>
-                                        <input id="newWorkerUser" type="text" class="bsp-input" placeholder="npr. marko" autocomplete="off" style="width:100%;box-sizing:border-box;">
-                                    </div>
-                                    <div style="flex:1;min-width:160px;">
-                                        <div class="bsp-row-label" style="margin-bottom:4px;">Geslo</div>
-                                        <input id="newWorkerPass" type="password" class="bsp-input" placeholder="Geslo" autocomplete="new-password" style="width:100%;box-sizing:border-box;">
-                                    </div>
-                                </div>
-                                <div style="margin-top:10px;">
-                                    <div class="bsp-row-label" style="margin-bottom:8px;">Dovoljenja</div>
-                                    <div style="display:flex;flex-wrap:wrap;gap:10px 24px;">
-                                        <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="checkbox" id="wpCanMove" style="width:15px;height:15px;"> Premikanje terminov</label>
-                                        <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="checkbox" id="wpCanAddBreaks" style="width:15px;height:15px;"> Dodajanje premorov</label>
-                                        <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="checkbox" id="wpCanDelete" style="width:15px;height:15px;"> Brisanje terminov</label>
-                                        <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="checkbox" id="wpCanViewAll" style="width:15px;height:15px;"> Ogled vseh terminov</label>
-                                        <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="checkbox" id="wpCanInvoice" style="width:15px;height:15px;"> Generiranje računov</label>
-                                    </div>
-                                </div>
-                                <div id="newWorkerMsg" style="display:none;padding:8px 12px;border-radius:8px;font-size:13px;margin-top:10px;"></div>
-                                <button class="bsp-add-btn" style="margin-top:10px;" onclick="addWorker()"><i class="bi bi-person-plus"></i> Dodaj zaposlenega</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Workers list (accounts) -->
-                    <div class="bsp-card">
-                        <div class="bsp-card-header">
-                            <div class="bsp-card-icon" style="background:#34c75920;"><i class="bi bi-people" style="color:#34c759;font-size:15px;"></i></div>
-                            <div><div class="bsp-card-title">Računi zaposlenih</div></div>
-                        </div>
-                        <div id="workersList"><div style="color:#8e8e93;font-size:14px;padding:10px 0;">Nalagam...</div></div>
                     </div>
                 </div>
 

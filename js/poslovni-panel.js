@@ -1272,7 +1272,10 @@
         }
 
         // ── Team management (syncs with SITE_CONFIG.barbersSection.list) ─────────
-        function bspRenderTeam() {
+        // Cache of Firebase workers for inline account rendering
+        var _cachedWorkers = null;
+
+        async function bspRenderTeam() {
             const el = document.getElementById('bspTeamList');
             if (!el) return;
             const list = window.SITE_CONFIG?.barbersSection?.list || [];
@@ -1280,15 +1283,88 @@
                 el.innerHTML = '<p style="font-size:13px;color:#8e8e93;padding:8px 0 8px 16px;">Ni dodanih članov ekipe. Klikni + Dodaj člana.</p>';
                 return;
             }
+            // Fetch workers once for inline account display
+            if (!_cachedWorkers) {
+                try { _cachedWorkers = await fetchWorkers(); } catch(_) { _cachedWorkers = {}; }
+            }
+            const workers = _cachedWorkers || {};
+
+            const permLabels = {
+                canMove:      'Premikanje terminov',
+                canAddBreaks: 'Dodajanje premorov',
+                canDelete:    'Brisanje terminov',
+                canViewAll:   'Ogled vseh terminov',
+                canInvoice:   'Generiranje računov'
+            };
+
             el.innerHTML = list.map((m, i) => {
+                const tid = m.id || '';
                 const hasImg = m.img && m.img !== 'https://via.placeholder.com/300' && m.img.trim();
                 const initials = (m.name || '?').charAt(0).toUpperCase();
                 const avatarHtml = hasImg
                     ? `<img src="${_escH(m.img)}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;flex-shrink:0;" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
                       + `<div style="display:none;width:40px;height:40px;border-radius:50%;background:#af52de20;color:#af52de;font-weight:700;font-size:16px;align-items:center;justify-content:center;flex-shrink:0;">${initials}</div>`
                     : `<div style="width:40px;height:40px;border-radius:50%;background:#af52de20;color:#af52de;font-weight:700;font-size:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">${initials}</div>`;
+
+                // Check if this team member has a linked worker account
+                const w = workers[tid];
+                let accountHtml = '';
+                if (w) {
+                    // Has account — show username + permissions + delete
+                    const permHtml = Object.entries(permLabels).map(([key, label]) => `
+                        <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;">
+                            <input type="checkbox" ${(w.permissions||{})[key] ? 'checked' : ''} onchange="bspToggleMemberPerm('${_escH(tid)}','${key}',this.checked)" style="width:14px;height:14px;cursor:pointer;">
+                            ${label}
+                        </label>`).join('');
+                    accountHtml = `
+                    <div style="border-top:1px solid #f2f2f7;padding-top:10px;margin-top:4px;">
+                        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+                            <div style="display:flex;align-items:center;gap:6px;">
+                                <span style="width:8px;height:8px;border-radius:50%;background:#34c759;display:inline-block;"></span>
+                                <span style="font-size:12px;font-weight:600;color:#1c1c1e;">Račun aktiven</span>
+                                <span style="font-size:12px;color:#8e8e93;">@${_escH(w.username||'')}</span>
+                            </div>
+                            <button onclick="bspDeleteMemberAccount('${_escH(tid)}')" style="background:none;border:none;color:#ff3b30;font-size:11px;font-weight:600;cursor:pointer;padding:2px 6px;">Odstrani račun</button>
+                        </div>
+                        <div style="display:flex;flex-wrap:wrap;gap:4px 16px;">${permHtml}</div>
+                    </div>`;
+                } else {
+                    // No account — show create form (collapsed by default)
+                    accountHtml = `
+                    <div style="border-top:1px solid #f2f2f7;padding-top:10px;margin-top:4px;">
+                        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+                            <input type="checkbox" class="bsp-toggle" onchange="this.closest('.bsp-list-item').querySelector('.team-acct-form').style.display=this.checked?'':'none'">
+                            <span style="font-size:12px;font-weight:600;color:#8e8e93;">Ustvari račun za vpis v urnik</span>
+                        </label>
+                        <div class="team-acct-form" style="display:none;margin-top:8px;">
+                            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                                <div style="flex:1;min-width:130px;">
+                                    <label style="font-size:11px;color:#8e8e93;display:block;margin-bottom:3px;">Uporabniško ime</label>
+                                    <input type="text" class="bsp-input acct-user" placeholder="npr. ${_escH((m.name||'').toLowerCase().split(' ')[0]||'ime')}" autocomplete="off" style="width:100%;box-sizing:border-box;">
+                                </div>
+                                <div style="flex:1;min-width:130px;">
+                                    <label style="font-size:11px;color:#8e8e93;display:block;margin-bottom:3px;">Geslo</label>
+                                    <input type="password" class="bsp-input acct-pass" placeholder="Min. 4 znaki" autocomplete="new-password" style="width:100%;box-sizing:border-box;">
+                                </div>
+                            </div>
+                            <div style="margin-top:8px;">
+                                <div style="font-size:11px;font-weight:600;color:#8e8e93;margin-bottom:4px;">Dovoljenja</div>
+                                <div style="display:flex;flex-wrap:wrap;gap:4px 16px;">
+                                    ${Object.entries(permLabels).map(([key, label]) => `
+                                    <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;">
+                                        <input type="checkbox" class="acct-perm-${key}" style="width:14px;height:14px;cursor:pointer;">
+                                        ${label}
+                                    </label>`).join('')}
+                                </div>
+                            </div>
+                            <div class="acct-msg" style="display:none;padding:6px 10px;border-radius:8px;font-size:12px;margin-top:8px;"></div>
+                            <button class="bsp-add-btn" style="margin-top:8px;font-size:12px;padding:6px 14px;" onclick="bspCreateMemberAccount(${i})"><i class="bi bi-person-check"></i> Ustvari račun</button>
+                        </div>
+                    </div>`;
+                }
+
                 return `
-                <div class="bsp-list-item" style="flex-direction:column;align-items:stretch;gap:10px;padding:14px 18px;" data-team-idx="${i}" data-team-id="${_escH(m.id||'')}">
+                <div class="bsp-list-item" style="flex-direction:column;align-items:stretch;gap:10px;padding:14px 18px;" data-team-idx="${i}" data-team-id="${_escH(tid)}">
                     <div style="display:flex;gap:12px;align-items:center;">
                         ${avatarHtml}
                         <div style="flex:1;min-width:0;">
@@ -1305,11 +1381,81 @@
                     </div>
                     <div><label style="font-size:11px;color:#8e8e93;display:block;margin-bottom:3px;">URL slike</label>
                     <input type="text" class="bsp-input team-img" value="${_escH(m.img&&m.img!=='https://via.placeholder.com/300'?m.img:'')}" style="width:100%;box-sizing:border-box;" placeholder="https://..."></div>
+                    ${accountHtml}
                 </div>`;
             }).join('');
             el.oninput  = _bspTeamAutoSave;
             el.onchange = _bspTeamAutoSave;
         }
+
+        // ── Per-member account CRUD ──────────────────────────────────────────
+        async function bspCreateMemberAccount(idx) {
+            const list = window.SITE_CONFIG?.barbersSection?.list || [];
+            const member = list[idx];
+            if (!member || !member.id) return;
+            const row = document.querySelector(`#bspTeamList [data-team-idx="${idx}"]`);
+            if (!row) return;
+
+            const username = (row.querySelector('.acct-user')?.value || '').trim().toLowerCase();
+            const password = row.querySelector('.acct-pass')?.value || '';
+            const msgEl = row.querySelector('.acct-msg');
+
+            function showMsg(text, isError) {
+                if (!msgEl) return;
+                msgEl.textContent = text;
+                msgEl.style.background = isError ? '#fff2f2' : '#f0fff4';
+                msgEl.style.border = '1px solid ' + (isError ? '#ff3b30' : '#34c759');
+                msgEl.style.color = isError ? '#ff3b30' : '#1c7a40';
+                msgEl.style.display = 'block';
+            }
+
+            if (!username || !password) { showMsg('Izpolnite uporabniško ime in geslo.', true); return; }
+            if (password.length < 4) { showMsg('Geslo mora imeti vsaj 4 znake.', true); return; }
+
+            const workers = await fetchWorkers();
+            const exists = Object.values(workers).some(w => w.username && w.username.toLowerCase() === username);
+            if (exists) { showMsg('Uporabniško ime že obstaja.', true); return; }
+
+            // Use the team member's ID as the worker key — this is the critical link
+            workers[member.id] = {
+                name: member.name || '',
+                username: username,
+                passwordHash: await sha256Worker(password),
+                permissions: {
+                    canMove:      row.querySelector('.acct-perm-canMove')?.checked || false,
+                    canAddBreaks: row.querySelector('.acct-perm-canAddBreaks')?.checked || false,
+                    canDelete:    row.querySelector('.acct-perm-canDelete')?.checked || false,
+                    canViewAll:   row.querySelector('.acct-perm-canViewAll')?.checked || false,
+                    canInvoice:   row.querySelector('.acct-perm-canInvoice')?.checked || false
+                }
+            };
+
+            try {
+                await saveWorkersToFirebase(workers);
+                _cachedWorkers = workers;
+                if (typeof showToast === 'function') showToast('✅ Račun za ' + (member.name || 'člana') + ' ustvarjen!');
+                bspRenderTeam();
+            } catch(e) { showMsg('Napaka pri shranjevanju.', true); }
+        }
+
+        async function bspDeleteMemberAccount(teamId) {
+            if (!confirm('Izbriši račun tega člana?')) return;
+            const workers = await fetchWorkers();
+            delete workers[teamId];
+            await saveWorkersToFirebase(workers);
+            _cachedWorkers = workers;
+            bspRenderTeam();
+        }
+
+        async function bspToggleMemberPerm(teamId, perm, value) {
+            const workers = await fetchWorkers();
+            if (!workers[teamId]) return;
+            if (!workers[teamId].permissions) workers[teamId].permissions = {};
+            workers[teamId].permissions[perm] = value;
+            await saveWorkersToFirebase(workers);
+            _cachedWorkers = workers;
+        }
+
         function bspCollectTeam() {
             const items = [];
             document.querySelectorAll('#bspTeamList [data-team-idx]').forEach(row => {
@@ -4188,67 +4334,17 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
         }
 
         async function addWorker() {
-            const name     = document.getElementById('newWorkerName').value.trim();
-            const username = document.getElementById('newWorkerUser').value.trim().toLowerCase();
-            const password = document.getElementById('newWorkerPass').value;
-            const msgEl    = document.getElementById('newWorkerMsg');
-
-            function showMsg(text, isError) {
-                msgEl.textContent = text;
-                msgEl.style.background = isError ? '#fff2f2' : '#f0fff4';
-                msgEl.style.border = '1px solid ' + (isError ? '#ff3b30' : '#34c759');
-                msgEl.style.color = isError ? '#ff3b30' : '#1c7a40';
-                msgEl.style.display = 'block';
-            }
-
-            if (!name || !username || !password) { showMsg('Izpolnite vsa polja.', true); return; }
-            if (password.length < 4) { showMsg('Geslo mora imeti vsaj 4 znake.', true); return; }
-
-            const workers = await fetchWorkers();
-            const exists = Object.values(workers).some(w => w.username && w.username.toLowerCase() === username);
-            if (exists) { showMsg('Uporabni\u0161ko ime \u017ee obstaja.', true); return; }
-
-            const id = 'w_' + Date.now();
-            workers[id] = {
-                name: name,
-                username: username,
-                passwordHash: await sha256Worker(password),
-                permissions: {
-                    canMove:      document.getElementById('wpCanMove').checked,
-                    canAddBreaks: document.getElementById('wpCanAddBreaks').checked,
-                    canDelete:    document.getElementById('wpCanDelete').checked,
-                    canViewAll:   document.getElementById('wpCanViewAll').checked,
-                    canInvoice:   document.getElementById('wpCanInvoice').checked
-                }
-            };
-
-            try {
-                await saveWorkersToFirebase(workers);
-                showMsg('Zaposleni ' + name + ' uspe\u0161no dodan!', false);
-                document.getElementById('newWorkerName').value = '';
-                document.getElementById('newWorkerUser').value = '';
-                document.getElementById('newWorkerPass').value = '';
-                ['wpCanMove','wpCanAddBreaks','wpCanDelete','wpCanViewAll','wpCanInvoice'].forEach(pid => { document.getElementById(pid).checked = false; });
-                loadWorkers();
-            } catch(e) {
-                showMsg('Napaka pri shranjevanju. Poskusite znova.', true);
-            }
+            // Legacy stub — accounts are now created per team member via bspCreateMemberAccount()
         }
 
         async function deleteWorker(id) {
-            if (!confirm('Izbri\u0161i tega zaposlenega?')) return;
-            const workers = await fetchWorkers();
-            delete workers[id];
-            await saveWorkersToFirebase(workers);
-            loadWorkers();
+            // Redirect to per-member deletion
+            await bspDeleteMemberAccount(id);
         }
 
         async function toggleWorkerPermission(id, perm, value) {
-            const workers = await fetchWorkers();
-            if (!workers[id]) return;
-            if (!workers[id].permissions) workers[id].permissions = {};
-            workers[id].permissions[perm] = value;
-            await saveWorkersToFirebase(workers);
+            // Redirect to per-member permissions
+            await bspToggleMemberPerm(id, perm, value);
         }
 
         function escapeHtmlWorker(text) {
@@ -4258,46 +4354,9 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
         }
 
         async function loadWorkers() {
-            const container = document.getElementById('workersList');
-            if (!container) return;
-            container.innerHTML = '<div style="color:#8e8e93; font-size:14px; padding:10px 0;">Nalagam...</div>';
-            const workers = await fetchWorkers();
-            const entries = Object.entries(workers);
-            if (entries.length === 0) {
-                container.innerHTML = '<div style="color:#8e8e93; font-size:14px; padding:10px 0;">Ni dodanih zaposlenih.</div>';
-                return;
-            }
-            const permLabels = {
-                canMove:      'Premikanje terminov',
-                canAddBreaks: 'Dodajanje premorov',
-                canDelete:    'Brisanje terminov',
-                canViewAll:   'Ogled vseh terminov',
-                canInvoice:   'Generiranje ra\u010dunov'
-            };
-            container.innerHTML = '';
-            entries.forEach(([wid, w]) => {
-                const perms = w.permissions || {};
-                const permHtml = Object.entries(permLabels).map(([key, label]) => `
-                    <label style="display:flex; align-items:center; gap:7px; font-size:13px; cursor:pointer; padding:2px 0;">
-                        <input type="checkbox" ${perms[key] ? 'checked' : ''} onchange="toggleWorkerPermission('${wid}','${key}',this.checked)" style="width:15px;height:15px;cursor:pointer;">
-                        ${label}
-                    </label>`).join('');
-                const card = document.createElement('div');
-                card.className = 'bsp-card';
-                card.style.marginBottom = '10px';
-                card.innerHTML = `
-                    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;">
-                        <div>
-                            <div style="font-size:15px; font-weight:700; color:#1c1c1e;">${escapeHtmlWorker(w.name || '')}</div>
-                            <div style="font-size:13px; color:#8e8e93; margin-top:2px;">@${escapeHtmlWorker(w.username || '')}</div>
-                        </div>
-                        <button onclick="deleteWorker('${wid}')" style="background:#FF3B30; color:white; border:none; border-radius:8px; padding:5px 12px; font-size:12px; font-weight:600; cursor:pointer;">Izbri\u0161i</button>
-                    </div>
-                    <div style="font-size:11px; font-weight:700; color:#8e8e93; text-transform:uppercase; letter-spacing:.5px; margin-bottom:6px;">Dovoljenja</div>
-                    <div style="display:flex; flex-wrap:wrap; gap:2px 16px;">${permHtml}</div>
-                `;
-                container.appendChild(card);
-            });
+            // Workers are now shown inline in team member cards — just refresh the team view
+            _cachedWorkers = null;
+            await bspRenderTeam();
         }
         // ====================================================================
 
