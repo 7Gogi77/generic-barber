@@ -1374,6 +1374,14 @@ const CalendarEngine = {
           }, 150);
         },
 
+        // Reset expandRows BEFORE the next view renders — prevents month's expandRows:true
+        // from inflating the all-day row when transitioning to a timeGrid view.
+        viewWillUnmount: () => {
+          if (calendar && typeof calendar.setOption === 'function') {
+            calendar.setOption('expandRows', false);
+          }
+        },
+
         viewDidMount: (arg) => {
           setTimeout(() => {
             if (calendar.updateSize) {
