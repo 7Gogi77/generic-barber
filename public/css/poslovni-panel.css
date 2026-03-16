@@ -705,15 +705,25 @@
         }
 
         /* Hide scrollbar on the all-day ("Cel dan") section in timeGrid views.
-           FC's timeGrid has: thead (col headers), tbody (all-day with fc-daygrid-body),
-           tbody (time slots). Target the scroller INSIDE the all-day section and
-           collapse the scrollbar-filler td next to it. */
-        .fc-timegrid .fc-daygrid-body .fc-scroller {
+           Nuclear approach: hide every scrollbar inside .fc-timegrid, then re-enable
+           only on the main liquid scroller (the time-slot body). */
+        .fc-timegrid .fc-scroller {
             overflow: hidden !important;
+            scrollbar-width: none !important;
         }
-        /* The all-day section's scroller harness parent */
-        .fc-timegrid .fc-scrollgrid-section:not(.fc-scrollgrid-section-body):not(.fc-scrollgrid-section-footer) .fc-scroller {
-            overflow: hidden !important;
+        .fc-timegrid .fc-scroller::-webkit-scrollbar {
+            display: none !important;
+            width: 0 !important;
+        }
+        /* Re-enable scrolling on the main time-slot body (the liquid-absolute scroller) */
+        .fc-timegrid .fc-scroller-liquid-absolute {
+            overflow-y: auto !important;
+            overflow-x: hidden !important;
+            scrollbar-width: thin !important;
+        }
+        .fc-timegrid .fc-scroller-liquid-absolute::-webkit-scrollbar {
+            display: block !important;
+            width: 6px !important;
         }
         /* Collapse ALL scrollbar-filler td[role=presentation] EXCEPT in the main time body section */
         .fc-timegrid .fc-scrollgrid > * > tr > td[role="presentation"] {
@@ -724,34 +734,20 @@
             overflow: hidden !important;
         }
         /* Re-show the filler in the main scrollable body so columns stay aligned with the scrollbar */
-        .fc-timegrid .fc-scrollgrid > .fc-scrollgrid-section-body:last-of-type > tr > td[role="presentation"] {
+        .fc-timegrid .fc-scrollgrid-section-liquid > tr > td[role="presentation"] {
             width: auto !important;
             min-width: auto !important;
         }
 
-        /* TimeGrid scroll — ensure FC native scrolling works */
-        #scheduleCalendar.view-timegrid-week .fc-scroller-liquid-absolute,
-        #scheduleCalendar.view-timegrid-day .fc-scroller-liquid-absolute {
-            overflow-y: auto !important;
-            overflow-x: hidden !important;
-        }
-
-        /* Thin scrollbar for desktop timeGrid */
-        #scheduleCalendar.view-timegrid-week .fc-scroller-liquid-absolute::-webkit-scrollbar,
-        #scheduleCalendar.view-timegrid-day .fc-scroller-liquid-absolute::-webkit-scrollbar {
-            width: 6px;
-        }
-        #scheduleCalendar.view-timegrid-week .fc-scroller-liquid-absolute::-webkit-scrollbar-track,
-        #scheduleCalendar.view-timegrid-day .fc-scroller-liquid-absolute::-webkit-scrollbar-track {
+        /* Thin scrollbar styling for desktop timeGrid */
+        .fc-timegrid .fc-scroller-liquid-absolute::-webkit-scrollbar-track {
             background: transparent;
         }
-        #scheduleCalendar.view-timegrid-week .fc-scroller-liquid-absolute::-webkit-scrollbar-thumb,
-        #scheduleCalendar.view-timegrid-day .fc-scroller-liquid-absolute::-webkit-scrollbar-thumb {
+        .fc-timegrid .fc-scroller-liquid-absolute::-webkit-scrollbar-thumb {
             background: rgba(0,0,0,0.15);
             border-radius: 3px;
         }
-        #scheduleCalendar.view-timegrid-week .fc-scroller-liquid-absolute::-webkit-scrollbar-thumb:hover,
-        #scheduleCalendar.view-timegrid-day .fc-scroller-liquid-absolute::-webkit-scrollbar-thumb:hover {
+        .fc-timegrid .fc-scroller-liquid-absolute::-webkit-scrollbar-thumb:hover {
             background: rgba(0,0,0,0.3);
         }
 
