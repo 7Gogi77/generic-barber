@@ -51,7 +51,7 @@ window.CloudSync = {
                 
                 // Extract bookingSettings embedded in site_config
                 if (remoteConfig && remoteConfig._bookingSettings) {
-                    localStorage.setItem('bookingSettings', JSON.stringify(remoteConfig._bookingSettings));
+                    try { localStorage.setItem('bookingSettings', JSON.stringify(remoteConfig._bookingSettings)); } catch(_) {}
                 }
 
                 // Merge remote config with local
@@ -60,8 +60,16 @@ window.CloudSync = {
                 }
                 Object.assign(window.SITE_CONFIG, remoteConfig || {});
                 
-                // Update localStorage backup
-                localStorage.setItem('site_config_backup', JSON.stringify(window.SITE_CONFIG));
+                // Update localStorage backup (best-effort, skip if quota exceeded)
+                try {
+                    localStorage.setItem('site_config_backup', JSON.stringify(window.SITE_CONFIG));
+                } catch(e) {
+                    // Quota exceeded — remove stale backups to free space then retry once
+                    try {
+                        localStorage.removeItem('site_config_backup');
+                        localStorage.setItem('site_config_backup', JSON.stringify(window.SITE_CONFIG));
+                    } catch(_) { /* still full — skip backup, Firebase is source of truth */ }
+                }
                 
                 // Refresh UI if on main page
                 if (typeof initSite === 'function') {
@@ -106,13 +114,13 @@ window.CloudSync = {
                 const cloudConfig = snapshot.val();
                 // Extract bookingSettings embedded in site_config
                 if (cloudConfig && cloudConfig._bookingSettings) {
-                    localStorage.setItem('bookingSettings', JSON.stringify(cloudConfig._bookingSettings));
+                    try { localStorage.setItem('bookingSettings', JSON.stringify(cloudConfig._bookingSettings)); } catch(_) {}
                 }
                 if (!window.SITE_CONFIG || typeof window.SITE_CONFIG !== 'object') {
                     window.SITE_CONFIG = {};
                 }
                 Object.assign(window.SITE_CONFIG, cloudConfig || {});
-                localStorage.setItem('site_config_backup', JSON.stringify(window.SITE_CONFIG));
+                try { localStorage.setItem('site_config_backup', JSON.stringify(window.SITE_CONFIG)); } catch(_) {}
             }
         } catch (error) {}
         return true;
