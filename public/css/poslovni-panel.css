@@ -1628,6 +1628,7 @@
             .fc .fc-toolbar-chunk:nth-child(2) {
                 flex: 1 1 auto;
                 justify-content: center;
+                min-width: 0;
             }
 
             .fc .fc-button {
@@ -1638,13 +1639,31 @@
             }
 
             .fc .fc-button-group .fc-button {
-                padding: 3px 5px !important;
-                min-width: 0 !important;
+                padding: 4px 8px !important;
+                min-width: 28px !important;
+                font-size: 12px !important;
+                font-weight: 600 !important;
+                text-align: center;
             }
 
             .fc .fc-button-group {
                 flex-wrap: nowrap !important;
                 gap: 0 !important;
+                border-radius: 8px !important;
+                overflow: hidden;
+                background: rgba(0,0,0,0.06);
+            }
+
+            .fc .fc-button-group .fc-button-primary {
+                background: transparent !important;
+                color: var(--ios-text-primary, #1c1c1e) !important;
+                box-shadow: none !important;
+            }
+
+            .fc .fc-button-group .fc-button-primary.fc-button-active {
+                background: var(--ios-blue, #007aff) !important;
+                color: #fff !important;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.15) !important;
             }
 
             .fc .fc-toolbar-title {
@@ -1652,9 +1671,11 @@
                 font-weight: 700 !important;
                 white-space: nowrap !important;
                 margin-bottom: 0 !important;
+                overflow: hidden;
+                text-overflow: ellipsis;
             }
 
-            /* Keep month/list toggle available on very small screens */
+            /* Keep all view buttons visible */
             .fc .fc-listWeek-button {
                 display: inline-flex !important;
             }
@@ -1813,8 +1834,49 @@
                 height: 100% !important;
                 z-index: 3000 !important;
             }
+
+            /* Mobile worker filter: collapsible below toolbar */
+            #calWorkerFilterWrap {
+                position: relative !important;
+                top: auto !important;
+                left: auto !important;
+                transform: none !important;
+                width: 100% !important;
+                padding: 0 !important;
+                pointer-events: auto !important;
+                z-index: 50 !important;
+                overflow: hidden;
+                max-height: 0;
+                transition: max-height 0.25s ease, padding 0.25s ease;
+            }
+            #calWorkerFilterWrap.expanded {
+                max-height: 80px;
+                padding: 6px 8px !important;
+            }
+            #calWorkerFilterBar {
+                max-width: 100% !important;
+                border-radius: 12px !important;
+                padding: 4px 6px 4px 10px !important;
+                gap: 6px !important;
+            }
+            .cwf-label {
+                display: none !important;
+            }
+            .cwf-chip {
+                padding: 3px 10px 3px 4px !important;
+                font-size: 12px !important;
+            }
+            .cwf-chip-avatar, .cwf-chip-placeholder {
+                width: 20px !important;
+                height: 20px !important;
+                font-size: 10px !important;
+            }
+            /* Worker filter toggle button in toolbar */
+            #calWorkerToggle {
+                display: inline-flex !important;
+            }
             
-            /* Week view improvements for mobile */
+            /* Week/Day view improvements for mobile */
             .fc-timeGrid-view .fc-time-grid,
             .fc-timegrid {
                 font-size: 11px !important;
@@ -1822,10 +1884,56 @@
             
             .fc .fc-timegrid-slot-label {
                 font-size: 10px !important;
+                padding: 0 4px !important;
             }
             
             .fc-timegrid-slot {
-                height: 24px !important;
+                height: 28px !important;
+            }
+
+            /* Compact day headers in week view */
+            .fc .fc-timegrid .fc-col-header-cell {
+                padding: 6px 2px !important;
+                font-size: 10px !important;
+            }
+
+            .fc .fc-timegrid .fc-col-header-cell-cushion {
+                padding: 2px !important;
+                font-weight: 600 !important;
+            }
+
+            /* Show event title/time in timeGrid (override month-view emoji-only rule) */
+            .fc .fc-timegrid-event .fc-event-title,
+            .fc .fc-timegrid-event .fc-event-time,
+            .fc .fc-timegrid-event .fc-event-title-container,
+            .fc .fc-timegrid-event .fc-event-main-frame {
+                display: block !important;
+            }
+            .fc .fc-timegrid-event .mobile-event-emoji {
+                display: none !important;
+            }
+            .fc .fc-timegrid-event .fc-event-main-frame {
+                flex-direction: column !important;
+                padding: 1px 3px !important;
+            }
+            .fc .fc-timegrid-event .fc-event-time {
+                font-size: 9px !important;
+                font-weight: 600 !important;
+                white-space: nowrap !important;
+                overflow: hidden !important;
+            }
+            .fc .fc-timegrid-event .fc-event-title {
+                font-size: 9px !important;
+                line-height: 1.15 !important;
+                overflow: hidden !important;
+                text-overflow: ellipsis !important;
+                white-space: nowrap !important;
+            }
+
+            /* TimeGrid axis (time labels) narrower */
+            .fc .fc-timegrid-axis {
+                width: 40px !important;
+                min-width: 40px !important;
             }
             
             /* Make event text more readable on mobile */
@@ -1834,17 +1942,32 @@
                 font-size: 10px !important;
                 line-height: 1.2 !important;
             }
+
+            /* Now indicator */
+            .fc .fc-timegrid-now-indicator-line {
+                border-color: #ff3b30 !important;
+                border-width: 2px !important;
+            }
+            .fc .fc-timegrid-now-indicator-arrow {
+                border-color: #ff3b30 !important;
+            }
         }
 
         /* Very small phones */
         @media (max-width: 360px) {
             .fc .fc-button {
-                padding: 6px 8px !important;
-                font-size: 11px !important;
+                padding: 3px 4px !important;
+                font-size: 10px !important;
+            }
+
+            .fc .fc-button-group .fc-button {
+                padding: 3px 6px !important;
+                min-width: 24px !important;
+                font-size: 10px !important;
             }
 
             .fc .fc-toolbar-title {
-                font-size: 15px !important;
+                font-size: 12px !important;
             }
 
             .fc-col-header-cell {
@@ -1918,6 +2041,27 @@
 /* ============================================
    MOBILE FAB + CALENDAR IMPROVEMENTS
    ============================================ */
+
+/* Worker filter toggle button (hidden by default, shown on mobile via @media) */
+#calWorkerToggle {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: none;
+    background: rgba(0,122,255,0.1);
+    color: var(--ios-blue, #007aff);
+    font-size: 16px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: background 0.15s ease;
+    flex-shrink: 0;
+    margin-left: 4px;
+}
+#calWorkerToggle:active { background: rgba(0,122,255,0.2); }
+#calWorkerToggle.active { background: var(--ios-blue, #007aff); color: #fff; }
 
 #mobileFab {
     display: none;
