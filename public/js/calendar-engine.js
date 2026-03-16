@@ -501,6 +501,11 @@ const CalendarEngine = {
       // Also strips any lingering inline styles left by the week-view handler.
       function _lockMonthRowHeights(totalHeight) {
         if (!calendar) return;
+        // Guard: only run in month view — delayed timers can fire after switching to timeGrid
+        try {
+          var curView = calendar.view && calendar.view.type;
+          if (curView && curView !== 'dayGridMonth') return;
+        } catch(_) {}
         var rows = containerElement.querySelectorAll('.fc-daygrid-body tbody tr');
         if (!rows || !rows.length) return;
 
@@ -1318,6 +1323,14 @@ const CalendarEngine = {
             // Remove forced overflow hidden on header scrollers (set by _sizeMonthView)
             containerElement.querySelectorAll('.fc-scrollgrid-section-header .fc-scroller').forEach(el => {
               el.style.removeProperty('overflow');
+            });
+            // Remove forced position:absolute on scrollers (set by _sizeMonthView)
+            containerElement.querySelectorAll('.fc-scroller-liquid-absolute').forEach(el => {
+              el.style.removeProperty('position');
+              el.style.removeProperty('top');
+              el.style.removeProperty('right');
+              el.style.removeProperty('bottom');
+              el.style.removeProperty('left');
             });
           }
 
