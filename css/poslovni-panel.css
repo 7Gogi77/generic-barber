@@ -689,6 +689,41 @@
             background: var(--ios-bg-primary);
         }
 
+        /* TimeGrid scroll — ensure FC native scrolling works */
+        #scheduleCalendar.view-timegrid-week .fc-scroller-liquid-absolute,
+        #scheduleCalendar.view-timegrid-day .fc-scroller-liquid-absolute {
+            overflow-y: auto !important;
+            overflow-x: hidden !important;
+        }
+
+        /* Thin scrollbar for desktop timeGrid */
+        #scheduleCalendar.view-timegrid-week .fc-scroller-liquid-absolute::-webkit-scrollbar,
+        #scheduleCalendar.view-timegrid-day .fc-scroller-liquid-absolute::-webkit-scrollbar {
+            width: 6px;
+        }
+        #scheduleCalendar.view-timegrid-week .fc-scroller-liquid-absolute::-webkit-scrollbar-track,
+        #scheduleCalendar.view-timegrid-day .fc-scroller-liquid-absolute::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        #scheduleCalendar.view-timegrid-week .fc-scroller-liquid-absolute::-webkit-scrollbar-thumb,
+        #scheduleCalendar.view-timegrid-day .fc-scroller-liquid-absolute::-webkit-scrollbar-thumb {
+            background: rgba(0,0,0,0.15);
+            border-radius: 3px;
+        }
+        #scheduleCalendar.view-timegrid-week .fc-scroller-liquid-absolute::-webkit-scrollbar-thumb:hover,
+        #scheduleCalendar.view-timegrid-day .fc-scroller-liquid-absolute::-webkit-scrollbar-thumb:hover {
+            background: rgba(0,0,0,0.3);
+        }
+
+        /* Now indicator line — accent color */
+        #scheduleCalendar .fc .fc-timegrid-now-indicator-line {
+            border-color: var(--ios-red, #ff3b30) !important;
+            border-width: 2px !important;
+        }
+        #scheduleCalendar .fc .fc-timegrid-now-indicator-arrow {
+            border-color: var(--ios-red, #ff3b30) !important;
+        }
+
         /* ===== iOS MODALS ===== */
         .modal {
             display: none;

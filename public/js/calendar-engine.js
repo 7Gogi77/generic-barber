@@ -798,8 +798,8 @@ const CalendarEngine = {
         views: {
           dayGridMonth: { type: 'dayGridMonth', expandRows: true }, // expandRows fills available height equally
           // On mobile: 1 slot per hour in week view to reduce scrolling; short header (no month)
-          timeGridWeek: { type: 'timeGrid', contentHeight: 'auto', slotMinTime: weekSlotMin, slotMaxTime: weekSlotMax, slotDuration: _isMobile ? '01:00:00' : '00:15:00', dayHeaderFormat: _isMobile ? { weekday: 'short' } : undefined },
-          timeGridDay: { type: 'timeGrid', slotMinTime: weekSlotMin, slotMaxTime: weekSlotMax, dayHeaderFormat: _isMobile ? { weekday: 'short', day: 'numeric' } : undefined }
+          timeGridWeek: { type: 'timeGrid', slotMinTime: weekSlotMin, slotMaxTime: weekSlotMax, slotDuration: _isMobile ? '01:00:00' : '00:15:00', dayHeaderFormat: _isMobile ? { weekday: 'short' } : undefined },
+          timeGridDay: { type: 'timeGrid', slotMinTime: weekSlotMin, slotMaxTime: weekSlotMax, slotDuration: _isMobile ? '01:00:00' : '00:15:00', dayHeaderFormat: _isMobile ? { weekday: 'short', day: 'numeric' } : undefined }
         },
         // Hide non-working days in the week view
         hiddenDays: weekHiddenDays,
@@ -1301,83 +1301,45 @@ const CalendarEngine = {
             });
           }
 
-          // For week view: strip FC's inline overflow/height constraints so the view expands fully
-          const _argViewType = arg && arg.view && arg.view.type ? arg.view.type : '';
-          if (_argViewType === 'timeGridWeek') {
-            const _freeWeekDs = () => {
-              // Container must stay overflow:hidden so border-radius clips cell borders at corners
-              containerElement.style.setProperty('overflow', 'hidden', 'important');
-              // Strip the view root itself – FC sets style="height:Xpx; overflow:hidden auto" here
-              const viewRoot = containerElement.querySelector('.fc-timeGridWeek-view');
-              if (viewRoot) {
-                viewRoot.style.setProperty('height', 'auto', 'important');
-                viewRoot.style.setProperty('min-height', '0', 'important');
-                viewRoot.style.setProperty('overflow', 'visible', 'important');
-              }
-              // Strip .fc itself – height:100% on it expands beyond grid content leaving empty space
-              const fcEl = containerElement.querySelector('.fc');
-              if (fcEl) {
-                fcEl.style.setProperty('height', 'auto', 'important');
-                fcEl.style.setProperty('min-height', '0', 'important');
-              }
-              // Strip view-harness height
-              containerElement.querySelectorAll('.fc-view-harness').forEach(el => {
-                el.style.setProperty('height', 'auto', 'important');
-                el.style.setProperty('overflow', 'visible', 'important');
+          // Helper: strip lingering month-view inline styles so FC can manage timeGrid natively
+          function _cleanMonthStyles() {
+            // Remove forced row heights from month view
+            containerElement.querySelectorAll('.fc-daygrid-body tbody tr').forEach(tr => {
+              tr.style.removeProperty('height');
+              tr.style.removeProperty('min-height');
+              tr.style.removeProperty('max-height');
+            });
+            // Remove forced overflow/height from scrollers, harnesses, etc.
+            ['.fc', '.fc-view-harness', '.fc-scroller-harness',
+             '.fc-scrollgrid-section-body td', 'tr.fc-scrollgrid-section-body',
+             '.fc-scroller', '.fc-scroller-liquid-absolute'].forEach(sel => {
+              containerElement.querySelectorAll(sel).forEach(el => {
+                el.style.removeProperty('height');
+                el.style.removeProperty('min-height');
+                el.style.removeProperty('max-height');
+                el.style.removeProperty('overflow');
+                el.style.removeProperty('overflow-x');
+                el.style.removeProperty('overflow-y');
+                el.style.removeProperty('position');
+                el.style.removeProperty('top');
+                el.style.removeProperty('bottom');
+                el.style.removeProperty('left');
+                el.style.removeProperty('right');
               });
-              // Strip scrollers – avoid mixed-axis (overflow-x:hidden + overflow-y:visible is invalid CSS)
-              containerElement.querySelectorAll('.fc-scroller, .fc-scroller-liquid-absolute').forEach(s => {
-                s.style.setProperty('overflow', 'visible', 'important');
-                s.style.setProperty('height', 'auto', 'important');
-                s.style.setProperty('max-height', 'none', 'important');
-              });
-              containerElement.querySelectorAll('.fc-scroller-harness').forEach(h => {
-                h.style.setProperty('height', 'auto', 'important');
-                h.style.setProperty('min-height', '0', 'important');
-                h.style.setProperty('overflow', 'visible', 'important');
-              });
-              containerElement.querySelectorAll('.fc-scroller-liquid-absolute').forEach(s => {
-                s.style.setProperty('position', 'relative', 'important');
-                ['top', 'bottom', 'left', 'right'].forEach(p => s.style.setProperty(p, 'auto', 'important'));
-              });
-              containerElement.querySelectorAll('.fc-scrollgrid-section-body td').forEach(td => {
-                td.style.setProperty('height', 'auto', 'important');
-              });
-              // TR.fc-scrollgrid-section-body is what FC sets style="height:789px; overflow:hidden auto" on
-              // – this is the direct cause of empty space at the bottom
-              containerElement.querySelectorAll('tr.fc-scrollgrid-section-body').forEach(tr => {
-                tr.style.setProperty('height', 'auto', 'important');
-                tr.style.setProperty('overflow', 'visible', 'important');
-              });
-            };
-            setTimeout(_freeWeekDs, 0);
-            setTimeout(_freeWeekDs, 100);
-            setTimeout(_freeWeekDs, 300);
-            // Re-apply slot bounds in case FC reset them
-            try {
-              if (calendar) {
-                calendar.setOption('slotMinTime', weekSlotMin);
-                calendar.setOption('slotMaxTime', weekSlotMax);
-                calendar.setOption('hiddenDays', weekHiddenDays);
-              }
-            } catch(_) {}
+            });
           }
 
           // Update view-specific classes so styles can be scoped (dayGrid vs timeGrid)
-          // Restore granular classes so week and day can have separate CSS
           try {
             const v = arg && arg.view && arg.view.type ? arg.view.type : '';
             if (containerElement) {
-              // Specific timegrid variants (no generic view-timegrid class to avoid bleed)
               containerElement.classList.toggle('view-timegrid-week', v === 'timeGridWeek');
               containerElement.classList.toggle('view-timegrid-day', v === 'timeGridDay');
-              // Month/daygrid
               containerElement.classList.toggle('view-daygrid', v === 'dayGridMonth');
             }
           } catch (e) { /* ignore */ }
 
           // Month view shows all 7 days; week/day views hide non-working days
-          // Guard: only call setOption when value changes to avoid datesSet infinite loop
           try {
             const _vhd = arg && arg.view && arg.view.type ? arg.view.type : '';
             if (calendar && typeof calendar.setOption === 'function') {
@@ -1390,124 +1352,42 @@ const CalendarEngine = {
           } catch(_) {}
 
           // Dynamic height: viewport-based for all views
+          const _argViewType = arg && arg.view && arg.view.type ? arg.view.type : '';
           try {
-            const vForH = arg && arg.view && arg.view.type ? arg.view.type : '';
             var _h = _computeCalHeight();
             containerElement.style.height = _h + 'px';
-            if (vForH === 'dayGridMonth') {
+            if (_argViewType === 'dayGridMonth') {
               _sizeMonthView();
             } else {
-              try { if (calendar && typeof calendar.setOption === 'function') calendar.setOption('height', _h); } catch(_){}
+              // For timeGrid views: clean month styles and let FC handle layout
+              _cleanMonthStyles();
+              if (calendar && typeof calendar.setOption === 'function') {
+                calendar.setOption('height', _h);
+                calendar.setOption('expandRows', false);
+              }
+              if (calendar && typeof calendar.updateSize === 'function') {
+                calendar.updateSize();
+              }
             }
           } catch (e) { /* ignore */ }
 
-          // If view is a timeGrid, ensure initial scroll position and allow vertical scrolling
-          try {
-            const v2 = arg && arg.view && arg.view.type ? arg.view.type : '';
-            if (v2.startsWith('timeGrid')) {
-              try { if (calendar && typeof calendar.setOption === 'function') {
+          // If view is a timeGrid, set slot bounds and scroll position
+          if (_argViewType.startsWith('timeGrid')) {
+            try {
+              if (calendar && typeof calendar.setOption === 'function') {
                 calendar.setOption('scrollTime', initialScrollTime);
-                // Ensure slot bounds match working hours
                 calendar.setOption('slotMinTime', weekSlotMin);
                 calendar.setOption('slotMaxTime', weekSlotMax);
-              } } catch (_) {}
-
-              // Attempt to scroll the timegrid body to the approximate time slot
-              setTimeout(() => {
-                try {
-                  const timeParts = (initialScrollTime || '12:00:00').split(':');
-                  const targetHour = parseInt(timeParts[0], 10) || 12;
-                  const scrollBody = containerElement.querySelector('.fc-scrollgrid-section-body');
-                  const slotEls = containerElement.querySelectorAll('.fc-timegrid .fc-timegrid-slot');
-                  if (scrollBody && slotEls && slotEls.length) {
-                    // Find a slot whose label matches targetHour
-                    for (let i = 0; i < slotEls.length; i++) {
-                      const label = slotEls[i].querySelector('.fc-timegrid-slot-label');
-                      if (label && /\d{1,2}/.test(label.textContent || '')) {
-                        const h = parseInt((label.textContent || '').trim().split(':')[0], 10);
-                        if (!isNaN(h) && h >= targetHour) {
-                          scrollBody.scrollTop = Math.max(0, slotEls[i].offsetTop - 40);
-                          break;
-                        }
-                      }
-                    }
-                    // If no matching slot found, ensure we can scroll to bottom so late slots are reachable
-                    // (this helps if slot labels are not present or in unexpected format)
-                    if (scrollBody.scrollHeight > scrollBody.clientHeight && scrollBody.scrollTop === 0) {
-                      // leave as-is; user can use the Bottom button to jump to end
-                    }
-                  }
-                } catch (_) { /* ignore scrolling failures */ }
-              }, 120);
-            }
-          } catch (_) { /* ignore */ }
+              }
+            } catch (_) {}
+          }
 
           // After view renders, apply viewport-based height to month view
           setTimeout(() => {
-            if (arg.view.type === 'dayGridMonth') {
+            if (_argViewType === 'dayGridMonth') {
               _sizeMonthView();
             }
-            
-            // For timeGridWeek only, ensure timegrid and scroll bodies are sized (skip Day to avoid fallbacks there)
-            if (arg.view.type === 'timeGridWeek') {
-              setTimeout(() => {
-                try {
-                  const containerElement = document.getElementById('scheduleCalendar');
-                  if (!containerElement) return;
-                  const toolbar = containerElement.querySelector('.fc-toolbar');
-                  const headerRow = containerElement.querySelector('.fc-col-header');
-                  const fcRoot = containerElement.querySelector('.fc');
-                  const viewHarness = containerElement.querySelector('.fc-view-harness');
-                  const timegrid = containerElement.querySelector('.fc-timegrid');
-                  const scrollBodies = containerElement.querySelectorAll('.fc-scrollgrid-section-body');
-
-                  const toolbarH = toolbar ? Math.ceil(toolbar.getBoundingClientRect().height) : 0;
-                  const headerH = headerRow ? Math.ceil(headerRow.getBoundingClientRect().height) : 0;
-                  const avail = Math.max(520, containerElement.clientHeight - toolbarH - headerH - 8);
-
-
-                  if (fcRoot) { fcRoot.style.height = avail + 'px'; fcRoot.style.minHeight = avail + 'px'; fcRoot.style.overflow = 'visible'; }
-                  if (viewHarness) { viewHarness.style.height = avail + 'px'; viewHarness.style.minHeight = avail + 'px'; }
-                  if (timegrid) { timegrid.style.height = avail + 'px'; timegrid.style.minHeight = avail + 'px'; timegrid.style.overflowX = 'hidden'; timegrid.style.overflowY = 'auto'; }
-                  if (scrollBodies && scrollBodies.length) { scrollBodies.forEach(b => { b.style.height = avail + 'px'; b.style.minHeight = avail + 'px'; b.style.maxHeight = avail + 'px'; b.style.overflowX = 'hidden'; b.style.overflowY = 'auto'; }); }
-                  
-                  // Also target the fc-scroller elements inside timegrid
-                  const scrollers = containerElement.querySelectorAll('.fc-timegrid .fc-scroller');
-                  if (scrollers && scrollers.length) { scrollers.forEach(s => { s.style.maxHeight = avail + 'px'; s.style.overflowY = 'auto'; s.style.overflowX = 'hidden'; }); }
-
-                  if (calendar && typeof calendar.updateSize === 'function') calendar.updateSize();
-
-                  // Ensure FullCalendar created the time grid slots - retry a few times and fallback to forcing a view re-render
-                  (function ensureTimeGridSlots(attempt){
-                    try {
-                      const slotsEl = containerElement.querySelector('.fc-timegrid .fc-timegrid-slots');
-                      const hasSlots = slotsEl && slotsEl.querySelectorAll('*').length > 0;
-
-                      if (hasSlots) {
-                        // Slots present - good
-                        return;
-                      }
-
-                      if (attempt >= 4) {
-                        // TimeGrid slots not created after retries. Do not force a view re-render here to avoid aggressive fallback behavior.
-                        // Exiting silently; higher-level flow (if any) may decide to handle this.
-                        return;
-                      }
-
-                      // Not yet present - try again with exponential backoff
-                      const retryDelays = [120, 240, 480, 800];
-                      setTimeout(() => {
-                        try { if (calendar && typeof calendar.updateSize === 'function') calendar.updateSize(); } catch (e) {}
-                        ensureTimeGridSlots(attempt + 1);
-                      }, retryDelays[attempt] || 400);
-                    } catch (err) {}
-                  })(0);
-
-                } catch (err) {}
-              }, 100);
-            }
-            
-            if (calendar.updateSize) {
+            if (calendar && calendar.updateSize) {
               calendar.updateSize();
             }
           }, 150);
@@ -1518,107 +1398,12 @@ const CalendarEngine = {
             if (calendar.updateSize) {
               calendar.updateSize();
             }
-
-            // Apply view-specific classes on mount so each view can be targeted independently
-            try {
-              const v = arg && arg.view && arg.view.type ? arg.view.type : '';
-              if (containerElement) {
-
-              }
-            } catch (e) { /* ignore */ }
             
             // MONTH VIEW: Fix cell heights to prevent expansion - runs after view fully mounted
-            const daygridBody = document.querySelector('.fc-daygrid-body');
-            if (daygridBody) {
-              const isMonthView = arg && arg.view && arg.view.type === 'dayGridMonth';
-              const rows = daygridBody.querySelectorAll('.fc-daygrid-row');
-              if (rows.length > 0) {
-                try {
-                  if (isMonthView) {
-                    // MONTH VIEW: just trigger height application; do NOT clear row heights
-                    // because FullCalendar sets height:1px on rows to equalise them and
-                    // clearing that breaks the native equalization.
-                    setTimeout(_sizeMonthView, 50);
-                  } else {
-                    // Other views: clear forced sizing to allow natural heights
-                    daygridBody.style.overflowY = 'auto';
-                    daygridBody.style.webkitOverflowScrolling = 'touch';
-                    rows.forEach((row) => {
-                      row.style.height = '';
-                      row.style.minHeight = '';
-                      row.style.maxHeight = '';
-                      row.style.overflow = '';
-                      row.querySelectorAll('.fc-daygrid-day-cell').forEach(cell => {
-                        cell.style.height = '';
-                        cell.style.minHeight = '';
-
-                        // Clear any temporary per-cell events sizing applied earlier
-                        const eventsContainer = cell.querySelector('.fc-daygrid-day-events');
-                        if (eventsContainer) {
-                          eventsContainer.style.height = '';
-                          eventsContainer.style.maxHeight = '';
-                          eventsContainer.style.overflow = '';
-                          eventsContainer.style.overflowY = '';
-                          eventsContainer.style.display = '';
-                          eventsContainer.style.flex = '';
-                          eventsContainer.style.minHeight = '';
-                          eventsContainer.style.boxSizing = '';
-                          eventsContainer.style.paddingBottom = '';
-                          eventsContainer.style.gap = '';
-                        }
-
-                        const moreEl = cell.querySelector('.fc-daygrid-day-more');
-                        if (moreEl) { moreEl.style.marginBottom = ''; moreEl.style.paddingBottom = ''; }
-                      });
-                    });
-                  }
-                } catch (e) { /* ignore */ }
-              }
+            const isMonthView = arg && arg.view && arg.view.type === 'dayGridMonth';
+            if (isMonthView) {
+              setTimeout(_sizeMonthView, 50);
             }
-
-            // TIMEGRID SANITY CHECK - only apply to timeGridWeek (do not attempt fallbacks for Day view)
-            try {
-              const v = arg && arg.view && arg.view.type ? arg.view.type : '';
-              if (v === 'timeGridWeek' || v === 'timeGridDay') {
-                // Set slot bounds to working hours and initial scrollTime
-                try { if (calendar && typeof calendar.setOption === 'function') {
-                  calendar.setOption('slotMinTime', weekSlotMin);
-                  calendar.setOption('slotMaxTime', weekSlotMax);
-                  calendar.setOption('scrollTime', initialScrollTime);
-
-                  // Note: we avoid DOM overrides to prevent fallback side-effects. If slots do not render properly, investigate CSS/FullCalendar options instead.
-
-                } } catch (_) {}
-
-                setTimeout(async () => {
-                  try {
-                    const timedEvents = (calendar && typeof calendar.getEvents === 'function') ? calendar.getEvents().filter(e => !e.allDay) : [];
-                    const timegridEventEls = containerElement.querySelectorAll('.fc-timegrid .fc-event');
-                    const slots = containerElement.querySelectorAll('.fc-timegrid .fc-timegrid-slot');
-
-                    // If there are timed events but nothing rendered in the timeGrid, it's likely FullCalendar DOM failed to create time slot or event nodes
-                    if (timedEvents.length > 0 && timegridEventEls.length === 0) {
-                      // Timed events exist but no elements in timeGrid – remediation disabled (no automatic remake)
-                      return;
-                    }
-
-                    // If there are no slots at all (collapsed DOM), do not force re-render; remediation disabled
-                    if (slots.length === 0) {
-                      // No-op: do not force view re-render.
-                    }
-
-                    // Minimal approach: check and log slot counts and presence of scroll body; do NOT modify DOM (no fallbacks)
-                    try {
-                      const slotsContainer = containerElement.querySelector('.fc-timegrid .fc-timegrid-slots');
-                      const scrollBody = containerElement.querySelector('.fc-timegrid .fc-scrollgrid-section-body') || containerElement.querySelector('.fc-scrollgrid-section-body');
-                      if (slotsContainer && slots && slots.length && scrollBody) {
-                      } else {
-                      }
-                    } catch (e) {}
-                  } catch (err) {}
-                }, 220);
-              }
-            } catch (err) { /* ignore */ }
           }, 350);
         },
 
