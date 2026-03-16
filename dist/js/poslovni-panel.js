@@ -404,6 +404,7 @@
             (function(){
                 const sidebar = document.getElementById('sidebar');
                 const sidebarToggle = document.getElementById('sidebarToggle');
+                const sidebarCloseMobile = document.getElementById('sidebarCloseMobile');
                 if (!sidebar || !sidebarToggle) return;
 
                 const applyState = () => {
@@ -440,6 +441,15 @@
                     }
                 });
 
+                // Mobile sidebar close button
+                if (sidebarCloseMobile) {
+                    sidebarCloseMobile.addEventListener('click', () => {
+                        sidebar.classList.remove('expanded');
+                        localStorage.setItem('sidebarExpanded', 'false');
+                        setTimeout(() => { forceCalendarRelayout('sidebar-close'); }, 370);
+                    });
+                }
+
                 // navigation — listen on entire nav-item row so text label also triggers navigation
                 const navIcons = sidebar.querySelectorAll('.nav-icon');
                 const navItems = sidebar.querySelectorAll('.nav-item');
@@ -456,6 +466,7 @@
                         if (window.innerWidth <= 768) {
                             sidebar.classList.remove('expanded');
                             localStorage.setItem('sidebarExpanded', 'false');
+                            setTimeout(() => { forceCalendarRelayout('nav-close'); }, 370);
                         }
 
                         if (page === 'home') { window.location.href = 'admin-panel.html'; }
@@ -3841,6 +3852,20 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                 // Apply worker access restrictions if logged in as worker
                 if (typeof window._bspApplyWorkerAccess === 'function') window._bspApplyWorkerAccess();
                 initCalWorkerFilter();
+
+                // On mobile, move the burger menu button into the FC toolbar left chunk
+                if (window.innerWidth <= 768) {
+                    const burgerBtn = document.getElementById('sidebarToggle');
+                    const calEl = document.getElementById('scheduleCalendar');
+                    const leftChunk = calEl && calEl.querySelector('.fc-toolbar-chunk:first-child');
+                    if (burgerBtn && leftChunk) {
+                        leftChunk.insertBefore(burgerBtn, leftChunk.firstChild);
+                        burgerBtn.classList.add('in-toolbar');
+                        // Remove extra left padding now that burger is inside toolbar
+                        const toolbar = calEl.querySelector('.fc-toolbar');
+                        if (toolbar) toolbar.classList.add('burger-inside');
+                    }
+                }
                 
                 // DEBUG: Check if dayMaxEvents is set
 

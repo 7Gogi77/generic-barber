@@ -93,6 +93,11 @@
             background: rgba(28, 28, 30, 0.95);
         }
 
+        /* Hidden on desktop — only visible on mobile when sidebar is expanded */
+        .sidebar-close-mobile {
+            display: none;
+        }
+
         .sidebar-toggle {
             width: 44px;
             height: 44px;
@@ -1569,25 +1574,53 @@
                 background: rgba(28, 28, 30, 0.98);
             }
 
-            /* iOS-Style Hamburger button */
+            /* iOS-Style Hamburger button — fixed position until JS moves it into FC toolbar */
             .sidebar-toggle {
                 position: fixed !important;
                 left: 12px;
                 top: 12px;
-                width: 44px;
-                height: 44px;
+                width: 36px;
+                height: 36px;
                 background: var(--ios-blue) !important;
                 border-radius: var(--ios-radius-md);
                 z-index: 2001;
                 margin: 0 !important;
                 box-shadow: var(--ios-shadow-md);
+                flex-shrink: 0;
+            }
+
+            /* Once JS moves it into FC toolbar, switch to flow layout */
+            .sidebar-toggle.in-toolbar {
+                position: static !important;
+                z-index: auto;
+                margin: 0 4px 0 0 !important;
+                box-shadow: none;
             }
 
             .sidebar.expanded .sidebar-toggle {
-                left: auto;
+                display: none;
+            }
+
+            /* Mobile sidebar close button */
+            .sidebar-close-mobile {
+                display: none;
+            }
+            .sidebar.expanded .sidebar-close-mobile {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                position: absolute;
                 right: 16px;
                 top: 16px;
-                background: rgba(255, 255, 255, 0.15) !important;
+                width: 40px;
+                height: 40px;
+                background: rgba(255, 255, 255, 0.15);
+                border: none;
+                border-radius: var(--ios-radius-md);
+                color: #fff;
+                font-size: 18px;
+                cursor: pointer;
+                z-index: 10;
             }
 
             .sidebar:not(.expanded) .nav-icon,
@@ -1606,14 +1639,19 @@
             }
 
             /* Calendar header - iOS compact */
-            /* padding-left pushes content past the fixed 44px burger (left:12px + 44px + 4px gap = 60px) */
+            /* padding-left accounts for fixed burger until JS moves it into toolbar */
             .fc .fc-toolbar {
                 flex-direction: row !important;
                 flex-wrap: nowrap !important;
                 align-items: center !important;
                 justify-content: space-between !important;
-                padding: 6px 6px 6px 60px !important;
+                padding: 6px 6px 6px 52px !important;
                 gap: 2px !important;
+            }
+
+            /* Once burger is inside toolbar, no extra left padding needed */
+            .fc .fc-toolbar.burger-inside {
+                padding-left: 6px !important;
             }
 
             .fc .fc-toolbar-chunk {
@@ -1645,15 +1683,19 @@
                 font-weight: 600 !important;
                 text-align: center;
                 line-height: 1 !important;
-                vertical-align: middle !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
             }
 
             .fc .fc-button-group {
+                display: flex !important;
                 flex-wrap: nowrap !important;
                 gap: 0 !important;
                 border-radius: 8px !important;
                 overflow: hidden;
                 background: rgba(0,0,0,0.06);
+                align-items: stretch;
             }
 
             .fc .fc-button-group .fc-button-primary {
@@ -1677,9 +1719,11 @@
                 text-overflow: ellipsis;
             }
 
-            /* Keep all view buttons visible */
+            /* Keep all view buttons visible and aligned */
             .fc .fc-listWeek-button {
-                display: inline-flex !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
             }
 
             /* TimeGrid: hide duplicate day numbers in the all-day section */

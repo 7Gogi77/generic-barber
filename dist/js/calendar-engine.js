@@ -676,7 +676,7 @@ const CalendarEngine = {
       containerElement.style.height = _initHeight + 'px';
 
       const calendar = new FullCalendar.Calendar(containerElement, {
-        initialView: options.initialView || (_isMobile ? 'listWeek' : 'dayGridMonth'),
+        initialView: options.initialView || 'dayGridMonth',
         headerToolbar: _isMobile ? {
           left: 'prev,next',
           center: 'title',
@@ -988,18 +988,16 @@ const CalendarEngine = {
               };
             }
 
-            // On mobile timeGrid (week/day): show name, surname, duration vertically
+            // On mobile timeGrid (week/day): show time range + name left-aligned
             if (isMobileView && (view === 'timeGridWeek' || view === 'timeGridDay')) {
               const nameParts = displayName.split(' ');
               const firstName = nameParts[0] || '';
               const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : '';
-              const dur = arg.event.start && arg.event.end ? Math.round((new Date(arg.event.end) - new Date(arg.event.start)) / (1000 * 60)) : 0;
-              const durText = dur > 0 ? `${dur} min` : '';
               return {
-                html: `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;height:100%;padding:1px 2px;gap:0;overflow:hidden;text-align:center;line-height:1.15;">
+                html: `<div style="display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-start;width:100%;height:100%;padding:1px 3px;gap:0;overflow:hidden;line-height:1.15;">
+                  <span style="font-size:8px;font-weight:500;opacity:0.7;white-space:nowrap;">${timeText}</span>
                   <span style="font-size:9px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;">${firstName}</span>
                   ${lastName ? `<span style="font-size:8px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;opacity:0.85;">${lastName}</span>` : ''}
-                  ${durText ? `<span style="font-size:7px;font-weight:500;opacity:0.6;white-space:nowrap;">${durText}</span>` : ''}
                 </div>`
               };
             }
