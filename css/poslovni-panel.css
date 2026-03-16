@@ -689,6 +689,21 @@
             background: var(--ios-bg-primary);
         }
 
+        /* Force compact all-day row in timeGrid views.
+           Uses FC's own .fc-timegrid class — always present in DOM from creation,
+           so no dependency on our custom view-class timing. Prevents month-view
+           expandRows:true from inflating the "Cel dan" row during transitions. */
+        .fc-timegrid .fc-daygrid-body tbody tr {
+            height: auto !important;
+            min-height: 0 !important;
+            max-height: none !important;
+        }
+        .fc-timegrid .fc-daygrid-body .fc-daygrid-day-frame {
+            height: auto !important;
+            min-height: 0 !important;
+            max-height: none !important;
+        }
+
         /* TimeGrid scroll — ensure FC native scrolling works */
         #scheduleCalendar.view-timegrid-week .fc-scroller-liquid-absolute,
         #scheduleCalendar.view-timegrid-day .fc-scroller-liquid-absolute {
