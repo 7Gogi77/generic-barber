@@ -459,6 +459,7 @@
                         const icon = item.querySelector('.nav-icon');
                         if (!icon) return;
                         const page = icon.dataset.page;
+                        if (!page) return;                // logout etc. – no data-page, handled by onclick
                         navIcons.forEach(i => i.classList.remove('active'));
                         icon.classList.add('active');
                         
@@ -868,6 +869,7 @@
                 peakHourPricing: { enabled: false, multiplier: 1.2, start: '12:00', end: '14:00' },
                 weekendPricing: { enabled: false, multiplier: 1.1 },
                 promoIntervals: [],
+                couponCodes: [],
                 waitlistEnabled: false,
                 autoOfferOnCancel: false,
                 autoFillEnabled: false,
@@ -908,6 +910,7 @@
             if (!Array.isArray(s.dateExceptions))  s.dateExceptions  = [];
             if (!Array.isArray(s.dateOverrides))   s.dateOverrides   = [];
             if (!Array.isArray(s.promoIntervals))  s.promoIntervals  = [];
+            if (!Array.isArray(s.couponCodes))     s.couponCodes     = [];
             if (!Array.isArray(s.employees))       s.employees       = [];
             if (!Array.isArray(s.locations))       s.locations       = [];
             return s;
@@ -996,6 +999,7 @@
             setVal('weekendMultiplier',      s.weekendPricing.multiplier);
             showHide('weekendPricingDetails',s.weekendPricing.enabled);
             bspRenderPromos();
+            bspRenderCoupons();
 
             // ── Tab 6: Smart features ─────────────────────────────
             setChk('waitlistEnabled',        s.waitlistEnabled);
@@ -1132,6 +1136,34 @@
             if (_ptEl) _ptEl.value = '';
         }
 
+        // ── Coupon codes ────────────────────────────────────────────────────────
+        function bspRenderCoupons() {
+            const el = document.getElementById('couponCodesList');
+            if (!el || !_bspData) return;
+            el.innerHTML = _bspData.couponCodes.map((c, i) => `
+                <div class="bsp-list-item">
+                    <div style="flex:1;min-width:0;">
+                        <div style="font-size:14px;font-weight:500;"><code style="background:#007aff12;color:#007aff;padding:2px 6px;border-radius:4px;font-size:13px;">${_escH(c.code)}</code> &nbsp;<span class="bsp-badge" style="background:#007aff20;color:#007aff;">-${c.discount}%</span></div>
+                        ${c.label ? `<div style="font-size:12px;color:#8e8e93;margin-top:2px;">${_escH(c.label)}</div>` : ''}
+                    </div>
+                    <button class="bsp-list-del" onclick="bspDelCoupon(${i})"><i class="bi bi-trash3"></i></button>
+                </div>`).join('') || '<p style="font-size:13px;color:#8e8e93;padding:8px 0 8px 12px;margin:0;width:100%;">Ni dodanih kuponov.</p>';
+        }
+        function bspDelCoupon(i) { if (_bspData) { _bspData.couponCodes.splice(i, 1); bspRenderCoupons(); } }
+        function bspAddCoupon() {
+            if (!_bspData) return;
+            const code     = (document.getElementById('newCouponCode')?.value || '').trim().toUpperCase();
+            const discount = parseInt(document.getElementById('newCouponDiscount')?.value, 10) || 10;
+            const label    = document.getElementById('newCouponLabel')?.value?.trim() || '';
+            if (!code) { alert('Vnesi kuponsko kodo.'); return; }
+            if (_bspData.couponCodes.some(c => c.code === code)) { alert('Ta koda že obstaja.'); return; }
+            _bspData.couponCodes.push({ code, discount, label });
+            _bspData.couponCodes.sort((a,b) => a.code.localeCompare(b.code));
+            bspRenderCoupons();
+            document.getElementById('newCouponCode').value = '';
+            document.getElementById('newCouponLabel').value = '';
+        }
+
         // ── HTML escape helper ─────────────────────────────────────────────────
         function _escH(s) { return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
@@ -1248,11 +1280,22 @@
                 el.innerHTML = '<p style="font-size:13px;color:#8e8e93;padding:8px 0 8px 16px;">Ni dodanih članov ekipe. Klikni + Dodaj člana.</p>';
                 return;
             }
-            el.innerHTML = list.map((m, i) => `
-                <div class="bsp-list-item" style="flex-direction:column;align-items:stretch;gap:8px;padding:12px 14px;" data-team-idx="${i}" data-team-id="${_escH(m.id||'')}">
-                    <div style="display:flex;gap:8px;align-items:center;justify-content:space-between;">
-                        <span style="font-size:12px;font-weight:600;color:#8e8e93;">Član ${i+1}</span>
-                        <button class="bsp-list-del" onclick="bspDelTeamMember(${i})"><i class="bi bi-trash3"></i></button>
+            el.innerHTML = list.map((m, i) => {
+                const hasImg = m.img && m.img !== 'https://via.placeholder.com/300' && m.img.trim();
+                const initials = (m.name || '?').charAt(0).toUpperCase();
+                const avatarHtml = hasImg
+                    ? `<img src="${_escH(m.img)}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;flex-shrink:0;" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
+                      + `<div style="display:none;width:40px;height:40px;border-radius:50%;background:#af52de20;color:#af52de;font-weight:700;font-size:16px;align-items:center;justify-content:center;flex-shrink:0;">${initials}</div>`
+                    : `<div style="width:40px;height:40px;border-radius:50%;background:#af52de20;color:#af52de;font-weight:700;font-size:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">${initials}</div>`;
+                return `
+                <div class="bsp-list-item" style="flex-direction:column;align-items:stretch;gap:10px;padding:14px 18px;" data-team-idx="${i}" data-team-id="${_escH(m.id||'')}">
+                    <div style="display:flex;gap:12px;align-items:center;">
+                        ${avatarHtml}
+                        <div style="flex:1;min-width:0;">
+                            <div style="font-size:14px;font-weight:600;color:#1c1c1e;">${_escH(m.name||'Nov član')}</div>
+                            <div style="font-size:12px;color:#8e8e93;">${_escH(m.role||'Frizer')}</div>
+                        </div>
+                        <button class="bsp-list-del" onclick="bspDelTeamMember(${i})" title="Odstrani"><i class="bi bi-trash3"></i></button>
                     </div>
                     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
                         <div><label style="font-size:11px;color:#8e8e93;display:block;margin-bottom:3px;">Ime</label>
@@ -1262,7 +1305,8 @@
                     </div>
                     <div><label style="font-size:11px;color:#8e8e93;display:block;margin-bottom:3px;">URL slike</label>
                     <input type="text" class="bsp-input team-img" value="${_escH(m.img&&m.img!=='https://via.placeholder.com/300'?m.img:'')}" style="width:100%;box-sizing:border-box;" placeholder="https://..."></div>
-                </div>`).join('');
+                </div>`;
+            }).join('');
             el.oninput  = _bspTeamAutoSave;
             el.onchange = _bspTeamAutoSave;
         }
@@ -1460,6 +1504,7 @@
             s.peakHourPricing    = { enabled: getC('peakPricingEnabled'), multiplier: getF('peakMultiplier', 1.2), start: get('peakStart') || '12:00', end: get('peakEnd') || '14:00' };
             s.weekendPricing     = { enabled: getC('weekendPricingEnabled'), multiplier: getF('weekendMultiplier', 1.1) };
             // promoIntervals already in _bspData
+            // couponCodes already in _bspData
 
             // ── Tab 6: Smart features ─────────────────────────────
             s.waitlistEnabled       = getC('waitlistEnabled');

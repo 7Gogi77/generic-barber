@@ -1111,13 +1111,43 @@
             // Coupon code row
             const _couponRow = document.getElementById('summaryCouponRow');
             const _couponEl  = document.getElementById('summaryCoupon');
+            const _couponDiscRow = document.getElementById('summaryCouponDiscountRow');
+            const _couponDiscEl  = document.getElementById('summaryCouponDiscount');
+            let _couponDiscount = 0;
             if (_couponRow && _couponEl) {
                 if (BookingState.customerInfo.coupon) {
-                    _couponEl.textContent = BookingState.customerInfo.coupon;
-                    _couponRow.style.display = '';
+                    // Validate coupon against saved coupon codes
+                    let matchedCoupon = null;
+                    try {
+                        const _bs = JSON.parse(localStorage.getItem('bookingSettings') || '{}');
+                        const codes = Array.isArray(_bs.couponCodes) ? _bs.couponCodes : [];
+                        matchedCoupon = codes.find(c => c.code === BookingState.customerInfo.coupon);
+                    } catch (_) {}
+                    if (matchedCoupon) {
+                        _couponDiscount = matchedCoupon.discount || 0;
+                        _couponEl.textContent = BookingState.customerInfo.coupon;
+                        _couponEl.style.color = '';
+                        _couponRow.style.display = '';
+                        if (_couponDiscRow && _couponDiscEl) {
+                            _couponDiscEl.textContent = `−${_couponDiscount}%`;
+                            _couponDiscRow.style.display = '';
+                        }
+                    } else {
+                        _couponEl.textContent = BookingState.customerInfo.coupon + ' (neveljavna)';
+                        _couponEl.style.color = '#ff3b30';
+                        _couponRow.style.display = '';
+                        if (_couponDiscRow) _couponDiscRow.style.display = 'none';
+                    }
                 } else {
                     _couponRow.style.display = 'none';
+                    if (_couponDiscRow) _couponDiscRow.style.display = 'none';
                 }
+            }
+            
+            // Total — apply coupon discount on top of any promo discount
+            let _finalPrice = BookingState.totalPrice;
+            if (_couponDiscount > 0 && _finalPrice > 0) {
+                _finalPrice = Math.round(_finalPrice * (1 - _couponDiscount / 100) * 100) / 100;
             }
             
             // Total
@@ -1146,7 +1176,7 @@
                     _workerRow.style.display = 'none';
                 }
             }
-            document.getElementById('summaryTotal').textContent = `${currency}${BookingState.totalPrice.toFixed(2)}`;
+            document.getElementById('summaryTotal').textContent = `${currency}${_finalPrice.toFixed(2)}`;
         }
 
         // ===== CONFIRM BOOKING =====
@@ -1195,6 +1225,16 @@
                 // Only add coupon if provided
                 if (BookingState.customerInfo.coupon) {
                     appointment.extendedProps.coupon = BookingState.customerInfo.coupon;
+                    // Check if coupon gave a discount
+                    try {
+                        const _bs = JSON.parse(localStorage.getItem('bookingSettings') || '{}');
+                        const codes = Array.isArray(_bs.couponCodes) ? _bs.couponCodes : [];
+                        const mc = codes.find(c => c.code === BookingState.customerInfo.coupon);
+                        if (mc) {
+                            appointment.extendedProps.couponDiscount = mc.discount;
+                            appointment.extendedProps.priceAfterCoupon = Math.round(BookingState.totalPrice * (1 - mc.discount / 100) * 100) / 100;
+                        }
+                    } catch (_) {}
                 }
                 
                 // Add worker assignment if not "any preference"

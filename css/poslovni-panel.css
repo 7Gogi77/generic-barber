@@ -1095,6 +1095,7 @@
         .bsp-input {
             padding: 7px 10px; border: 1.5px solid #e5e5ea; border-radius: 10px;
             font-size: 14px; color: #1c1c1e; background: #fff; min-width: 72px;
+            box-sizing: border-box;
         }
         .bsp-input:focus { border-color: #007aff; outline: none; }
         .bsp-select {
