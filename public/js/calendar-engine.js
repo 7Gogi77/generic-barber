@@ -802,9 +802,9 @@ const CalendarEngine = {
         allDaySlot: true,
         views: {
           dayGridMonth: { type: 'dayGridMonth', expandRows: true }, // expandRows fills available height equally
-          // On mobile: 1 slot per hour in week view to reduce scrolling; short header (no month)
-          timeGridWeek: { type: 'timeGrid', expandRows: false, slotMinTime: weekSlotMin, slotMaxTime: weekSlotMax, slotDuration: _isMobile ? '01:00:00' : '00:15:00', dayHeaderFormat: _isMobile ? { weekday: 'short' } : undefined },
-          timeGridDay: { type: 'timeGrid', expandRows: false, slotMinTime: weekSlotMin, slotMaxTime: weekSlotMax, slotDuration: _isMobile ? '01:00:00' : '00:15:00', dayHeaderFormat: _isMobile ? { weekday: 'short', day: 'numeric' } : undefined }
+          // 4 slots per hour (15min) on all devices; short header on mobile (no month)
+          timeGridWeek: { type: 'timeGrid', expandRows: false, slotMinTime: weekSlotMin, slotMaxTime: weekSlotMax, slotDuration: '00:15:00', dayHeaderFormat: _isMobile ? { weekday: 'short' } : undefined },
+          timeGridDay: { type: 'timeGrid', expandRows: false, slotMinTime: weekSlotMin, slotMaxTime: weekSlotMax, slotDuration: '00:15:00', dayHeaderFormat: _isMobile ? { weekday: 'short', day: 'numeric' } : undefined }
         },
         // Hide non-working days in the week view
         hiddenDays: weekHiddenDays,
