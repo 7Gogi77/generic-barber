@@ -134,6 +134,15 @@
         function applyWorkerRestrictions(worker) {
             window._bspWorkerMode = true;
             window._bspWorkerSession = { id: worker.id, name: worker.name, permissions: worker.permissions || {} };
+            // Immediately hide restricted sidebar pages — don't wait for calendar init
+            var restricted = ['analytics', 'booking-settings', 'settings'];
+            restricted.forEach(function(page) {
+                var btn = document.querySelector('.nav-icon[data-page="' + page + '"]');
+                if (btn && btn.closest('.nav-item')) btn.closest('.nav-item').style.display = 'none';
+            });
+            // Also hide Home (admin-panel) link for workers
+            var homeBtn = document.querySelector('.nav-icon[data-page="home"]');
+            if (homeBtn && homeBtn.closest('.nav-item')) homeBtn.closest('.nav-item').style.display = 'none';
         }
 
         function showPanel() {

@@ -460,6 +460,11 @@
                         if (!icon) return;
                         const page = icon.dataset.page;
                         if (!page) return;                // logout etc. – no data-page, handled by onclick
+                        // Block restricted pages for worker accounts
+                        if (window._bspWorkerMode) {
+                            var _restrictedPages = ['analytics', 'booking-settings', 'settings', 'home'];
+                            if (_restrictedPages.indexOf(page) !== -1) return;
+                        }
                         navIcons.forEach(i => i.classList.remove('active'));
                         icon.classList.add('active');
                         
@@ -2682,6 +2687,12 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
         }
 
         function openEditEventModal(event) {
+            // Worker permission check: block editing if worker lacks canMove
+            const _bspWrkSessEdit = window.bspGetSession ? window.bspGetSession() : null;
+            if (_bspWrkSessEdit && _bspWrkSessEdit.role === 'worker') {
+                const _wpEdit = _bspWrkSessEdit.permissions || {};
+                if (!_wpEdit.canMove) return;
+            }
             currentEditingEvent = event;
             const modal = document.getElementById('editEventModal');
             
@@ -2832,6 +2843,9 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
         }
 
         function deleteCurrentEvent() {
+            // Worker permission check: block deletion if worker lacks canDelete
+            const _bspWrkSessDel = window.bspGetSession ? window.bspGetSession() : null;
+            if (_bspWrkSessDel && _bspWrkSessDel.role === 'worker' && !(_bspWrkSessDel.permissions || {}).canDelete) return;
             if (currentEditingEvent) {
                 if (confirm('Sigurno želiš izbrisati ta dogodek?')) {
                     // Show loading overlay
@@ -4136,6 +4150,10 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                         return;
                     }
 
+                    // Workers without canAddBreaks cannot edit non-booking events
+                    const _wSessClick = window.bspGetSession ? window.bspGetSession() : null;
+                    if (_wSessClick && _wSessClick.role === 'worker' && !(_wSessClick.permissions || {}).canAddBreaks) return;
+
                     debugLog('Opening edit modal...');
                     openEditEventModal(info.event);
                 });
@@ -4372,8 +4390,9 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
             var workerName = sess.workerName || '';
             var workerId   = sess.workerId  || '';
 
-            // ── 1. Filter calendar events to only this worker's appointments ──
-            if (window.calendar) {
+            // ── 1. Filter calendar events ──
+            // If canViewAll is false, hide events that don't belong to this worker
+            if (window.calendar && !perms.canViewAll) {
                 window.calendar.getEvents().forEach(function(ev) {
                     var ep = ev.extendedProps || {};
                     var isBooking = ep.isBooking || ep.tab === 'customer' || ep.customer || ev.isBooking || (ev.id && String(ev.id).startsWith('apt_'));
@@ -4396,8 +4415,17 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                 });
             }
 
+            // ── 1b. Hide worker filter if canViewAll is false (worker sees only own) ──
+            if (!perms.canViewAll) {
+                var filterWrap = document.getElementById('calWorkerFilterWrap');
+                if (filterWrap) filterWrap.style.display = 'none';
+                var filterToggle = document.getElementById('calWorkerToggle');
+                if (filterToggle) filterToggle.style.display = 'none';
+                window._calWorkerFilterId = workerId || workerName;
+            }
+
             // ── 2. Hide sidebar pages workers shouldn't access ──────────────
-            var restrictedPages = ['analytics', 'booking-settings', 'settings'];
+            var restrictedPages = ['analytics', 'booking-settings', 'settings', 'home'];
             restrictedPages.forEach(function(page) {
                 var btn = document.querySelector('.nav-icon[data-page="' + page + '"]');
                 if (btn && btn.closest('.nav-item')) {

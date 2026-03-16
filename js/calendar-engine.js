@@ -1398,6 +1398,10 @@ const CalendarEngine = {
             if (calendar && calendar.updateSize) {
               calendar.updateSize();
             }
+            // Re-apply worker access filter after date navigation re-renders events
+            if (typeof window._bspApplyWorkerAccess === 'function') {
+              window._bspApplyWorkerAccess();
+            }
           }, 150);
         },
 
