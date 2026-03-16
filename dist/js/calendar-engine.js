@@ -704,6 +704,7 @@ const CalendarEngine = {
         },
         locale: 'sl',
         firstDay: 1,
+        allDayText: 'Cel dan',
         nowIndicator: true,
         fixedWeekCount: true, // Always 6 rows for equal row heights like LimeBooking
         dayMaxEvents: _isMobile ? 1 : true, // Mobile fixed, laptop/desktop auto-fit per cell

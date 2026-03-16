@@ -8,7 +8,7 @@
     <title>Poslovni Panel - Urnik</title>
     <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet" />
     <link href="https://unpkg.com/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet" onerror="this.remove()" />
-    <link rel="stylesheet" href="css/poslovni-panel.css?v=46">
+    <link rel="stylesheet" href="css/poslovni-panel.css?v=47">
     <style>
         /* BSP Info Tooltip */
         .bsp-tip-icon { color: #007aff; font-size: 12px; cursor: help; margin-left: 5px; vertical-align: middle; opacity: 0.7; position: relative; top: -1px; display: inline-block; }
@@ -243,8 +243,9 @@
     <div class="main-content">
         <div class="content-area" style="position:relative">
             <style>
-                #calWorkerFilterWrap{position:absolute;top:14px;left:50%;transform:translateX(-50%);z-index:100;background:transparent;border:none;padding:0;pointer-events:none;white-space:nowrap}
-                #calWorkerFilterBar{display:inline-flex;align-items:center;gap:10px;background:rgba(255,255,255,0.96);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-radius:100px;padding:6px 8px 6px 14px;box-shadow:0 2px 16px rgba(0,0,0,0.13),0 0 0 1px rgba(0,0,0,0.07);overflow-x:auto;scrollbar-width:none;pointer-events:auto;max-width:calc(100vw - 200px)}
+                #calWorkerFilterWrap{position:relative;z-index:200;background:transparent;border:none;padding:0;overflow:hidden;max-height:0;transition:max-height 0.25s ease,padding 0.25s ease}
+                #calWorkerFilterWrap.expanded{max-height:80px;padding:8px 0}
+                #calWorkerFilterBar{display:inline-flex;align-items:center;gap:10px;background:rgba(255,255,255,0.96);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-radius:100px;padding:6px 8px 6px 14px;box-shadow:0 2px 16px rgba(0,0,0,0.13),0 0 0 1px rgba(0,0,0,0.07);overflow-x:auto;scrollbar-width:none;pointer-events:auto;max-width:100%}
                 #calWorkerFilterBar::-webkit-scrollbar{display:none}
                 .cwf-label{font-size:11px;font-weight:700;color:#8e8e93;white-space:nowrap;text-transform:uppercase;letter-spacing:.5px;flex-shrink:0;display:flex;align-items:center;gap:5px}
                 #calWorkerChips{display:flex;flex-direction:row;align-items:center;gap:6px;overflow-x:auto;scrollbar-width:none;flex-wrap:nowrap}
@@ -1033,7 +1034,7 @@
     <script src="/js/config.js?v=3"></script>
     <script src="/js/schedule-model.js?v=3"></script>
     <script src="/js/storage-manager.js?v=4"></script>
-    <script src="/js/calendar-engine.js?v=46"></script>
+    <script src="/js/calendar-engine.js?v=47"></script>
     <script src="/js/sms-handler.js"></script>
     <script src="js/poslovni-panel.js"></script>
 

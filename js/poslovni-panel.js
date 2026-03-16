@@ -1317,21 +1317,19 @@
                 }).join('');
                 wrap.style.display = 'block';
                 window._calWorkerFilterId = 'all';
-                // On mobile: move worker filter below calendar toolbar & set up toggle
-                if (window.innerWidth <= 768 && toggleBtn) {
+
+                // Set up toggle button for both mobile and desktop
+                if (toggleBtn) {
                     toggleBtn.style.display = '';
                     const calEl = document.getElementById('scheduleCalendar');
-                    const toolbar = calEl && calEl.querySelector('.fc-toolbar');
-                    if (toolbar && toolbar.parentNode) {
-                        // Move filter wrap right after toolbar inside the FullCalendar container
-                        toolbar.parentNode.insertBefore(wrap, toolbar.nextSibling);
-                        wrap.classList.remove('expanded');
-                    }
                     // Insert toggle button into the left toolbar chunk (after nav arrows)
                     const leftChunk = calEl && calEl.querySelector('.fc-toolbar-chunk:first-child');
                     if (leftChunk && !leftChunk.contains(toggleBtn)) {
                         leftChunk.appendChild(toggleBtn);
                     }
+                    // Keep the filter wrap in content-area (NOT inside FC container)
+                    // so it doesn't get clipped by FC's overflow:hidden views
+                    wrap.classList.remove('expanded');
                     toggleBtn.onclick = function() {
                         const isExp = wrap.classList.toggle('expanded');
                         toggleBtn.classList.toggle('active', isExp);

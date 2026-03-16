@@ -1835,30 +1835,7 @@
                 z-index: 3000 !important;
             }
 
-            /* Mobile worker filter: collapsible below toolbar */
-            #calWorkerFilterWrap {
-                position: relative !important;
-                top: auto !important;
-                left: auto !important;
-                transform: none !important;
-                width: 100% !important;
-                padding: 0 !important;
-                pointer-events: auto !important;
-                z-index: 50 !important;
-                overflow: hidden;
-                max-height: 0;
-                transition: max-height 0.25s ease, padding 0.25s ease;
-            }
-            #calWorkerFilterWrap.expanded {
-                max-height: 80px;
-                padding: 6px 8px !important;
-            }
-            #calWorkerFilterBar {
-                max-width: 100% !important;
-                border-radius: 12px !important;
-                padding: 4px 6px 4px 10px !important;
-                gap: 6px !important;
-            }
+            /* Mobile worker filter compact sizing */
             .cwf-label {
                 display: none !important;
             }
@@ -1871,9 +1848,10 @@
                 height: 20px !important;
                 font-size: 10px !important;
             }
-            /* Worker filter toggle button in toolbar */
-            #calWorkerToggle {
-                display: inline-flex !important;
+            #calWorkerFilterBar {
+                border-radius: 12px !important;
+                padding: 4px 6px 4px 10px !important;
+                gap: 6px !important;
             }
             
             /* Week/Day view improvements for mobile */
@@ -2042,7 +2020,7 @@
    MOBILE FAB + CALENDAR IMPROVEMENTS
    ============================================ */
 
-/* Worker filter toggle button (hidden by default, shown on mobile via @media) */
+/* Worker filter toggle button — shown on both mobile and desktop when workers exist (JS sets display) */
 #calWorkerToggle {
     display: none;
     align-items: center;
