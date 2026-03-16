@@ -1295,11 +1295,13 @@
             const workers = _cachedWorkers || {};
 
             const permLabels = {
-                canMove:      'Premikanje terminov',
-                canAddBreaks: 'Dodajanje premorov',
-                canDelete:    'Brisanje terminov',
-                canViewAll:   'Ogled vseh terminov',
-                canInvoice:   'Generiranje računov'
+                canEditAppointments:  'Urejanje rezervacij',
+                canDeleteAppointments:'Brisanje rezervacij',
+                canEditEvents:        'Urejanje dogodkov',
+                canDeleteEvents:      'Brisanje dogodkov',
+                canAddBreaks:         'Dodajanje premorov',
+                canViewAll:           'Ogled vseh terminov',
+                canInvoice:           'Generiranje računov'
             };
 
             el.innerHTML = list.map((m, i) => {
@@ -2687,11 +2689,13 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
         }
 
         function openEditEventModal(event) {
-            // Worker permission check: block editing if worker lacks canMove
+            // Worker permission check: block editing if worker lacks the relevant permission
             const _bspWrkSessEdit = window.bspGetSession ? window.bspGetSession() : null;
             if (_bspWrkSessEdit && _bspWrkSessEdit.role === 'worker') {
-                const _wpEdit = _bspWrkSessEdit.permissions || {};
-                if (!_wpEdit.canMove) return;
+                const _wpEdit = _bspNormalizePerms(_bspWrkSessEdit.permissions);
+                const _isBookingEdit = event.extendedProps?.isBooking || event.extendedProps?.tab === 'customer' || event.extendedProps?.customer || (event.id && String(event.id).startsWith('apt_'));
+                if (_isBookingEdit && !_wpEdit.canEditAppointments) return;
+                if (!_isBookingEdit && !_wpEdit.canEditEvents) return;
             }
             currentEditingEvent = event;
             const modal = document.getElementById('editEventModal');
@@ -2745,6 +2749,19 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                 if (durWrapper) durWrapper.style.display = 'none';
             }
 
+
+            // Control delete button visibility in edit modal based on permissions
+            const _editDelBtn = modal.querySelector('.btn-danger');
+            if (_editDelBtn) {
+                const _editSess = window.bspGetSession ? window.bspGetSession() : null;
+                if (_editSess && _editSess.role === 'worker') {
+                    const _editPerms = _bspNormalizePerms(_editSess.permissions);
+                    const _isBookingForDel = isBooking;
+                    _editDelBtn.style.display = (_isBookingForDel ? _editPerms.canDeleteAppointments : _editPerms.canDeleteEvents) ? '' : 'none';
+                } else {
+                    _editDelBtn.style.display = '';
+                }
+            }
 
             modal.classList.add('show');
         }
@@ -2830,9 +2847,9 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
             // Enforce worker permissions on modal action buttons
             const _bspWrkSess2 = window.bspGetSession ? window.bspGetSession() : null;
             if (_bspWrkSess2 && _bspWrkSess2.role === 'worker') {
-                const _wp = _bspWrkSess2.permissions || {};
-                if (deleteBtn) deleteBtn.style.display = _wp.canDelete ? '' : 'none';
-                if (editBtn) editBtn.style.display = _wp.canMove ? '' : 'none';
+                const _wp = _bspNormalizePerms(_bspWrkSess2.permissions);
+                if (deleteBtn) deleteBtn.style.display = _wp.canDeleteAppointments ? '' : 'none';
+                if (editBtn) editBtn.style.display = _wp.canEditAppointments ? '' : 'none';
             }
         }
 
@@ -2842,10 +2859,93 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
             if (window.clearCalendarHighlights) window.clearCalendarHighlights();
         }
 
+        // ── Event Details Modal (read-only for non-booking events) ──────────
+        function openEventDetailsModal(event) {
+            const ep = event.extendedProps || {};
+            const typeLabels = {
+                working_hours: 'Delovni čas', break: 'Premor', lunch: 'Kosilo',
+                vacation: 'Počitnice', sick_leave: 'Bolniška', day_off: 'Prosti dan'
+            };
+            // Title (strip emoji prefix)
+            let title = event.title || '';
+            title = title.replace(/^[^\s]*\s/, '').trim();
+            document.getElementById('eventDetailTitle').textContent = title || '—';
+            document.getElementById('eventDetailType').textContent = typeLabels[ep.type] || ep.type || '—';
+
+            // Date/time
+            const startDate = event.start ? new Date(event.start).toLocaleDateString('sl-SI') : '';
+            const startTime = event.start ? new Date(event.start).toLocaleTimeString('sl-SI', {hour:'2-digit',minute:'2-digit'}) : '';
+            const endTime = event.end ? new Date(event.end).toLocaleTimeString('sl-SI', {hour:'2-digit',minute:'2-digit'}) : '';
+            document.getElementById('eventDetailDateTime').textContent = startDate + (startTime ? ' ' + startTime : '') + (endTime ? ' - ' + endTime : '');
+
+            // Description
+            const desc = (ep.description || '').trim();
+            document.getElementById('eventDetailDesc').textContent = desc || '—';
+            document.getElementById('eventDetailDescRow').style.display = desc ? '' : 'none';
+
+            // Worker
+            const _teamList = window.SITE_CONFIG?.barbersSection?.list || [];
+            const wName = ep.workerName || (() => { const wid = ep.worker; return wid ? (_teamList.find(w => w.id === wid)?.name || wid) : ''; })();
+            document.getElementById('eventDetailWorker').textContent = wName || '—';
+
+            // Buttons — hidden by default, shown only with permissions
+            const editBtn = document.getElementById('eventDetailEditBtn');
+            const deleteBtn = document.getElementById('eventDetailDeleteBtn');
+            if (editBtn) editBtn.style.display = 'none';
+            if (deleteBtn) deleteBtn.style.display = 'none';
+
+            const sess = window.bspGetSession ? window.bspGetSession() : null;
+            if (!sess || sess.role === 'admin') {
+                // Admin sees all buttons
+                if (editBtn) editBtn.style.display = '';
+                if (deleteBtn) deleteBtn.style.display = '';
+            } else if (sess.role === 'worker') {
+                const wp = _bspNormalizePerms(sess.permissions);
+                if (editBtn && wp.canEditEvents) editBtn.style.display = '';
+                if (deleteBtn && wp.canDeleteEvents) deleteBtn.style.display = '';
+            }
+
+            // Wire edit button
+            if (editBtn) {
+                editBtn.onclick = function() {
+                    closeEventDetailsModal();
+                    openEditEventModal(event);
+                };
+            }
+            // Wire delete button
+            if (deleteBtn) {
+                deleteBtn.onclick = function() {
+                    if (confirm('Sigurno želiš izbrisati ta dogodek?')) {
+                        try {
+                            try { window.calendar.getEventById(event.id).remove(); } catch(_) {}
+                            deleteScheduleEvent(event.id).then(function() {
+                                closeEventDetailsModal();
+                            }).catch(function() {
+                                closeEventDetailsModal();
+                            });
+                        } catch(_) { closeEventDetailsModal(); }
+                    }
+                };
+            }
+
+            document.getElementById('eventDetailsModal').classList.add('show');
+        }
+
+        function closeEventDetailsModal() {
+            const modal = document.getElementById('eventDetailsModal');
+            if (modal) modal.classList.remove('show');
+            if (window.clearCalendarHighlights) window.clearCalendarHighlights();
+        }
+
         function deleteCurrentEvent() {
-            // Worker permission check: block deletion if worker lacks canDelete
+            // Worker permission check: block deletion if worker lacks the relevant permission
             const _bspWrkSessDel = window.bspGetSession ? window.bspGetSession() : null;
-            if (_bspWrkSessDel && _bspWrkSessDel.role === 'worker' && !(_bspWrkSessDel.permissions || {}).canDelete) return;
+            if (_bspWrkSessDel && _bspWrkSessDel.role === 'worker' && currentEditingEvent) {
+                const _wpDel = _bspNormalizePerms(_bspWrkSessDel.permissions);
+                const _isBookingDel = currentEditingEvent.extendedProps?.isBooking || currentEditingEvent.extendedProps?.tab === 'customer' || currentEditingEvent.extendedProps?.customer || (currentEditingEvent.id && String(currentEditingEvent.id).startsWith('apt_'));
+                if (_isBookingDel && !_wpDel.canDeleteAppointments) return;
+                if (!_isBookingDel && !_wpDel.canDeleteEvents) return;
+            }
             if (currentEditingEvent) {
                 if (confirm('Sigurno želiš izbrisati ta dogodek?')) {
                     // Show loading overlay
@@ -4150,12 +4250,10 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                         return;
                     }
 
-                    // Workers without canAddBreaks cannot edit non-booking events
-                    const _wSessClick = window.bspGetSession ? window.bspGetSession() : null;
-                    if (_wSessClick && _wSessClick.role === 'worker' && !(_wSessClick.permissions || {}).canAddBreaks) return;
-
-                    debugLog('Opening edit modal...');
-                    openEditEventModal(info.event);
+                    // For non-booking events: always open read-only details modal
+                    // (edit/delete buttons inside are permission-controlled)
+                    debugLog('📋 Opening event details modal');
+                    openEventDetailsModal(info.event);
                 });
                 debugLog('✅ Event handlers attached');
 
@@ -4378,6 +4476,22 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
         }
         // ====================================================================
 
+        // ===== PERMISSION NORMALIZER (backwards compat) ========================
+        // Old permissions: canMove, canDelete → map to new granular names
+        function _bspNormalizePerms(perms) {
+            var p = perms || {};
+            return {
+                canEditAppointments:   p.canEditAppointments   !== undefined ? p.canEditAppointments   : (p.canMove || false),
+                canDeleteAppointments: p.canDeleteAppointments !== undefined ? p.canDeleteAppointments : (p.canDelete || false),
+                canEditEvents:         p.canEditEvents         !== undefined ? p.canEditEvents         : (p.canMove || false),
+                canDeleteEvents:       p.canDeleteEvents       !== undefined ? p.canDeleteEvents       : (p.canDelete || false),
+                canAddBreaks: p.canAddBreaks || false,
+                canViewAll:   p.canViewAll || false,
+                canInvoice:   p.canInvoice || false
+            };
+        }
+        window._bspNormalizePerms = _bspNormalizePerms;
+
         // ===== WORKER ACCESS CONTROL =============================================
         // Applied after calendar init when the session is a worker account.
         // Called from initializeBusinessCalendar() after calendar is ready.
@@ -4433,8 +4547,9 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                 }
             });
 
-            // ── 3. Disable drag/drop if canMove=false ───────────────────────
-            if (window.calendar && !perms.canMove) {
+            // ── 3. Disable drag/drop if no edit permissions ─────────────
+            var np = _bspNormalizePerms(perms);
+            if (window.calendar && !np.canEditAppointments && !np.canEditEvents) {
                 window.calendar.setOption('editable', false);
                 window.calendar.setOption('eventDurationEditable', false);
             }

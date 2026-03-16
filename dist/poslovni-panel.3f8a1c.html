@@ -1008,6 +1008,40 @@
         </div>
     </div>
 
+    <!-- EVENT DETAILS MODAL (READ-ONLY for non-booking events) -->
+    <div class="modal" id="eventDetailsModal">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header">Podrobnosti dogodka</div>
+            <div style="padding: 20px;">
+                <div style="margin-bottom: 15px;">
+                    <strong>Naziv:</strong>
+                    <p id="eventDetailTitle" style="margin: 5px 0;">-</p>
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <strong>Tip:</strong>
+                    <p id="eventDetailType" style="margin: 5px 0;">-</p>
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <strong>Datum in čas:</strong>
+                    <p id="eventDetailDateTime" style="margin: 5px 0;">-</p>
+                </div>
+                <div id="eventDetailDescRow" style="margin-bottom: 15px;">
+                    <strong>Opis:</strong>
+                    <p id="eventDetailDesc" style="margin: 5px 0; white-space: pre-wrap;">-</p>
+                </div>
+                <div id="eventDetailWorkerRow" style="margin-bottom: 15px;">
+                    <strong>Zaposleni:</strong>
+                    <p id="eventDetailWorker" style="margin: 5px 0;">-</p>
+                </div>
+                <div style="margin-top: 20px; display:flex; gap:10px;">
+                    <button type="button" id="eventDetailEditBtn" class="btn btn-primary" style="flex:1; display:none;">Uredi</button>
+                    <button type="button" id="eventDetailDeleteBtn" class="btn btn-danger" style="flex:1; display:none;">Izbriši</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeEventDetailsModal()" style="flex:1;">Zapri</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- LOADING OVERLAY -->
     <div id="loadingOverlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center;">
         <div style="background:white; padding:40px; border-radius:12px; text-align:center; box-shadow:0 4px 12px rgba(0,0,0,0.3);">
