@@ -993,16 +993,28 @@ const CalendarEngine = {
               };
             }
 
-            // On mobile timeGrid (week/day): top-left name / surname / time-range
-            if (isMobileView && (view === 'timeGridWeek' || view === 'timeGridDay')) {
+            // On mobile timeGrid week: very compact — first name only + short time
+            if (isMobileView && view === 'timeGridWeek') {
+              const firstName = displayName.split(' ')[0] || '';
+              const shortTime = startTime || '';
+              return {
+                html: `<div style="display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-start;width:100%;height:100%;padding:1px 2px;gap:0;overflow:hidden;line-height:1.15;">
+                  <span style="font-size:8px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;">${firstName}</span>
+                  ${shortTime ? `<span style="font-size:7px;font-weight:500;opacity:0.65;white-space:nowrap;">${shortTime}</span>` : ''}
+                </div>`
+              };
+            }
+
+            // On mobile timeGrid day: name / surname / time-range (full width available)
+            if (isMobileView && view === 'timeGridDay') {
               const nameParts = displayName.split(' ');
               const firstName = nameParts[0] || '';
               const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : '';
               return {
                 html: `<div style="display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-start;width:100%;height:100%;padding:2px 3px;gap:0;overflow:hidden;line-height:1.2;">
-                  <span style="font-size:9px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;">${firstName}</span>
-                  ${lastName ? `<span style="font-size:8px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;opacity:0.85;">${lastName}</span>` : ''}
-                  ${timeText ? `<span style="font-size:7px;font-weight:500;opacity:0.65;white-space:nowrap;">${timeText}</span>` : ''}
+                  <span style="font-size:11px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;">${firstName}</span>
+                  ${lastName ? `<span style="font-size:10px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;opacity:0.85;">${lastName}</span>` : ''}
+                  ${timeText ? `<span style="font-size:9px;font-weight:500;opacity:0.65;white-space:nowrap;">${timeText}</span>` : ''}
                 </div>`
               };
             }
