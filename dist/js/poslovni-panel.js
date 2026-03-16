@@ -393,6 +393,23 @@
                 closeBusinessSettingsPanel();
             }
 
+            // Hide/show calendar immediately without unmounting FullCalendar DOM.
+            function setCalendarVisibility(show) {
+                const calEl = document.getElementById('scheduleCalendar');
+                if (!calEl) return;
+                if (show) {
+                    calEl.style.display = 'block';
+                    calEl.style.visibility = 'visible';
+                    calEl.style.opacity = '1';
+                    calEl.style.pointerEvents = 'auto';
+                } else {
+                    calEl.style.display = 'block';
+                    calEl.style.visibility = 'hidden';
+                    calEl.style.opacity = '0';
+                    calEl.style.pointerEvents = 'none';
+                }
+            }
+
             // Keep calendar mounted and force a robust relayout when returning from side panels.
             function forceCalendarRelayout(reason) {
                 const calEl = document.getElementById('scheduleCalendar');
@@ -410,14 +427,27 @@
                     const currentDate = (typeof cal.getDate === 'function') ? cal.getDate() : new Date();
 
                     try {
-                        if (viewType === 'dayGridMonth' && typeof cal.changeView === 'function') {
-                            // Re-enter same view to trigger FullCalendar datesSet/month sizing path.
-                            cal.changeView('dayGridMonth', currentDate);
-                        }
+                        if (typeof cal.updateSize === 'function') cal.updateSize();
                     } catch (_) {}
 
+                    // If only header renders (collapsed body), bounce views once to rebuild DOM.
                     try {
-                        if (typeof cal.updateSize === 'function') cal.updateSize();
+                        const bodies = calEl.querySelectorAll('.fc-scrollgrid-section-body');
+                        const collapsed = bodies.length > 0 && Array.from(bodies).every(el => el.getBoundingClientRect().height < 12);
+                        if (collapsed && typeof cal.changeView === 'function') {
+                            if (window.innerWidth <= 768) {
+                                cal.changeView('listWeek', currentDate);
+                                if (typeof cal.updateSize === 'function') cal.updateSize();
+                            } else if (viewType === 'dayGridMonth') {
+                                cal.changeView('timeGridWeek', currentDate);
+                                setTimeout(() => {
+                                    try {
+                                        cal.changeView('dayGridMonth', currentDate);
+                                        if (typeof cal.updateSize === 'function') cal.updateSize();
+                                    } catch (_) {}
+                                }, 60);
+                            }
+                        }
                     } catch (_) {}
 
                     // Mobile safety: if the rendered body is still collapsed, switch to listWeek.
@@ -493,8 +523,6 @@
                             sidebar.classList.remove('expanded');
                             localStorage.setItem('sidebarExpanded', 'false');
                         }
-                        
-                        const _cal = document.getElementById('scheduleCalendar');
 
                         if (page === 'home') { window.location.href = 'admin-panel.html'; }
                         else if (page === 'settings') {
@@ -502,7 +530,7 @@
                         }
                         else if (page === 'booking-settings') {
                             // Close the other two panels only — not the one we're opening
-                            if (_cal) _cal.style.display = 'block';
+                            setCalendarVisibility(false);
                             closeCustomerPanel();
                             closeAnalyticsPanel();
                             showBusinessSettingsPanel();
@@ -511,7 +539,7 @@
                             closeCustomerPanel();
                             closeAnalyticsPanel();
                             closeBusinessSettingsPanel();
-                            if (_cal) _cal.style.display = 'block';
+                            setCalendarVisibility(true);
                             if (!window.calendar && !calendarInitialized) {
                                 initializeBusinessCalendar();
                             }
@@ -519,13 +547,13 @@
                             forceCalendarRelayout('nav-calendar');
                         }
                         else if (page === 'customers') {
-                            if (_cal) _cal.style.display = 'block';
+                            setCalendarVisibility(false);
                             closeAnalyticsPanel();
                             closeBusinessSettingsPanel();
                             showCustomerListPanel();
                         }
                         else if (page === 'analytics') {
-                            if (_cal) _cal.style.display = 'block';
+                            setCalendarVisibility(false);
                             closeCustomerPanel();
                             closeBusinessSettingsPanel();
                             showAnalyticsPanel();
@@ -541,6 +569,12 @@
             async function showCustomerListPanel() {
                 const panel = document.getElementById('customerListPanel');
                 const content = document.getElementById('customerListContent');
+
+                // Show panel immediately so UI responds instantly even if data fetch is slow.
+                openCustomerPanel();
+                if (content) {
+                    content.innerHTML = '<div class="no-customers">Nalagam stranke...</div>';
+                }
 
                 // Ensure scheduleData is loaded from DB
                 try {
@@ -662,7 +696,7 @@
                     });
                 };
 
-                // Initial render and show panel
+                // Initial render
                 renderTable('');
                 // Wire search
                 const searchEl = document.getElementById('customerSearch');
@@ -685,7 +719,7 @@
                     };
                 }
 
-                openCustomerPanel();
+                // Panel is already opened at function start.
 
                 // Attach a delegated handler to the content to support Edit/Close actions inside the customer detail
                 (function(){
@@ -818,6 +852,13 @@
             const panel = document.getElementById('analyticsPanel');
             if (!panel) return;
 
+            // Show panel immediately so navigation feels instant.
+            const sidebarW = document.getElementById('sidebar')?.classList.contains('expanded') ? 260 : 72;
+            panel.style.left  = sidebarW + 'px';
+            panel.style.width = `calc(100% - ${sidebarW}px)`;
+            panel.style.display = 'block';
+            setTimeout(() => panel.classList.add('open'), 10);
+
             // Load schedule data
             try {
                 if (!scheduleData || !Array.isArray(scheduleData.events)) {
@@ -831,13 +872,6 @@
 
             // Load manual earnings
             await loadManualEarnings();
-
-            // Show panel with animation (sidebar-aware)
-            const sidebarW = document.getElementById('sidebar')?.classList.contains('expanded') ? 260 : 72;
-            panel.style.left  = sidebarW + 'px';
-            panel.style.width = `calc(100% - ${sidebarW}px)`;
-            panel.style.display = 'block';
-            setTimeout(() => panel.classList.add('open'), 10);
 
             // Render analytics
             renderAnalytics();
