@@ -1301,31 +1301,23 @@ const CalendarEngine = {
             });
           }
 
-          // Helper: strip lingering month-view inline styles so FC can manage timeGrid natively
+          // Helper: strip lingering month-view inline styles so FC can manage timeGrid natively.
+          // Only removes what _lockMonthRowHeights / _sizeMonthView explicitly set.
+          // Does NOT touch position/top/bottom/left/right — FC needs those natively.
           function _cleanMonthStyles() {
-            // Remove forced row heights from month view
+            // Remove forced row heights set by _lockMonthRowHeights
             containerElement.querySelectorAll('.fc-daygrid-body tbody tr').forEach(tr => {
               tr.style.removeProperty('height');
               tr.style.removeProperty('min-height');
               tr.style.removeProperty('max-height');
             });
-            // Remove forced overflow/height from scrollers, harnesses, etc.
-            ['.fc', '.fc-view-harness', '.fc-scroller-harness',
-             '.fc-scrollgrid-section-body td', 'tr.fc-scrollgrid-section-body',
-             '.fc-scroller', '.fc-scroller-liquid-absolute'].forEach(sel => {
-              containerElement.querySelectorAll(sel).forEach(el => {
-                el.style.removeProperty('height');
-                el.style.removeProperty('min-height');
-                el.style.removeProperty('max-height');
-                el.style.removeProperty('overflow');
-                el.style.removeProperty('overflow-x');
-                el.style.removeProperty('overflow-y');
-                el.style.removeProperty('position');
-                el.style.removeProperty('top');
-                el.style.removeProperty('bottom');
-                el.style.removeProperty('left');
-                el.style.removeProperty('right');
-              });
+            // Remove forced overflow on day-events containers
+            containerElement.querySelectorAll('.fc-daygrid-day-events').forEach(el => {
+              el.style.removeProperty('overflow');
+            });
+            // Remove forced overflow hidden on header scrollers (set by _sizeMonthView)
+            containerElement.querySelectorAll('.fc-scrollgrid-section-header .fc-scroller').forEach(el => {
+              el.style.removeProperty('overflow');
             });
           }
 
@@ -1370,17 +1362,6 @@ const CalendarEngine = {
               }
             }
           } catch (e) { /* ignore */ }
-
-          // If view is a timeGrid, set slot bounds and scroll position
-          if (_argViewType.startsWith('timeGrid')) {
-            try {
-              if (calendar && typeof calendar.setOption === 'function') {
-                calendar.setOption('scrollTime', initialScrollTime);
-                calendar.setOption('slotMinTime', weekSlotMin);
-                calendar.setOption('slotMaxTime', weekSlotMax);
-              }
-            } catch (_) {}
-          }
 
           // After view renders, apply viewport-based height to month view
           setTimeout(() => {
