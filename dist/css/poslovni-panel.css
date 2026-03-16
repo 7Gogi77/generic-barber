@@ -704,6 +704,21 @@
             max-height: none !important;
         }
 
+        /* Hide scrollbar on the all-day ("Cel dan") section in timeGrid views */
+        .fc-timegrid .fc-scrollgrid-section.fc-scrollgrid-section-header .fc-scroller {
+            overflow: hidden !important;
+        }
+        /* Hide the scrollbar-compensation column FC adds to the right of the all-day area */
+        .fc-timegrid td.fc-timegrid-divider,
+        .fc-timegrid .fc-scrollgrid table > thead td[role="presentation"],
+        .fc-timegrid .fc-scrollgrid > thead .fc-scroller-harness ~ td[role="presentation"] {
+            width: 0 !important;
+            min-width: 0 !important;
+            padding: 0 !important;
+            border: none !important;
+            overflow: hidden !important;
+        }
+
         /* TimeGrid scroll — ensure FC native scrolling works */
         #scheduleCalendar.view-timegrid-week .fc-scroller-liquid-absolute,
         #scheduleCalendar.view-timegrid-day .fc-scroller-liquid-absolute {
