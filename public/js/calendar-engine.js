@@ -1374,9 +1374,14 @@ const CalendarEngine = {
           }, 150);
         },
 
-        // Reset expandRows BEFORE the next view renders — prevents month's expandRows:true
-        // from inflating the all-day row when transitioning to a timeGrid view.
+        // Strip view-scoped classes and expandRows BEFORE the next view renders.
+        // Without this, month CSS (.view-daygrid height: var(--month-row-h) !important)
+        // bleeds into the timeGrid's all-day row during the brief window between
+        // new DOM creation and datesSet firing.
         viewWillUnmount: () => {
+          if (containerElement) {
+            containerElement.classList.remove('view-daygrid', 'view-timegrid-week', 'view-timegrid-day');
+          }
           if (calendar && typeof calendar.setOption === 'function') {
             calendar.setOption('expandRows', false);
           }
