@@ -713,7 +713,10 @@ const CalendarEngine = {
           return { html: 'Prikaži vse...' };
         },
         // Show abbreviated month name on first cell of each month (e.g. "1 Mar")
+        // Only for dayGrid (month) view — skip in timeGrid to avoid duplicate day numbers
         dayCellContent: function(arg) {
+          const vt = arg.view?.type || '';
+          if (vt.startsWith('timeGrid')) return undefined;
           const d = arg.date;
           const dayNum = d.getDate();
           if (dayNum === 1) {
@@ -794,9 +797,9 @@ const CalendarEngine = {
         allDaySlot: true,
         views: {
           dayGridMonth: { type: 'dayGridMonth', expandRows: true }, // expandRows fills available height equally
-          // On mobile: 1 slot per hour in week view to reduce scrolling
-          timeGridWeek: { type: 'timeGrid', contentHeight: 'auto', slotMinTime: weekSlotMin, slotMaxTime: weekSlotMax, slotDuration: _isMobile ? '01:00:00' : '00:15:00' },
-          timeGridDay: { type: 'timeGrid', slotMinTime: weekSlotMin, slotMaxTime: weekSlotMax }
+          // On mobile: 1 slot per hour in week view to reduce scrolling; short header (no month)
+          timeGridWeek: { type: 'timeGrid', contentHeight: 'auto', slotMinTime: weekSlotMin, slotMaxTime: weekSlotMax, slotDuration: _isMobile ? '01:00:00' : '00:15:00', dayHeaderFormat: _isMobile ? { weekday: 'short' } : undefined },
+          timeGridDay: { type: 'timeGrid', slotMinTime: weekSlotMin, slotMaxTime: weekSlotMax, dayHeaderFormat: _isMobile ? { weekday: 'short', day: 'numeric' } : undefined }
         },
         // Hide non-working days in the week view
         hiddenDays: weekHiddenDays,
@@ -981,6 +984,22 @@ const CalendarEngine = {
                   <i class="bi ${iconClass}" style="font-size:14px;flex-shrink:0;"></i>
                   <span style="font-weight:500;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${displayName}</span>
                   ${timeText ? `<span style="font-size:12px;opacity:0.65;white-space:nowrap;flex-shrink:0;">${timeText}</span>` : ''}
+                </div>`
+              };
+            }
+
+            // On mobile timeGrid (week/day): show name, surname, duration vertically
+            if (isMobileView && (view === 'timeGridWeek' || view === 'timeGridDay')) {
+              const nameParts = displayName.split(' ');
+              const firstName = nameParts[0] || '';
+              const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : '';
+              const dur = arg.event.start && arg.event.end ? Math.round((new Date(arg.event.end) - new Date(arg.event.start)) / (1000 * 60)) : 0;
+              const durText = dur > 0 ? `${dur} min` : '';
+              return {
+                html: `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;height:100%;padding:1px 2px;gap:0;overflow:hidden;text-align:center;line-height:1.15;">
+                  <span style="font-size:9px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;">${firstName}</span>
+                  ${lastName ? `<span style="font-size:8px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;opacity:0.85;">${lastName}</span>` : ''}
+                  ${durText ? `<span style="font-size:7px;font-weight:500;opacity:0.6;white-space:nowrap;">${durText}</span>` : ''}
                 </div>`
               };
             }

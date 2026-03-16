@@ -1644,6 +1644,8 @@
                 font-size: 12px !important;
                 font-weight: 600 !important;
                 text-align: center;
+                line-height: 1 !important;
+                vertical-align: middle !important;
             }
 
             .fc .fc-button-group {
@@ -1678,6 +1680,11 @@
             /* Keep all view buttons visible */
             .fc .fc-listWeek-button {
                 display: inline-flex !important;
+            }
+
+            /* TimeGrid: hide duplicate day numbers in the all-day section */
+            .fc .fc-timegrid .fc-daygrid-day-top {
+                display: none !important;
             }
 
             /* Day headers - iOS style */
@@ -1732,10 +1739,8 @@
 
             .fc .fc-daygrid-event .fc-event-title,
             .fc .fc-daygrid-event .fc-event-time,
-            .fc .fc-timegrid-event .fc-event-title,
-            .fc .fc-timegrid-event .fc-event-time,
-            .fc .fc-event-title-container,
-            .fc .fc-event-main-frame {
+            .fc .fc-daygrid .fc-event-title-container,
+            .fc .fc-daygrid .fc-event-main-frame {
                 display: none !important;
             }
 
@@ -1880,32 +1885,12 @@
                 font-weight: 600 !important;
             }
 
-            /* Show event title/time in timeGrid (override month-view emoji-only rule) */
-            .fc .fc-timegrid-event .fc-event-title,
-            .fc .fc-timegrid-event .fc-event-time,
-            .fc .fc-timegrid-event .fc-event-title-container,
-            .fc .fc-timegrid-event .fc-event-main-frame {
-                display: block !important;
-            }
+            /* TimeGrid events on mobile use custom eventContent HTML (name/surname/duration).\n               No need to override FC's default elements — eventContent provides the layout. */
             .fc .fc-timegrid-event .mobile-event-emoji {
                 display: none !important;
             }
-            .fc .fc-timegrid-event .fc-event-main-frame {
-                flex-direction: column !important;
-                padding: 1px 3px !important;
-            }
-            .fc .fc-timegrid-event .fc-event-time {
-                font-size: 9px !important;
-                font-weight: 600 !important;
-                white-space: nowrap !important;
-                overflow: hidden !important;
-            }
-            .fc .fc-timegrid-event .fc-event-title {
-                font-size: 9px !important;
-                line-height: 1.15 !important;
-                overflow: hidden !important;
-                text-overflow: ellipsis !important;
-                white-space: nowrap !important;
+            .fc .fc-timegrid-event .fc-event-main {
+                overflow: visible !important;
             }
 
             /* TimeGrid axis (time labels) narrower */

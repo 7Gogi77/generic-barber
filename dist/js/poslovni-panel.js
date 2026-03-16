@@ -1320,7 +1320,7 @@
 
                 // Set up toggle button for both mobile and desktop
                 if (toggleBtn) {
-                    toggleBtn.style.display = '';
+                    toggleBtn.style.display = 'inline-flex';
                     const calEl = document.getElementById('scheduleCalendar');
                     // Insert toggle button into the left toolbar chunk (after nav arrows)
                     const leftChunk = calEl && calEl.querySelector('.fc-toolbar-chunk:first-child');
