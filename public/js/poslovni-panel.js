@@ -890,6 +890,21 @@
                     reminderMessage: '{ime}, jutri ob {cas} imate termin pri {posel}. Se vidimo!',
                     cancelMessage: 'Vaš termin pri {posel} je bil odpovedan. Kontaktirajte nas za novo rezervacijo.',
                     rescheduleMessage: 'Termin pri {posel} je bil spremenjen na: {datum} ob {cas}. Hvala!'
+                },
+                emailTemplates: {
+                    enabled: false,
+                    ownerEmail: '',
+                    confirmationMessage: 'Pozdravljeni {ime},\n\nhvala za vašo rezervacijo pri {posel}!\n\nVaš termin lahko upravljate na: {link}\n\nSe vidimo!',
+                    cancelMessage: 'Pozdravljeni {ime},\n\nvaš termin pri {posel} je bil odpovedan.\n\nKontaktirajte nas za novo rezervacijo.\n\nLep pozdrav!',
+                    rescheduleMessage: 'Pozdravljeni {ime},\n\nvaš termin pri {posel} je bil spremenjen.\n\nNov datum: {datum} ob {cas}\n\nSe vidimo!'
+                },
+                whatsappTemplates: {
+                    enabled: false,
+                    confirmationMessage: 'Hvala za rezervacijo pri {posel}! Vaš termin: {datum} ob {cas}. Upravljanje: {link}'
+                },
+                viberTemplates: {
+                    enabled: false,
+                    confirmationMessage: 'Hvala za rezervacijo pri {posel}! Vaš termin: {datum} ob {cas}. Upravljanje: {link}'
                 }
             };
             let raw = {};
@@ -901,6 +916,9 @@
             s.peakHourPricing   = Object.assign({}, def.peakHourPricing,   raw.peakHourPricing   || {});
             s.weekendPricing    = Object.assign({}, def.weekendPricing,     raw.weekendPricing    || {});
             s.smsTemplates      = Object.assign({}, def.smsTemplates,          raw.smsTemplates       || {});
+            s.emailTemplates    = Object.assign({}, def.emailTemplates,        raw.emailTemplates     || {});
+            s.whatsappTemplates = Object.assign({}, def.whatsappTemplates,     raw.whatsappTemplates  || {});
+            s.viberTemplates    = Object.assign({}, def.viberTemplates,        raw.viberTemplates     || {});
             // per-day: merge with DAY_DEFAULTS then saved
             const savedDays = raw.workingHoursByDay || {};
             const legacyDays = (() => { try { return JSON.parse(localStorage.getItem('workingHoursByDay') || '{}'); } catch(_){return {};} })();
@@ -1052,6 +1070,30 @@
                 if (smsReschedCnt) smsReschedCnt.textContent = smsReschedEl.value.length;
                 smsReschedEl.oninput = () => { if (smsReschedCnt) smsReschedCnt.textContent = smsReschedEl.value.length; };
             }
+
+            // ── Email settings ────────────────────────────────────
+            const emT = s.emailTemplates || {};
+            setChk('emailEnabled', !!emT.enabled);
+            const emailOwnerEl = document.getElementById('emailOwnerAddress');
+            if (emailOwnerEl) emailOwnerEl.value = emT.ownerEmail || '';
+            const emailConfEl = document.getElementById('emailConfirmTemplate');
+            if (emailConfEl) emailConfEl.value = emT.confirmationMessage || 'Pozdravljeni {ime},\n\nhvala za vašo rezervacijo pri {posel}!\n\nVaš termin lahko upravljate na: {link}\n\nSe vidimo!';
+            const emailCancelEl = document.getElementById('emailCancelTemplate');
+            if (emailCancelEl) emailCancelEl.value = emT.cancelMessage || 'Pozdravljeni {ime},\n\nvaš termin pri {posel} je bil odpovedan.\n\nKontaktirajte nas za novo rezervacijo.\n\nLep pozdrav!';
+            const emailReschedEl = document.getElementById('emailRescheduleTemplate');
+            if (emailReschedEl) emailReschedEl.value = emT.rescheduleMessage || 'Pozdravljeni {ime},\n\nvaš termin pri {posel} je bil spremenjen.\n\nNov datum: {datum} ob {cas}\n\nSe vidimo!';
+
+            // ── WhatsApp settings ─────────────────────────────────
+            const waT = s.whatsappTemplates || {};
+            setChk('whatsappEnabled', !!waT.enabled);
+            const waConfEl = document.getElementById('whatsappConfirmTemplate');
+            if (waConfEl) waConfEl.value = waT.confirmationMessage || 'Hvala za rezervacijo pri {posel}! Vaš termin: {datum} ob {cas}. Upravljanje: {link}';
+
+            // ── Viber settings ────────────────────────────────────
+            const viT = s.viberTemplates || {};
+            setChk('viberEnabled', !!viT.enabled);
+            const viConfEl = document.getElementById('viberConfirmTemplate');
+            if (viConfEl) viConfEl.value = viT.confirmationMessage || 'Hvala za rezervacijo pri {posel}! Vaš termin: {datum} ob {cas}. Upravljanje: {link}';
         }
 
         // ── Dynamic list renderers ────────────────────────────────────────────────
@@ -1677,6 +1719,27 @@
                 reminderMessage: (document.getElementById('smsReminderTemplate')?.value || '').trim() || '{ime}, jutri ob {cas} imate termin pri {posel}. Se vidimo!',
                 cancelMessage: (document.getElementById('smsCancelTemplate')?.value || '').trim() || 'Vaš termin pri {posel} je bil odpovedan. Kontaktirajte nas za novo rezervacijo.',
                 rescheduleMessage: (document.getElementById('smsRescheduleTemplate')?.value || '').trim() || 'Termin pri {posel} je bil spremenjen na: {datum} ob {cas}. Hvala!'
+            };
+
+            // ── Email templates ───────────────────────────────────
+            s.emailTemplates = {
+                enabled: getC('emailEnabled'),
+                ownerEmail: (document.getElementById('emailOwnerAddress')?.value || '').trim(),
+                confirmationMessage: (document.getElementById('emailConfirmTemplate')?.value || '').trim() || 'Pozdravljeni {ime},\n\nhvala za vašo rezervacijo pri {posel}!\n\nVaš termin lahko upravljate na: {link}\n\nSe vidimo!',
+                cancelMessage: (document.getElementById('emailCancelTemplate')?.value || '').trim() || 'Pozdravljeni {ime},\n\nvaš termin pri {posel} je bil odpovedan.\n\nKontaktirajte nas za novo rezervacijo.\n\nLep pozdrav!',
+                rescheduleMessage: (document.getElementById('emailRescheduleTemplate')?.value || '').trim() || 'Pozdravljeni {ime},\n\nvaš termin pri {posel} je bil spremenjen.\n\nNov datum: {datum} ob {cas}\n\nSe vidimo!'
+            };
+
+            // ── WhatsApp templates ─────────────────────────────────
+            s.whatsappTemplates = {
+                enabled: getC('whatsappEnabled'),
+                confirmationMessage: (document.getElementById('whatsappConfirmTemplate')?.value || '').trim() || 'Hvala za rezervacijo pri {posel}! Vaš termin: {datum} ob {cas}. Upravljanje: {link}'
+            };
+
+            // ── Viber templates ────────────────────────────────────
+            s.viberTemplates = {
+                enabled: getC('viberEnabled'),
+                confirmationMessage: (document.getElementById('viberConfirmTemplate')?.value || '').trim() || 'Hvala za rezervacijo pri {posel}! Vaš termin: {datum} ob {cas}. Upravljanje: {link}'
             };
 
             // ── Persist ───────────────────────────────────────────

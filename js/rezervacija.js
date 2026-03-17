@@ -1275,6 +1275,48 @@
                     } catch (smsError) {
                     }
                 }
+
+                // Send email confirmation if email provided
+                if (BookingState.customerInfo.email && window.EmailHandler) {
+                    try {
+                        window.EmailHandler.sendConfirmation({
+                            id: appointment.id,
+                            email: BookingState.customerInfo.email,
+                            start: appointment.start,
+                            customer: BookingState.customerInfo.name,
+                            services: BookingState.selectedServices.map(s => s.name)
+                        });
+                        window.EmailHandler.notifyOwner(
+                            'Nova rezervacija',
+                            'Nova rezervacija od ' + BookingState.customerInfo.name + ' (' + BookingState.customerInfo.email + ') za ' + BookingState.selectedServices.map(s => s.name).join(', ')
+                        );
+                    } catch (emailError) {
+                    }
+                }
+
+                // Send WhatsApp confirmation if enabled and phone provided
+                if (BookingState.customerInfo.phone && window.WhatsAppHandler) {
+                    try {
+                        window.WhatsAppHandler.sendConfirmation({
+                            id: appointment.id,
+                            phoneNumber: BookingState.customerInfo.phone,
+                            start: appointment.start,
+                            customer: BookingState.customerInfo.name
+                        });
+                    } catch (_) {}
+                }
+
+                // Send Viber confirmation if enabled and phone provided
+                if (BookingState.customerInfo.phone && window.ViberHandler) {
+                    try {
+                        window.ViberHandler.sendConfirmation({
+                            id: appointment.id,
+                            phoneNumber: BookingState.customerInfo.phone,
+                            start: appointment.start,
+                            customer: BookingState.customerInfo.name
+                        });
+                    } catch (_) {}
+                }
                 
                 // Go to success step
                 goToStep(6);

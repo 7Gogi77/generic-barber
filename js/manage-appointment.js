@@ -342,6 +342,19 @@ async function confirmReschedule() {
         await trySend(window.SITE_CONFIG?.ownerPhone,
             `Termin je bil spremenjen. Stranka: ${currentAppointment.extendedProps.customer}, Nov termin: ${dateLabel} ob ${selectedTime}`);
 
+        // Email notifications
+        if (window.EmailHandler) {
+            try { await window.EmailHandler.sendReschedule(currentAppointment, dateLabel, selectedTime); } catch (_) {}
+            try { await window.EmailHandler.notifyOwner(
+                'Sprememba termina',
+                `Termin je bil spremenjen. Stranka: ${currentAppointment.extendedProps.customer}, Nov termin: ${dateLabel} ob ${selectedTime}`
+            ); } catch (_) {}
+        }
+
+        // WhatsApp & Viber notifications
+        if (window.WhatsAppHandler) { try { await window.WhatsAppHandler.sendReschedule(currentAppointment, dateLabel, selectedTime); } catch (_) {} }
+        if (window.ViberHandler) { try { await window.ViberHandler.sendReschedule(currentAppointment, dateLabel, selectedTime); } catch (_) {} }
+
         showAlert('✓ Termin je bil uspešno spremenjen!', 'success');
         selectedDate = selectedTime = null;
         document.getElementById('rescheduleBox').classList.remove('active');
@@ -376,6 +389,19 @@ async function cancelAppointment() {
         await trySend(ep.phone, _cancelMsg);
         await trySend(window.SITE_CONFIG?.ownerPhone,
             `Termin je bil odpovedan. Stranka: ${ep.customer}, Email: ${ep.email}, Tel: ${ep.phone}`);
+
+        // Email notifications
+        if (window.EmailHandler) {
+            try { await window.EmailHandler.sendCancel(currentAppointment); } catch (_) {}
+            try { await window.EmailHandler.notifyOwner(
+                'Odpoved termina',
+                `Termin je bil odpovedan. Stranka: ${ep.customer}, Email: ${ep.email}, Tel: ${ep.phone}`
+            ); } catch (_) {}
+        }
+
+        // WhatsApp & Viber notifications
+        if (window.WhatsAppHandler) { try { await window.WhatsAppHandler.sendCancel(currentAppointment); } catch (_) {} }
+        if (window.ViberHandler) { try { await window.ViberHandler.sendCancel(currentAppointment); } catch (_) {} }
 
         showAlert('✓ Termin je bil odpovedan.', 'success');
         setTimeout(clearSearch, 3000);
