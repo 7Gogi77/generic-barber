@@ -1,17 +1,19 @@
 /**
  * Vercel Serverless Function — SMS Proxy
- * Forwards SMS requests to httpsms.com server-side, bypassing browser CORS restrictions.
+ * Forwards SMS requests to SMS Gate (api.sms-gate.app) cloud gateway.
+ * The gateway relays messages to a connected Android phone which sends SMS via SIM card.
  *
  * POST /api/send-sms
  * Body: { to: "+38641234567", message: "Your appointment..." }
+ *
+ * Environment variables required (set in Vercel dashboard):
+ *   SMS_GATE_USERNAME — Basic Auth username from SMS Gate app
+ *   SMS_GATE_PASSWORD — Basic Auth password from SMS Gate app
  */
 
-const SMS_API_KEY    = 'uk_bwPUw3HInCfOQQUj67MeG-wv-JVtVdHZeOr910i4qvh7X9qD8v5ZJjKFmzF-VkWZ';
-const SMS_FROM       = '+38631886977';
-const SMS_API_URL    = 'https://api.httpsms.com/v1/messages/send';
+const SMS_GATE_URL = 'https://api.sms-gate.app/3rdparty/v1/message';
 
 export default async function handler(req, res) {
-  // Allow CORS from the same origin
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -22,6 +24,13 @@ export default async function handler(req, res) {
 
   if (req.method !== 'POST') {
     return res.status(405).json({ success: false, error: 'Method not allowed' });
+  }
+
+  const username = process.env.SMS_GATE_USERNAME;
+  const password = process.env.SMS_GATE_PASSWORD;
+
+  if (!username || !password) {
+    return res.status(500).json({ success: false, error: 'SMS gateway credentials not configured' });
   }
 
   const { to, message } = req.body || {};
@@ -41,16 +50,17 @@ export default async function handler(req, res) {
   }
 
   try {
-    const response = await fetch(SMS_API_URL, {
+    const basicAuth = Buffer.from(username + ':' + password).toString('base64');
+
+    const response = await fetch(SMS_GATE_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-api-key': SMS_API_KEY,
+        'Authorization': 'Basic ' + basicAuth,
       },
       body: JSON.stringify({
-        from:    SMS_FROM,
-        to:      formattedTo,
-        content: message,
+        phoneNumbers: [formattedTo],
+        message: message,
       }),
     });
 
@@ -59,7 +69,7 @@ export default async function handler(req, res) {
     if (response.ok) {
       return res.status(200).json({ success: true, data: result });
     } else {
-      return res.status(response.status).json({ success: false, error: result.message || result.error || 'httpsms API error' });
+      return res.status(response.status).json({ success: false, error: result.message || result.error || 'SMS Gate API error' });
     }
   } catch (err) {
     return res.status(500).json({ success: false, error: err.message });

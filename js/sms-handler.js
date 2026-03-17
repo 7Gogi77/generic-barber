@@ -1,22 +1,18 @@
 ﻿/**
- * SMS Handler - Android SMS Gateway Integration
- * Sends appointment confirmations and reminders via Android phone
- * 
- * Setup: Update credentials below with values from SMS Gateway app
+ * SMS Handler - SMS Gate Cloud Gateway Integration
+ * Sends appointment confirmations and reminders via SMS Gate (api.sms-gate.app).
+ * SMS Gate forwards requests to a connected Android phone which sends SMS via SIM card.
+ *
+ * The actual gateway credentials are stored server-side in Vercel env vars.
+ * This client sends requests to /api/send-sms which proxies them to SMS Gate.
  */
 
-// ========== CONFIGURATION - UPDATE THESE ==========
-// Using HTTP SMS (httpsms.com) - FREE Open Source Android SMS Gateway
+// ========== CONFIGURATION ==========
 
 const SMS_CONFIG = {
-  // Get these from: https://httpsms.com/dashboard
-  apiKey: 'uk_bwPUw3HInCfOQQUj67MeG-wv-JVtVdHZeOr910i4qvh7X9qD8v5ZJjKFmzF-VkWZ',           // From httpsms.com dashboard
-  phoneNumber: '+38631886977',          // Your Android phone number (the one sending SMS)
-  apiUrl: 'https://api.httpsms.com/v1/messages/send',
-  
-  businessName: 'Aaa',            // Your business name
+  businessName: 'Aaa',
   appUrl: window.location.origin,
-  productionUrl: 'https://demo-stran.vercel.app', // Production/public URL for SMS links
+  productionUrl: 'https://demo-stran.vercel.app',
 };
 
 // ========== TEMPLATE HELPERS ==========

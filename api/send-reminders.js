@@ -1,35 +1,43 @@
 /**
  * Vercel Serverless Function - Send Daily SMS Reminders
  * Called daily by EasyCron at 10 AM
- * 
+ * Uses SMS Gate (api.sms-gate.app) cloud gateway → Android phone → SIM card
+ *
  * Endpoint: https://your-domain.vercel.app/api/send-reminders
- * (Get real URL after deploying)
+ *
+ * Environment variables required (set in Vercel dashboard):
+ *   SMS_GATE_USERNAME — Basic Auth username from SMS Gate app
+ *   SMS_GATE_PASSWORD — Basic Auth password from SMS Gate app
  */
-
-import fetch from 'node-fetch';
 
 // SMS Configuration
 const SMS_CONFIG = {
-  apiKey: 'uk_bwPUw3HInCfOQQUj67MeG-wv-JVtVdHZeOr910i4qvh7X9qD8v5ZJjKFmzF-VkWZ',
-  phoneNumber: '+38631886977',
-  apiUrl: 'https://api.httpsms.com/v1/messages/send',
+  gateUrl: 'https://api.sms-gate.app/3rdparty/v1/message',
   businessName: 'Aaa',
   firebaseUrl: 'https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app',
 };
 
-// Send SMS via HTTP SMS API
+// Send SMS via SMS Gate API
 async function sendSMS(phoneNumber, message) {
+  const username = process.env.SMS_GATE_USERNAME;
+  const password = process.env.SMS_GATE_PASSWORD;
+
+  if (!username || !password) {
+    return { success: false, error: 'SMS gateway credentials not configured' };
+  }
+
   try {
-    const response = await fetch(SMS_CONFIG.apiUrl, {
+    const basicAuth = Buffer.from(username + ':' + password).toString('base64');
+
+    const response = await fetch(SMS_CONFIG.gateUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-api-key': SMS_CONFIG.apiKey,
+        'Authorization': 'Basic ' + basicAuth,
       },
       body: JSON.stringify({
-        from: SMS_CONFIG.phoneNumber,
-        to: phoneNumber,
-        content: message,
+        phoneNumbers: [phoneNumber],
+        message: message,
       }),
     });
 
