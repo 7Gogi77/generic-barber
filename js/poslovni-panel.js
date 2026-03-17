@@ -901,10 +901,6 @@
                 whatsappTemplates: {
                     enabled: false,
                     confirmationMessage: 'Hvala za rezervacijo pri {posel}! Vaš termin: {datum} ob {cas}. Upravljanje: {link}'
-                },
-                viberTemplates: {
-                    enabled: false,
-                    confirmationMessage: 'Hvala za rezervacijo pri {posel}! Vaš termin: {datum} ob {cas}. Upravljanje: {link}'
                 }
             };
             let raw = {};
@@ -918,7 +914,6 @@
             s.smsTemplates      = Object.assign({}, def.smsTemplates,          raw.smsTemplates       || {});
             s.emailTemplates    = Object.assign({}, def.emailTemplates,        raw.emailTemplates     || {});
             s.whatsappTemplates = Object.assign({}, def.whatsappTemplates,     raw.whatsappTemplates  || {});
-            s.viberTemplates    = Object.assign({}, def.viberTemplates,        raw.viberTemplates     || {});
             // per-day: merge with DAY_DEFAULTS then saved
             const savedDays = raw.workingHoursByDay || {};
             const legacyDays = (() => { try { return JSON.parse(localStorage.getItem('workingHoursByDay') || '{}'); } catch(_){return {};} })();
@@ -1088,12 +1083,6 @@
             setChk('whatsappEnabled', !!waT.enabled);
             const waConfEl = document.getElementById('whatsappConfirmTemplate');
             if (waConfEl) waConfEl.value = waT.confirmationMessage || 'Hvala za rezervacijo pri {posel}! Vaš termin: {datum} ob {cas}. Upravljanje: {link}';
-
-            // ── Viber settings ────────────────────────────────────
-            const viT = s.viberTemplates || {};
-            setChk('viberEnabled', !!viT.enabled);
-            const viConfEl = document.getElementById('viberConfirmTemplate');
-            if (viConfEl) viConfEl.value = viT.confirmationMessage || 'Hvala za rezervacijo pri {posel}! Vaš termin: {datum} ob {cas}. Upravljanje: {link}';
         }
 
         // ── Dynamic list renderers ────────────────────────────────────────────────
@@ -1734,12 +1723,6 @@
             s.whatsappTemplates = {
                 enabled: getC('whatsappEnabled'),
                 confirmationMessage: (document.getElementById('whatsappConfirmTemplate')?.value || '').trim() || 'Hvala za rezervacijo pri {posel}! Vaš termin: {datum} ob {cas}. Upravljanje: {link}'
-            };
-
-            // ── Viber templates ────────────────────────────────────
-            s.viberTemplates = {
-                enabled: getC('viberEnabled'),
-                confirmationMessage: (document.getElementById('viberConfirmTemplate')?.value || '').trim() || 'Hvala za rezervacijo pri {posel}! Vaš termin: {datum} ob {cas}. Upravljanje: {link}'
             };
 
             // ── Persist ───────────────────────────────────────────

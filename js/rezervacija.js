@@ -1306,18 +1306,6 @@
                     } catch (_) {}
                 }
 
-                // Send Viber confirmation if enabled and phone provided
-                if (BookingState.customerInfo.phone && window.ViberHandler) {
-                    try {
-                        window.ViberHandler.sendConfirmation({
-                            id: appointment.id,
-                            phoneNumber: BookingState.customerInfo.phone,
-                            start: appointment.start,
-                            customer: BookingState.customerInfo.name
-                        });
-                    } catch (_) {}
-                }
-                
                 // Go to success step
                 goToStep(6);
                 

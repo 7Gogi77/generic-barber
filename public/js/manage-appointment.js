@@ -351,9 +351,8 @@ async function confirmReschedule() {
             ); } catch (_) {}
         }
 
-        // WhatsApp & Viber notifications
+        // WhatsApp notification
         if (window.WhatsAppHandler) { try { await window.WhatsAppHandler.sendReschedule(currentAppointment, dateLabel, selectedTime); } catch (_) {} }
-        if (window.ViberHandler) { try { await window.ViberHandler.sendReschedule(currentAppointment, dateLabel, selectedTime); } catch (_) {} }
 
         showAlert('✓ Termin je bil uspešno spremenjen!', 'success');
         selectedDate = selectedTime = null;
@@ -399,9 +398,8 @@ async function cancelAppointment() {
             ); } catch (_) {}
         }
 
-        // WhatsApp & Viber notifications
+        // WhatsApp notification
         if (window.WhatsAppHandler) { try { await window.WhatsAppHandler.sendCancel(currentAppointment); } catch (_) {} }
-        if (window.ViberHandler) { try { await window.ViberHandler.sendCancel(currentAppointment); } catch (_) {} }
 
         showAlert('✓ Termin je bil odpovedan.', 'success');
         setTimeout(clearSearch, 3000);

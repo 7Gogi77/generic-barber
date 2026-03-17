@@ -1,16 +1,15 @@
 /**
- * Vercel Serverless Function — WhatsApp Proxy via SMS Gate
- * SMS Gate on the Android phone can send WhatsApp messages when configured.
+ * Vercel Serverless Function — WhatsApp Proxy via Evolution API
+ * Evolution API is a self-hosted WhatsApp API gateway.
  *
  * POST /api/send-whatsapp
  * Body: { to: "+38641234567", message: "Your message" }
  *
  * Environment variables required:
- *   SMS_GATE_USERNAME — Basic Auth username
- *   SMS_GATE_PASSWORD — Basic Auth password
+ *   EVOLUTION_API_URL      — Evolution API base URL (e.g. https://evo.yourdomain.com)
+ *   EVOLUTION_API_KEY      — Global API key
+ *   EVOLUTION_INSTANCE     — Instance name (e.g. "barber-whatsapp")
  */
-
-const SMS_GATE_URL = 'https://api.sms-gate.app/3rdparty/v1/message';
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -20,10 +19,12 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ success: false, error: 'Method not allowed' });
 
-  const username = process.env.SMS_GATE_USERNAME;
-  const password = process.env.SMS_GATE_PASSWORD;
-  if (!username || !password) {
-    return res.status(500).json({ success: false, error: 'SMS gateway credentials not configured' });
+  const apiUrl = process.env.EVOLUTION_API_URL;
+  const apiKey = process.env.EVOLUTION_API_KEY;
+  const instance = process.env.EVOLUTION_INSTANCE;
+
+  if (!apiUrl || !apiKey || !instance) {
+    return res.status(500).json({ success: false, error: 'Evolution API not configured' });
   }
 
   const { to, message } = req.body || {};
@@ -31,25 +32,23 @@ export default async function handler(req, res) {
     return res.status(400).json({ success: false, error: 'Missing required fields: to, message' });
   }
 
-  let formattedTo = String(to).trim();
-  if (formattedTo.startsWith('0')) formattedTo = '+386' + formattedTo.substring(1);
-  if (!formattedTo.startsWith('+')) {
-    return res.status(400).json({ success: false, error: 'Invalid phone number' });
-  }
+  // Format phone: remove + prefix, WhatsApp uses bare numbers (e.g. 38641234567)
+  let number = String(to).trim();
+  if (number.startsWith('0')) number = '386' + number.substring(1);
+  if (number.startsWith('+')) number = number.substring(1);
 
   try {
-    const basicAuth = Buffer.from(username + ':' + password).toString('base64');
+    const url = `${apiUrl.replace(/\/+$/, '')}/message/sendText/${encodeURIComponent(instance)}`;
 
-    const response = await fetch(SMS_GATE_URL, {
+    const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': 'Basic ' + basicAuth,
+        'apikey': apiKey,
       },
       body: JSON.stringify({
-        phoneNumbers: [formattedTo],
-        message: message,
-        isWhatsApp: true,
+        number: number,
+        text: message,
       }),
     });
 

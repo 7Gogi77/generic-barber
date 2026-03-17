@@ -858,34 +858,13 @@
                             <div><div class="bsp-card-title">WhatsApp obvestila</div></div>
                         </div>
                         <label class="bsp-row">
-                            <div><div class="bsp-row-label">Pošlji WhatsApp obvestila</div><div class="bsp-row-hint">Stranka prejme WhatsApp sporočilo ob rezervaciji, spremembi in odpovedi (zahteva SMS Gate z WhatsApp modulom)</div></div>
+                            <div><div class="bsp-row-label">Pošlji WhatsApp obvestila</div><div class="bsp-row-hint">Stranka prejme WhatsApp sporočilo ob rezervaciji, spremembi in odpovedi (zahteva Evolution API)</div></div>
                             <input type="checkbox" id="whatsappEnabled" class="bsp-toggle">
                         </label>
                         <div class="bsp-row" style="align-items:flex-start;flex-direction:column;gap:6px;padding-top:10px;">
                             <div class="bsp-row-label">Besedilo WhatsApp sporočila ob potrditvi</div>
                             <div class="bsp-row-hint" style="margin-bottom:4px;">Spremenljivke: <b>{ime}</b> &nbsp;·&nbsp; <b>{posel}</b> &nbsp;·&nbsp; <b>{datum}</b> &nbsp;·&nbsp; <b>{cas}</b> &nbsp;·&nbsp; <b>{link}</b></div>
                             <textarea id="whatsappConfirmTemplate" class="bsp-input" style="width:100%;min-height:80px;font-size:13px;padding:8px;resize:vertical;box-sizing:border-box;"></textarea>
-                        </div>
-                    </div>
-
-                    <!-- ── VIBER SECTION ────────────────────────── -->
-                    <div style="margin-top:28px;padding-top:20px;border-top:2px solid rgba(0,0,0,0.06);">
-                        <h3 style="font-size:16px;font-weight:700;color:#1c1c1e;margin:0 0 16px;display:flex;align-items:center;gap:8px;"><i class="bi bi-chat-heart" style="color:#7360f2;"></i> Viber</h3>
-                    </div>
-
-                    <div class="bsp-card">
-                        <div class="bsp-card-header">
-                            <div class="bsp-card-icon" style="background:#7360f220;"><i class="bi bi-chat-heart" style="color:#7360f2;font-size:15px;"></i></div>
-                            <div><div class="bsp-card-title">Viber obvestila</div></div>
-                        </div>
-                        <label class="bsp-row">
-                            <div><div class="bsp-row-label">Pošlji Viber obvestila</div><div class="bsp-row-hint">Stranka prejme Viber sporočilo ob rezervaciji (zahteva Viber Business API ključ)</div></div>
-                            <input type="checkbox" id="viberEnabled" class="bsp-toggle">
-                        </label>
-                        <div class="bsp-row" style="align-items:flex-start;flex-direction:column;gap:6px;padding-top:10px;">
-                            <div class="bsp-row-label">Besedilo Viber sporočila ob potrditvi</div>
-                            <div class="bsp-row-hint" style="margin-bottom:4px;">Spremenljivke: <b>{ime}</b> &nbsp;·&nbsp; <b>{posel}</b> &nbsp;·&nbsp; <b>{datum}</b> &nbsp;·&nbsp; <b>{cas}</b> &nbsp;·&nbsp; <b>{link}</b></div>
-                            <textarea id="viberConfirmTemplate" class="bsp-input" style="width:100%;min-height:80px;font-size:13px;padding:8px;resize:vertical;box-sizing:border-box;"></textarea>
                         </div>
                     </div>
 

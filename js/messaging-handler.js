@@ -1,12 +1,7 @@
 /**
- * WhatsApp & Viber Handler — Appointment Notifications via SMS Gate
+ * WhatsApp Handler — Appointment Notifications via Evolution API
  *
- * Uses the same /api/send-sms proxy (SMS Gate) to deliver messages.
- * SMS Gate on the Android phone can dispatch via WhatsApp/Viber if configured.
- *
- * For WhatsApp: SMS Gate supports sending via WhatsApp when the phone has WhatsApp installed
- *   and the "WhatsApp" mode is enabled in the app. Uses the same API endpoint.
- * For Viber: Requires Viber Business Messages API key (separate integration).
+ * Uses /api/send-whatsapp proxy to Evolution API (self-hosted) for WhatsApp messages.
  *
  * Templates use {ime}, {posel}, {datum}, {cas}, {link} variables.
  */
@@ -125,86 +120,6 @@ async function _whatsappSend(phone, message) {
   }
 }
 
-// ========== VIBER ==========
-
-var ViberHandler = {
-  isEnabled: function() {
-    return !!_msgGetSettings('viberTemplates').enabled;
-  },
-
-  sendConfirmation: async function(appointment) {
-    if (!this.isEnabled()) return { success: false, error: 'Viber disabled' };
-    var phone = appointment.phoneNumber || (appointment.extendedProps && appointment.extendedProps.phone) || '';
-    if (!phone) return { success: false, error: 'No phone' };
-
-    var tmpl = _msgGetSettings('viberTemplates');
-    var manageLink = _msgGetProductionUrl() + '/manage-appointment.html?id=' + appointment.id;
-
-    var startDate = new Date(appointment.start);
-    var dateStr = startDate.toLocaleDateString('sl-SI');
-    var timeStr = startDate.getHours().toString().padStart(2, '0') + ':' + startDate.getMinutes().toString().padStart(2, '0');
-
-    var defaultMsg = 'Hvala za rezervacijo pri {posel}! Vaš termin: {datum} ob {cas}. Upravljanje: {link}';
-    var text = _msgApplyTemplate(tmpl.confirmationMessage || defaultMsg, {
-      ime: appointment.customer || '',
-      posel: _msgGetBusiness(),
-      datum: dateStr,
-      cas: timeStr,
-      link: manageLink
-    });
-
-    return await _viberSend(phone, text);
-  },
-
-  sendReschedule: async function(appointment, dateLabel, timeLabel) {
-    if (!this.isEnabled()) return { success: false, error: 'Viber disabled' };
-    var phone = (appointment.extendedProps && appointment.extendedProps.phone) || appointment.phoneNumber || '';
-    if (!phone) return { success: false, error: 'No phone' };
-
-    var text = _msgApplyTemplate('{ime}, vaš termin pri {posel} je bil spremenjen na {datum} ob {cas}.', {
-      ime: (appointment.extendedProps && appointment.extendedProps.customer) || appointment.customer || '',
-      posel: _msgGetBusiness(),
-      datum: dateLabel || '',
-      cas: timeLabel || ''
-    });
-
-    return await _viberSend(phone, text);
-  },
-
-  sendCancel: async function(appointment) {
-    if (!this.isEnabled()) return { success: false, error: 'Viber disabled' };
-    var ep = appointment.extendedProps || appointment;
-    var phone = ep.phone || appointment.phoneNumber || '';
-    if (!phone) return { success: false, error: 'No phone' };
-
-    var text = _msgApplyTemplate('{ime}, vaš termin pri {posel} je bil odpovedan.', {
-      ime: ep.customer || '',
-      posel: _msgGetBusiness()
-    });
-
-    return await _viberSend(phone, text);
-  }
-};
-
-async function _viberSend(phone, message) {
-  var formatted = String(phone).trim();
-  if (formatted.startsWith('0')) formatted = '+386' + formatted.substring(1);
-  if (!formatted.startsWith('+')) return { success: false, error: 'Invalid phone' };
-
-  try {
-    var resp = await fetch('/api/send-viber', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ to: formatted, message: message })
-    });
-    var result = await resp.json();
-    return resp.ok && result.success ? { success: true } : { success: false, error: result.error || 'Failed' };
-  } catch (e) {
-    return { success: false, error: e.message };
-  }
-}
-
 // ========== GLOBAL EXPORTS ==========
 
 window.WhatsAppHandler = WhatsAppHandler;
-window.ViberHandler = ViberHandler;
