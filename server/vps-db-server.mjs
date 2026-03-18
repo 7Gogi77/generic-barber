@@ -29,7 +29,18 @@ async function readDatabase() {
 
 async function writeDatabase(data) {
   await ensureDatabaseFile();
-  await fs.writeFile(DATA_FILE, JSON.stringify(data, null, 2), 'utf8');
+  const nextContent = JSON.stringify(data, null, 2);
+  const tempFile = `${DATA_FILE}.tmp`;
+  await fs.writeFile(tempFile, nextContent, 'utf8');
+  await fs.rename(tempFile, DATA_FILE);
+}
+
+let mutationQueue = Promise.resolve();
+
+function enqueueMutation(task) {
+  const scheduled = mutationQueue.then(task, task);
+  mutationQueue = scheduled.catch(() => {});
+  return scheduled;
 }
 
 function sendJson(res, statusCode, payload) {
@@ -182,16 +193,18 @@ const server = createServer(async (req, res) => {
   }
 
   try {
-    const database = await readDatabase();
-
     if (req.method === 'GET') {
+      const database = await readDatabase();
       sendJson(res, 200, getNestedValue(database, segments));
       return;
     }
 
     if (req.method === 'DELETE') {
-      const next = deleteNestedValue(database, segments);
-      await writeDatabase(next);
+      await enqueueMutation(async () => {
+        const database = await readDatabase();
+        const next = deleteNestedValue(database, segments);
+        await writeDatabase(next);
+      });
       sendJson(res, 200, null);
       return;
     }
@@ -199,27 +212,38 @@ const server = createServer(async (req, res) => {
     const body = await parseBody(req);
 
     if (req.method === 'PUT') {
-      const next = setNestedValue(database, segments, body);
-      await writeDatabase(next);
+      await enqueueMutation(async () => {
+        const database = await readDatabase();
+        const next = setNestedValue(database, segments, body);
+        await writeDatabase(next);
+      });
       sendJson(res, 200, body);
       return;
     }
 
     if (req.method === 'PATCH') {
-      const current = getNestedValue(database, segments) || {};
-      const merged = mergeNestedValue(current, body || {});
-      const next = setNestedValue(database, segments, merged);
-      await writeDatabase(next);
+      let merged = null;
+      await enqueueMutation(async () => {
+        const database = await readDatabase();
+        const current = getNestedValue(database, segments) || {};
+        merged = mergeNestedValue(current, body || {});
+        const next = setNestedValue(database, segments, merged);
+        await writeDatabase(next);
+      });
       sendJson(res, 200, merged);
       return;
     }
 
     if (req.method === 'POST') {
-      const key = createPushKey();
-      const current = getNestedValue(database, segments) || {};
-      const nextValue = { ...current, [key]: body };
-      const next = setNestedValue(database, segments, nextValue);
-      await writeDatabase(next);
+      let key = null;
+      await enqueueMutation(async () => {
+        const database = await readDatabase();
+        key = createPushKey();
+        const current = getNestedValue(database, segments) || {};
+        const nextValue = { ...current, [key]: body };
+        const next = setNestedValue(database, segments, nextValue);
+        await writeDatabase(next);
+      });
       sendJson(res, 200, { name: key });
       return;
     }
