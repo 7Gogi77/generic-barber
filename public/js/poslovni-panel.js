@@ -565,39 +565,29 @@
 
                 const customerMap = {};
 
-                // Seed from saved base
+                // Seed from saved base using smart deduplication.
                 Object.entries(customerBase || {}).forEach(([k, rec]) => {
-                    const key = k;
-                    if (!customerMap[key]) {
-                        customerMap[key] = {
-                            firstName: rec.firstName || (rec.fullName || '').split(' ')[0] || '',
-                            surname: rec.surname || (rec.fullName || '').split(' ').slice(1).join(' ') || '',
-                            fullName: rec.fullName || '',
-                            email: rec.email || '',
-                            phone: rec.phone || '',
-                            count: 0
-                        };
-                    }
+                    upsertCustomerRecord(customerMap, {
+                        firstName: rec.firstName || '',
+                        surname: rec.surname || '',
+                        fullName: rec.fullName || '',
+                        email: rec.email || '',
+                        phone: rec.phone || '',
+                        count: 0
+                    }, k);
                 });
 
-                // Count bookings and merge booking-derived customers
+                // Count bookings and merge booking-derived customers.
                 bookings.forEach(ev => {
                     const name = (ev.extendedProps && ev.extendedProps.customer) || ev.title || '';
                     const email = ev.extendedProps && ev.extendedProps.email ? ev.extendedProps.email : '';
                     const phone = ev.extendedProps && ev.extendedProps.phone ? ev.extendedProps.phone : '';
-                    const key = makeCustomerKey(name, email, phone);
-                    if (!customerMap[key]) {
-                        const parts = (name || '').trim().split(' ');
-                        customerMap[key] = {
-                            firstName: parts[0] || name,
-                            surname: parts.slice(1).join(' ') || '',
-                            fullName: name || '',
-                            email: email || '',
-                            phone: phone || '',
-                            count: 0
-                        };
-                    }
-                    customerMap[key].count++;
+                    upsertCustomerRecord(customerMap, {
+                        fullName: name || '',
+                        email: email || '',
+                        phone: phone || '',
+                        count: 1
+                    });
                 });
 
                 const customers = Object.values(customerMap).sort((a, b) => (a.surname || '').localeCompare(b.surname || ''));
@@ -2520,14 +2510,190 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                     }
                 } catch (err) {}
 
+                // Collapse duplicate local customer records that represent the same person.
+                const dedupedBase = {};
+                let dedupedChanged = false;
+                Object.entries(customerBase || {}).forEach(([k, rec]) => {
+                    if (!rec) return;
+                    const beforeCount = Object.keys(dedupedBase).length;
+                    const chosenKey = upsertCustomerRecord(dedupedBase, Object.assign({}, rec, { count: 0 }), k);
+                    if (chosenKey !== k || Object.keys(dedupedBase).length === beforeCount) dedupedChanged = true;
+                    if (rec.updatedAt) dedupedBase[chosenKey].updatedAt = choosePreferredCustomerValue(dedupedBase[chosenKey].updatedAt, rec.updatedAt);
+                });
+                if (dedupedChanged) {
+                    customerBase = dedupedBase;
+                    saveCustomerBase();
+                }
+
             } catch (e) { customerBase = {}; }
         }
         function saveCustomerBase() {
             try { localStorage.setItem('customers_base', JSON.stringify(customerBase)); } catch (e) { /* ignore */ }
         }
+        function normalizeCustomerEmail(email) {
+            return String(email || '').trim().toLowerCase();
+        }
+        function normalizeCustomerPhone(phone) {
+            const digits = String(phone || '').replace(/\D/g, '');
+            return digits.length >= 6 ? digits : '';
+        }
+        function normalizeCustomerName(name) {
+            return String(name || '')
+                .normalize('NFKD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .replace(/[^a-z0-9\s]+/gi, ' ')
+                .replace(/\s+/g, ' ')
+                .trim()
+                .toLowerCase();
+        }
+        function splitCustomerName(fullName) {
+            const clean = String(fullName || '').trim();
+            const parts = clean ? clean.split(/\s+/) : [];
+            return {
+                firstName: parts[0] || '',
+                surname: parts.length > 1 ? parts.slice(1).join(' ') : ''
+            };
+        }
+        function customerDisplayName(rec) {
+            if (!rec) return '';
+            return String(rec.fullName || ((rec.firstName || '') + ' ' + (rec.surname || '')).trim() || '').trim();
+        }
+        function levenshteinDistance(a, b) {
+            const s = String(a || '');
+            const t = String(b || '');
+            if (s === t) return 0;
+            if (!s.length) return t.length;
+            if (!t.length) return s.length;
+            const dp = Array.from({ length: t.length + 1 }, (_, i) => i);
+            for (let i = 1; i <= s.length; i++) {
+                let prev = dp[0];
+                dp[0] = i;
+                for (let j = 1; j <= t.length; j++) {
+                    const tmp = dp[j];
+                    dp[j] = Math.min(
+                        dp[j] + 1,
+                        dp[j - 1] + 1,
+                        prev + (s[i - 1] === t[j - 1] ? 0 : 1)
+                    );
+                    prev = tmp;
+                }
+            }
+            return dp[t.length];
+        }
+        function areCustomerNamesLikelySame(nameA, nameB) {
+            const a = normalizeCustomerName(nameA);
+            const b = normalizeCustomerName(nameB);
+            if (!a || !b) return false;
+            if (a === b) return true;
+            if (a.length >= 5 && b.length >= 5 && (a.includes(b) || b.includes(a))) return true;
+
+            const pa = a.split(' ');
+            const pb = b.split(' ');
+            const aFirst = pa[0] || '';
+            const bFirst = pb[0] || '';
+            const aLast = pa.length > 1 ? pa.slice(1).join(' ') : '';
+            const bLast = pb.length > 1 ? pb.slice(1).join(' ') : '';
+
+            if (aLast && bLast && aLast === bLast) {
+                const firstDist = levenshteinDistance(aFirst, bFirst);
+                return firstDist <= 1 || (Math.max(aFirst.length, bFirst.length) >= 7 && firstDist <= 2);
+            }
+
+            if (!aLast && !bLast) {
+                const dist = levenshteinDistance(a, b);
+                return dist <= 1 || (Math.max(a.length, b.length) >= 7 && dist <= 2);
+            }
+            return false;
+        }
+        function customerRecordsConflict(existing, incoming) {
+            const existingEmail = normalizeCustomerEmail(existing && existing.email);
+            const incomingEmail = normalizeCustomerEmail(incoming && incoming.email);
+            const existingPhone = normalizeCustomerPhone(existing && existing.phone);
+            const incomingPhone = normalizeCustomerPhone(incoming && incoming.phone);
+            return !!((existingEmail && incomingEmail && existingEmail !== incomingEmail) || (existingPhone && incomingPhone && existingPhone !== incomingPhone));
+        }
+        function findMatchingCustomerRecordKey(map, incoming) {
+            const incomingEmail = normalizeCustomerEmail(incoming && incoming.email);
+            const incomingPhone = normalizeCustomerPhone(incoming && incoming.phone);
+            const incomingName = customerDisplayName(incoming);
+
+            for (const [key, rec] of Object.entries(map || {})) {
+                if (!rec) continue;
+                const recEmail = normalizeCustomerEmail(rec.email);
+                const recPhone = normalizeCustomerPhone(rec.phone);
+                if (incomingEmail && recEmail && incomingEmail === recEmail) return key;
+                if (incomingPhone && recPhone && incomingPhone === recPhone) return key;
+            }
+
+            for (const [key, rec] of Object.entries(map || {})) {
+                if (!rec) continue;
+                if (customerRecordsConflict(rec, incoming)) continue;
+                if (areCustomerNamesLikelySame(customerDisplayName(rec), incomingName)) return key;
+            }
+            return null;
+        }
+        function choosePreferredCustomerValue(currentValue, incomingValue) {
+            const current = String(currentValue || '').trim();
+            const incoming = String(incomingValue || '').trim();
+            if (!current) return incoming;
+            if (!incoming) return current;
+            return incoming.length > current.length ? incoming : current;
+        }
+        function mergeCustomerRecord(target, incoming) {
+            if (!target || !incoming) return target;
+            const incomingName = customerDisplayName(incoming);
+            const targetName = customerDisplayName(target);
+            const splitIncoming = splitCustomerName(incomingName);
+
+            target.email = choosePreferredCustomerValue(target.email, incoming.email);
+            target.phone = choosePreferredCustomerValue(target.phone, incoming.phone);
+
+            const preferredName = choosePreferredCustomerValue(targetName, incomingName);
+            if (preferredName && preferredName !== targetName) {
+                const parts = splitCustomerName(preferredName);
+                target.fullName = preferredName;
+                target.firstName = parts.firstName;
+                target.surname = parts.surname;
+            } else {
+                target.fullName = targetName || incomingName || '';
+                target.firstName = choosePreferredCustomerValue(target.firstName, splitIncoming.firstName || incoming.firstName);
+                target.surname = choosePreferredCustomerValue(target.surname, splitIncoming.surname || incoming.surname);
+            }
+
+            target.count = Number(target.count || 0) + Number(incoming.count || 0);
+            return target;
+        }
+        function upsertCustomerRecord(map, incoming, preferredKey) {
+            const seed = Object.assign({ firstName: '', surname: '', fullName: '', email: '', phone: '', count: 0 }, incoming || {});
+            if (!seed.fullName) {
+                seed.fullName = ((seed.firstName || '') + ' ' + (seed.surname || '')).trim();
+            }
+            if ((!seed.firstName && !seed.surname) && seed.fullName) {
+                const parts = splitCustomerName(seed.fullName);
+                seed.firstName = parts.firstName;
+                seed.surname = parts.surname;
+            }
+            const existingKey = findMatchingCustomerRecordKey(map, seed);
+            const key = existingKey || preferredKey || makeCustomerKey(seed.fullName, seed.email, seed.phone);
+            if (!map[key]) {
+                map[key] = {
+                    firstName: seed.firstName || '',
+                    surname: seed.surname || '',
+                    fullName: seed.fullName || '',
+                    email: seed.email || '',
+                    phone: seed.phone || '',
+                    count: Number(seed.count || 0)
+                };
+                return key;
+            }
+            mergeCustomerRecord(map[key], seed);
+            return key;
+        }
         function makeCustomerKey(fullName, email, phone) {
-            if (email && typeof email === 'string' && email.trim().length) return email.replace(/[\.\$\[\]#\/]/g, '_').toLowerCase();
-            if (phone && typeof phone === 'string' && phone.trim().length) return ('phone_' + phone.replace(/\D/g,'')).toLowerCase();
+            const normalizedEmail = normalizeCustomerEmail(email);
+            const normalizedPhone = normalizeCustomerPhone(phone);
+            if (normalizedEmail) return normalizedEmail.replace(/[\.\$\[\]#\/]/g, '_');
+            if (normalizedPhone) return ('phone_' + normalizedPhone).toLowerCase();
             const name = (fullName || '').trim();
             if (name) {
                 // Normalize to ASCII and produce a stable, safe key
@@ -2544,16 +2710,21 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
             const ffull = fullName ? fullName.trim() : ((fn || sn) ? (fn + (sn ? ' ' + sn : '')) : '');
             if (!ffull && !email && !phone) return null;
             await loadCustomerBase();
-            const key = makeCustomerKey(ffull, email, phone);
-            const rec = Object.assign({
+            const seed = {
                 fullName: ffull || '',
                 firstName: fn || (ffull.split(/\s+/)[0] || ''),
                 surname: sn || ffull.split(/\s+/).slice(1).join(' ') || '',
                 email: email || null,
                 phone: phone || null,
                 updatedAt: new Date().toISOString()
-            }, customerBase[key] || {});
-            customerBase[key] = rec;
+            };
+            const existingKey = findMatchingCustomerRecordKey(customerBase, seed);
+            const key = existingKey || makeCustomerKey(ffull, email, phone);
+            const rec = Object.assign({}, customerBase[key] || {}, seed);
+            customerBase[key] = mergeCustomerRecord(customerBase[key] || {
+                firstName: '', surname: '', fullName: '', email: '', phone: '', count: 0
+            }, rec);
+            customerBase[key].updatedAt = seed.updatedAt;
             saveCustomerBase();
             // Fire-and-forget write to site_config/customers/{key}
             try {
