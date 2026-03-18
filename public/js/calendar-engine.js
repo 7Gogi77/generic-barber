@@ -1171,8 +1171,10 @@ const CalendarEngine = {
           // Apply worker access filter after every event load —
           // this reliably hides other workers' events even on initial load
           // (the events callback is async, so the post-init call may fire too early)
-          if (typeof window._bspApplyWorkerAccess === 'function') {
-            window._bspApplyWorkerAccess();
+          // Guard against infinite loop: setProp('display') triggers eventsSet again
+          if (typeof window._bspApplyWorkerAccess === 'function' && !window._bspWorkerAccessRunning) {
+            window._bspWorkerAccessRunning = true;
+            try { window._bspApplyWorkerAccess(); } finally { window._bspWorkerAccessRunning = false; }
           }
         },
 
