@@ -613,6 +613,14 @@
                         return ((c.fullName||'') + ' ' + (c.email||'') + ' ' + (c.phone||'')).toLowerCase().includes(term);
                     });
 
+                    // Compute permissions once
+                    var _cSess = window.bspGetSession ? window.bspGetSession() : null;
+                    var _isWorker = _cSess && _cSess.role === 'worker';
+                    var _cPerms = _isWorker && typeof _bspNormalizePerms === 'function' ? _bspNormalizePerms(_cSess.permissions) : {};
+                    var _canDelCli  = !_isWorker || !!_cPerms.canDeleteClients;
+                    var _canInvoice = !_isWorker || !!_cPerms.canInvoice;
+                    var _hasActions = _canDelCli || _canInvoice;  // true for admin always
+
                     const isMobile = window.innerWidth <= 768;
                     let html = '';
 
@@ -620,19 +628,17 @@
                         // Card layout — all data visible on small screens
                         html = '<div class="customer-cards">';
                         rows.forEach((c, idx) => {
-                            var _canDelCli = true;
-                        var _cSess = window.bspGetSession ? window.bspGetSession() : null;
-                        if (_cSess && _cSess.role === 'worker') {
-                            var _cp = typeof _bspNormalizePerms === 'function' ? _bspNormalizePerms(_cSess.permissions) : (_cSess.permissions || {});
-                            _canDelCli = !!_cp.canDeleteClients;
-                        }
                         html += `<div class="customer-card" data-idx="${idx}">
                                 <div class="customer-card-name">${c.firstName||''} ${c.surname||''}</div>
                                 ${c.email && c.email !== '-' ? `<div class="customer-card-row"><i class="bi bi-envelope"></i> ${c.email}</div>` : ''}
                                 ${c.phone && c.phone !== '-' ? `<div class="customer-card-row"><i class="bi bi-telephone"></i> ${c.phone}</div>` : ''}
                                 <div class="customer-card-footer">
                                     <span class="customer-card-count">${c.count||0} terminov</span>
-                                    ${_canDelCli ? `<button class="btn btn-danger btn-sm customerDeleteBtnRow" data-idx="${idx}">Izbriši</button>` : ''}
+                                    <div style="display:flex;gap:4px;flex-wrap:wrap;">
+                                        <button class="btn btn-primary btn-sm customerEditBtnRow" data-idx="${idx}" style="font-size:11px;padding:4px 8px;">Uredi</button>
+                                        ${_canInvoice && c.count > 0 ? `<button class="btn btn-sm customerInvoiceBtnRow" data-idx="${idx}" style="font-size:11px;padding:4px 8px;background:#34c759;color:#fff;border:none;border-radius:6px;">Račun</button>` : ''}
+                                        ${_canDelCli ? `<button class="btn btn-danger btn-sm customerDeleteBtnRow" data-idx="${idx}">Izbriši</button>` : ''}
+                                    </div>
                                 </div>
                             </div>`;
                         });
@@ -641,15 +647,13 @@
                         content.innerHTML = html;
                     } else {
                         // Table layout for desktop
-                        let table = '<div style="overflow:auto; overflow-x:auto; max-height: calc(100% - 160px);"><table class="customer-table"><thead><tr><th>Ime</th><th>Priimek</th><th>Email</th><th>Telefon</th><th style="text-align:right">Terminov</th><th style="text-align:right">Akcije</th></tr></thead><tbody>';
-                        var _canDelCli2 = true;
-                        var _cSess2 = window.bspGetSession ? window.bspGetSession() : null;
-                        if (_cSess2 && _cSess2.role === 'worker') {
-                            var _cp2 = typeof _bspNormalizePerms === 'function' ? _bspNormalizePerms(_cSess2.permissions) : (_cSess2.permissions || {});
-                            _canDelCli2 = !!_cp2.canDeleteClients;
-                        }
+                        let table = '<div style="overflow:auto; overflow-x:auto; max-height: calc(100% - 160px);"><table class="customer-table"><thead><tr><th>Ime</th><th>Priimek</th><th>Email</th><th>Telefon</th><th style="text-align:right">Terminov</th>' + (_hasActions ? '<th style="text-align:right">Akcije</th>' : '') + '</tr></thead><tbody>';
                         rows.forEach((c, idx) => {
-                            table += `<tr class="customer-row" data-idx="${idx}"><td>${c.firstName||'-'}</td><td>${c.surname||'-'}</td><td>${c.email||'-'}</td><td>${c.phone||'-'}</td><td style="text-align:right">${c.count||0}</td><td style="text-align:right">${_canDelCli2 ? `<button class="btn btn-danger btn-sm customerDeleteBtnRow" data-idx="${idx}">Izbriši</button>` : ''}</td></tr>`;
+                            var actionBtns = '';
+                            actionBtns += `<button class="btn btn-primary btn-sm customerEditBtnRow" data-idx="${idx}" style="font-size:11px;padding:4px 8px;">Uredi</button> `;
+                            if (_canInvoice && c.count > 0) actionBtns += `<button class="btn btn-sm customerInvoiceBtnRow" data-idx="${idx}" style="font-size:11px;padding:4px 8px;background:#34c759;color:#fff;border:none;border-radius:6px;">Račun</button> `;
+                            if (_canDelCli) actionBtns += `<button class="btn btn-danger btn-sm customerDeleteBtnRow" data-idx="${idx}">Izbriši</button>`;
+                            table += `<tr class="customer-row" data-idx="${idx}"><td>${c.firstName||'-'}</td><td>${c.surname||'-'}</td><td>${c.email||'-'}</td><td>${c.phone||'-'}</td><td style="text-align:right">${c.count||0}</td>` + (_hasActions ? `<td style="text-align:right">${actionBtns}</td>` : '') + '</tr>';
                         });
                         table += '</tbody></table></div>';
                         table += '<div id="customerDetail" style="padding:12px; border-top:1px solid #eee; display:none;"></div>';
@@ -709,7 +713,148 @@
                     contentEl.addEventListener('click', (e) => {
                         const t = e.target;
                         if (!t) return;
-                        if (t.id === 'customerEditBtn' || (t.classList && t.classList.contains('btn') && t.classList.contains('btn-primary'))) {
+
+                        // ── Edit customer inline (row button) ──
+                        if (t.classList && t.classList.contains('customerEditBtnRow')) {
+                            try {
+                                const idx = Number(t.getAttribute('data-idx'));
+                                const isMob = window.innerWidth <= 768;
+                                var rec = null;
+                                if (isMob) {
+                                    // mobile card: reconstruct from card text
+                                    var cards = Array.from(document.querySelectorAll('#customerListContent .customer-card'));
+                                    var card = cards && cards[idx];
+                                    if (!card) return;
+                                    var nameEl = card.querySelector('.customer-card-name');
+                                    var nameParts = (nameEl ? nameEl.textContent.trim() : '').split(/\s+/);
+                                    rec = { firstName: nameParts[0] || '', surname: nameParts.slice(1).join(' ') || '', email: '', phone: '' };
+                                    var rowDivs = card.querySelectorAll('.customer-card-row');
+                                    rowDivs.forEach(function(d) {
+                                        var txt = d.textContent.trim();
+                                        if (txt.indexOf('@') > -1) rec.email = txt;
+                                        else if (/\d/.test(txt)) rec.phone = txt;
+                                    });
+                                } else {
+                                    var trs = Array.from(document.querySelectorAll('#customerListContent table.customer-table tbody tr'));
+                                    var tr = trs && trs[idx];
+                                    if (!tr) return;
+                                    var cols = tr.querySelectorAll('td');
+                                    rec = { firstName: (cols[0]||{}).textContent||'', surname: (cols[1]||{}).textContent||'', email: (cols[2]||{}).textContent||'', phone: (cols[3]||{}).textContent||'' };
+                                }
+                                if (!rec) return;
+                                var fullName = (rec.firstName.trim() + ' ' + rec.surname.trim()).trim();
+                                // Show inline edit form in the detail area
+                                var detail = document.getElementById('customerDetail');
+                                if (!detail) return;
+                                detail.style.display = 'block';
+                                detail.innerHTML = `
+                                    <div style="font-weight:600;margin-bottom:10px;">Uredi stranko</div>
+                                    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
+                                        <input id="custEditFirst" type="text" placeholder="Ime" value="${_escH(rec.firstName.trim())}" style="flex:1;min-width:120px;padding:8px;border:1px solid #ccc;border-radius:8px;font-size:14px;">
+                                        <input id="custEditSurname" type="text" placeholder="Priimek" value="${_escH(rec.surname.trim())}" style="flex:1;min-width:120px;padding:8px;border:1px solid #ccc;border-radius:8px;font-size:14px;">
+                                    </div>
+                                    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
+                                        <input id="custEditEmail" type="email" placeholder="Email" value="${_escH((rec.email||'').trim())}" style="flex:1;min-width:160px;padding:8px;border:1px solid #ccc;border-radius:8px;font-size:14px;">
+                                        <input id="custEditPhone" type="tel" placeholder="Telefon" value="${_escH((rec.phone||'').trim())}" style="flex:1;min-width:120px;padding:8px;border:1px solid #ccc;border-radius:8px;font-size:14px;">
+                                    </div>
+                                    <div style="display:flex;gap:8px;">
+                                        <button id="custEditSaveBtn" class="btn btn-primary" style="font-size:13px;padding:8px 16px;">Shrani</button>
+                                        <button id="custEditCancelBtn" class="btn btn-secondary" style="font-size:13px;padding:8px 16px;">Prekli\u010di</button>
+                                    </div>
+                                    <input type="hidden" id="custEditOldName" value="${_escH(fullName)}">
+                                    <input type="hidden" id="custEditOldEmail" value="${_escH((rec.email||'').trim())}">
+                                    <input type="hidden" id="custEditOldPhone" value="${_escH((rec.phone||'').trim())}">
+                                `;
+                            } catch (er) {}
+                            return;
+                        }
+
+                        // ── Save edited customer ──
+                        if (t.id === 'custEditSaveBtn') {
+                            try {
+                                var newFirst   = (document.getElementById('custEditFirst')   || {}).value || '';
+                                var newSurname = (document.getElementById('custEditSurname') || {}).value || '';
+                                var newEmail   = (document.getElementById('custEditEmail')   || {}).value || '';
+                                var newPhone   = (document.getElementById('custEditPhone')   || {}).value || '';
+                                var oldName    = (document.getElementById('custEditOldName')  || {}).value || '';
+                                var oldEmail   = (document.getElementById('custEditOldEmail') || {}).value || '';
+                                var oldPhone   = (document.getElementById('custEditOldPhone') || {}).value || '';
+                                var newFull = (newFirst.trim() + ' ' + newSurname.trim()).trim();
+                                if (!newFull && !newEmail && !newPhone) { alert('Vnesite vsaj ime ali email.'); return; }
+                                loadCustomerBase().then(function() {
+                                    // Find old key
+                                    var oldKey = null;
+                                    Object.entries(customerBase || {}).forEach(function(entry) {
+                                        if (oldKey) return;
+                                        var k = entry[0], r = entry[1];
+                                        if ((r.fullName && r.fullName === oldName) || (oldEmail && r.email && r.email === oldEmail) || (oldPhone && r.phone && r.phone === oldPhone)) oldKey = k;
+                                    });
+                                    // Remove old entry
+                                    if (oldKey) {
+                                        delete customerBase[oldKey];
+                                        // Remove from Firebase
+                                        try {
+                                            var base = 'https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app/';
+                                            fetch(base + 'site_config/customers/' + encodeURIComponent(oldKey) + '.json', { method: 'DELETE' }).catch(function(){});
+                                        } catch(e) {}
+                                    }
+                                    // Save new
+                                    persistCustomerToBase({ firstName: newFirst.trim(), surname: newSurname.trim(), email: newEmail.trim(), phone: newPhone.trim(), fullName: newFull }).then(function() {
+                                        if (typeof showToast === 'function') showToast('\u2705 Stranka posodobljena!');
+                                        showCustomerListPanel();
+                                    });
+                                });
+                            } catch(er) {}
+                            return;
+                        }
+                        // ── Cancel edit ──
+                        if (t.id === 'custEditCancelBtn') {
+                            var d2 = document.getElementById('customerDetail'); if (d2) d2.style.display = 'none';
+                            return;
+                        }
+
+                        // ── Invoice for customer (find latest booking) ──
+                        if (t.classList && t.classList.contains('customerInvoiceBtnRow')) {
+                            try {
+                                var cidx = Number(t.getAttribute('data-idx'));
+                                var isMob2 = window.innerWidth <= 768;
+                                var cRec = null;
+                                if (isMob2) {
+                                    var cards2 = Array.from(document.querySelectorAll('#customerListContent .customer-card'));
+                                    var card2 = cards2 && cards2[cidx];
+                                    if (!card2) return;
+                                    var nameEl2 = card2.querySelector('.customer-card-name');
+                                    cRec = { fullName: (nameEl2 ? nameEl2.textContent.trim() : '') };
+                                } else {
+                                    var trs2 = Array.from(document.querySelectorAll('#customerListContent table.customer-table tbody tr'));
+                                    var tr2 = trs2 && trs2[cidx];
+                                    if (!tr2) return;
+                                    var cols2 = tr2.querySelectorAll('td');
+                                    cRec = { fullName: ((cols2[0]||{}).textContent||'').trim() + ' ' + ((cols2[1]||{}).textContent||'').trim() };
+                                }
+                                if (!cRec) return;
+                                // Find latest booking for this customer
+                                var allBookings = (scheduleData && Array.isArray(scheduleData.events)) ? scheduleData.events.filter(function(ev) {
+                                    return (ev.extendedProps && ev.extendedProps.isBooking) || ev.isBooking || (ev.extendedProps && ev.extendedProps.tab === 'customer');
+                                }) : [];
+                                var custName = (cRec.fullName || '').trim().toLowerCase();
+                                var custBookings = allBookings.filter(function(ev) {
+                                    var evName = ((ev.extendedProps && ev.extendedProps.customer) || ev.title || '').trim().toLowerCase();
+                                    return evName === custName;
+                                }).sort(function(a, b) {
+                                    return new Date(b.start || 0) - new Date(a.start || 0);
+                                });
+                                if (custBookings.length === 0) { alert('Ni najdenih terminov za to stranko.'); return; }
+                                // Use the latest booking
+                                var latestBk = custBookings[0];
+                                var fakeEvent = { start: new Date(latestBk.start), end: latestBk.end ? new Date(latestBk.end) : null, title: latestBk.title || '', extendedProps: latestBk.extendedProps || {} };
+                                if (typeof generateBookingInvoice === 'function') generateBookingInvoice(fakeEvent);
+                            } catch (er) {}
+                            return;
+                        }
+
+                        // Legacy detail panel edit/close
+                        if (t.id === 'customerEditBtn' || t.id === 'customerEditBtnLocal') {
                             try {
                                 const detail = document.getElementById('customerDetail');
                                 if (!detail) return;
@@ -733,9 +878,11 @@
                                     closeCustomerPanel();
                                 }
                             } catch (er) {}
+                            return;
                         }
-                        if (t.id === 'customerCloseBtn' || (t.classList && t.classList.contains('btn') && t.classList.contains('btn-secondary'))) {
+                        if (t.id === 'customerCloseBtn' || t.id === 'customerCloseBtnLocal' || (t.classList && t.classList.contains('btn') && t.classList.contains('btn-secondary') && !t.id)) {
                             const d = document.getElementById('customerDetail'); if (d) d.style.display = 'none';
+                            return;
                         }
 
                         // Row delete button (customer list)
