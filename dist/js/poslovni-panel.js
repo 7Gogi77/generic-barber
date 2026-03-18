@@ -1519,7 +1519,7 @@
                                 </div>
                             </div>
                             <div class="acct-msg" style="display:none;padding:6px 10px;border-radius:8px;font-size:12px;margin-top:8px;"></div>
-                            <button type="submit" class="bsp-add-btn" style="margin-top:8px;font-size:12px;padding:6px 14px;"><i class="bi bi-person-check"></i> Ustvari račun</button>
+                            <button type="submit" class="bsp-add-btn team-acct-create-btn" data-team-idx="${i}" style="margin-top:8px;font-size:12px;padding:6px 14px;"><i class="bi bi-person-check"></i> Ustvari račun</button>
                         </form>
                     </div>`;
                 }
@@ -1559,28 +1559,61 @@
                     if (!isNaN(idx)) bspCreateMemberAccount(idx);
                 });
             }
+            if (!el._teamAcctClickBound) {
+                el._teamAcctClickBound = true;
+                el.addEventListener('click', function(e) {
+                    var btn = e.target && e.target.closest ? e.target.closest('.team-acct-create-btn') : null;
+                    if (!btn) return;
+                    e.preventDefault();
+                    var idx = Number(btn.getAttribute('data-team-idx'));
+                    if (!isNaN(idx)) bspCreateMemberAccount(idx);
+                });
+            }
         }
 
         // ── Per-member account CRUD ──────────────────────────────────────────
         async function bspCreateMemberAccount(idx) {
             const list = window.SITE_CONFIG?.barbersSection?.list || [];
             const member = list[idx];
-            if (!member || !member.id) return;
+            if (!member) {
+                if (typeof showToast === 'function') showToast('❌ Član ekipe ni najden.');
+                return;
+            }
+
+            // Backward compatibility: some legacy members were saved without IDs.
+            if (!member.id) {
+                const generatedId = 'w_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
+                member.id = generatedId;
+                if (window.SITE_CONFIG?.barbersSection?.list?.[idx]) {
+                    window.SITE_CONFIG.barbersSection.list[idx].id = generatedId;
+                }
+                try { if (typeof _bspMarkDirty === 'function') _bspMarkDirty(); } catch (_) {}
+            }
             const row = document.querySelector(`#bspTeamList [data-team-idx="${idx}"]`);
-            if (!row) return;
+            if (!row) {
+                if (typeof showToast === 'function') showToast('❌ Vrstica člana ni najdena. Osvežite seznam.');
+                return;
+            }
 
             const username = (row.querySelector('.acct-user')?.value || '').trim().toLowerCase();
             const password = row.querySelector('.acct-pass')?.value || '';
             const msgEl = row.querySelector('.acct-msg');
 
             function showMsg(text, isError) {
-                if (!msgEl) return;
+                if (!msgEl) {
+                    if (typeof showToast === 'function') showToast((isError ? '❌ ' : '✅ ') + text);
+                    else alert(text);
+                    return;
+                }
                 msgEl.textContent = text;
                 msgEl.style.background = isError ? '#fff2f2' : '#f0fff4';
                 msgEl.style.border = '1px solid ' + (isError ? '#ff3b30' : '#34c759');
                 msgEl.style.color = isError ? '#ff3b30' : '#1c7a40';
                 msgEl.style.display = 'block';
             }
+
+            const submitBtn = row.querySelector('.team-acct-create-btn');
+            if (submitBtn) submitBtn.disabled = true;
 
             if (!username || !password) { showMsg('Izpolnite uporabniško ime in geslo.', true); return; }
             if (password.length < 4) { showMsg('Geslo mora imeti vsaj 4 znake.', true); return; }
@@ -1613,7 +1646,12 @@
                 _cachedWorkers = workers;
                 if (typeof showToast === 'function') showToast('✅ Račun za ' + (member.name || 'člana') + ' ustvarjen!');
                 bspRenderTeam();
-            } catch(e) { showMsg('Napaka pri shranjevanju.', true); }
+            } catch(e) {
+                console.error('[Team] Account create failed:', e);
+                showMsg('Napaka pri shranjevanju: ' + (e?.message || 'neznana napaka'), true);
+            } finally {
+                if (submitBtn) submitBtn.disabled = false;
+            }
         }
 
         async function bspDeleteMemberAccount(teamId) {
@@ -4787,11 +4825,16 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
         }
 
         async function saveWorkersToFirebase(workers) {
-            await fetch(FIREBASE_WORKERS, {
+            const res = await fetch(FIREBASE_WORKERS, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(workers)
             });
+            if (!res.ok) {
+                let details = '';
+                try { details = await res.text(); } catch(_) {}
+                throw new Error('Shranjevanje v Firebase ni uspelo (' + res.status + '). ' + (details || res.statusText || ''));
+            }
         }
 
         async function addWorker() {
