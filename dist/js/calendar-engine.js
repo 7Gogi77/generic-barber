@@ -292,6 +292,8 @@ const CalendarEngine = {
           origin: event.extendedProps?.origin || null,
           adminKey: event.extendedProps?.adminKey || null,
           worker: event.extendedProps?.worker || null,
+          workerName: event.extendedProps?.workerName || event.workerName || null,
+          workerId: event.extendedProps?.workerId || null,
           createdAt: event.extendedProps?.createdAt || event.createdAt || null,
           lastModified: event.extendedProps?.lastModified || null,
           // Merge booking-specific extended props (customer, email, phone, services, price, duration, notes)
@@ -350,6 +352,8 @@ const CalendarEngine = {
         origin: event.extendedProps?.origin || null,
         adminKey: event.extendedProps?.adminKey || null,
         worker: event.extendedProps?.worker || null,
+        workerName: event.extendedProps?.workerName || event.workerName || null,
+        workerId: event.extendedProps?.workerId || null,
         createdAt: event.extendedProps?.createdAt || event.createdAt || null,
         lastModified: event.extendedProps?.lastModified || null,
         // Merge booking-specific extended props (customer, email, phone, services, price, duration, notes)
@@ -833,6 +837,14 @@ const CalendarEngine = {
             // Generate events with deletion filter applied
             const events = await CalendarEngine.generateCalendarEvents(freshScheduleData);
             const _wf = window._calWorkerFilterId;
+            // Also get worker name from session for dual matching (events may store name or ID)
+            var _wfName = '';
+            try {
+              var _wfSess = typeof window.bspGetSession === 'function' ? window.bspGetSession() : null;
+              if (_wfSess && _wfSess.role === 'worker') {
+                _wfName = _wfSess.workerName || '';
+              }
+            } catch (_) {}
             const _filtered = (!_wf || _wf === 'all')
                 ? events
                 : events.filter(e => {
@@ -840,8 +852,12 @@ const CalendarEngine = {
                     // Events without any worker association pass through
                     const evW = ep.worker || ep.workerId || ep.workerName || '';
                     if (!evW) return true;
-                    // Check all worker identity fields
-                    return evW === _wf || ep.workerName === _wf || ep.workerId === _wf;
+                    // Match by ID or name (events may store either)
+                    if (evW === _wf) return true;
+                    if (_wfName && evW === _wfName) return true;
+                    if (ep.workerName && (ep.workerName === _wf || ep.workerName === _wfName)) return true;
+                    if (ep.workerId && ep.workerId === _wf) return true;
+                    return false;
                   });
             successCallback(_filtered);
           } catch (err) { failureCallback(err); }
@@ -1167,15 +1183,10 @@ const CalendarEngine = {
               // This avoids any automatic DOM manipulation or forced re-initialization.
             }
           } catch (err) {}
-
-          // Apply worker access filter after every event load —
-          // this reliably hides other workers' events even on initial load
-          // (the events callback is async, so the post-init call may fire too early)
-          // Guard against infinite loop: setProp('display') triggers eventsSet again
-          if (typeof window._bspApplyWorkerAccess === 'function' && !window._bspWorkerAccessRunning) {
-            window._bspWorkerAccessRunning = true;
-            try { window._bspApplyWorkerAccess(); } finally { window._bspWorkerAccessRunning = false; }
-          }
+          // NOTE: Do NOT call _bspApplyWorkerAccess here — setProp('display')
+          // triggers eventsSet again, causing an infinite loop that freezes the page.
+          // Worker filtering is handled at the data level in the events callback
+          // via _calWorkerFilterId, and as a backup in datesSet setTimeout.
         },
 
         eventDrop: async (dropInfo) => {
