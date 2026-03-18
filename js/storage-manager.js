@@ -1,13 +1,32 @@
 ﻿/**
- * Storage Manager - Abstraction layer with Firebase sync
- * Always syncs to Firebase for reliable cross-device access
+ * Storage Manager - Abstraction layer with remote DB sync
+ * Uses the configured realtime-compatible backend for cross-device access
  */
 
 const StorageManager = {
   /**
-   * Firebase Database URL
+   * Backward-compatible property name used by older scripts.
    */
-  firebaseUrl: 'https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app',
+  firebaseUrl: null,
+
+  getDatabaseBaseUrl() {
+    const resolved = window.AppBackend && typeof window.AppBackend.getDatabaseBaseUrl === 'function'
+      ? window.AppBackend.getDatabaseBaseUrl()
+      : 'https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app';
+
+    this.firebaseUrl = resolved;
+    return resolved;
+  },
+
+  getDatabaseUrl(path, searchParams) {
+    if (window.AppBackend && typeof window.AppBackend.getDatabaseUrl === 'function') {
+      return window.AppBackend.getDatabaseUrl(path, searchParams);
+    }
+
+    const base = this.getDatabaseBaseUrl();
+    const cleanPath = String(path || '').replace(/^\/+/, '');
+    return cleanPath ? `${base}/${cleanPath}` : base;
+  },
 
   /**
    * Save schedule data
@@ -26,18 +45,18 @@ const StorageManager = {
     } catch (lsError) {
     }
 
-    // Always sync to Firebase (works everywhere)
+    // Always sync to the configured remote DB when available.
     try {
-      const response = await fetch(`${this.firebaseUrl}/${key}.json`, {
+      const response = await fetch(this.getDatabaseUrl(`${key}.json`), {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
       });
 
       if (response.ok) {
-        return { ok: true, method: 'firebase' };
+        return { ok: true, method: 'remote' };
       } else {
-        throw new Error('Firebase save failed');
+        throw new Error('Remote save failed');
       }
     } catch (fbError) {
       // localStorage already saved, so return ok
@@ -51,10 +70,10 @@ const StorageManager = {
    * @param {boolean} forceRefresh - Force reload from Firebase, bypassing cache
    */
   async load(key, forceRefresh = false) {
-    // Try Firebase first (single source of truth) with cache-busting
+    // Try remote DB first (single source of truth) with cache-busting.
     try {
       const cacheBuster = forceRefresh ? `?t=${Date.now()}` : '';
-      const response = await fetch(`${this.firebaseUrl}/${key}.json${cacheBuster}`);
+      const response = await fetch(`${this.getDatabaseUrl(`${key}.json`)}${cacheBuster}`);
       
       if (response.ok) {
         const data = await response.json();
@@ -62,12 +81,12 @@ const StorageManager = {
         if (data && data.events) {
           // Update localStorage cache
           localStorage.setItem(key, JSON.stringify(data));
-          // Clear localStorage cache only AFTER successful Firebase load with data
+          // Clear localStorage cache only AFTER successful remote load with data.
           if (forceRefresh) {
           }
           return data;
         } else if (data === null || !data.events) {
-          // If forcing refresh but Firebase is empty, try localStorage as backup
+          // If forcing refresh but remote data is empty, try localStorage as backup.
           if (forceRefresh) {
             const item = localStorage.getItem(key);
             if (item) {
@@ -114,7 +133,7 @@ const StorageManager = {
   async delete(key) {
     // Delete from Firebase
     try {
-      await fetch(`${this.firebaseUrl}/${key}.json`, {
+      await fetch(this.getDatabaseUrl(`${key}.json`), {
         method: 'DELETE'
       });
     } catch (e) {

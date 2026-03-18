@@ -23,8 +23,13 @@
             'Julij', 'Avgust', 'September', 'Oktober', 'November', 'December'
         ];
 
-        // ===== FIREBASE CONFIG =====
-        const FIREBASE_DB_URL = 'https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app';
+        // ===== REMOTE DB CONFIG =====
+        function getDatabaseBaseUrl() {
+            if (window.AppBackend && typeof window.AppBackend.getDatabaseBaseUrl === 'function') {
+                return window.AppBackend.getDatabaseBaseUrl();
+            }
+            return 'https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app';
+        }
         
         // Global services array (loaded from Firebase)
         let servicesData = [];
@@ -132,7 +137,7 @@
         // ===== LOAD CONFIG FROM FIREBASE =====
         async function loadConfigFromFirebase() {
             try {
-                const response = await fetch(`${FIREBASE_DB_URL}/site_config.json`);
+                const response = await fetch(`${getDatabaseBaseUrl()}/site_config.json`);
                 if (response.ok) {
                     const config = await response.json();
                     

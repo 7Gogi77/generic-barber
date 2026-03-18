@@ -7,8 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Poslovni Panel - Urnik</title>
     <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet" />
-    <link href="https://unpkg.com/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet" onerror="this.remove()" />
-    <link rel="stylesheet" href="css/poslovni-panel.css?v=52">
+    <link href="https://unpkg.com/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet" onerror="this.remove()" />
     <style>
         /* BSP Info Tooltip */
         .bsp-tip-icon { color: #007aff; font-size: 12px; cursor: help; margin-left: 5px; vertical-align: middle; opacity: 0.7; position: relative; top: -1px; display: inline-block; }
@@ -17,6 +16,8 @@
         .bsp-tip-popup .tip-desc { margin: 0 0 5px; }
         .bsp-tip-popup .tip-ex { color: #aeaeb2; font-size: 11.5px; margin: 0; }
     </style>
+  <script type="module" crossorigin src="/assets/modulepreload-polyfill-B5Qt9EMX.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/poslovni-BAs5IHvf.css">
 </head>
 <body>
     <!-- LOGIN SCREEN -->
@@ -43,7 +44,12 @@
     <script>
     // == BSP WORKER AUTH ========
     (function() {
-        var FIREBASE_BASE = 'https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app/';
+        function getDatabaseBase() {
+            if (window.AppBackend && typeof window.AppBackend.getDatabaseBaseUrl === 'function') {
+                return window.AppBackend.getDatabaseBaseUrl() + '/';
+            }
+            return 'https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app/';
+        }
 
         async function sha256(str) {
             const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
@@ -71,7 +77,7 @@
 
         async function tryWorkerLogin(username, password) {
             try {
-                const res = await fetch(FIREBASE_BASE + 'workers.json');
+                const res = await fetch(getDatabaseBase() + 'workers.json');
                 if (!res.ok) return null;
                 const workers = await res.json();
                 if (!workers) return null;

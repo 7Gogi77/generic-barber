@@ -1,133 +1,155 @@
 ﻿/**
- * FIREBASE CONFIGURATION (ES6 MODULE)
- * ===================================
- * Cloud sync for admin panel changes
- * Syncs configuration across all devices in real-time
+ * Remote config sync.
+ * Replaces Firebase SDK usage with polling against the configured realtime-compatible backend.
  */
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
-import { getDatabase, ref, set, onValue, get } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-database.js";
+const DEFAULT_DATABASE_URL = 'https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app';
+const DEFAULT_POLL_INTERVAL = 15000;
 
-// Your Firebase configuration
-const firebaseConfig = {
-    apiKey: "AIzaSyD8uewtysdNPJvVdU5PcK8Y1UlMNU39URc",
-    authDomain: "barber-shop-9b2ac.firebaseapp.com",
-    databaseURL: "https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app",
-    projectId: "barber-shop-9b2ac",
-    storageBucket: "barber-shop-9b2ac.firebasestorage.app",
-    messagingSenderId: "932608200564",
-    appId: "1:932608200564:web:f546f33f0ac351633ae621",
-    measurementId: "G-7M67GZNK4X"
-};
+function getDatabaseUrl(path, searchParams) {
+    if (window.AppBackend && typeof window.AppBackend.getDatabaseUrl === 'function') {
+        return window.AppBackend.getDatabaseUrl(path, searchParams);
+    }
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const database = getDatabase(app);
+    const base = DEFAULT_DATABASE_URL;
+    const cleanPath = String(path || '').replace(/^\/+/, '');
+    const url = cleanPath ? `${base}/${cleanPath}` : base;
 
-// Cloud Sync Manager
+    if (!searchParams || typeof searchParams !== 'object') {
+        return url;
+    }
+
+    const query = new URLSearchParams();
+    Object.entries(searchParams).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== '') {
+            query.set(key, String(value));
+        }
+    });
+
+    const suffix = query.toString();
+    return suffix ? `${url}?${suffix}` : url;
+}
+
+function cloneConfig(config) {
+    return JSON.parse(JSON.stringify(config || {}));
+}
+
+function persistConfigLocally(config) {
+    if (config && config._bookingSettings) {
+        try { localStorage.setItem('bookingSettings', JSON.stringify(config._bookingSettings)); } catch (_) {}
+    }
+
+    if (!window.SITE_CONFIG || typeof window.SITE_CONFIG !== 'object') {
+        window.SITE_CONFIG = {};
+    }
+
+    Object.assign(window.SITE_CONFIG, config || {});
+
+    try {
+        localStorage.setItem('site_config_backup', JSON.stringify(window.SITE_CONFIG));
+    } catch (_) {}
+}
+
 window.CloudSync = {
     isConnected: false,
     syncEnabled: true,
-    
-    // Initialize cloud sync
+    pollTimer: null,
+    lastSnapshot: '',
+
     init() {
-        // Check connection status
-        const connectedRef = ref(database, '.info/connected');
-        onValue(connectedRef, (snapshot) => {
-            this.isConnected = snapshot.val() === true;
-        }, (error) => {
-        });
-        
-        // Listen for remote config changes
+        this.isConnected = navigator.onLine;
+        window.addEventListener('online', () => { this.isConnected = true; });
+        window.addEventListener('offline', () => { this.isConnected = false; });
         this.listenForConfigChanges();
     },
-    
-    // Listen for changes from other devices
-    listenForConfigChanges() {
-        const configRef = ref(database, 'site_config');
-        onValue(configRef, (snapshot) => {
-            if (snapshot.exists() && this.syncEnabled) {
-                const remoteConfig = snapshot.val();
-                
-                // Extract bookingSettings embedded in site_config
-                if (remoteConfig && remoteConfig._bookingSettings) {
-                    try { localStorage.setItem('bookingSettings', JSON.stringify(remoteConfig._bookingSettings)); } catch(_) {}
-                }
 
-                // Merge remote config with local
-                if (!window.SITE_CONFIG || typeof window.SITE_CONFIG !== 'object') {
-                    window.SITE_CONFIG = {};
-                }
-                Object.assign(window.SITE_CONFIG, remoteConfig || {});
-                
-                // Update localStorage backup (best-effort, skip if quota exceeded)
-                try {
-                    localStorage.setItem('site_config_backup', JSON.stringify(window.SITE_CONFIG));
-                } catch(e) {
-                    // Quota exceeded — remove stale backups to free space then retry once
-                    try {
-                        localStorage.removeItem('site_config_backup');
-                        localStorage.setItem('site_config_backup', JSON.stringify(window.SITE_CONFIG));
-                    } catch(_) { /* still full — skip backup, Firebase is source of truth */ }
-                }
-                
-                // Refresh UI if on main page
+    listenForConfigChanges() {
+        if (this.pollTimer) {
+            clearInterval(this.pollTimer);
+        }
+
+        const poll = async () => {
+            if (!this.syncEnabled) return;
+
+            try {
+                const remoteConfig = await this.fetchRemoteConfig();
+                if (!remoteConfig) return;
+
+                const serialized = JSON.stringify(remoteConfig);
+                if (serialized === this.lastSnapshot) return;
+
+                this.lastSnapshot = serialized;
+                persistConfigLocally(remoteConfig);
+
                 if (typeof initSite === 'function') {
                     initSite();
                 }
-            }
-        }, (error) => {
-        });
+            } catch (_) {}
+        };
+
+        poll();
+        const interval = window.SITE_CONFIG?.backend?.syncPollingMs || DEFAULT_POLL_INTERVAL;
+        this.pollTimer = window.setInterval(poll, interval);
     },
-    
-    // Save config to cloud
-    async saveToCloud(config) {
-        // Embed bookingSettings inside site_config so it uses the same permitted path
-        const bs = localStorage.getItem('bookingSettings');
-        if (bs) {
-            try { config._bookingSettings = JSON.parse(bs); } catch(_) {}
+
+    async fetchRemoteConfig() {
+        const response = await fetch(getDatabaseUrl('site_config.json', { _t: Date.now() }), {
+            cache: 'no-store',
+            headers: {
+                'Cache-Control': 'no-cache, no-store, must-revalidate',
+                'Pragma': 'no-cache',
+                'Expires': '0'
+            }
+        });
+
+        if (!response.ok) {
+            return null;
         }
-        // Try Firebase SDK first
+
+        return await response.json();
+    },
+
+    async saveToCloud(config) {
+        const nextConfig = cloneConfig(config);
+        const bookingSettings = localStorage.getItem('bookingSettings');
+        if (bookingSettings) {
+            try { nextConfig._bookingSettings = JSON.parse(bookingSettings); } catch (_) {}
+        }
+
         try {
-            const configRef = ref(database, 'site_config');
-            await set(configRef, config);
-            return true;
-        } catch (error) {}
-        // Fallback: REST PUT (works even when SDK isConnected hasn't fired yet)
-        try {
-            const res = await fetch('https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app/site_config.json', {
+            const response = await fetch(getDatabaseUrl('site_config.json'), {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(config)
+                body: JSON.stringify(nextConfig)
             });
-            return res.ok;
-        } catch (_) {}
-        return false;
+
+            if (!response.ok) {
+                return false;
+            }
+
+            this.lastSnapshot = JSON.stringify(nextConfig);
+            persistConfigLocally(nextConfig);
+            this.isConnected = true;
+            return true;
+        } catch (_) {
+            this.isConnected = false;
+            return false;
+        }
     },
-    
-    // Load config from cloud on startup
+
     async loadFromCloud() {
         try {
-            const configRef = ref(database, 'site_config');
-            const snapshot = await get(configRef);
-            if (snapshot.exists()) {
-                const cloudConfig = snapshot.val();
-                // Extract bookingSettings embedded in site_config
-                if (cloudConfig && cloudConfig._bookingSettings) {
-                    try { localStorage.setItem('bookingSettings', JSON.stringify(cloudConfig._bookingSettings)); } catch(_) {}
-                }
-                if (!window.SITE_CONFIG || typeof window.SITE_CONFIG !== 'object') {
-                    window.SITE_CONFIG = {};
-                }
-                Object.assign(window.SITE_CONFIG, cloudConfig || {});
-                try { localStorage.setItem('site_config_backup', JSON.stringify(window.SITE_CONFIG)); } catch(_) {}
+            const cloudConfig = await this.fetchRemoteConfig();
+            if (cloudConfig) {
+                this.lastSnapshot = JSON.stringify(cloudConfig);
+                persistConfigLocally(cloudConfig);
             }
-        } catch (error) {}
+        } catch (_) {}
+
         return true;
     }
 };
 
-// Initialize on page load
 document.addEventListener('DOMContentLoaded', () => {
     window.CloudSync.init();
 });

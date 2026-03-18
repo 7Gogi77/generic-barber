@@ -165,9 +165,16 @@ async function getTomorrowAppointments() {
     const dayAfterTomorrow = new Date(tomorrow);
     dayAfterTomorrow.setDate(dayAfterTomorrow.getDate() + 1);
 
-    // Load appointments from Firebase
-    const snapshot = await firebase.database().ref('schedule/events').once('value');
-    const allAppointments = snapshot.val() || {};
+    const dbUrl = window.AppBackend && typeof window.AppBackend.getDatabaseUrl === 'function'
+      ? window.AppBackend.getDatabaseUrl('schedule/events.json')
+      : 'https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app/schedule/events.json';
+
+    const response = await fetch(dbUrl, { cache: 'no-store' });
+    if (!response.ok) {
+      return [];
+    }
+
+    const allAppointments = await response.json() || {};
 
     // Filter for tomorrow's appointments
     const tomorrowAppointments = [];

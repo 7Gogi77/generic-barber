@@ -2109,7 +2109,9 @@
         
         // Simple Firebase REST API sync (no module dependencies)
         function syncToFirebase(config) {
-            const dbUrl = 'https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app/site_config.json';
+            const dbUrl = window.AppBackend && typeof window.AppBackend.getDatabaseUrl === 'function'
+                ? window.AppBackend.getDatabaseUrl('site_config.json')
+                : 'https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app/site_config.json';
 
             try {
                 const adminScheduleEntries = config && config.adminSchedule && Array.isArray(config.adminSchedule.entries)

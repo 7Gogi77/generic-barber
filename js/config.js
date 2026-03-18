@@ -6,10 +6,19 @@
  * For local images, place them in the /images folder and use: "images/your-image.jpg"
  */
 
+const DEFAULT_DATABASE_URL = 'https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app';
+const DATABASE_URL_STORAGE_KEY = 'backend_database_url';
+
 const SITE_CONFIG = {
     // General Brand Settings
     shopName: "Blade & Bourbon", // Your shop title (appears in Logo and Footer)
     businessName: "Blade & Bourbon", // Generic name for appointment system (works for any business type)
+
+    // Remote data backend
+    backend: {
+        databaseURL: DEFAULT_DATABASE_URL,
+        syncPollingMs: 15000
+    },
     
     // Appointment Notification Settings
     ownerPhone: "", // Owner's phone number for SMS notifications when appointments change/cancel (format: +386XXXXXXXX)
@@ -245,5 +254,77 @@ const SITE_CONFIG = {
     ownerContact: {
         email: "spidergogi9@gmail.com",
         phone: "+386 1 000 0000"
+    }
+};
+
+function normalizeDatabaseBaseUrl(url) {
+    const candidate = typeof url === 'string' ? url.trim() : '';
+    return (candidate || DEFAULT_DATABASE_URL).replace(/\/+$/, '');
+}
+
+function readConfiguredDatabaseBaseUrl() {
+    try {
+        const stored = localStorage.getItem(DATABASE_URL_STORAGE_KEY);
+        if (stored) return stored;
+    } catch (_) {}
+
+    if (window.ADMIN_ENV && typeof window.ADMIN_ENV.databaseUrl === 'string' && window.ADMIN_ENV.databaseUrl.trim()) {
+        return window.ADMIN_ENV.databaseUrl;
+    }
+
+    if (window.SITE_CONFIG && window.SITE_CONFIG.backend && typeof window.SITE_CONFIG.backend.databaseURL === 'string') {
+        return window.SITE_CONFIG.backend.databaseURL;
+    }
+
+    if (SITE_CONFIG.backend && typeof SITE_CONFIG.backend.databaseURL === 'string') {
+        return SITE_CONFIG.backend.databaseURL;
+    }
+
+    return DEFAULT_DATABASE_URL;
+}
+
+window.SITE_CONFIG = window.SITE_CONFIG || SITE_CONFIG;
+window.AppBackend = {
+    defaultDatabaseURL: DEFAULT_DATABASE_URL,
+    storageKey: DATABASE_URL_STORAGE_KEY,
+    normalizeDatabaseBaseUrl,
+    getDatabaseBaseUrl() {
+        return normalizeDatabaseBaseUrl(readConfiguredDatabaseBaseUrl());
+    },
+    getDatabaseUrl(path = '', searchParams = null) {
+        const base = this.getDatabaseBaseUrl();
+        const cleanPath = String(path || '').replace(/^\/+/, '');
+        const url = cleanPath ? `${base}/${cleanPath}` : base;
+
+        if (!searchParams || typeof searchParams !== 'object') {
+            return url;
+        }
+
+        const query = new URLSearchParams();
+        Object.entries(searchParams).forEach(([key, value]) => {
+            if (value !== undefined && value !== null && value !== '') {
+                query.set(key, String(value));
+            }
+        });
+
+        const suffix = query.toString();
+        return suffix ? `${url}?${suffix}` : url;
+    },
+    setDatabaseBaseUrl(url, persist = true) {
+        const normalized = normalizeDatabaseBaseUrl(url);
+        if (window.SITE_CONFIG && window.SITE_CONFIG.backend) {
+            window.SITE_CONFIG.backend.databaseURL = normalized;
+        }
+        if (persist) {
+            try {
+                localStorage.setItem(DATABASE_URL_STORAGE_KEY, normalized);
+            } catch (_) {}
+        }
+        return normalized;
+    },
+    clearPersistedDatabaseBaseUrl() {
+        try {
+            localStorage.removeItem(DATABASE_URL_STORAGE_KEY);
+        } catch (_) {}
     }
 };

@@ -10,6 +10,18 @@
                 { value: 'sick_leave', label: 'Bolniška' },
                 { value: 'day_off', label: 'Prosti dan' }
             ];
+            function getRealtimeDbBaseUrl() {
+                if (window.AppBackend && typeof window.AppBackend.getDatabaseBaseUrl === 'function') {
+                    return `${window.AppBackend.getDatabaseBaseUrl()}/`;
+                }
+                return 'https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app/';
+            }
+            function getRealtimeDbUrl(path) {
+                return getRealtimeDbBaseUrl() + String(path || '').replace(/^\/+/, '');
+            }
+            function getWorkersUrl() {
+                return getRealtimeDbUrl('workers.json');
+            }
             // Pridobi storitve iz SITE_CONFIG, če obstaja, sicer fallback
             function getCustomerTypes() {
                 let items = [];
@@ -799,7 +811,7 @@
                                     if (oldKey) {
                                         delete customerBase[oldKey];
                                         try {
-                                            var base = 'https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app/';
+                                            var base = getRealtimeDbBaseUrl();
                                             fetch(base + 'site_config/customers/' + encodeURIComponent(oldKey) + '.json', { method: 'DELETE' }).catch(function(){});
                                         } catch(e) {}
                                     }
@@ -846,7 +858,7 @@
                                     saveCustomerBase();
                                     // Attempt remote delete
                                     try {
-                                        const base = 'https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app/';
+                                        const base = getRealtimeDbBaseUrl();
                                         fetch(base + `site_config/customers/${encodeURIComponent(matchKey)}.json`, { method: 'DELETE' }).then(() => {}).catch(() => {});
                                     } catch (e) {}
 
@@ -2481,7 +2493,7 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
 
                 // Try to merge remote customer records from site_config/customers
                 try {
-                    const base = 'https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app/';
+                    const base = getRealtimeDbBaseUrl();
                     const res = await fetch(base + 'site_config/customers.json');
                     if (res.ok) {
                         const remote = await res.json().catch(() => null);
@@ -2722,7 +2734,7 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
             saveCustomerBase();
             // Fire-and-forget write to site_config/customers/{key}
             try {
-                const base = 'https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app/';
+                const base = getRealtimeDbBaseUrl();
                 await fetch(base + `site_config/customers/${encodeURIComponent(key)}.json`, {
                     method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(rec)
                 });
@@ -2846,8 +2858,8 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                 // STEP 2: Remove from scheduleData
                 scheduleData.events = scheduleData.events.filter(e => e.id !== eventId);
 
-                // STEP 3: Delete from Firebase by searching for matching entries
-                const base = 'https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app/';
+                // STEP 3: Delete from the remote DB by searching for matching entries.
+                const base = getRealtimeDbBaseUrl();
                 const timestamp = new Date().toISOString();
                 
                 // Delete from site_config/adminSchedule/entries (array)
@@ -2960,7 +2972,7 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
         // Mark an adminSchedule key as deleted to prevent re-merge
         async function markAdminEntryDeleted(key) {
             if (!key) return false;
-            const base = 'https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app/';
+            const base = getRealtimeDbBaseUrl();
             try {
                 // write tombstone under site_config/adminSchedule/deleted/{key}
                 await fetch(base + `site_config/adminSchedule/deleted/${key}.json`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(true) });
@@ -3911,7 +3923,7 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
         // Strategy: try a direct POST to /adminSchedule/entries.json (push new child).
         // If that fails, fall back to GET site_config.json -> append -> PUT site_config.json.
         async function sendAdminScheduleEntry(entry) {
-            const baseUrl = 'https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app/';
+            const baseUrl = getRealtimeDbBaseUrl();
             // First attempt: POST to push a new child under adminSchedule/entries
             try {
                 const postUrl = baseUrl + 'adminSchedule/entries.json';
@@ -3992,7 +4004,7 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
         // Debug helper: purge mirrored adminSchedule entries for events currently in scheduleData
         // Usage: run `window.purgeMirroredAdminEntries()` in browser console.
         window.purgeMirroredAdminEntries = async function() {
-            const base = 'https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app/';
+            const base = getRealtimeDbBaseUrl();
             try {
                 if (!scheduleData || !Array.isArray(scheduleData.events)) return;
 
@@ -4053,7 +4065,7 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
 
         // Debug helper: list all adminSchedule and mirrored site_config entries
         window.listAdminEntries = async function() {
-            const base = 'https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app/';
+            const base = getRealtimeDbBaseUrl();
             try {
                 const [cfgRes, pushedRes] = await Promise.all([
                     fetch(base + 'site_config/adminSchedule/entries.json'),
@@ -4069,7 +4081,7 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
 
         // Debug helper: force-delete a specific admin entry by key (deletes both mirrored and pushed nodes)
         window.forceDeleteAdminEntry = async function(key) {
-            const base = 'https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app/';
+            const base = getRealtimeDbBaseUrl();
             if (!key) return;
             try {
                 const res1 = await fetch(base + `site_config/adminSchedule/entries/${key}.json`, { method: 'DELETE' });
@@ -4082,7 +4094,7 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
         // Debug helper: delete all adminSchedule entries (CONFIRM first)
         window.deleteAllAdminEntries = async function() {
             if (!confirm('Delete ALL adminSchedule entries from Firebase? This cannot be undone.')) return;
-            const base = 'https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app/';
+            const base = getRealtimeDbBaseUrl();
             try {
                 const pushedRes = await fetch(base + 'adminSchedule/entries.json');
                 const pushedMap = pushedRes.ok ? await pushedRes.json().catch(() => null) : null;
@@ -4099,7 +4111,7 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
         // Then write an empty object at site_config/adminSchedule/entries to avoid accidental re-merge.
         window.wipeAdminScheduleNodes = async function() {
             if (!confirm('Wipe adminSchedule nodes from Firebase? This will attempt to remove all adminSchedule entries and mirrored site_config entries.')) return;
-            const base = 'https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app/';
+            const base = getRealtimeDbBaseUrl();
             try {
                 // Delete the whole adminSchedule/entries parent
                 try {
@@ -4123,7 +4135,7 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
         // This bypasses any re-sync from admin-panel.html
         window.nukeAdminSchedule = async function() {
             if (!confirm('NUKE all adminSchedule entries from Firebase? This will completely clear both adminSchedule/entries and site_config/adminSchedule/entries.')) return;
-            const base = 'https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app/';
+            const base = getRealtimeDbBaseUrl();
             try {
                 // PUT empty object to overwrite at both paths
                 const empty = {};
@@ -4146,7 +4158,7 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
         }
 
         if (!window.StorageManager || typeof window.StorageManager.load !== 'function') {
-            const fallbackFirebaseUrl = 'https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app';
+            const fallbackFirebaseUrl = getRealtimeDbBaseUrl().replace(/\/+$/, '');
             const getDefaultSchedule = () => ({
                 version: '1.0',
                 timezone: 'UTC',
@@ -4165,6 +4177,9 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
 
             window.StorageManager = window.StorageManager || {};
             window.StorageManager.firebaseUrl = window.StorageManager.firebaseUrl || fallbackFirebaseUrl;
+            window.StorageManager.getDatabaseBaseUrl = window.StorageManager.getDatabaseBaseUrl || function() {
+                return getRealtimeDbBaseUrl().replace(/\/+$/, '');
+            };
 
             if (typeof window.StorageManager.load !== 'function') {
                 window.StorageManager.load = async function(key) {
@@ -4355,7 +4370,7 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                             });
                             // Also attempt to merge any adminSchedule entries from site_config into scheduleData
                             try {
-                                const cfgRes = await fetch('https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app/site_config.json');
+                                const cfgRes = await fetch(getRealtimeDbUrl('site_config.json'));
                                 if (cfgRes.ok) {
                                     const cfg = await cfgRes.json().catch(() => ({}));
                                     const entries = cfg?.adminSchedule?.entries || cfg?.adminSchedule || null;
@@ -4462,7 +4477,7 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
 
                 // Ensure adminSchedule entries from site_config are merged only if not marked deleted
                 try {
-                    const cfgRes2 = await fetch('https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app/site_config.json');
+                    const cfgRes2 = await fetch(getRealtimeDbUrl('site_config.json'));
                     if (cfgRes2.ok) {
                         const cfg2 = await cfgRes2.json().catch(() => ({}));
                         const entries2 = cfg2?.adminSchedule?.entries || cfg2?.adminSchedule || null;
@@ -4973,7 +4988,6 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
         window.openAddEventModal = openAddEventModalWithTab;
 
         // ===== WORKER MANAGEMENT =============================================
-        const FIREBASE_WORKERS = 'https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app/workers.json';
 
         async function sha256Worker(str) {
             const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
@@ -4982,7 +4996,7 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
 
         async function fetchWorkers() {
             try {
-                const res = await fetch(FIREBASE_WORKERS);
+                const res = await fetch(getWorkersUrl());
                 if (!res.ok) return {};
                 const data = await res.json();
                 return data || {};
@@ -4990,7 +5004,7 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
         }
 
         async function saveWorkersToFirebase(workers) {
-            const res = await fetch(FIREBASE_WORKERS, {
+            const res = await fetch(getWorkersUrl(), {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(workers)
@@ -4998,7 +5012,7 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
             if (!res.ok) {
                 let details = '';
                 try { details = await res.text(); } catch(_) {}
-                throw new Error('Shranjevanje v Firebase ni uspelo (' + res.status + '). ' + (details || res.statusText || ''));
+                throw new Error('Shranjevanje v bazo ni uspelo (' + res.status + '). ' + (details || res.statusText || ''));
             }
         }
 

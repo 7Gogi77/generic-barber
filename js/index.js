@@ -118,7 +118,9 @@
 
                 // Add timestamp to force fresh data and bypass cache
                 const timestamp = new Date().getTime();
-                const dbUrl = `https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app/site_config.json?_t=${timestamp}`;
+                const dbUrl = window.AppBackend && typeof window.AppBackend.getDatabaseUrl === 'function'
+                    ? window.AppBackend.getDatabaseUrl('site_config.json', { _t: timestamp })
+                    : `https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app/site_config.json?_t=${timestamp}`;
                 const response = await fetch(dbUrl, { 
                     cache: 'no-store',
                     headers: {

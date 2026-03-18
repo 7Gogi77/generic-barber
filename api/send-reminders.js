@@ -14,7 +14,7 @@
 const SMS_CONFIG = {
   gateUrl: 'https://api.sms-gate.app/3rdparty/v1/message',
   businessName: 'Aaa',
-  firebaseUrl: 'https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app',
+  databaseUrl: (process.env.DATABASE_URL || process.env.BACKEND_DATABASE_URL || 'https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app').replace(/\/+$/, ''),
 };
 
 // Send SMS via SMS Gate API
@@ -48,10 +48,10 @@ async function sendSMS(phoneNumber, message) {
   }
 }
 
-// Get tomorrow's appointments from Firebase
+// Get tomorrow's appointments from the configured realtime-compatible backend.
 async function getTomorrowAppointments() {
   try {
-    const response = await fetch(`${SMS_CONFIG.firebaseUrl}/schedule/events.json`);
+    const response = await fetch(`${SMS_CONFIG.databaseUrl}/schedule/events.json`);
     const allAppointments = await response.json() || {};
 
     // Calculate tomorrow's date range
@@ -73,7 +73,7 @@ async function getTomorrowAppointments() {
 
     return filtered;
   } catch (error) {
-    console.error('Firebase error:', error);
+    console.error('Database error:', error);
     return [];
   }
 }

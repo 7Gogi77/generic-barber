@@ -1633,16 +1633,16 @@
             showNotification('Barve drsnika so bile shranjene!', 'success');
         }
 
-        // Section visibility helpers
+        // Section visibility
         const _SV_SECTIONS = [
-            { key: 'about',        selector: '#about' },
-            { key: 'testimonial',  selector: '.testimonial-section' },
-            { key: 'services',     selector: '#services' },
-            { key: 'barbers',      selector: '#barbers' },
-            { key: 'gallery',      selector: '#gallery' },
-            { key: 'hours',        selector: '#business-hours' },
-            { key: 'contact',      selector: '#contact' },
-            { key: 'reviews',      selector: '#reviews' }
+            { key: 'about',       selector: '#about' },
+            { key: 'testimonial', selector: '.testimonial-section' },
+            { key: 'services',    selector: '#services' },
+            { key: 'barbers',     selector: '#barbers' },
+            { key: 'gallery',     selector: '#gallery' },
+            { key: 'hours',       selector: '#business-hours' },
+            { key: 'contact',     selector: '#contact' },
+            { key: 'reviews',     selector: '#reviews' }
         ];
 
         function saveSectionVisibility() {
@@ -1664,10 +1664,7 @@
             });
         }
 
-        // Alias called by saveAll()
-        function saveSiteConfig() {
-            saveSectionVisibility();
-        }
+        function saveSiteConfig() { saveSectionVisibility(); }
 
         // Apply theme colors to the page
         function applyThemeToPage() {
@@ -2112,7 +2109,9 @@
         
         // Simple Firebase REST API sync (no module dependencies)
         function syncToFirebase(config) {
-            const dbUrl = 'https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app/site_config.json';
+            const dbUrl = window.AppBackend && typeof window.AppBackend.getDatabaseUrl === 'function'
+                ? window.AppBackend.getDatabaseUrl('site_config.json')
+                : 'https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app/site_config.json';
 
             try {
                 const adminScheduleEntries = config && config.adminSchedule && Array.isArray(config.adminSchedule.entries)
