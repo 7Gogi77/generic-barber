@@ -603,7 +603,6 @@
                 const customers = Object.values(customerMap).sort((a, b) => (a.surname || '').localeCompare(b.surname || ''));
 
                 const renderTable = (filter) => {
-                    console.log('[Stranke] renderTable called, filter=', filter, 'customers=', customers.length);
                     const term = (filter || '').trim().toLowerCase();
                     if (!customers || customers.length === 0) {
                         content.innerHTML = '<div class="no-customers">Ni strank.</div>';
@@ -627,34 +626,44 @@
                     window._custRows = rows;
                     window._custCanDelCli = _canDelCli;
 
+                    // Ensure overlay container exists (created once, reused)
+                    if (!document.getElementById('custDetailOverlay')) {
+                        var overlay = document.createElement('div');
+                        overlay.id = 'custDetailOverlay';
+                        overlay.style.cssText = 'display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.4);z-index:10000;align-items:center;justify-content:center;';
+                        overlay.innerHTML = '<div id="custDetailCard" style="background:#fff;color:#000;border-radius:16px;padding:24px;margin:20px;max-width:480px;width:calc(100% - 40px);box-shadow:0 8px 40px rgba(0,0,0,0.2);"></div>';
+                        document.body.appendChild(overlay);
+                        // Close on backdrop click
+                        overlay.addEventListener('click', function(e) {
+                            if (e.target === overlay) { overlay.style.display = 'none'; }
+                        });
+                    }
+
                     // Global click handler for customer rows (inline onclick)
                     window._custRowClick = function(idx) {
                         try {
-                        alert('Row ' + idx + ' clicked! _custRows has ' + (window._custRows||[]).length + ' items');
-                        var rec = (window._custRows || [])[idx];
-                        if (!rec) { alert('No record at idx ' + idx); return; }
-                        var detail = document.getElementById('customerDetail');
-                        if (!detail) { alert('No #customerDetail element found'); return; }
-                        detail.style.display = 'block';
-                        var esc = typeof _escH === 'function' ? _escH : function(s){ return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); };
-                        var nameStr = esc((rec.fullName || ((rec.firstName||'') + ' ' + (rec.surname||''))).trim() || '-');
-                        var _cd = !!window._custCanDelCli;
-                        detail.innerHTML = '<div style="background:#ffffff;color:#000000;border:2px solid #007AFF;border-radius:12px;padding:20px;margin-top:12px;box-shadow:0 4px 16px rgba(0,0,0,0.12);position:relative;z-index:10;">'
-                            + '<div style="font-size:18px;font-weight:700;margin-bottom:14px;color:#1c1c1e;">' + nameStr + '</div>'
-                            + '<div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px;">'
-                            + '<div style="flex:1;min-width:140px;"><span style="font-size:12px;color:#8e8e93;display:block;margin-bottom:2px;">Email</span><span style="font-size:14px;color:#1c1c1e;">' + esc(rec.email || '-') + '</span></div>'
-                            + '<div style="flex:1;min-width:140px;"><span style="font-size:12px;color:#8e8e93;display:block;margin-bottom:2px;">Telefon</span><span style="font-size:14px;color:#1c1c1e;">' + esc(rec.phone || '-') + '</span></div>'
-                            + '<div style="flex:1;min-width:100px;"><span style="font-size:12px;color:#8e8e93;display:block;margin-bottom:2px;">Terminov</span><span style="font-size:14px;color:#1c1c1e;">' + (rec.count || 0) + '</span></div>'
-                            + '</div>'
-                            + '<div style="display:flex;gap:8px;flex-wrap:wrap;">'
-                            + '<button id="custDetailEditBtn" class="btn btn-primary" style="font-size:13px;padding:8px 18px;flex:none;">Uredi</button>'
-                            + (_cd ? '<button id="custDetailDeleteBtn" class="btn btn-danger" style="font-size:13px;padding:8px 18px;flex:none;">Izbri\u0161i</button>' : '')
-                            + '<button id="custDetailCloseBtn" class="btn btn-secondary" style="font-size:13px;padding:8px 18px;flex:none;color:#1c1c1e;">Zapri</button>'
-                            + '</div>'
-                            + '</div>'
-                            + '<input type="hidden" id="custDetailIdx" value="' + idx + '">';
-                        setTimeout(function(){ detail.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }, 50);
-                        } catch(err) { alert('Error in _custRowClick: ' + err.message); }
+                            var rec = (window._custRows || [])[idx];
+                            if (!rec) return;
+                            var esc = typeof _escH === 'function' ? _escH : function(s){ return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); };
+                            var nameStr = esc((rec.fullName || ((rec.firstName||'') + ' ' + (rec.surname||''))).trim() || '-');
+                            var _cd = !!window._custCanDelCli;
+                            var overlay = document.getElementById('custDetailOverlay');
+                            var card = document.getElementById('custDetailCard');
+                            if (!overlay || !card) return;
+                            card.innerHTML = '<div style="font-size:20px;font-weight:700;margin-bottom:16px;color:#1c1c1e;">' + nameStr + '</div>'
+                                + '<div style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:18px;">'
+                                + '<div style="flex:1;min-width:140px;"><span style="font-size:12px;color:#8e8e93;display:block;margin-bottom:3px;">Email</span><span style="font-size:15px;color:#1c1c1e;">' + esc(rec.email || '-') + '</span></div>'
+                                + '<div style="flex:1;min-width:140px;"><span style="font-size:12px;color:#8e8e93;display:block;margin-bottom:3px;">Telefon</span><span style="font-size:15px;color:#1c1c1e;">' + esc(rec.phone || '-') + '</span></div>'
+                                + '<div style="flex:1;min-width:100px;"><span style="font-size:12px;color:#8e8e93;display:block;margin-bottom:3px;">Terminov</span><span style="font-size:15px;color:#1c1c1e;">' + (rec.count || 0) + '</span></div>'
+                                + '</div>'
+                                + '<div style="display:flex;gap:10px;flex-wrap:wrap;">'
+                                + '<button id="custDetailEditBtn" style="background:#007AFF;color:#fff;border:none;border-radius:10px;padding:10px 20px;font-size:14px;font-weight:600;cursor:pointer;">Uredi</button>'
+                                + (_cd ? '<button id="custDetailDeleteBtn" style="background:#FF3B30;color:#fff;border:none;border-radius:10px;padding:10px 20px;font-size:14px;font-weight:600;cursor:pointer;">Izbri\u0161i</button>' : '')
+                                + '<button id="custDetailCloseBtn" style="background:#E5E5EA;color:#1c1c1e;border:none;border-radius:10px;padding:10px 20px;font-size:14px;font-weight:600;cursor:pointer;">Zapri</button>'
+                                + '</div>'
+                                + '<input type="hidden" id="custDetailIdx" value="' + idx + '">';
+                            overlay.style.display = 'flex';
+                        } catch(err) { console.error('[Stranke] _custRowClick error:', err); }
                     };
 
                     if (isMobile) {
@@ -671,7 +680,6 @@
                             </div>`;
                         });
                         html += '</div>';
-                        html += '<div id="customerDetail" style="display:none;"></div>';
                         content.innerHTML = html;
                     } else {
                         // Table layout for desktop — rows are clickable via onclick
@@ -680,7 +688,6 @@
                             table += `<tr class="customer-row" onclick="window._custRowClick(${idx})" style="cursor:pointer;"><td>${c.firstName||'-'}</td><td>${c.surname||'-'}</td><td>${c.email||'-'}</td><td>${c.phone||'-'}</td><td style="text-align:right">${c.count||0}</td></tr>`;
                         });
                         table += '</tbody></table></div>';
-                        table += '<div id="customerDetail" style="display:none;"></div>';
                         content.innerHTML = table;
                     }
                     // animate in rows with a small stagger
@@ -718,16 +725,17 @@
 
                 // Panel is already opened at function start.
 
-                // Delegated handler for detail-panel buttons (guarded – attach once)
-                if (!content._custBtnHandler) {
-                    content._custBtnHandler = true;
-                    content.addEventListener('click', function(e) {
+                // Delegated handler for detail-panel buttons on overlay (guarded – attach once)
+                var _ovl = document.getElementById('custDetailOverlay');
+                if (_ovl && !_ovl._custBtnHandler) {
+                    _ovl._custBtnHandler = true;
+                    _ovl.addEventListener('click', function(e) {
                         var t = e.target;
                         if (!t) return;
 
                         // ── Close detail ──
                         if (t.id === 'custDetailCloseBtn' || t.id === 'custEditCancelBtn') {
-                            var d2 = document.getElementById('customerDetail'); if (d2) d2.style.display = 'none';
+                            var ov = document.getElementById('custDetailOverlay'); if (ov) ov.style.display = 'none';
                             return;
                         }
 
@@ -737,25 +745,23 @@
                                 var eIdx = Number((document.getElementById('custDetailIdx') || {}).value);
                                 var eRec = (window._custRows || [])[eIdx];
                                 if (!eRec) return;
-                                var detail2 = document.getElementById('customerDetail');
+                                var detail2 = document.getElementById('custDetailCard');
                                 if (!detail2) return;
                                 var fullName = (eRec.fullName || ((eRec.firstName||'') + ' ' + (eRec.surname||'')).trim()).trim();
                                 detail2.innerHTML = `
-                                    <div style="background:#fff;border:1px solid #e5e5ea;border-radius:12px;padding:16px;margin-top:8px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
-                                        <div style="font-size:15px;font-weight:600;margin-bottom:12px;">Uredi stranko</div>
+                                        <div style="font-size:16px;font-weight:600;margin-bottom:14px;color:#1c1c1e;">Uredi stranko</div>
                                         <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
-                                            <input id="custEditFirst" type="text" placeholder="Ime" value="${_escH((eRec.firstName||'').trim())}" style="flex:1;min-width:120px;padding:8px;border:1px solid #ccc;border-radius:8px;font-size:14px;">
-                                            <input id="custEditSurname" type="text" placeholder="Priimek" value="${_escH((eRec.surname||'').trim())}" style="flex:1;min-width:120px;padding:8px;border:1px solid #ccc;border-radius:8px;font-size:14px;">
+                                            <input id="custEditFirst" type="text" placeholder="Ime" value="${_escH((eRec.firstName||'').trim())}" style="flex:1;min-width:120px;padding:10px;border:1px solid #ccc;border-radius:8px;font-size:14px;color:#000;">
+                                            <input id="custEditSurname" type="text" placeholder="Priimek" value="${_escH((eRec.surname||'').trim())}" style="flex:1;min-width:120px;padding:10px;border:1px solid #ccc;border-radius:8px;font-size:14px;color:#000;">
                                         </div>
                                         <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
-                                            <input id="custEditEmail" type="email" placeholder="Email" value="${_escH((eRec.email||'').trim())}" style="flex:1;min-width:160px;padding:8px;border:1px solid #ccc;border-radius:8px;font-size:14px;">
-                                            <input id="custEditPhone" type="tel" placeholder="Telefon" value="${_escH((eRec.phone||'').trim())}" style="flex:1;min-width:120px;padding:8px;border:1px solid #ccc;border-radius:8px;font-size:14px;">
+                                            <input id="custEditEmail" type="email" placeholder="Email" value="${_escH((eRec.email||'').trim())}" style="flex:1;min-width:160px;padding:10px;border:1px solid #ccc;border-radius:8px;font-size:14px;color:#000;">
+                                            <input id="custEditPhone" type="tel" placeholder="Telefon" value="${_escH((eRec.phone||'').trim())}" style="flex:1;min-width:120px;padding:10px;border:1px solid #ccc;border-radius:8px;font-size:14px;color:#000;">
                                         </div>
-                                        <div style="display:flex;gap:8px;">
-                                            <button id="custEditSaveBtn" class="btn btn-primary" style="font-size:13px;padding:8px 16px;">Shrani</button>
-                                            <button id="custEditCancelBtn" class="btn btn-secondary" style="font-size:13px;padding:8px 16px;">Prekliči</button>
+                                        <div style="display:flex;gap:10px;">
+                                            <button id="custEditSaveBtn" style="background:#007AFF;color:#fff;border:none;border-radius:10px;padding:10px 20px;font-size:14px;font-weight:600;cursor:pointer;">Shrani</button>
+                                            <button id="custEditCancelBtn" style="background:#E5E5EA;color:#1c1c1e;border:none;border-radius:10px;padding:10px 20px;font-size:14px;font-weight:600;cursor:pointer;">Prekli\u010di</button>
                                         </div>
-                                    </div>
                                     <input type="hidden" id="custEditOldName" value="${_escH(fullName)}">
                                     <input type="hidden" id="custEditOldEmail" value="${_escH((eRec.email||'').trim())}">
                                     <input type="hidden" id="custEditOldPhone" value="${_escH((eRec.phone||'').trim())}">
@@ -791,6 +797,7 @@
                                         } catch(e) {}
                                     }
                                     persistCustomerToBase({ firstName: newFirst.trim(), surname: newSurname.trim(), email: newEmail.trim(), phone: newPhone.trim(), fullName: newFull }).then(function() {
+                                        var _ov = document.getElementById('custDetailOverlay'); if (_ov) _ov.style.display = 'none';
                                         if (typeof showToast === 'function') showToast('\u2705 Stranka posodobljena!');
                                         showCustomerListPanel();
                                     });
@@ -871,7 +878,8 @@
                                         } catch (e) {}
                                     })();
 
-                                    // Refresh the panel
+                                    // Hide overlay and refresh the panel
+                                    var _ov2 = document.getElementById('custDetailOverlay'); if (_ov2) _ov2.style.display = 'none';
                                     showCustomerListPanel();
                                 });
                             } catch (err) {}
