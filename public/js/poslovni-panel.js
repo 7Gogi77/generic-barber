@@ -660,6 +660,35 @@
                             setTimeout(() => el.classList.add('entered'), i * 45);
                         });
                     } catch (e) { /* ignore animation errors */ }
+
+                    // Attach click handlers directly to each row/card
+                    content.querySelectorAll('.customer-clickable').forEach(function(el) {
+                        el.addEventListener('click', function(ev) {
+                            if (ev.target.closest('button') || ev.target.closest('input')) return;
+                            var idx = Number(el.getAttribute('data-idx'));
+                            var rec = rows[idx];
+                            if (!rec) return;
+                            var detail = document.getElementById('customerDetail');
+                            if (!detail) return;
+                            detail.style.display = 'block';
+                            detail.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                            var nameStr = _escH((rec.fullName || ((rec.firstName||'') + ' ' + (rec.surname||''))).trim() || '-');
+                            detail.innerHTML = '<div style="background:#fff;border:1px solid #e5e5ea;border-radius:12px;padding:16px;margin-top:8px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">'
+                                + '<div style="font-size:17px;font-weight:600;margin-bottom:12px;">' + nameStr + '</div>'
+                                + '<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;">'
+                                + '<div style="flex:1;min-width:140px;"><span style="font-size:12px;color:#8e8e93;display:block;">Email</span><span style="font-size:14px;">' + _escH(rec.email || '-') + '</span></div>'
+                                + '<div style="flex:1;min-width:140px;"><span style="font-size:12px;color:#8e8e93;display:block;">Telefon</span><span style="font-size:14px;">' + _escH(rec.phone || '-') + '</span></div>'
+                                + '<div style="flex:1;min-width:100px;"><span style="font-size:12px;color:#8e8e93;display:block;">Terminov</span><span style="font-size:14px;">' + (rec.count || 0) + '</span></div>'
+                                + '</div>'
+                                + '<div style="display:flex;gap:8px;flex-wrap:wrap;">'
+                                + '<button id="custDetailEditBtn" class="btn btn-primary" style="font-size:13px;padding:8px 16px;">Uredi</button>'
+                                + (_canDelCli ? '<button id="custDetailDeleteBtn" class="btn btn-danger" style="font-size:13px;padding:8px 16px;">Izbriši</button>' : '')
+                                + '<button id="custDetailCloseBtn" class="btn btn-secondary" style="font-size:13px;padding:8px 16px;">Zapri</button>'
+                                + '</div>'
+                                + '</div>'
+                                + '<input type="hidden" id="custDetailIdx" value="' + idx + '">';
+                        });
+                    });
                 };
 
                 // Initial render
@@ -687,43 +716,12 @@
 
                 // Panel is already opened at function start.
 
-                // Attach a delegated handler to the content to support Edit/Close actions inside the customer detail
-                (function(){
-                    const contentEl = document.getElementById('customerListContent');
-                    if (!contentEl) return;
-                    contentEl.addEventListener('click', (e) => {
-                        const t = e.target;
+                // Delegated handler for detail-panel buttons (guarded – attach once)
+                if (!content._custBtnHandler) {
+                    content._custBtnHandler = true;
+                    content.addEventListener('click', function(e) {
+                        var t = e.target;
                         if (!t) return;
-
-                        // ── Row / card click → open detail panel ──
-                        var clickableEl = t.closest('.customer-clickable');
-                        if (clickableEl && !t.closest('button') && !t.closest('input')) {
-                            var idx = Number(clickableEl.getAttribute('data-idx'));
-                            var rec = (window._custRows || [])[idx];
-                            if (!rec) return;
-                            var _canDel = !!window._custCanDelCli;
-                            var detail = document.getElementById('customerDetail');
-                            if (!detail) return;
-                            detail.style.display = 'block';
-                            detail.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                            detail.innerHTML = `
-                                <div style="background:#fff;border:1px solid #e5e5ea;border-radius:12px;padding:16px;margin-top:8px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
-                                    <div style="font-size:17px;font-weight:600;margin-bottom:12px;">${_escH((rec.fullName || ((rec.firstName||'') + ' ' + (rec.surname||''))).trim() || '-')}</div>
-                                    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
-                                        <div style="flex:1;min-width:140px;"><span style="font-size:12px;color:#8e8e93;display:block;">Email</span><span style="font-size:14px;">${_escH(rec.email || '-')}</span></div>
-                                        <div style="flex:1;min-width:140px;"><span style="font-size:12px;color:#8e8e93;display:block;">Telefon</span><span style="font-size:14px;">${_escH(rec.phone || '-')}</span></div>
-                                        <div style="flex:1;min-width:100px;"><span style="font-size:12px;color:#8e8e93;display:block;">Terminov</span><span style="font-size:14px;">${rec.count || 0}</span></div>
-                                    </div>
-                                    <div style="display:flex;gap:8px;flex-wrap:wrap;">
-                                        <button id="custDetailEditBtn" class="btn btn-primary" style="font-size:13px;padding:8px 16px;">Uredi</button>
-                                        ${_canDel ? '<button id="custDetailDeleteBtn" class="btn btn-danger" style="font-size:13px;padding:8px 16px;">Izbriši</button>' : ''}
-                                        <button id="custDetailCloseBtn" class="btn btn-secondary" style="font-size:13px;padding:8px 16px;">Zapri</button>
-                                    </div>
-                                </div>
-                                <input type="hidden" id="custDetailIdx" value="${idx}">
-                            `;
-                            return;
-                        }
 
                         // ── Close detail ──
                         if (t.id === 'custDetailCloseBtn' || t.id === 'custEditCancelBtn') {
@@ -878,7 +876,7 @@
                         }
 
                     });
-                })();
+                }
             }
 
         // Open/close helpers for customer panel with animation
