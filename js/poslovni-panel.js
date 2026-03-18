@@ -1579,6 +1579,18 @@
                 if (toggleBtn) toggleBtn.style.display = 'none';
                 window._calWorkerFilterId = 'all';
             }
+
+            // Worker override: if logged in as worker without canViewAll, force filter
+            // to their own events regardless of what the chip filter set above.
+            var _wSess = window.bspGetSession ? window.bspGetSession() : null;
+            if (_wSess && _wSess.role === 'worker') {
+                var _wPerms = _wSess.permissions || {};
+                if (!_wPerms.canViewAll) {
+                    window._calWorkerFilterId = _wSess.workerId || _wSess.workerName || '';
+                    if (wrap) wrap.style.display = 'none';
+                    if (toggleBtn) toggleBtn.style.display = 'none';
+                }
+            }
         }
         window.calFilterSelect = function(el) {
             document.querySelectorAll('.cwf-chip').forEach(c => c.classList.remove('active'));
@@ -2763,15 +2775,29 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
             document.getElementById('editEventEndTime').value = endTime;
             document.getElementById('editEventDescription').value = event.extendedProps?.description || '';
 
-            // Show customer-specific fields when this is a booking
+            // Show/hide fields based on booking vs event
             const isBooking = event.extendedProps?.isBooking || event.extendedProps?.tab === 'customer' || event.isBooking;
             const custWrapper = document.getElementById('editCustomerFields');
+            const surnameWrapper = document.getElementById('editCustomerSurnameField');
+            const emailWrapper = document.getElementById('editCustomerEmailField');
             const phoneWrapper = document.getElementById('editCustomerPhoneField');
             const servicesWrapper = document.getElementById('editEventServicesField');
             const priceWrapper = document.getElementById('editEventPriceField');
             const durWrapper = document.getElementById('editEventDurationField');
+            const titleGroup = document.getElementById('editEventTitle')?.closest('.form-group');
+            const typeGroup = document.getElementById('editEventType')?.closest('.form-group');
+            const descGroup = document.getElementById('editEventDescription')?.closest('.form-group');
             if (isBooking) {
+                // Hide event-specific fields that don't apply to bookings
+                if (titleGroup) titleGroup.style.display = 'none';
+                if (typeGroup) typeGroup.style.display = 'none';
+                if (descGroup) descGroup.style.display = 'none';
+                document.getElementById('editEventTitle')?.removeAttribute('required');
+                document.getElementById('editEventType')?.removeAttribute('required');
+                // Show all booking-specific fields
                 if (custWrapper) custWrapper.style.display = '';
+                if (surnameWrapper) surnameWrapper.style.display = '';
+                if (emailWrapper) emailWrapper.style.display = '';
                 if (phoneWrapper) phoneWrapper.style.display = '';
                 if (servicesWrapper) servicesWrapper.style.display = '';
                 if (priceWrapper) priceWrapper.style.display = '';
@@ -2779,7 +2805,6 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                 // Populate edited customer fields (first/surname)
                 const first = event.extendedProps?.customerFirstName || (event.extendedProps?.customer ? String(event.extendedProps.customer).split(/\s+/)[0] : '');
                 const sur = event.extendedProps?.customerSurname || (event.extendedProps?.customer ? String(event.extendedProps.customer).split(/\s+/).slice(1).join(' ') : '');
-                const full = event.extendedProps?.customer || '';
                 const fnameEl = document.getElementById('editEventFirstName'); if (fnameEl) fnameEl.value = first;
                 const lnameEl = document.getElementById('editEventLastName'); if (lnameEl) lnameEl.value = sur;
                 document.getElementById('editEventEmail').value = event.extendedProps?.email || '';
@@ -2787,12 +2812,25 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                 document.getElementById('editEventServices').value = (event.extendedProps && Array.isArray(event.extendedProps.services)) ? event.extendedProps.services.join(', ') : (event.extendedProps?.services || '');
                 document.getElementById('editEventPrice').value = (event.extendedProps && typeof event.extendedProps.price !== 'undefined') ? event.extendedProps.price : '';
                 document.getElementById('editEventDuration').value = event.extendedProps?.duration || '';
+                // Change modal header
+                modal.querySelector('.modal-header').textContent = 'Uredi rezervacijo';
             } else {
+                // Show event-specific fields
+                if (titleGroup) titleGroup.style.display = '';
+                if (typeGroup) typeGroup.style.display = '';
+                if (descGroup) descGroup.style.display = '';
+                document.getElementById('editEventTitle')?.setAttribute('required', '');
+                document.getElementById('editEventType')?.setAttribute('required', '');
+                // Hide booking fields
                 if (custWrapper) custWrapper.style.display = 'none';
+                if (surnameWrapper) surnameWrapper.style.display = 'none';
+                if (emailWrapper) emailWrapper.style.display = 'none';
                 if (phoneWrapper) phoneWrapper.style.display = 'none';
                 if (servicesWrapper) servicesWrapper.style.display = 'none';
                 if (priceWrapper) priceWrapper.style.display = 'none';
                 if (durWrapper) durWrapper.style.display = 'none';
+                // Change modal header
+                modal.querySelector('.modal-header').textContent = 'Uredi dogodek';
             }
 
 
@@ -3413,8 +3451,23 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
 
             if (!currentEditingEvent) return;
 
-            const title = document.getElementById('editEventTitle').value;
-            const type = document.getElementById('editEventType').value;
+            // Determine if this is a booking to handle title/type differently
+            const _isEditBooking = currentEditingEvent?.extendedProps?.isBooking
+                || currentEditingEvent?.extendedProps?.tab === 'customer'
+                || currentEditingEvent?.extendedProps?.customer
+                || (currentEditingEvent?.id && String(currentEditingEvent.id).startsWith('apt_'));
+
+            let title, type;
+            if (_isEditBooking) {
+                // For bookings: build title from customer name fields, preserve original type
+                const firstName = document.getElementById('editEventFirstName')?.value || '';
+                const lastName = document.getElementById('editEventLastName')?.value || '';
+                title = (firstName + ' ' + lastName).trim() || currentEditingEvent.title || '';
+                type = currentEditingEvent?.extendedProps?.type || 'customer';
+            } else {
+                title = document.getElementById('editEventTitle').value;
+                type = document.getElementById('editEventType').value;
+            }
             const startDate = document.getElementById('editEventStartDate').value;
             const startTime = document.getElementById('editEventStartTime').value;
             const endDate = document.getElementById('editEventEndDate').value;
@@ -3449,7 +3502,18 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                     if (email) scheduleData.events[idx].extendedProps.email = email;
                     if (phone) scheduleData.events[idx].extendedProps.phone = phone;
                     if (services.length) scheduleData.events[idx].extendedProps.services = services;
-                    if (price) scheduleData.events[idx].extendedProps.price = price;
+                    if (price !== null) scheduleData.events[idx].extendedProps.price = price;
+
+                    // Save booking-specific fields
+                    if (_isEditBooking) {
+                        const firstName = document.getElementById('editEventFirstName')?.value || '';
+                        const lastName = document.getElementById('editEventLastName')?.value || '';
+                        scheduleData.events[idx].extendedProps.customerFirstName = firstName;
+                        scheduleData.events[idx].extendedProps.customerSurname = lastName;
+                        scheduleData.events[idx].extendedProps.customer = (firstName + ' ' + lastName).trim();
+                        const durVal = document.getElementById('editEventDuration')?.value;
+                        if (durVal) scheduleData.events[idx].extendedProps.duration = parseInt(durVal, 10);
+                    }
                 } catch (_) {}
                 
                 // Save to localStorage
@@ -4212,9 +4276,13 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                 window.calendar = calendar;
                 calendarInitialized = true;
                 debugLog('✓ Business calendar initialized');
-                // Apply worker access restrictions if logged in as worker
-                if (typeof window._bspApplyWorkerAccess === 'function') window._bspApplyWorkerAccess();
+                // Init filter chips first (may set _calWorkerFilterId = 'all'),
+                // then apply worker access which overrides to worker's own ID.
                 initCalWorkerFilter();
+                if (typeof window._bspApplyWorkerAccess === 'function') window._bspApplyWorkerAccess();
+                // Force a re-fetch so the data-level filter uses the correct _calWorkerFilterId
+                // (the initial async events callback may still be pending from render()).
+                if (typeof calendar.refetchEvents === 'function') calendar.refetchEvents();
 
                 // On mobile, move the burger menu button into the FC toolbar left chunk
                 if (window.innerWidth <= 768) {
