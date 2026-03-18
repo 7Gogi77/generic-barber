@@ -603,6 +603,7 @@
                 const customers = Object.values(customerMap).sort((a, b) => (a.surname || '').localeCompare(b.surname || ''));
 
                 const renderTable = (filter) => {
+                    console.log('[Stranke] renderTable called, filter=', filter, 'customers=', customers.length);
                     const term = (filter || '').trim().toLowerCase();
                     if (!customers || customers.length === 0) {
                         content.innerHTML = '<div class="no-customers">Ni strank.</div>';
@@ -628,10 +629,12 @@
 
                     // Global click handler for customer rows (inline onclick)
                     window._custRowClick = function(idx) {
+                        try {
+                        alert('Row ' + idx + ' clicked! _custRows has ' + (window._custRows||[]).length + ' items');
                         var rec = (window._custRows || [])[idx];
-                        if (!rec) return;
+                        if (!rec) { alert('No record at idx ' + idx); return; }
                         var detail = document.getElementById('customerDetail');
-                        if (!detail) return;
+                        if (!detail) { alert('No #customerDetail element found'); return; }
                         detail.style.display = 'block';
                         var esc = typeof _escH === 'function' ? _escH : function(s){ return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); };
                         var nameStr = esc((rec.fullName || ((rec.firstName||'') + ' ' + (rec.surname||''))).trim() || '-');
@@ -651,6 +654,7 @@
                             + '</div>'
                             + '<input type="hidden" id="custDetailIdx" value="' + idx + '">';
                         setTimeout(function(){ detail.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }, 50);
+                        } catch(err) { alert('Error in _custRowClick: ' + err.message); }
                     };
 
                     if (isMobile) {
