@@ -622,15 +622,42 @@
                     const isMobile = window.innerWidth <= 768;
                     let html = '';
 
-                    // Store rows reference for click handlers
+                    // Store rows + permissions globally for onclick handlers
                     window._custRows = rows;
                     window._custCanDelCli = _canDelCli;
+
+                    // Global click handler for customer rows (inline onclick)
+                    window._custRowClick = function(idx) {
+                        var rec = (window._custRows || [])[idx];
+                        if (!rec) return;
+                        var detail = document.getElementById('customerDetail');
+                        if (!detail) return;
+                        detail.style.display = 'block';
+                        detail.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                        var esc = typeof _escH === 'function' ? _escH : function(s){ return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); };
+                        var nameStr = esc((rec.fullName || ((rec.firstName||'') + ' ' + (rec.surname||''))).trim() || '-');
+                        var _cd = !!window._custCanDelCli;
+                        detail.innerHTML = '<div style="background:#fff;border:1px solid #e5e5ea;border-radius:12px;padding:16px;margin-top:8px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">'
+                            + '<div style="font-size:17px;font-weight:600;margin-bottom:12px;">' + nameStr + '</div>'
+                            + '<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;">'
+                            + '<div style="flex:1;min-width:140px;"><span style="font-size:12px;color:#8e8e93;display:block;">Email</span><span style="font-size:14px;">' + esc(rec.email || '-') + '</span></div>'
+                            + '<div style="flex:1;min-width:140px;"><span style="font-size:12px;color:#8e8e93;display:block;">Telefon</span><span style="font-size:14px;">' + esc(rec.phone || '-') + '</span></div>'
+                            + '<div style="flex:1;min-width:100px;"><span style="font-size:12px;color:#8e8e93;display:block;">Terminov</span><span style="font-size:14px;">' + (rec.count || 0) + '</span></div>'
+                            + '</div>'
+                            + '<div style="display:flex;gap:8px;flex-wrap:wrap;">'
+                            + '<button id="custDetailEditBtn" class="btn btn-primary" style="font-size:13px;padding:8px 16px;">Uredi</button>'
+                            + (_cd ? '<button id="custDetailDeleteBtn" class="btn btn-danger" style="font-size:13px;padding:8px 16px;">Izbri\u0161i</button>' : '')
+                            + '<button id="custDetailCloseBtn" class="btn btn-secondary" style="font-size:13px;padding:8px 16px;">Zapri</button>'
+                            + '</div>'
+                            + '</div>'
+                            + '<input type="hidden" id="custDetailIdx" value="' + idx + '">';
+                    };
 
                     if (isMobile) {
                         // Card layout — clickable cards
                         html = '<div class="customer-cards">';
                         rows.forEach((c, idx) => {
-                        html += `<div class="customer-card customer-clickable" data-idx="${idx}" style="cursor:pointer;">
+                        html += `<div class="customer-card" onclick="window._custRowClick(${idx})" style="cursor:pointer;">
                                 <div class="customer-card-name">${c.firstName||''} ${c.surname||''}</div>
                                 ${c.email && c.email !== '-' ? `<div class="customer-card-row"><i class="bi bi-envelope"></i> ${c.email}</div>` : ''}
                                 ${c.phone && c.phone !== '-' ? `<div class="customer-card-row"><i class="bi bi-telephone"></i> ${c.phone}</div>` : ''}
@@ -643,10 +670,10 @@
                         html += '<div id="customerDetail" style="display:none;"></div>';
                         content.innerHTML = html;
                     } else {
-                        // Table layout for desktop — no Akcije column, rows are clickable
+                        // Table layout for desktop — rows are clickable via onclick
                         let table = '<div style="overflow:auto; overflow-x:auto; max-height: calc(100% - 160px);"><table class="customer-table"><thead><tr><th>Ime</th><th>Priimek</th><th>Email</th><th>Telefon</th><th style="text-align:right">Terminov</th></tr></thead><tbody>';
                         rows.forEach((c, idx) => {
-                            table += `<tr class="customer-row customer-clickable" data-idx="${idx}" style="cursor:pointer;"><td>${c.firstName||'-'}</td><td>${c.surname||'-'}</td><td>${c.email||'-'}</td><td>${c.phone||'-'}</td><td style="text-align:right">${c.count||0}</td></tr>`;
+                            table += `<tr class="customer-row" onclick="window._custRowClick(${idx})" style="cursor:pointer;"><td>${c.firstName||'-'}</td><td>${c.surname||'-'}</td><td>${c.email||'-'}</td><td>${c.phone||'-'}</td><td style="text-align:right">${c.count||0}</td></tr>`;
                         });
                         table += '</tbody></table></div>';
                         table += '<div id="customerDetail" style="display:none;"></div>';
@@ -660,35 +687,6 @@
                             setTimeout(() => el.classList.add('entered'), i * 45);
                         });
                     } catch (e) { /* ignore animation errors */ }
-
-                    // Attach click handlers directly to each row/card
-                    content.querySelectorAll('.customer-clickable').forEach(function(el) {
-                        el.addEventListener('click', function(ev) {
-                            if (ev.target.closest('button') || ev.target.closest('input')) return;
-                            var idx = Number(el.getAttribute('data-idx'));
-                            var rec = rows[idx];
-                            if (!rec) return;
-                            var detail = document.getElementById('customerDetail');
-                            if (!detail) return;
-                            detail.style.display = 'block';
-                            detail.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                            var nameStr = _escH((rec.fullName || ((rec.firstName||'') + ' ' + (rec.surname||''))).trim() || '-');
-                            detail.innerHTML = '<div style="background:#fff;border:1px solid #e5e5ea;border-radius:12px;padding:16px;margin-top:8px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">'
-                                + '<div style="font-size:17px;font-weight:600;margin-bottom:12px;">' + nameStr + '</div>'
-                                + '<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;">'
-                                + '<div style="flex:1;min-width:140px;"><span style="font-size:12px;color:#8e8e93;display:block;">Email</span><span style="font-size:14px;">' + _escH(rec.email || '-') + '</span></div>'
-                                + '<div style="flex:1;min-width:140px;"><span style="font-size:12px;color:#8e8e93;display:block;">Telefon</span><span style="font-size:14px;">' + _escH(rec.phone || '-') + '</span></div>'
-                                + '<div style="flex:1;min-width:100px;"><span style="font-size:12px;color:#8e8e93;display:block;">Terminov</span><span style="font-size:14px;">' + (rec.count || 0) + '</span></div>'
-                                + '</div>'
-                                + '<div style="display:flex;gap:8px;flex-wrap:wrap;">'
-                                + '<button id="custDetailEditBtn" class="btn btn-primary" style="font-size:13px;padding:8px 16px;">Uredi</button>'
-                                + (_canDelCli ? '<button id="custDetailDeleteBtn" class="btn btn-danger" style="font-size:13px;padding:8px 16px;">Izbriši</button>' : '')
-                                + '<button id="custDetailCloseBtn" class="btn btn-secondary" style="font-size:13px;padding:8px 16px;">Zapri</button>'
-                                + '</div>'
-                                + '</div>'
-                                + '<input type="hidden" id="custDetailIdx" value="' + idx + '">';
-                        });
-                    });
                 };
 
                 // Initial render
