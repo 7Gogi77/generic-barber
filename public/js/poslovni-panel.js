@@ -618,6 +618,7 @@
                     var _isWorker = _cSess && _cSess.role === 'worker';
                     var _cPerms = _isWorker && typeof _bspNormalizePerms === 'function' ? _bspNormalizePerms(_cSess.permissions) : {};
                     var _canDelCli  = !_isWorker || !!_cPerms.canDeleteClients;
+                    var _canEditCli = !_isWorker || !!_cPerms.canEditClients;
 
                     const isMobile = window.innerWidth <= 768;
                     let html = '';
@@ -625,6 +626,7 @@
                     // Store rows + permissions globally for onclick handlers
                     window._custRows = rows;
                     window._custCanDelCli = _canDelCli;
+                    window._custCanEditCli = _canEditCli;
 
                     // Ensure overlay container exists (created once, reused)
                     if (!document.getElementById('custDetailOverlay')) {
@@ -657,7 +659,7 @@
                                 + '<div><span style="font-size:12px;color:#8e8e93;display:block;margin-bottom:3px;">Terminov</span><span style="font-size:15px;color:#1c1c1e;">' + (rec.count || 0) + '</span></div>'
                                 + '</div>'
                                 + '<div style="display:flex;gap:10px;flex-wrap:wrap;">'
-                                + '<button id="custDetailEditBtn" style="background:#007AFF;color:#fff;border:none;border-radius:10px;padding:10px 20px;font-size:14px;font-weight:600;cursor:pointer;">Uredi</button>'
+                                + (window._custCanEditCli !== false ? '<button id="custDetailEditBtn" style="background:#007AFF;color:#fff;border:none;border-radius:10px;padding:10px 20px;font-size:14px;font-weight:600;cursor:pointer;">Uredi</button>' : '')
                                 + (_cd ? '<button id="custDetailDeleteBtn" style="background:#FF3B30;color:#fff;border:none;border-radius:10px;padding:10px 20px;font-size:14px;font-weight:600;cursor:pointer;">Izbri\u0161i</button>' : '')
                                 + '<button id="custDetailCloseBtn" style="background:#E5E5EA;color:#1c1c1e;border:none;border-radius:10px;padding:10px 20px;font-size:14px;font-weight:600;cursor:pointer;">Zapri</button>'
                                 + '</div>'
@@ -742,6 +744,11 @@
                         // ── Edit button in detail panel → show edit form ──
                         if (t.id === 'custDetailEditBtn') {
                             try {
+                                var _eSess = window.bspGetSession ? window.bspGetSession() : null;
+                                if (_eSess && _eSess.role === 'worker') {
+                                    var _ep = typeof _bspNormalizePerms === 'function' ? _bspNormalizePerms(_eSess.permissions) : (_eSess.permissions || {});
+                                    if (!_ep.canEditClients) { alert('Nimate dovoljenja za urejanje strank.'); return; }
+                                }
                                 var eIdx = Number((document.getElementById('custDetailIdx') || {}).value);
                                 var eRec = (window._custRows || [])[eIdx];
                                 if (!eRec) return;
@@ -1445,7 +1452,8 @@
                 canDeleteEvents:          { label: 'Brisanje dogodkov',     tip: 'Delavec lahko izbriše obstoječe dogodke iz koledarja.' },
                 canAddEvents:             { label: 'Dodajanje dogodkov',    tip: 'Delavec lahko doda nove dogodke (delovni čas, premore, počitnice ipd.) v koledar.' },
                 canViewAllEvents:         { label: 'Ogled vseh dogodkov',   tip: 'Delavec vidi dogodke vseh delavcev, ne le svojih.' },
-                canDeleteClients:         { label: 'Brisanje strank',       tip: 'Delavec lahko briše stranke iz seznama strank (zavihek Stranke).' }
+                canDeleteClients:         { label: 'Brisanje strank',       tip: 'Delavec lahko briše stranke iz seznama strank (zavihek Stranke).' },
+                canEditClients:           { label: 'Urejanje strank',        tip: 'Delavec lahko ureja podatke strank (ime, email, telefon) v zavihku Stranke.' }
             };
 
             el.innerHTML = list.map((m, i) => {
@@ -1583,7 +1591,8 @@
                     canDeleteEvents:        row.querySelector('.acct-perm-canDeleteEvents')?.checked || false,
                     canAddEvents:           row.querySelector('.acct-perm-canAddEvents')?.checked || false,
                     canViewAllEvents:       row.querySelector('.acct-perm-canViewAllEvents')?.checked || false,
-                    canDeleteClients:       row.querySelector('.acct-perm-canDeleteClients')?.checked || false
+                    canDeleteClients:       row.querySelector('.acct-perm-canDeleteClients')?.checked || false,
+                    canEditClients:         row.querySelector('.acct-perm-canEditClients')?.checked || false
                 }
             };
 
@@ -4503,6 +4512,68 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                     debugLog('📋 Opening event details modal');
                     openEventDetailsModal(info.event);
                 });
+
+                // ── Calendar hover tooltip ──────────────────────────────────
+                (function() {
+                    var tip = document.createElement('div');
+                    tip.id = '_calTooltip';
+                    tip.style.cssText = 'position:fixed;z-index:9999;background:#1c1c1e;color:#fff;font-size:13px;line-height:1.5;padding:10px 14px;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,0.3);pointer-events:none;display:none;max-width:260px;word-break:break-word;';
+                    document.body.appendChild(tip);
+
+                    calendar.on('eventMouseEnter', function(info) {
+                        var ev = info.event;
+                        var ep = ev.extendedProps || {};
+                        var lines = [];
+                        var title = ev.title || '';
+                        if (title) lines.push('<strong style="font-size:14px;">' + title + '</strong>');
+
+                        // Time range
+                        var startD = ev.start, endD = ev.end;
+                        if (startD && !ev.allDay) {
+                            var fmt = function(d){ return d ? d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) : ''; };
+                            var fmtDate = function(d){ return d ? d.toLocaleDateString('sl-SI', {day:'numeric',month:'short'}) : ''; };
+                            var sameDay = endD && startD.toDateString() === endD.toDateString();
+                            if (sameDay) {
+                                lines.push('🕐 ' + fmtDate(startD) + '  ' + fmt(startD) + ' – ' + fmt(endD));
+                            } else if (endD) {
+                                lines.push('🕐 ' + fmtDate(startD) + ' ' + fmt(startD) + ' – ' + fmtDate(endD) + ' ' + fmt(endD));
+                            } else {
+                                lines.push('🕐 ' + fmtDate(startD) + ' ' + fmt(startD));
+                            }
+                        } else if (startD && ev.allDay) {
+                            var fmtD = function(d){ return d ? d.toLocaleDateString('sl-SI', {day:'numeric',month:'short',year:'numeric'}) : ''; };
+                            lines.push('📅 ' + fmtD(startD) + (endD && startD.toDateString() !== endD.toDateString() ? ' – ' + fmtD(new Date(endD - 86400000)) : ''));
+                        }
+
+                        // Appointment-specific fields
+                        if (ep.customer || ep.clientName) lines.push('👤 ' + (ep.customer || ep.clientName));
+                        if (ep.phone) lines.push('📞 ' + ep.phone);
+                        if (ep.email) lines.push('✉️ ' + ep.email);
+                        if (ep.service || ep.services) lines.push('✂️ ' + (ep.service || ep.services));
+                        if (ep.price != null && ep.price !== '') lines.push('💶 ' + ep.price + ' €');
+                        if (ep.notes || ep.note) lines.push('📝 ' + (ep.notes || ep.note));
+
+                        tip.innerHTML = lines.join('<br>');
+                        tip.style.display = 'block';
+
+                        // Position near the event element
+                        var rect = info.el.getBoundingClientRect();
+                        var left = rect.left + window.scrollX;
+                        var top = rect.bottom + window.scrollY + 6;
+                        // Prevent going off the right edge
+                        if (left + 270 > window.innerWidth) left = window.innerWidth - 275;
+                        // Prevent going off the bottom edge
+                        if (top - window.scrollY + 120 > window.innerHeight) top = rect.top + window.scrollY - tip.offsetHeight - 6;
+                        tip.style.left = left + 'px';
+                        tip.style.top  = top  + 'px';
+                    });
+
+                    calendar.on('eventMouseLeave', function() {
+                        tip.style.display = 'none';
+                    });
+                })();
+                // ── End hover tooltip ──────────────────────────────────────
+
                 debugLog('✅ Event handlers attached');
 
             } catch (error) {
@@ -4737,7 +4808,8 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                 canDeleteEvents:        p.canDeleteEvents       !== undefined ? p.canDeleteEvents       : (p.canDelete || false),
                 canAddEvents:           p.canAddEvents !== undefined ? p.canAddEvents : (p.canAddBreaks || false),
                 canViewAllEvents:       p.canViewAllEvents !== undefined ? p.canViewAllEvents : (p.canViewAll || false),
-                canDeleteClients:       p.canDeleteClients || false
+                canDeleteClients:       p.canDeleteClients || false,
+                canEditClients:         p.canEditClients || false
             };
         }
         window._bspNormalizePerms = _bspNormalizePerms;

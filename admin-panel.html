@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="sl">
 <head>
     <meta charset="UTF-8">
@@ -20,8 +20,8 @@
         
         <form class="login-form" onsubmit="handleLogin(event)">
             <div class="form-group">
-                <label class="form-label">Uporabni�ko ime</label>
-                <input id="adminUsername" type="text" class="form-input" placeholder="Vnesite uporabni�ko ime" autocomplete="username" required>
+                <label class="form-label">Uporabniško ime</label>
+                <input id="adminUsername" type="text" class="form-input" placeholder="Vnesite uporabniško ime" autocomplete="username" required>
             </div>
             <div class="form-group">
                 <label class="form-label">Geslo</label>
@@ -74,7 +74,7 @@
         <div class="main-content">
             <div class="admin-container">
             <div class="admin-header">
-                <h1>Administracijska Plo��a</h1>
+                <h1>Administracijska Plošča</h1>
                 <div style="display:flex; gap:10px; align-items:center;">
                     <button class="logout-btn" onclick="window.location.href='index.html'">Nazaj na Stran</button>
                     <button class="logout-btn" onclick="handleLogout()">Odjava</button>
@@ -90,7 +90,7 @@
                     <div class="section-title">Logotipi in Identiteta</div>
                     <div class="form-row">
                         <div class="form-group-admin">
-                            <label class="form-label-admin">Prika�i Logo ali Ime Podjetja?</label>
+                            <label class="form-label-admin">Prikaži Logo ali Ime Podjetja?</label>
                             <select id="showLogo" class="form-input-admin" style="width: 100%;">
                                 <option value="true">Logo</option>
                                 <option value="false">Ime Podjetja</option>
@@ -246,7 +246,7 @@
                 <!-- SECTION VISIBILITY -->
                 <div class="admin-section">
                     <div class="section-title">Razdelki strani</div>
-                    <p style="font-size:12px;color:#666;margin-bottom:15px;">Skrij ali prika�i posamezne razdelke na strani. Izklopljeni razdelki ne bodo vidni obiskovalcem.</p>
+                    <p style="font-size:12px;color:#666;margin-bottom:15px;">Skrij ali prikaži posamezne razdelke na strani. Izklopljeni razdelki ne bodo vidni obiskovalcem.</p>
                     <div style="display:flex;flex-direction:column;gap:0;">
                         <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(128,128,128,0.12);">
                             <span style="font-size:14px;font-weight:500;"><i class="bi bi-person-lines-fill" style="margin-right:8px;opacity:.6;"></i>O nas</span>
@@ -269,7 +269,7 @@
                             <label class="ios-toggle"><input type="checkbox" id="svToggle_gallery" data-section="#gallery" checked><span class="ios-toggle-slider"></span></label>
                         </div>
                         <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(128,128,128,0.12);">
-                            <span style="font-size:14px;font-weight:500;"><i class="bi bi-clock" style="margin-right:8px;opacity:.6;"></i>Delovni �as</span>
+                            <span style="font-size:14px;font-weight:500;"><i class="bi bi-clock" style="margin-right:8px;opacity:.6;"></i>Delovni čas</span>
                             <label class="ios-toggle"><input type="checkbox" id="svToggle_hours" data-section="#business-hours" checked><span class="ios-toggle-slider"></span></label>
                         </div>
                         <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(128,128,128,0.12);">
@@ -291,7 +291,7 @@
 
                 <!-- TEMPLATE PRESETS -->
                 <div class="admin-section">
-                    <div class="section-title">?? Predloge (Template)</div>
+                    <div class="section-title"><i class="bi bi-layout-text-window-reverse"></i> Predloge (Template)</div>
                     <p style="font-size: 13px; color: var(--ios-text-secondary, #8E8E93); margin-bottom: 12px;">Izberi predlogo in hitro nastavi vsebino. Predloga lahko nastavi tudi barve.</p>
                     <div class="form-row">
                         <div class="form-group-admin">
@@ -343,7 +343,7 @@
                             <label class="form-label-admin">Slika Naslovnice (datoteka)</label>
                             <div style="display: flex; gap: 10px; margin-bottom: 10px;">
                                 <input id="heroImageInput" type="file" accept="image/*" class="form-input-admin" placeholder="Izberi sliko...">
-                                <button class="save-btn" onclick="uploadHeroImage()" style="background-color:#0066cc;">Nalo�i Sliko</button>
+                                <button class="save-btn" onclick="uploadHeroImage()" style="background-color:#0066cc;">Naloži Sliko</button>
                             </div>
                             <input id="heroImageUrl" type="text" class="form-input-admin" style="display:none;">
                             <img id="heroImagePreview" src="" alt="Hero preview" style="max-width:100%; max-height:200px; margin-top:10px; display:none; object-fit:contain; border:1px solid #ddd; padding:5px;">
@@ -375,7 +375,7 @@
                             <label class="form-label-admin">Story Slika (datoteka)</label>
                             <div style="display: flex; gap: 10px; margin-bottom: 10px;">
                                 <input id="storyImageInput" type="file" accept="image/*" class="form-input-admin" placeholder="Izberi sliko...">
-                                <button class="save-btn" onclick="uploadStoryImage()" style="background-color:#0066cc;">Nalo�i Sliko</button>
+                                <button class="save-btn" onclick="uploadStoryImage()" style="background-color:#0066cc;">Naloži Sliko</button>
                             </div>
                             <input id="storyImage" type="text" class="form-input-admin" style="display:none;">
                             <img id="storyImagePreview" src="" alt="Story preview" style="max-width:100%; max-height:200px; margin-top:10px; display:none; object-fit:contain; border:1px solid #ddd; padding:5px;">
@@ -385,7 +385,7 @@
 
                 <!-- TESTIMONIAL SECTION -->
                 <div class="admin-section">
-                    <div class="section-title">Priporo�ilo / Citat</div>
+                    <div class="section-title">Priporočilo / Citat</div>
                     <div class="form-row full">
                         <div class="form-group-admin">
                             <label class="form-label-admin">Citat</label>
@@ -413,7 +413,7 @@
                     <div class="form-row full">
                         <div class="form-group-admin">
                             <label class="form-label-admin">Besedilo CTA</label>
-                            <textarea id="ctaText" class="form-input-admin" style="min-height: 60px;" placeholder="Rezervirajte svoj termin danes in do�ivite na�o profesionalno storitev."></textarea>
+                            <textarea id="ctaText" class="form-input-admin" style="min-height: 60px;" placeholder="Rezervirajte svoj termin danes in doživite našo profesionalno storitev."></textarea>
                         </div>
                     </div>
                     <div class="form-row">
@@ -427,7 +427,7 @@
                 <!-- CONTACT SECTION -->
                 <div class="admin-section">
                     <div class="section-title"><i class="bi bi-telephone"></i> Kontakt</div>
-                    <p style="font-size: 12px; color: #666; margin-bottom: 15px;">Podatki za kontakt na doma�i strani</p>
+                    <p style="font-size: 12px; color: #666; margin-bottom: 15px;">Podatki za kontakt na domači strani</p>
                     <div class="form-row">
                         <div class="form-group-admin">
                             <label class="form-label-admin">Naslov Sekcije</label>
@@ -435,7 +435,7 @@
                         </div>
                         <div class="form-group-admin">
                             <label class="form-label-admin">Podnaslov</label>
-                            <input id="contactSubtitle" type="text" class="form-input-admin" placeholder="Pi�ite ali nas pokli�ite za termin.">
+                            <input id="contactSubtitle" type="text" class="form-input-admin" placeholder="Pišite ali nas pokličite za termin.">
                         </div>
                     </div>
                     <div class="form-row">
@@ -450,7 +450,7 @@
                             <input id="contactPhone" type="text" class="form-input-admin" placeholder="+386 40 000 000">
                         </div>
                         <div class="form-group-admin">
-                            <label class="form-label-admin">E-po�ta</label>
+                            <label class="form-label-admin">E-pošta</label>
                             <input id="contactEmail" type="text" class="form-input-admin" placeholder="info@podjetje.si">
                         </div>
                     </div>
@@ -467,7 +467,7 @@
                         </div>
                         <div class="form-group-admin">
                             <label class="form-label-admin">Podnaslov</label>
-                            <input id="reviewsSubtitle" type="text" class="form-input-admin" placeholder="Preveri mnenja na�ih strank.">
+                            <input id="reviewsSubtitle" type="text" class="form-input-admin" placeholder="Preveri mnenja naših strank.">
                         </div>
                     </div>
                     <div class="form-row">
@@ -476,7 +476,7 @@
                             <input id="reviewsRating" type="text" class="form-input-admin" placeholder="5.0">
                         </div>
                         <div class="form-group-admin">
-                            <label class="form-label-admin">�tevilo ocen (npr. 120 ocen)</label>
+                            <label class="form-label-admin">Število ocen (npr. 120 ocen)</label>
                             <input id="reviewsCount" type="text" class="form-input-admin" placeholder="(120 ocen)">
                         </div>
                     </div>
@@ -490,7 +490,7 @@
                         <div class="form-group-admin">
                             <label class="form-label-admin">Ocena #1 (ime / tekst / zvezdice)</label>
                             <input id="review1Author" type="text" class="form-input-admin" placeholder="Ana K.">
-                            <input id="review1Text" type="text" class="form-input-admin" placeholder="Odli�na storitev!" style="margin-top:8px;">
+                            <input id="review1Text" type="text" class="form-input-admin" placeholder="Odlična storitev!" style="margin-top:8px;">
                             <input id="review1Stars" type="number" min="1" max="5" class="form-input-admin" placeholder="5" style="margin-top:8px;">
                         </div>
                         <div class="form-group-admin">
@@ -504,7 +504,7 @@
                         <div class="form-group-admin">
                             <label class="form-label-admin">Ocena #3 (ime / tekst / zvezdice)</label>
                             <input id="review3Author" type="text" class="form-input-admin" placeholder="Sara M.">
-                            <input id="review3Text" type="text" class="form-input-admin" placeholder="Priporo�am!" style="margin-top:8px;">
+                            <input id="review3Text" type="text" class="form-input-admin" placeholder="Priporočam!" style="margin-top:8px;">
                             <input id="review3Stars" type="number" min="1" max="5" class="form-input-admin" placeholder="5" style="margin-top:8px;">
                         </div>
                     </div>
@@ -516,15 +516,15 @@
                     <div class="form-row full">
                         <div class="form-group-admin">
                             <label class="form-label-admin">Besedilo Avtorskih Pravic</label>
-                            <input id="footerCopyText" type="text" class="form-input-admin" placeholder="Vse pravice pridr�ane.">
-                            <small style="color: #666; font-size: 11px;">Pred tekstom se samodejno doda "� leto ImePodjeta."</small>
+                            <input id="footerCopyText" type="text" class="form-input-admin" placeholder="Vse pravice pridržane.">
+                            <small style="color: #666; font-size: 11px;">Pred tekstom se samodejno doda "© leto ImePodjeta."</small>
                         </div>
                     </div>
                 </div>
 
                 <!-- BOOKING PAGE CONTENT SECTION -->
                 <div class="admin-section">
-                    <div class="section-title">?? Vsebina Rezervacijske Strani</div>
+                    <div class="section-title"><i class="bi bi-calendar-check"></i> Vsebina Rezervacijske Strani</div>
                     <p style="font-size: 13px; color: var(--ios-text-secondary, #8E8E93); margin-bottom: 16px;">Uredi besedila na rezervacija.html strani</p>
                     
                     <div class="form-row">
@@ -545,7 +545,7 @@
                         </div>
                         <div class="form-group-admin">
                             <label class="form-label-admin">Korak 1: Opis</label>
-                            <input id="bookingStep1Desc" type="text" class="form-input-admin" placeholder="Izberite eno ali ve� storitev">
+                            <input id="bookingStep1Desc" type="text" class="form-input-admin" placeholder="Izberite eno ali več storitev">
                         </div>
                     </div>
                     
@@ -563,7 +563,7 @@
                     <div class="form-row">
                         <div class="form-group-admin">
                             <label class="form-label-admin">Korak 3: Naslov</label>
-                            <input id="bookingStep3Title" type="text" class="form-input-admin" placeholder="3. Va�i podatki">
+                            <input id="bookingStep3Title" type="text" class="form-input-admin" placeholder="3. Vaši podatki">
                         </div>
                         <div class="form-group-admin">
                             <label class="form-label-admin">Korak 3: Opis</label>
@@ -584,12 +584,12 @@
                     
                     <div class="form-row">
                         <div class="form-group-admin">
-                            <label class="form-label-admin">Uspe�na Rezervacija: Naslov</label>
-                            <input id="bookingSuccessTitle" type="text" class="form-input-admin" placeholder="Rezervacija uspe�na!">
+                            <label class="form-label-admin">Uspešna Rezervacija: Naslov</label>
+                            <input id="bookingSuccessTitle" type="text" class="form-input-admin" placeholder="Rezervacija uspešna!">
                         </div>
                         <div class="form-group-admin">
-                            <label class="form-label-admin">Uspe�na Rezervacija: Sporo�ilo</label>
-                            <input id="bookingSuccessMessage" type="text" class="form-input-admin" placeholder="Va� termin je bil uspe�no rezerviran.">
+                            <label class="form-label-admin">Uspešna Rezervacija: Sporočilo</label>
+                            <input id="bookingSuccessMessage" type="text" class="form-input-admin" placeholder="Vaš termin je bil uspešno rezerviran.">
                         </div>
                     </div>
                     
@@ -626,7 +626,7 @@
                             <input id="barbersSectionTitle" type="text" class="form-input-admin" placeholder="The Craftsmen">
                         </div>
                         <div class="form-group-admin">
-                            <label class="form-label-admin">Naslov Naro�anja ("Request Appointment")</label>
+                            <label class="form-label-admin">Naslov Naročanja ("Request Appointment")</label>
                             <input id="bookingHeading" type="text" class="form-input-admin" placeholder="Request Appointment">
                         </div>
                     </div>
@@ -665,24 +665,24 @@
                 <div id="debugSection" class="admin-section" style="background: #fff3cd; border: 1px solid #ffc107;">
                     <div class="section-title"><i class="bi bi-tools"></i> Debug Info</div>
                     <div id="debugOutput" style="font-size: 12px; color: #333; line-height: 1.6; font-family: monospace; white-space: pre-wrap; word-break: break-all; max-height: 300px; overflow-y: auto; background: white; padding: 10px; border-radius: 4px;">
-                        U�itavanje...
+                        Učitavanje...
                     </div>
                 </div>
 
                 <!-- ADMIN SCHEDULE SECTION - FULLCALENDAR -->
                 <div class="admin-section">
-                    <div class="section-title">?? Urnik Lastnika (FullCalendar)</div>
-                    <p style="font-size: 13px; color: #7f8c8d; margin-bottom: 18px;">Upravljaj s svojo razpolo�ljivostjo in �asom. Klikni na datum ali dragi, da ustvari� dogodek.</p>
+                    <div class="section-title"><i class="bi bi-calendar3"></i> Urnik Lastnika (FullCalendar)</div>
+                    <p style="font-size: 13px; color: #7f8c8d; margin-bottom: 18px;">Upravljaj s svojo razpoložljivostjo in časom. Klikni na datum ali dragi, da ustvariš dogodek.</p>
                     
                     <!-- Event Legend -->
                     <div style="margin-bottom: 20px; padding: 16px; background: var(--ios-bg-secondary, white); border-radius: var(--ios-radius-md, 12px); border-left: 4px solid var(--ios-blue, #007AFF); width: 100%; box-sizing: border-box; box-shadow: var(--ios-shadow-sm, 0 1px 3px rgba(0,0,0,0.08));">
-                        <div style="font-weight: 600; color: var(--ios-text-primary, #000); margin-bottom: 12px; font-size: 15px;">?? Legenda Dogodkov:</div>
+                        <div style="font-weight: 600; color: var(--ios-text-primary, #000); margin-bottom: 12px; font-size: 15px;">Legenda Dogodkov:</div>
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 13px;">
-                            <div style="display: flex; align-items: center; gap: 8px;"><span style="font-size: 16px;">??</span><span>Dejlo (Delovni �as)</span></div>
+                            <div style="display: flex; align-items: center; gap: 8px;"><span style="font-size: 16px;">??</span><span>Delo (Delovni čas)</span></div>
                             <div style="display: flex; align-items: center; gap: 8px;"><span style="font-size: 16px;">?</span><span>Pauza</span></div>
                             <div style="display: flex; align-items: center; gap: 8px;"><span style="font-size: 16px;">???</span><span>Kosilo</span></div>
-                            <div style="display: flex; align-items: center; gap: 8px;"><span style="font-size: 16px;">???</span><span>Po�itnice</span></div>
-                            <div style="display: flex; align-items: center; gap: 8px;"><span style="font-size: 16px;">??</span><span>Bolni�ka</span></div>
+                            <div style="display: flex; align-items: center; gap: 8px;"><span style="font-size: 16px;">???</span><span>Počitnice</span></div>
+                            <div style="display: flex; align-items: center; gap: 8px;"><span style="font-size: 16px;">??</span><span>Bolniška</span></div>
                             <div style="display: flex; align-items: center; gap: 8px;"><span style="font-size: 16px;">?</span><span>Prosti Dan</span></div>
                             <div style="display: flex; align-items: center; gap: 8px;"><span style="font-size: 16px;">??</span><span>Termin (Rezervacija)</span></div>
                         </div>
@@ -699,7 +699,7 @@
                     <!-- Event Modal with iOS styling -->
                     <div id="eventModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); z-index: 10000; justify-content: center; align-items: center; flex-direction: column; padding: 20px;">
                         <div style="background: var(--ios-bg-secondary, white); border-radius: var(--ios-radius-xl, 20px); padding: 28px; width: 100%; max-width: 480px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.25);" class="modal-content">
-                            <h3 style="margin: 0 0 20px 0; color: var(--ios-text-primary, #000); font-size: 22px; font-weight: 600;">?? Novi Dogodek</h3>
+                            <h3 style="margin: 0 0 20px 0; color: var(--ios-text-primary, #000); font-size: 22px; font-weight: 600;">Novi Dogodek</h3>
                             
                             <form id="eventForm" style="display: flex; flex-direction: column; gap: 15px;">
                                 <!-- Title Input -->
@@ -712,11 +712,11 @@
                                 <div style="display: flex; flex-direction: column;">
                                     <label style="font-weight: 600; color: #34495e; margin-bottom: 10px; font-size: 14px;">Vrsta dogodka</label>
                                     <div id="typeSelection" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                                        <button type="button" data-type="working_hours" style="padding: 12px; border: 2px solid #ecf0f1; background: #f8fafb; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500; transition: all 0.2s;">?? Delovni �as</button>
+                                        <button type="button" data-type="working_hours" style="padding: 12px; border: 2px solid #ecf0f1; background: #f8fafb; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500; transition: all 0.2s;">💼 Delovni čas</button>
                                         <button type="button" data-type="break" style="padding: 12px; border: 2px solid #ecf0f1; background: #f8fafb; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500; transition: all 0.2s;">? Pavza</button>
-                                        <button type="button" data-type="lunch" style="padding: 12px; border: 2px solid #ecf0f1; background: #f8fafb; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500; transition: all 0.2s;">??? Malica</button>
-                                        <button type="button" data-type="vacation" style="padding: 12px; border: 2px solid #ecf0f1; background: #f8fafb; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500; transition: all 0.2s;">??? Dopust</button>
-                                        <button type="button" data-type="sick_leave" style="padding: 12px; border: 2px solid #ecf0f1; background: #f8fafb; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500; transition: all 0.2s;">?? Bolni�ka</button>
+                                        <button type="button" data-type="lunch" style="padding: 12px; border: 2px solid #ecf0f1; background: #f8fafb; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500; transition: all 0.2s;">🍴 Malica</button>
+                                        <button type="button" data-type="vacation" style="padding: 12px; border: 2px solid #ecf0f1; background: #f8fafb; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500; transition: all 0.2s;">🌴 Dopust</button>
+                                        <button type="button" data-type="sick_leave" style="padding: 12px; border: 2px solid #ecf0f1; background: #f8fafb; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500; transition: all 0.2s;">🤒 Bolniška</button>
                                         <button type="button" data-type="day_off" style="padding: 12px; border: 2px solid #ecf0f1; background: #f8fafb; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500; transition: all 0.2s;">? Prost Dan</button>
                                     </div>
                                     <input type="hidden" id="eventType" value="working_hours" />
@@ -725,7 +725,7 @@
                                 <!-- DateTime Inputs -->
                                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                                     <div style="display: flex; flex-direction: column;">
-                                        <label style="font-weight: 600; color: #34495e; margin-bottom: 5px; font-size: 14px;">Za�etek</label>
+                                        <label style="font-weight: 600; color: #34495e; margin-bottom: 5px; font-size: 14px;">Začetek</label>
                                         <input type="datetime-local" id="eventStart" style="padding: 10px; border: 2px solid #ecf0f1; border-radius: 6px; font-size: 14px; font-family: inherit;" />
                                     </div>
                                     <div style="display: flex; flex-direction: column;">
@@ -737,8 +737,8 @@
                                 <!-- Action Buttons -->
                                 <div style="display: flex; gap: 10px; margin-top: 20px;">
                                     <button type="submit" style="flex: 1; padding: 12px; background: var(--ios-green, #34C759); color: white; border: none; border-radius: var(--ios-radius-sm, 8px); font-weight: 600; cursor: pointer; font-size: 14px; transition: background 0.2s;">? Shrani</button>
-                                    <button type="button" id="eventDeleteBtn" style="flex: 1; padding: 12px; background: var(--ios-red, #FF3B30); color: white; border: none; border-radius: var(--ios-radius-sm, 8px); font-weight: 600; cursor: pointer; font-size: 14px; transition: background 0.2s; display: none;">??? Izbri�i</button>
-                                    <button type="button" id="eventCancelBtn" style="flex: 1; padding: 12px; background: var(--ios-text-secondary, #8E8E93); color: white; border: none; border-radius: var(--ios-radius-sm, 8px); font-weight: 600; cursor: pointer; font-size: 14px; transition: background 0.2s;">? Prekli�i</button>
+                                    <button type="button" id="eventDeleteBtn" style="flex: 1; padding: 12px; background: var(--ios-red, #FF3B30); color: white; border: none; border-radius: var(--ios-radius-sm, 8px); font-weight: 600; cursor: pointer; font-size: 14px; transition: background 0.2s; display: none;">🗑️ Izbrišii</button>
+                                    <button type="button" id="eventCancelBtn" style="flex: 1; padding: 12px; background: var(--ios-text-secondary, #8E8E93); color: white; border: none; border-radius: var(--ios-radius-sm, 8px); font-weight: 600; cursor: pointer; font-size: 14px; transition: background 0.2s;">? Prekliči</button>
                                 </div>
                             </form>
                         </div>
@@ -750,7 +750,7 @@
                         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px;">
                             <div style="padding: 10px; background: var(--ios-bg-primary, #F2F2F7); border-radius: var(--ios-radius-sm, 8px);">
                                 <span style="display: inline-block; width: 16px; height: 16px; background: var(--ios-green, #34C759); border-radius: 4px; margin-right: 8px; vertical-align: middle;"></span>
-                                <strong>?? Delovni �as</strong> - Redni delovni �as
+                                <strong>💼 Delovni čas</strong> - Redni Delovni čas
                             </div>
                             <div style="padding: 10px; background: white; border-radius: 4px;">
                                 <span style="display: inline-block; width: 16px; height: 16px; background: #f39c12; border-radius: 2px; margin-right: 8px; vertical-align: middle;"></span>
@@ -766,7 +766,7 @@
                             </div>
                             <div style="padding: 10px; background: var(--ios-bg-primary, #F2F2F7); border-radius: var(--ios-radius-sm, 8px);">
                                 <span style="display: inline-block; width: 16px; height: 16px; background: var(--ios-purple, #AF52DE); border-radius: 4px; margin-right: 8px; vertical-align: middle;"></span>
-                                <strong>?? Bolni�ka</strong> - Nedosegljiv
+                                <strong>🤒 Bolniška</strong> - Nedosegljiv
                             </div>
                             <div style="padding: 10px; background: var(--ios-bg-primary, #F2F2F7); border-radius: var(--ios-radius-sm, 8px);">
                                 <span style="display: inline-block; width: 16px; height: 16px; background: var(--ios-red, #FF3B30); border-radius: 4px; margin-right: 8px; vertical-align: middle;"></span>
@@ -777,31 +777,31 @@
 
                     <!-- Instructions -->
                     <div style="margin-top: 20px; padding: 16px; background: rgba(0, 122, 255, 0.1); border-radius: var(--ios-radius-md, 12px); border-left: 4px solid var(--ios-blue, #007AFF);">
-                        <strong style="color: var(--ios-text-primary, #000);">?? Kako uporabljati:</strong>
+                        <strong style="color: var(--ios-text-primary, #000);">💡 Kako uporabljati:</strong>
                         <ul style="margin: 10px 0 0 0; padding-left: 20px;">
-                            <li>Klikni na datum, da ustvari� nov dogodek</li>
-                            <li>Klikni na dogodek, da ga uredi�</li>
-                            <li>Dragi dogodek, da ga premakne� v drug �as/datum</li>
-                            <li>Dragi spodnji rob dogodka, da spremeni�� trajanje</li>
-                            <li>Uporabi gumbe v levem zgornjem kotu, da spremeni�� pogled (mesec/teden/dan)</li>
-                            <li>Uporabi gumb ?? za ro�no sinhronizacijo s spletom</li>
+                            <li>Klikni na datum, da ustvariš nov dogodek</li>
+                            <li>Klikni na dogodek, da ga urediš</li>
+                            <li>Dragi dogodek, da ga premakneš v drug čas/datum</li>
+                            <li>Dragi spodnji rob dogodka, da spremenišiiš trajanje</li>
+                            <li>Uporabi gumbe v levem zgornjem kotu, da spremenišiiš pogled (mesec/teden/dan)</li>
+                            <li>Uporabi gumb 🔄 za ročno sinhronizacijo s spletom</li>
                         </ul>
                     </div>
                 </div>
 
                 <!-- EVENT LIST SECTION -->
                 <div class="admin-section">
-                    <div class="section-title">?? Sve Vrste Dogod Event</div>
-                    <p style="font-size: 13px; color: #7f8c8d; margin-bottom: 18px;">Pregled svih aktivnih dogo�aja i rasporeda.</p>
+                    <div class="section-title"><i class="bi bi-calendar-event"></i> Vrste Dogodkov</div>
+                    <p style="font-size: 13px; color: #7f8c8d; margin-bottom: 18px;">Pregled svih aktivnih događaja i rasporeda.</p>
                     
                     <div id="eventsList" style="display: grid; gap: 12px; max-height: 400px; overflow-y: auto;">
-                        <p style="color: #95a5a6; text-align: center; padding: 20px;">Nema doga�aja - dodajte novi klikanjem na kalendarijum!</p>
+                        <p style="color: #95a5a6; text-align: center; padding: 20px;">Nema dogau0111aja - dodajte novi klikanjem na kalendarijum!</p>
                     </div>
                 </div>
 
                 <!-- DASHBOARD -->
                 <div class="admin-section">
-                    <div class="section-title">Klju�ne Metrike</div>
+                    <div class="section-title">Ključne Metrike</div>
                     
                     <!-- Key Metrics - iOS Style -->
                     <div class="dashboard-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; margin-bottom: 20px;">
@@ -810,13 +810,13 @@
                                 <i class="bi bi-calendar-check" style="font-size: 20px; color: var(--ios-blue, #007AFF);"></i>
                             </div>
                             <div style="font-size: 28px; font-weight: 700; color: var(--ios-text-primary, #000);" id="totalAppointments">0</div>
-                            <div style="font-size: 13px; color: var(--ios-text-secondary, #8E8E93); margin-top: 4px;">Skupaj Naro�il</div>
+                            <div style="font-size: 13px; color: var(--ios-text-secondary, #8E8E93); margin-top: 4px;">Skupaj Naročil</div>
                         </div>
                         <div style="background: var(--ios-bg-secondary, white); padding: 20px; border-radius: var(--ios-radius-lg, 16px); box-shadow: var(--ios-shadow-sm, 0 1px 3px rgba(0,0,0,0.08));">
                             <div style="width: 44px; height: 44px; background: rgba(52, 199, 89, 0.15); border-radius: var(--ios-radius-md, 12px); display: flex; align-items: center; justify-content: center; margin-bottom: 12px;">
                                 <i class="bi bi-currency-euro" style="font-size: 20px; color: var(--ios-green, #34C759);"></i>
                             </div>
-                            <div style="font-size: 28px; font-weight: 700; color: var(--ios-text-primary, #000);" id="monthlyRevenue">�0</div>
+                            <div style="font-size: 28px; font-weight: 700; color: var(--ios-text-primary, #000);" id="monthlyRevenue">€0</div>
                             <div style="font-size: 13px; color: var(--ios-text-secondary, #8E8E93); margin-top: 4px;">Prihodek Ta Mesec</div>
                         </div>
                         <div style="background: var(--ios-bg-secondary, white); padding: 20px; border-radius: var(--ios-radius-lg, 16px); box-shadow: var(--ios-shadow-sm, 0 1px 3px rgba(0,0,0,0.08));">
@@ -824,14 +824,14 @@
                                 <i class="bi bi-graph-up-arrow" style="font-size: 20px; color: var(--ios-orange, #FF9500);"></i>
                             </div>
                             <div style="font-size: 28px; font-weight: 700; color: var(--ios-text-primary, #000);" id="monthlyAppointments">0</div>
-                            <div style="font-size: 13px; color: var(--ios-text-secondary, #8E8E93); margin-top: 4px;">Naro�ila Ta Mesec</div>
+                            <div style="font-size: 13px; color: var(--ios-text-secondary, #8E8E93); margin-top: 4px;">Naročila Ta Mesec</div>
                         </div>
                         <div style="background: var(--ios-bg-secondary, white); padding: 20px; border-radius: var(--ios-radius-lg, 16px); box-shadow: var(--ios-shadow-sm, 0 1px 3px rgba(0,0,0,0.08));">
                             <div style="width: 44px; height: 44px; background: rgba(175, 82, 222, 0.15); border-radius: var(--ios-radius-md, 12px); display: flex; align-items: center; justify-content: center; margin-bottom: 12px;">
                                 <i class="bi bi-tags" style="font-size: 20px; color: var(--ios-purple, #AF52DE);"></i>
                             </div>
-                            <div style="font-size: 28px; font-weight: 700; color: var(--ios-text-primary, #000);" id="averagePrice">�0</div>
-                            <div style="font-size: 13px; color: var(--ios-text-secondary, #8E8E93); margin-top: 4px;">Povpre�na Cena</div>
+                            <div style="font-size: 28px; font-weight: 700; color: var(--ios-text-primary, #000);" id="averagePrice">€0</div>
+                            <div style="font-size: 13px; color: var(--ios-text-secondary, #8E8E93); margin-top: 4px;">Povprečna Cena</div>
                         </div>
                     </div>
 
@@ -844,7 +844,7 @@
                             </div>
                         </div>
                         <div class="chart-container">
-                            <h3 style="font-size: 15px; font-weight: 600; color: var(--ios-text-primary, #000); margin: 0 0 15px 0;">Naro�ila Po Dneh</h3>
+                            <h3 style="font-size: 15px; font-weight: 600; color: var(--ios-text-primary, #000); margin: 0 0 15px 0;">Naročila Po Dneh</h3>
                             <div style="flex: 1; position: relative; min-height: 250px;">
                                 <canvas id="appointmentsChart" style="display: block; width: 100% !important; height: 100% !important;"></canvas>
                             </div>
@@ -854,18 +854,18 @@
 
                 <!-- APPOINTMENTS SECTION - iOS Style -->
                 <div class="admin-section">
-                    <div class="section-title">?? Naro�ila Termina</div>
-                    <p style="font-size: 14px; color: var(--ios-text-secondary, #8E8E93); margin-bottom: 16px;">Skupaj naro�il: <strong style="color: var(--ios-blue, #007AFF); font-size: 18px; font-weight: 700;" id="appointmentCount">0</strong></p>
+                    <div class="section-title"><i class="bi bi-calendar-event"></i> Naročila Termina</div>
+                    <p style="font-size: 14px; color: var(--ios-text-secondary, #8E8E93); margin-bottom: 16px;">Skupaj naročil: <strong style="color: var(--ios-blue, #007AFF); font-size: 18px; font-weight: 700;" id="appointmentCount">0</strong></p>
                     <div id="appointmentsContainer" style="max-height: 600px; overflow-y: auto; border-radius: var(--ios-radius-md, 12px); background: var(--ios-bg-primary, #F2F2F7); padding: 0;"></div>
                 </div>
 
                 <!-- EARNINGS SECTION - iOS Style -->
                 <div class="admin-section">
-                    <div class="section-title">?? Zaslu�ek in Popusti</div>
+                    <div class="section-title"><i class="bi bi-cash-coin"></i> Zaslužek in Popusti</div>
                     <div class="form-row">
                         <div class="form-group-admin">
-                            <label class="form-label-admin">Skupni Zaslu�ek</label>
-                            <div id="earningsTotal" class="form-input-admin" style="padding: 14px 16px; font-weight: 700; color: var(--ios-green, #34C759); font-size: 20px; background: rgba(52, 199, 89, 0.1); border-radius: var(--ios-radius-md, 12px);">�0.00</div>
+                            <label class="form-label-admin">Skupni Zaslužek</label>
+                            <div id="earningsTotal" class="form-input-admin" style="padding: 14px 16px; font-weight: 700; color: var(--ios-green, #34C759); font-size: 20px; background: rgba(52, 199, 89, 0.1); border-radius: var(--ios-radius-md, 12px);">€0.00</div>
                         </div>
                         <div class="form-group-admin">
                             <label class="form-label-admin">Privzeti Popust (%)</label>
@@ -873,22 +873,22 @@
                         </div>
                     </div>
                     <div class="form-row">
-                        <button class="save-btn" onclick="refreshBusinessPanel()">Osve�i Panel</button>
+                        <button class="save-btn" onclick="refreshBusinessPanel()">Osveži Panel</button>
                     </div>
                 </div>
 
                 <!-- CALENDAR SECTION -->
                 <div class="admin-section">
-                    <div class="section-title">?? Koledar Naro�il</div>
+                    <div class="section-title"><i class="bi bi-calendar3"></i> Koledar Naročil</div>
                     <div style="background: var(--ios-bg-secondary, white); padding: 16px; border: none; border-radius: var(--ios-radius-lg, 16px); box-shadow: var(--ios-shadow-sm, 0 1px 3px rgba(0,0,0,0.08));">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 10px;">
-                            <button class="save-btn" onclick="prevMonth()" style="flex:0.3; padding:12px 16px; background: var(--ios-red, #FF3B30); border-radius: var(--ios-radius-sm, 8px);">� Prej�nji</button>
+                            <button class="save-btn" onclick="prevMonth()" style="flex:0.3; padding:12px 16px; background: var(--ios-red, #FF3B30); border-radius: var(--ios-radius-sm, 8px);">‹ Prejšnji</button>
                             <h3 id="calendarMonthYear" style="font-size: 18px; font-weight: 700; color: var(--ios-text-primary, #000); margin: 0; text-align: center; flex:1;">Januar 2024</h3>
-                            <button class="save-btn" onclick="nextMonth()" style="flex:0.3; padding:12px 16px; background: var(--ios-green, #34C759); border-radius: var(--ios-radius-sm, 8px);">Naslednji �</button>
+                            <button class="save-btn" onclick="nextMonth()" style="flex:0.3; padding:12px 16px; background: var(--ios-green, #34C759); border-radius: var(--ios-radius-sm, 8px);">Naslednji ›</button>
                         </div>
                         <div id="calendarGrid" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin-bottom: 20px; background: var(--ios-bg-primary, #F2F2F7); padding: 12px; border-radius: var(--ios-radius-md, 12px);"></div>
                         <div style="background: var(--ios-bg-primary, #F2F2F7); padding: 16px; border-radius: var(--ios-radius-md, 12px); border: none;">
-                            <p style="font-size: 14px; font-weight: 600; color: var(--ios-text-primary, #000); margin: 0 0 12px 0;">?? Naro�ila za izbran dan:</p>
+                            <p style="font-size: 14px; font-weight: 600; color: var(--ios-text-primary, #000); margin: 0 0 12px 0;"><i class="bi bi-calendar-event"></i> Naročila za izbran dan:</p>
                             <div id="dayAppointments" style="font-size: 13px; max-height: 250px; overflow-y: auto; color: var(--ios-text-secondary, #8E8E93);">Izberi dan...</div>
                         </div>
                     </div>
@@ -896,7 +896,7 @@
 
                 <!-- MANUAL CUSTOMER ENTRY SECTION -->
                 <div class="admin-section">
-                    <div class="section-title">?? Ro�ni Vnos Stranke</div>
+                    <div class="section-title"><i class="bi bi-person-plus"></i> Ročni Vnos Stranke</div>
                     <div style="background: #f8fafb; padding: 18px; border: 1px solid #ecf0f1; border-radius: 8px;">
                         <div class="form-row">
                             <div class="form-group-admin">
@@ -915,7 +915,7 @@
                             </div>
                             <div class="form-group-admin">
                                 <label class="form-label-admin">Telefon</label>
-                                <input id="newCustPhone" type="tel" class="form-input-admin" placeholder="Telefonska �tevilka" style="background: white;">
+                                <input id="newCustPhone" type="tel" class="form-input-admin" placeholder="Telefonska številka" style="background: white;">
                             </div>
                         </div>
                         <div class="form-row">
@@ -926,9 +926,9 @@
                                 </select>
                             </div>
                             <div class="form-group-admin">
-                                    <label class="form-label-admin">�lan ekipe</label>
+                                    <label class="form-label-admin">Član ekipe</label>
                                 <select id="newCustBarber" class="form-input-admin" style="background: white;">
-                                        <option value="">Izberi �lana</option>
+                                        <option value="">Izberi člana</option>
                                 </select>
                             </div>
                         </div>
