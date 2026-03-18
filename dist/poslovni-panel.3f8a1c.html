@@ -118,6 +118,13 @@
                     setSession({ role: 'worker', username: worker.username, workerId: worker.id, workerName: worker.name, permissions: worker.permissions || {} });
                     applyWorkerRestrictions(worker);
                     showPanel();
+                    // Calendar may already be initialized — apply worker filter + refetch
+                    var wPerms = worker.permissions || {};
+                    if (!wPerms.canViewAll) {
+                        window._calWorkerFilterId = worker.id || worker.name || '';
+                    }
+                    if (typeof window._bspApplyWorkerAccess === 'function') window._bspApplyWorkerAccess();
+                    if (window.calendar && typeof window.calendar.refetchEvents === 'function') window.calendar.refetchEvents();
                     return;
                 }
                 errEl.textContent = 'Napačno uporabniško ime ali geslo.';
