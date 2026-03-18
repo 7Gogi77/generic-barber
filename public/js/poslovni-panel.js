@@ -158,7 +158,7 @@
                 if (_addSess && _addSess.role === 'worker') {
                     var _addP = typeof _bspNormalizePerms === 'function' ? _bspNormalizePerms(_addSess.permissions) : (_addSess.permissions || {});
                     var _canAddEvents = _addP.canAddBreaks || false;
-                    var _canAddApts   = _addP.canEditAppointments || false;
+                    var _canAddApts   = _addP.canAddAppointments || false;
                     // If worker can do neither, block completely
                     if (!_canAddEvents && !_canAddApts) return;
                     // Force appropriate tab if only one permission is available
@@ -1353,6 +1353,7 @@
             const permLabels = {
                 canEditAppointments:  'Urejanje rezervacij',
                 canDeleteAppointments:'Brisanje rezervacij',
+                canAddAppointments:   'Dodajanje rezervacij',
                 canEditEvents:        'Urejanje dogodkov',
                 canDeleteEvents:      'Brisanje dogodkov',
                 canAddBreaks:         'Dodajanje premorov',
@@ -1485,11 +1486,14 @@
                 username: username,
                 passwordHash: await sha256Worker(password),
                 permissions: {
-                    canMove:      row.querySelector('.acct-perm-canMove')?.checked || false,
-                    canAddBreaks: row.querySelector('.acct-perm-canAddBreaks')?.checked || false,
-                    canDelete:    row.querySelector('.acct-perm-canDelete')?.checked || false,
-                    canViewAll:   row.querySelector('.acct-perm-canViewAll')?.checked || false,
-                    canInvoice:   row.querySelector('.acct-perm-canInvoice')?.checked || false
+                    canEditAppointments:   row.querySelector('.acct-perm-canEditAppointments')?.checked || false,
+                    canDeleteAppointments: row.querySelector('.acct-perm-canDeleteAppointments')?.checked || false,
+                    canAddAppointments:    row.querySelector('.acct-perm-canAddAppointments')?.checked || false,
+                    canEditEvents:         row.querySelector('.acct-perm-canEditEvents')?.checked || false,
+                    canDeleteEvents:       row.querySelector('.acct-perm-canDeleteEvents')?.checked || false,
+                    canAddBreaks:          row.querySelector('.acct-perm-canAddBreaks')?.checked || false,
+                    canViewAll:            row.querySelector('.acct-perm-canViewAll')?.checked || false,
+                    canInvoice:            row.querySelector('.acct-perm-canInvoice')?.checked || false
                 }
             };
 
@@ -2801,7 +2805,7 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
             document.getElementById('editEventDescription').value = event.extendedProps?.description || '';
 
             // Show/hide fields based on booking vs event
-            const isBooking = event.extendedProps?.isBooking || event.extendedProps?.tab === 'customer' || event.isBooking;
+            const isBooking = event.extendedProps?.isBooking || event.extendedProps?.tab === 'customer' || event.extendedProps?.customer || event.isBooking || (event.id && String(event.id).startsWith('apt_'));
             const custWrapper = document.getElementById('editCustomerFields');
             const surnameWrapper = document.getElementById('editCustomerSurnameField');
             const emailWrapper = document.getElementById('editCustomerEmailField');
@@ -4634,6 +4638,7 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
             return {
                 canEditAppointments:   p.canEditAppointments   !== undefined ? p.canEditAppointments   : (p.canMove || false),
                 canDeleteAppointments: p.canDeleteAppointments !== undefined ? p.canDeleteAppointments : (p.canDelete || false),
+                canAddAppointments:    p.canAddAppointments || false,
                 canEditEvents:         p.canEditEvents         !== undefined ? p.canEditEvents         : (p.canMove || false),
                 canDeleteEvents:       p.canDeleteEvents       !== undefined ? p.canDeleteEvents       : (p.canDelete || false),
                 canAddBreaks: p.canAddBreaks || false,
