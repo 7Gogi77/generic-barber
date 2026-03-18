@@ -200,6 +200,61 @@
             } catch (_) { return null; }
         }
 
+        function findMatchingCoupon(rawCode) {
+            try {
+                const normalized = String(rawCode || '').trim().toUpperCase();
+                if (!normalized) return null;
+                const bs = JSON.parse(localStorage.getItem('bookingSettings') || '{}');
+                const codes = Array.isArray(bs.couponCodes) ? bs.couponCodes : [];
+                return codes.find(c => String(c.code || '').toUpperCase() === normalized) || null;
+            } catch (_) {
+                return null;
+            }
+        }
+
+        function showCouponFeedback(type, text) {
+            const el = document.getElementById('couponFeedback');
+            if (!el) return;
+            if (!text) {
+                el.style.display = 'none';
+                el.textContent = '';
+                return;
+            }
+            el.style.display = 'block';
+            el.textContent = text;
+            if (type === 'success') {
+                el.style.color = '#1f8f4d';
+            } else if (type === 'error') {
+                el.style.color = '#ff3b30';
+            } else {
+                el.style.color = '#8e8e93';
+            }
+        }
+
+        function evaluateCouponInput(showSuccess) {
+            const input = document.getElementById('customerCoupon');
+            if (!input) return { status: 'empty', code: null, match: null };
+            const code = (input.value || '').trim().toUpperCase();
+            input.value = code;
+
+            if (!code) {
+                showCouponFeedback('', '');
+                return { status: 'empty', code: null, match: null };
+            }
+
+            const match = findMatchingCoupon(code);
+            if (match) {
+                if (showSuccess) {
+                    const pct = Number(match.discount || 0);
+                    showCouponFeedback('success', `Kupon je veljaven. Popust: ${pct}%${match.label ? ' (' + match.label + ')' : ''}`);
+                }
+                return { status: 'valid', code, match };
+            }
+
+            showCouponFeedback('error', 'Kupon ni veljaven. Preverite kodo.');
+            return { status: 'invalid', code, match: null };
+        }
+
         function getBookingSettings() {
             try {
                 const raw = localStorage.getItem('bookingSettings');
@@ -1010,6 +1065,7 @@
             const name = document.getElementById('customerName').value.trim();
             const email = document.getElementById('customerEmail').value.trim();
             const phone = document.getElementById('customerPhone').value.trim();
+            const couponCheck = evaluateCouponInput(false);
             
             if (!name) {
                 alert('Prosimo, vnesite ime in priimek.');
@@ -1025,13 +1081,18 @@
                 alert('Prosimo, vnesite telefonsko številko.');
                 return false;
             }
+
+            if (couponCheck.status === 'invalid') {
+                showCouponFeedback('error', 'Kupon ni veljaven. Popravite kodo ali pustite polje prazno.');
+                return false;
+            }
             
             BookingState.customerInfo = {
                 name,
                 email,
                 phone,
                 notes: document.getElementById('customerNotes').value.trim(),
-                coupon: (document.getElementById('customerCoupon')?.value || '').trim().toUpperCase() || null
+                coupon: couponCheck.status === 'valid' ? couponCheck.code : null
             };
             
             return true;
@@ -1375,6 +1436,24 @@
             document.getElementById('backToStep4').addEventListener('click', () => goToStep(4));
             
             document.getElementById('confirmBookingBtn').addEventListener('click', confirmBooking);
+
+            const applyCouponBtn = document.getElementById('applyCouponBtn');
+            const couponInput = document.getElementById('customerCoupon');
+            if (applyCouponBtn) {
+                applyCouponBtn.addEventListener('click', () => {
+                    evaluateCouponInput(true);
+                });
+            }
+            if (couponInput) {
+                couponInput.addEventListener('input', () => {
+                    couponInput.value = (couponInput.value || '').toUpperCase();
+                    showCouponFeedback('', '');
+                });
+                couponInput.addEventListener('blur', () => {
+                    // Show immediate feedback on blur without forcing alert dialogs.
+                    evaluateCouponInput(false);
+                });
+            }
             
             // Calendar navigation
             document.getElementById('prevMonth').addEventListener('click', () => {

@@ -1496,7 +1496,7 @@
                             <input type="checkbox" class="bsp-toggle" onchange="this.closest('.bsp-list-item').querySelector('.team-acct-form').style.display=this.checked?'':'none'">
                             <span style="font-size:12px;font-weight:600;color:#8e8e93;">Ustvari račun za vpis v urnik</span>
                         </label>
-                        <div class="team-acct-form" style="display:none;margin-top:8px;">
+                        <form class="team-acct-form" onsubmit="event.preventDefault();bspCreateMemberAccount(${i})" style="display:none;margin-top:8px;">
                             <div style="display:flex;gap:8px;flex-wrap:wrap;">
                                 <div style="flex:1;min-width:130px;">
                                     <label style="font-size:11px;color:#8e8e93;display:block;margin-bottom:3px;">Uporabniško ime</label>
@@ -1519,8 +1519,8 @@
                                 </div>
                             </div>
                             <div class="acct-msg" style="display:none;padding:6px 10px;border-radius:8px;font-size:12px;margin-top:8px;"></div>
-                            <button class="bsp-add-btn" style="margin-top:8px;font-size:12px;padding:6px 14px;" onclick="bspCreateMemberAccount(${i})"><i class="bi bi-person-check"></i> Ustvari račun</button>
-                        </div>
+                            <button type="submit" class="bsp-add-btn" style="margin-top:8px;font-size:12px;padding:6px 14px;"><i class="bi bi-person-check"></i> Ustvari račun</button>
+                        </form>
                     </div>`;
                 }
 
@@ -1633,12 +1633,25 @@
             });
             return items;
         }
-        function bspDelTeamMember(i) {
+        async function bspDelTeamMember(i) {
             if (!window.SITE_CONFIG?.barbersSection) return;
             const list = bspCollectTeam();
+            const removed = list[i] || null;
             list.splice(i, 1);
             window.SITE_CONFIG.barbersSection.list = list;
             bspRenderTeam();
+
+            // Keep worker-account DB consistent with team list.
+            if (removed && removed.id) {
+                try {
+                    const workers = await fetchWorkers();
+                    if (workers && workers[removed.id]) {
+                        delete workers[removed.id];
+                        await saveWorkersToFirebase(workers);
+                        _cachedWorkers = workers;
+                    }
+                } catch (_) {}
+            }
         }
         function bspAddTeamMember() {
             if (!window.SITE_CONFIG) return;
@@ -4526,6 +4539,7 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                         var lines = [];
                         var title = ev.title || '';
                         if (title) lines.push('<strong style="font-size:14px;">' + title + '</strong>');
+                        var ic = function(cls) { return '<i class="bi ' + cls + '" style="display:inline-block;width:14px;margin-right:6px;"></i>'; };
 
                         // Time range
                         var startD = ev.start, endD = ev.end;
@@ -4534,24 +4548,24 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                             var fmtDate = function(d){ return d ? d.toLocaleDateString('sl-SI', {day:'numeric',month:'short'}) : ''; };
                             var sameDay = endD && startD.toDateString() === endD.toDateString();
                             if (sameDay) {
-                                lines.push('🕐 ' + fmtDate(startD) + '  ' + fmt(startD) + ' – ' + fmt(endD));
+                                lines.push(ic('bi-clock') + fmtDate(startD) + '  ' + fmt(startD) + ' – ' + fmt(endD));
                             } else if (endD) {
-                                lines.push('🕐 ' + fmtDate(startD) + ' ' + fmt(startD) + ' – ' + fmtDate(endD) + ' ' + fmt(endD));
+                                lines.push(ic('bi-clock') + fmtDate(startD) + ' ' + fmt(startD) + ' – ' + fmtDate(endD) + ' ' + fmt(endD));
                             } else {
-                                lines.push('🕐 ' + fmtDate(startD) + ' ' + fmt(startD));
+                                lines.push(ic('bi-clock') + fmtDate(startD) + ' ' + fmt(startD));
                             }
                         } else if (startD && ev.allDay) {
                             var fmtD = function(d){ return d ? d.toLocaleDateString('sl-SI', {day:'numeric',month:'short',year:'numeric'}) : ''; };
-                            lines.push('📅 ' + fmtD(startD) + (endD && startD.toDateString() !== endD.toDateString() ? ' – ' + fmtD(new Date(endD - 86400000)) : ''));
+                            lines.push(ic('bi-calendar-event') + fmtD(startD) + (endD && startD.toDateString() !== endD.toDateString() ? ' – ' + fmtD(new Date(endD - 86400000)) : ''));
                         }
 
                         // Appointment-specific fields
-                        if (ep.customer || ep.clientName) lines.push('👤 ' + (ep.customer || ep.clientName));
-                        if (ep.phone) lines.push('📞 ' + ep.phone);
-                        if (ep.email) lines.push('✉️ ' + ep.email);
-                        if (ep.service || ep.services) lines.push('✂️ ' + (ep.service || ep.services));
-                        if (ep.price != null && ep.price !== '') lines.push('💶 ' + ep.price + ' €');
-                        if (ep.notes || ep.note) lines.push('📝 ' + (ep.notes || ep.note));
+                        if (ep.customer || ep.clientName) lines.push(ic('bi-person') + (ep.customer || ep.clientName));
+                        if (ep.phone) lines.push(ic('bi-telephone') + ep.phone);
+                        if (ep.email) lines.push(ic('bi-envelope') + ep.email);
+                        if (ep.service || ep.services) lines.push(ic('bi-list-check') + (ep.service || ep.services));
+                        if (ep.price != null && ep.price !== '') lines.push(ic('bi-currency-euro') + ep.price + ' €');
+                        if (ep.notes || ep.note) lines.push(ic('bi-card-text') + (ep.notes || ep.note));
 
                         tip.innerHTML = lines.join('<br>');
                         tip.style.display = 'block';

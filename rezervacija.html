@@ -188,7 +188,11 @@
                     </div>
                     <div class="form-group">
                         <label class="form-label" id="labelCoupon">Kupon koda (neobvezno)</label>
-                        <input type="text" class="form-input" id="customerCoupon" placeholder="Vnesite kupon kodo..." autocomplete="off" style="text-transform:uppercase;">
+                        <div style="display:flex;gap:8px;align-items:center;">
+                            <input type="text" class="form-input" id="customerCoupon" placeholder="Vnesite kupon kodo..." autocomplete="off" style="text-transform:uppercase;flex:1;">
+                            <button type="button" class="btn btn-secondary" id="applyCouponBtn" style="white-space:nowrap;">Uporabi</button>
+                        </div>
+                        <div id="couponFeedback" style="display:none;margin-top:8px;font-size:13px;"></div>
                     </div>
                 </div>
             </div>
@@ -280,7 +284,7 @@
     <script src="js/sms-handler.js"></script>
     <script src="js/email-handler.js"></script>
     <script src="js/messaging-handler.js"></script>
-    <script src="/js/rezervacija.js"></script>
+    <script src="/js/rezervacija.js?v=2"></script>
     <!-- Confetti Effect -->
     <script src="js/confetti.js"></script>
 </body>
