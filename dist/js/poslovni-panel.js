@@ -1496,7 +1496,7 @@
                             <input type="checkbox" class="bsp-toggle" onchange="this.closest('.bsp-list-item').querySelector('.team-acct-form').style.display=this.checked?'':'none'">
                             <span style="font-size:12px;font-weight:600;color:#8e8e93;">Ustvari račun za vpis v urnik</span>
                         </label>
-                        <form class="team-acct-form" onsubmit="event.preventDefault();bspCreateMemberAccount(${i})" style="display:none;margin-top:8px;">
+                        <form class="team-acct-form" data-team-idx="${i}" style="display:none;margin-top:8px;">
                             <div style="display:flex;gap:8px;flex-wrap:wrap;">
                                 <div style="flex:1;min-width:130px;">
                                     <label style="font-size:11px;color:#8e8e93;display:block;margin-bottom:3px;">Uporabniško ime</label>
@@ -1547,6 +1547,18 @@
             }).join('');
             el.oninput  = _bspTeamAutoSave;
             el.onchange = _bspTeamAutoSave;
+
+            // Ensure create-account submit works reliably even when inline handlers are unavailable.
+            if (!el._teamAcctSubmitBound) {
+                el._teamAcctSubmitBound = true;
+                el.addEventListener('submit', function(e) {
+                    var f = e.target && e.target.closest ? e.target.closest('form.team-acct-form') : null;
+                    if (!f) return;
+                    e.preventDefault();
+                    var idx = Number(f.getAttribute('data-team-idx'));
+                    if (!isNaN(idx)) bspCreateMemberAccount(idx);
+                });
+            }
         }
 
         // ── Per-member account CRUD ──────────────────────────────────────────
