@@ -397,12 +397,7 @@
             <!-- Tab bar -->
             <div class="bsp-tab-bar" id="bspTabBar">
                 <button class="bsp-tab active" data-tab="hours"><i class="bi bi-clock"></i> Delovni čas</button>
-                <button class="bsp-tab" data-tab="exceptions"><i class="bi bi-calendar-event"></i> Izjeme & Sezone</button>
-                <button class="bsp-tab" data-tab="capacity"><i class="bi bi-people"></i> Kapaciteta & Viri</button>
-                <button class="bsp-tab" data-tab="rules"><i class="bi bi-clipboard-check"></i> Pravila</button>
                 <button class="bsp-tab" data-tab="pricing"><i class="bi bi-currency-euro"></i> Cenovanje</button>
-                <button class="bsp-tab" data-tab="smart"><i class="bi bi-stars"></i> Pametne funkcije</button>
-                <button class="bsp-tab" data-tab="services"><i class="bi bi-bag"></i> Storitve</button>
                 <button class="bsp-tab" data-tab="workers"><i class="bi bi-people-fill"></i> Ekipa &amp; Zaposleni</button>
                 <button class="bsp-tab" data-tab="sms"><i class="bi bi-bell"></i> Obvestila</button>
             </div>
@@ -462,10 +457,6 @@
                             </div>
                         </div>
                     </div>
-                </div>
-
-                <!-- ========== TAB 2: IZJEME & SEZONE ========== -->
-                <div class="bsp-tab-panel" id="bspPanel-exceptions">
 
                     <!-- Seasonal schedule -->
                     <div class="bsp-card">
@@ -536,43 +527,6 @@
                             </div>
                         </div>
                     </div>
-                </div>
-
-                <!-- ========== TAB 3: KAPACITETA & VIRI ========== -->
-                <div class="bsp-tab-panel" id="bspPanel-capacity">
-
-                    <!-- Parallel + max per day -->
-                    <div class="bsp-card">
-                        <div class="bsp-card-header">
-                            <div class="bsp-card-icon" style="background:#34c75920;"><i class="bi bi-people" style="color:#34c759;font-size:15px;"></i></div>
-                            <div><div class="bsp-card-title">Kapaciteta</div></div>
-                        </div>
-                        <div class="bsp-row">
-                            <div><div class="bsp-row-label">Paralelne stranke (stoli)<i class="bi bi-info-circle bsp-tip-icon" data-tip="Koliko strank lahko sprejemate ob istem času.|Če nastavite 2, lahko imata dve stranki termin ob isti uri."></i></div><div class="bsp-row-hint">Koliko rezervacij se lahko dogaja hkrati</div></div>
-                            <input type="number" id="parallelClients" min="1" max="20" value="1" class="bsp-input" style="width:72px;text-align:center;">
-                        </div>
-                        <div class="bsp-row">
-                            <div><div class="bsp-row-label">Maks. rezervacij na dan<i class="bi bi-info-circle bsp-tip-icon" data-tip="Omeji skupno število rezervacij v enem dnevu.|Če nastavite 20, se po 20 rezervacijah tisti dan zapre za nove termine."></i></div><div class="bsp-row-hint">0 = brez omejitve</div></div>
-                            <input type="number" id="maxBookingsPerDay" min="0" max="999" value="0" class="bsp-input" style="width:72px;text-align:center;">
-                        </div>
-                    </div>
-
-                    <!-- Employees — managed in Ekipa tab -->
-                    <div class="bsp-card">
-                        <div class="bsp-card-header">
-                            <div class="bsp-card-icon" style="background:#007aff1a;"><i class="bi bi-person-badge" style="color:#007aff;font-size:15px;"></i></div>
-                            <div><div class="bsp-card-title">Člani ekipe</div></div>
-                        </div>
-                        <label class="bsp-row">
-                            <div><div class="bsp-row-label">Avtomatska dodelitev<i class="bi bi-info-circle bsp-tip-icon" data-tip="Sistem samodejno izbere zaposlenega, ki je v tistem času prost.|stranka rezervira termin, sistem pa sam določi frizerja."></i></div><div class="bsp-row-hint">Sistem sam dodeli razpoložljivega zaposlenega</div></div>
-                            <input type="checkbox" id="autoAssignEmployee" class="bsp-toggle" checked>
-                        </label>
-                        <p style="font-size:12px;color:#8e8e93;padding:8px 14px 12px;margin:0;">Člane ekipe upravljate v zavihku <strong>Ekipa</strong>.</p>
-                    </div>
-                </div>
-
-                <!-- ========== TAB 4: PRAVILA ========== -->
-                <div class="bsp-tab-panel" id="bspPanel-rules">
 
                     <div class="bsp-card">
                         <div class="bsp-card-header">
@@ -628,7 +582,7 @@
                     </div>
                 </div>
 
-                <!-- ========== TAB 5: CENOVANJE ========== -->
+                <!-- ========== TAB 2: CENOVANJE ========== -->
                 <div class="bsp-tab-panel" id="bspPanel-pricing">
 
                     <!-- Peak hour pricing -->
@@ -708,27 +662,6 @@
                             </div>
                         </div>
                     </div>
-                </div>
-
-                <!-- ========== TAB 6: PAMETNE FUNKCIJE ========== -->
-                <div class="bsp-tab-panel" id="bspPanel-smart">
-
-                    <!-- Locations -->
-                    <div class="bsp-card">
-                        <div class="bsp-card-header">
-                            <div class="bsp-card-icon" style="background:#ff950020;"><i class="bi bi-geo-alt" style="color:#ff9500;font-size:15px;"></i></div>
-                            <div><div class="bsp-card-title">Poslovalnice</div></div>
-                        </div>
-                        <div id="locationsList"></div>
-                        <button class="bsp-add-btn" onclick="bspAddLocation()"><i class="bi bi-plus-circle"></i> Dodaj poslovalnico</button>
-                        <div style="padding:10px 18px 14px;">
-                            <p style="font-size:12px;color:#8e8e93;margin:0;"><i class="bi bi-info-circle" style="margin-right:4px;"></i> Vsaka poslovalnica ima ločene zaposlene, delovni Čas in cenik. Centralna analitika združuje podatke vseh lokacij.</p>
-                        </div>
-                    </div>
-
-                </div>
-                <!-- ========== TAB 7: STORITVE ========== -->
-                <div class="bsp-tab-panel" id="bspPanel-services">
                     <div class="bsp-card">
                         <div class="bsp-card-header">
                             <div class="bsp-card-icon" style="background:#ff950020;"><i class="bi bi-bag" style="color:#ff9500;font-size:15px;"></i></div>
@@ -750,6 +683,45 @@
                         </div>
                         <div id="bspTeamList"></div>
                         <button class="bsp-add-btn" onclick="bspAddTeamMember()"><i class="bi bi-person-plus"></i> Dodaj Člana</button>
+                    </div>
+
+                    <div class="bsp-card">
+                        <div class="bsp-card-header">
+                            <div class="bsp-card-icon" style="background:#34c75920;"><i class="bi bi-people" style="color:#34c759;font-size:15px;"></i></div>
+                            <div><div class="bsp-card-title">Kapaciteta</div></div>
+                        </div>
+                        <div class="bsp-row">
+                            <div><div class="bsp-row-label">Paralelne stranke (stoli)<i class="bi bi-info-circle bsp-tip-icon" data-tip="Koliko strank lahko sprejemate ob istem času.|Če nastavite 2, lahko imata dve stranki termin ob isti uri."></i></div><div class="bsp-row-hint">Koliko rezervacij se lahko dogaja hkrati</div></div>
+                            <input type="number" id="parallelClients" min="1" max="20" value="1" class="bsp-input" style="width:72px;text-align:center;">
+                        </div>
+                        <div class="bsp-row">
+                            <div><div class="bsp-row-label">Maks. rezervacij na dan<i class="bi bi-info-circle bsp-tip-icon" data-tip="Omeji skupno število rezervacij v enem dnevu.|Če nastavite 20, se po 20 rezervacijah tisti dan zapre za nove termine."></i></div><div class="bsp-row-hint">0 = brez omejitve</div></div>
+                            <input type="number" id="maxBookingsPerDay" min="0" max="999" value="0" class="bsp-input" style="width:72px;text-align:center;">
+                        </div>
+                    </div>
+
+                    <div class="bsp-card">
+                        <div class="bsp-card-header">
+                            <div class="bsp-card-icon" style="background:#007aff1a;"><i class="bi bi-person-badge" style="color:#007aff;font-size:15px;"></i></div>
+                            <div><div class="bsp-card-title">Razporejanje zaposlenih</div></div>
+                        </div>
+                        <label class="bsp-row">
+                            <div><div class="bsp-row-label">Avtomatska dodelitev<i class="bi bi-info-circle bsp-tip-icon" data-tip="Sistem samodejno izbere zaposlenega, ki je v tistem času prost.|stranka rezervira termin, sistem pa sam določi frizerja."></i></div><div class="bsp-row-hint">Sistem sam dodeli razpoložljivega zaposlenega</div></div>
+                            <input type="checkbox" id="autoAssignEmployee" class="bsp-toggle" checked>
+                        </label>
+                        <p style="font-size:12px;color:#8e8e93;padding:8px 14px 12px;margin:0;">Člane ekipe upravljate v tem istem zavihku.</p>
+                    </div>
+
+                    <div class="bsp-card">
+                        <div class="bsp-card-header">
+                            <div class="bsp-card-icon" style="background:#ff950020;"><i class="bi bi-geo-alt" style="color:#ff9500;font-size:15px;"></i></div>
+                            <div><div class="bsp-card-title">Poslovalnice</div></div>
+                        </div>
+                        <div id="locationsList"></div>
+                        <button class="bsp-add-btn" onclick="bspAddLocation()"><i class="bi bi-plus-circle"></i> Dodaj poslovalnico</button>
+                        <div style="padding:10px 18px 14px;">
+                            <p style="font-size:12px;color:#8e8e93;margin:0;"><i class="bi bi-info-circle" style="margin-right:4px;"></i> Vsaka poslovalnica ima ločene zaposlene, delovni Čas in cenik. Centralna analitika združuje podatke vseh lokacij.</p>
+                        </div>
                     </div>
                 </div>
 
