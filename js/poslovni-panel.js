@@ -620,13 +620,19 @@
                         // Card layout — all data visible on small screens
                         html = '<div class="customer-cards">';
                         rows.forEach((c, idx) => {
-                            html += `<div class="customer-card" data-idx="${idx}">
+                            var _canDelCli = true;
+                        var _cSess = window.bspGetSession ? window.bspGetSession() : null;
+                        if (_cSess && _cSess.role === 'worker') {
+                            var _cp = typeof _bspNormalizePerms === 'function' ? _bspNormalizePerms(_cSess.permissions) : (_cSess.permissions || {});
+                            _canDelCli = !!_cp.canDeleteClients;
+                        }
+                        html += `<div class="customer-card" data-idx="${idx}">
                                 <div class="customer-card-name">${c.firstName||''} ${c.surname||''}</div>
                                 ${c.email && c.email !== '-' ? `<div class="customer-card-row"><i class="bi bi-envelope"></i> ${c.email}</div>` : ''}
                                 ${c.phone && c.phone !== '-' ? `<div class="customer-card-row"><i class="bi bi-telephone"></i> ${c.phone}</div>` : ''}
                                 <div class="customer-card-footer">
                                     <span class="customer-card-count">${c.count||0} terminov</span>
-                                    <button class="btn btn-danger btn-sm customerDeleteBtnRow" data-idx="${idx}">Izbriši</button>
+                                    ${_canDelCli ? `<button class="btn btn-danger btn-sm customerDeleteBtnRow" data-idx="${idx}">Izbriši</button>` : ''}
                                 </div>
                             </div>`;
                         });
@@ -636,8 +642,14 @@
                     } else {
                         // Table layout for desktop
                         let table = '<div style="overflow:auto; overflow-x:auto; max-height: calc(100% - 160px);"><table class="customer-table"><thead><tr><th>Ime</th><th>Priimek</th><th>Email</th><th>Telefon</th><th style="text-align:right">Terminov</th><th style="text-align:right">Akcije</th></tr></thead><tbody>';
+                        var _canDelCli2 = true;
+                        var _cSess2 = window.bspGetSession ? window.bspGetSession() : null;
+                        if (_cSess2 && _cSess2.role === 'worker') {
+                            var _cp2 = typeof _bspNormalizePerms === 'function' ? _bspNormalizePerms(_cSess2.permissions) : (_cSess2.permissions || {});
+                            _canDelCli2 = !!_cp2.canDeleteClients;
+                        }
                         rows.forEach((c, idx) => {
-                            table += `<tr class="customer-row" data-idx="${idx}"><td>${c.firstName||'-'}</td><td>${c.surname||'-'}</td><td>${c.email||'-'}</td><td>${c.phone||'-'}</td><td style="text-align:right">${c.count||0}</td><td style="text-align:right"><button class="btn btn-danger btn-sm customerDeleteBtnRow" data-idx="${idx}">Izbriši</button></td></tr>`;
+                            table += `<tr class="customer-row" data-idx="${idx}"><td>${c.firstName||'-'}</td><td>${c.surname||'-'}</td><td>${c.email||'-'}</td><td>${c.phone||'-'}</td><td style="text-align:right">${c.count||0}</td><td style="text-align:right">${_canDelCli2 ? `<button class="btn btn-danger btn-sm customerDeleteBtnRow" data-idx="${idx}">Izbriši</button>` : ''}</td></tr>`;
                         });
                         table += '</tbody></table></div>';
                         table += '<div id="customerDetail" style="padding:12px; border-top:1px solid #eee; display:none;"></div>';
@@ -728,6 +740,12 @@
 
                         // Row delete button (customer list)
                         if (t.classList && t.classList.contains('customerDeleteBtnRow')) {
+                            // Permission check
+                            var _dSess = window.bspGetSession ? window.bspGetSession() : null;
+                            if (_dSess && _dSess.role === 'worker') {
+                                var _dp = typeof _bspNormalizePerms === 'function' ? _bspNormalizePerms(_dSess.permissions) : (_dSess.permissions || {});
+                                if (!_dp.canDeleteClients) { alert('Nimate dovoljenja za brisanje strank.'); return; }
+                            }
                             try {
                                 const idx = Number(t.getAttribute('data-idx'));
                                 const rows = Array.from(document.querySelectorAll('#customerListContent table.customer-table tbody tr'));
@@ -2964,6 +2982,14 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                     } catch (e) {}
                 };
             }
+            // Invoice button
+            const invoiceBtn = document.getElementById('bookingInvoiceBtn');
+            if (invoiceBtn) {
+                invoiceBtn.onclick = function() {
+                    generateBookingInvoice(event);
+                };
+            }
+
             modal.classList.add('show');
 
             // Enforce worker permissions on modal action buttons
@@ -2972,6 +2998,7 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                 const _wp = _bspNormalizePerms(_bspWrkSess2.permissions);
                 if (deleteBtn) deleteBtn.style.display = _wp.canDeleteAppointments ? '' : 'none';
                 if (editBtn) editBtn.style.display = _wp.canEditAppointments ? '' : 'none';
+                if (invoiceBtn) invoiceBtn.style.display = _wp.canInvoice ? '' : 'none';
             }
         }
 
@@ -2980,6 +3007,57 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
             modal.classList.remove('show');
             if (window.clearCalendarHighlights) window.clearCalendarHighlights();
         }
+
+        // ── Generate printable invoice from booking event ──────────
+        function generateBookingInvoice(event) {
+            if (!event) return;
+            const ep = event.extendedProps || {};
+            const customerName = ep.customer || event.title || 'N/A';
+            const email = ep.email || '';
+            const phone = ep.phone || '';
+            const services = ep.services || [];
+            const price = ep.price || 0;
+            const dateStr = event.start ? new Date(event.start).toLocaleDateString('sl-SI') : '';
+            const timeStr = event.start ? new Date(event.start).toLocaleTimeString('sl-SI', {hour:'2-digit',minute:'2-digit'}) : '';
+
+            const serviceItems = (SITE_CONFIG && SITE_CONFIG.servicesSection && SITE_CONFIG.servicesSection.items) ? SITE_CONFIG.servicesSection.items : [];
+            const serviceRows = services.map(function(sName) {
+                var svc = serviceItems.find(function(s) { return s.name === sName; });
+                var sPrice = svc ? svc.price : '—';
+                return '<tr><td>' + _escH(sName) + '</td><td class="right">' + _escH(String(sPrice)) + '</td></tr>';
+            }).join('');
+
+            var shopName = (SITE_CONFIG && SITE_CONFIG.shopName) ? SITE_CONFIG.shopName : 'Barber Shop';
+            var currency = (SITE_CONFIG && SITE_CONFIG.currency) ? SITE_CONFIG.currency : '€';
+            var logoHtml = (SITE_CONFIG && SITE_CONFIG.logo && SITE_CONFIG.logo.large)
+                ? '<img src="' + _escH(SITE_CONFIG.logo.large) + '" class="logo">'
+                : '<h2>' + _escH(shopName) + '</h2>';
+            var ownerEmail = (SITE_CONFIG && SITE_CONFIG.ownerContact && SITE_CONFIG.ownerContact.email) ? SITE_CONFIG.ownerContact.email : '';
+            var ownerPhone = (SITE_CONFIG && SITE_CONFIG.ownerContact && SITE_CONFIG.ownerContact.phone) ? SITE_CONFIG.ownerContact.phone : '';
+
+            var invoiceHtml = '<!DOCTYPE html><html><head><title>Račun - ' + _escH(shopName) + '</title>'
+                + '<style>body{font-family:Arial,Helvetica,sans-serif;padding:20px;max-width:700px;margin:0 auto}'
+                + '.header{display:flex;align-items:center;gap:20px;margin-bottom:20px} .logo{max-height:80px}'
+                + 'table{width:100%;border-collapse:collapse;margin-top:20px} td,th{border:1px solid #ddd;padding:8px;text-align:left}'
+                + '.right{text-align:right} .total{font-weight:bold;background:#f9f9f9}</style></head><body>'
+                + '<div class="header">' + logoHtml + '<div>'
+                + '<div>' + _escH(ownerEmail) + '</div>'
+                + '<div>' + _escH(ownerPhone) + '</div>'
+                + '</div></div>'
+                + '<h3>Račun za: ' + _escH(customerName) + '</h3>'
+                + '<div>Email: ' + _escH(email) + ' | Tel: ' + _escH(phone) + '</div>'
+                + '<div>Termin: ' + _escH(dateStr) + ' ob ' + _escH(timeStr) + '</div>'
+                + '<table><thead><tr><th>Storitev</th><th class="right">Cena</th></tr></thead><tbody>'
+                + serviceRows
+                + '<tr class="total"><td>Skupaj</td><td class="right">' + _escH(currency) + _escH(String(price)) + '</td></tr>'
+                + '</tbody></table>'
+                + '<div style="margin-top:20px">Hvala za obisk!</div>'
+                + '<script>window.print();<\/script></body></html>';
+
+            var w = window.open('', '_blank');
+            if (w) { w.document.write(invoiceHtml); w.document.close(); }
+        }
+        window.generateBookingInvoice = generateBookingInvoice;
 
         // ── Event Details Modal (read-only for non-booking events) ──────────
         function openEventDetailsModal(event) {
