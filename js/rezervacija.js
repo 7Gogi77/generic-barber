@@ -1267,10 +1267,13 @@
                 const appointment = {
                     id: appointmentId,
                     type: 'booking',
+                    isBooking: true,
                     title: BookingState.customerInfo.name,
                     start: startDate.toISOString(),
                     end: endDate.toISOString(),
                     extendedProps: {
+                        isBooking: true,
+                        tab: 'customer',
                         customer: BookingState.customerInfo.name,
                         email: BookingState.customerInfo.email,
                         phone: BookingState.customerInfo.phone,

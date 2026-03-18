@@ -426,6 +426,18 @@
             }
             window.forceCalendarRelayout = forceCalendarRelayout;
 
+            function isBookingLikeEvent(ev) {
+                if (!ev) return false;
+                return !!(
+                    ev.type === 'booking' ||
+                    (ev.id && String(ev.id).startsWith('apt_')) ||
+                    ev.isBooking ||
+                    ev.extendedProps?.isBooking ||
+                    ev.extendedProps?.tab === 'customer'
+                );
+            }
+            window.isBookingLikeEvent = isBookingLikeEvent;
+
             (function(){
                 const sidebar = document.getElementById('sidebar');
                 const sidebarToggle = document.getElementById('sidebarToggle');
@@ -545,11 +557,9 @@
                     content.innerHTML = '<div class="no-customers">Nalagam stranke...</div>';
                 }
 
-                // Ensure scheduleData is loaded from DB
+                // Always reload schedule from DB so newly-created public bookings appear immediately.
                 try {
-                    if (!scheduleData || !Array.isArray(scheduleData.events)) {
-                        scheduleData = await StorageManager.load('schedule');
-                    }
+                    scheduleData = await StorageManager.load('schedule');
                     // Filter out deleted events after loading
                     if (scheduleData && Array.isArray(scheduleData.events)) {
                         scheduleData.events = filterDeletedEvents(scheduleData.events);
@@ -560,7 +570,7 @@
                 // Merge saved customer base and derive customers from bookings
                 await loadCustomerBase();
                 const bookings = (scheduleData && Array.isArray(scheduleData.events))
-                    ? scheduleData.events.filter(e => (e.extendedProps && e.extendedProps.isBooking) || e.isBooking || e.extendedProps?.tab === 'customer')
+                    ? scheduleData.events.filter(e => isBookingLikeEvent(e))
                     : [];
 
                 const customerMap = {};
@@ -2065,13 +2075,13 @@
             const completedEvents = allEvents.filter(e => {
                 if (!e.end) return false;
                 const endDate = new Date(e.end);
-                return endDate < now && endDate >= rangeStart && (e.extendedProps?.isBooking || e.isBooking || e.extendedProps?.tab === 'customer');
+                return endDate < now && endDate >= rangeStart && isBookingLikeEvent(e);
             });
 
             const upcomingEvents = allEvents.filter(e => {
                 if (!e.start) return false;
                 const startDate = new Date(e.start);
-                return startDate > now && (e.extendedProps?.isBooking || e.isBooking || e.extendedProps?.tab === 'customer');
+                return startDate > now && isBookingLikeEvent(e);
             });
 
             // Calculate earnings from appointments
@@ -2323,11 +2333,11 @@
             const completedEvents = allEvents.filter(e => {
                 if (!e.end) return false;
                 const endDate = new Date(e.end);
-                return endDate < now && endDate >= rangeStart && (e.extendedProps?.isBooking || e.isBooking || e.extendedProps?.tab === 'customer');
+                return endDate < now && endDate >= rangeStart && isBookingLikeEvent(e);
             });
             const upcomingEvents = allEvents.filter(e => {
                 if (!e.start) return false;
-                return new Date(e.start) > now && (e.extendedProps?.isBooking || e.isBooking || e.extendedProps?.tab === 'customer');
+                return new Date(e.start) > now && isBookingLikeEvent(e);
             });
 
             const apptEarnings = completedEvents.reduce((s, e) => s + parseFloat(e.extendedProps?.price || 0), 0);
