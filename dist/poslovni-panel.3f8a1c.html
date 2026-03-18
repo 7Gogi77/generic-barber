@@ -119,8 +119,8 @@
                     applyWorkerRestrictions(worker);
                     showPanel();
                     // Calendar may already be initialized — apply worker filter + refetch
-                    var wPerms = worker.permissions || {};
-                    if (!wPerms.canViewAll) {
+                    var wPerms = typeof _bspNormalizePerms === 'function' ? _bspNormalizePerms(worker.permissions) : (worker.permissions || {});
+                    if (!wPerms.canViewAllAppointments || !wPerms.canViewAllEvents) {
                         window._calWorkerFilterId = worker.id || worker.name || '';
                     }
                     if (typeof window._bspApplyWorkerAccess === 'function') window._bspApplyWorkerAccess();

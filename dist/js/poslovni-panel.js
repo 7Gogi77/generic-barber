@@ -157,7 +157,7 @@
                 var _addSess = window.bspGetSession ? window.bspGetSession() : null;
                 if (_addSess && _addSess.role === 'worker') {
                     var _addP = typeof _bspNormalizePerms === 'function' ? _bspNormalizePerms(_addSess.permissions) : (_addSess.permissions || {});
-                    var _canAddEvents = _addP.canAddBreaks || false;
+                    var _canAddEvents = _addP.canAddEvents || false;
                     var _canAddApts   = _addP.canAddAppointments || false;
                     // If worker can do neither, block completely
                     if (!_canAddEvents && !_canAddApts) return;
@@ -1351,14 +1351,16 @@
             const workers = _cachedWorkers || {};
 
             const permLabels = {
-                canEditAppointments:  'Urejanje rezervacij',
-                canDeleteAppointments:'Brisanje rezervacij',
-                canAddAppointments:   'Dodajanje rezervacij',
-                canEditEvents:        'Urejanje dogodkov',
-                canDeleteEvents:      'Brisanje dogodkov',
-                canAddBreaks:         'Dodajanje premorov',
-                canViewAll:           'Ogled vseh terminov',
-                canInvoice:           'Generiranje računov'
+                canEditAppointments:      { label: 'Urejanje rezervacij',   tip: 'Delavec lahko ureja (spreminja čas, datum, podatke) obstoječe rezervacije strank.' },
+                canDeleteAppointments:    { label: 'Brisanje rezervacij',   tip: 'Delavec lahko izbriše obstoječe rezervacije strank iz koledarja.' },
+                canAddAppointments:       { label: 'Dodajanje rezervacij',  tip: 'Delavec lahko ročno doda novo rezervacijo stranke v koledar.' },
+                canViewAllAppointments:   { label: 'Ogled vseh rezervacij', tip: 'Delavec vidi rezervacije vseh delavcev, ne le svojih.' },
+                canEditEvents:            { label: 'Urejanje dogodkov',     tip: 'Delavec lahko ureja obstoječe dogodke (delovni čas, premore, počitnice ipd.).' },
+                canDeleteEvents:          { label: 'Brisanje dogodkov',     tip: 'Delavec lahko izbriše obstoječe dogodke iz koledarja.' },
+                canAddEvents:             { label: 'Dodajanje dogodkov',    tip: 'Delavec lahko doda nove dogodke (delovni čas, premore, počitnice ipd.) v koledar.' },
+                canViewAllEvents:         { label: 'Ogled vseh dogodkov',   tip: 'Delavec vidi dogodke vseh delavcev, ne le svojih.' },
+                canInvoice:               { label: 'Generiranje računov',   tip: 'Delavec lahko generira in tiska račune za opravljene storitve.' },
+                canDeleteClients:         { label: 'Brisanje strank',       tip: 'Delavec lahko briše stranke iz seznama strank (zavihek Stranke).' }
             };
 
             el.innerHTML = list.map((m, i) => {
@@ -1375,10 +1377,11 @@
                 let accountHtml = '';
                 if (w) {
                     // Has account — show username + permissions + delete
-                    const permHtml = Object.entries(permLabels).map(([key, label]) => `
-                        <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;">
+                    const permHtml = Object.entries(permLabels).map(([key, meta]) => `
+                        <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;position:relative;">
                             <input type="checkbox" ${(w.permissions||{})[key] ? 'checked' : ''} onchange="bspToggleMemberPerm('${_escH(tid)}','${key}',this.checked)" style="width:14px;height:14px;cursor:pointer;">
-                            ${label}
+                            ${meta.label}
+                            <span class="perm-info-icon" title="${_escH(meta.tip)}" style="display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;border-radius:50%;background:#e5e5ea;color:#636366;font-size:10px;font-weight:700;cursor:help;flex-shrink:0;">i</span>
                         </label>`).join('');
                     accountHtml = `
                     <div style="border-top:1px solid #f2f2f7;padding-top:10px;margin-top:4px;">
@@ -1414,10 +1417,11 @@
                             <div style="margin-top:8px;">
                                 <div style="font-size:11px;font-weight:600;color:#8e8e93;margin-bottom:4px;">Dovoljenja</div>
                                 <div style="display:flex;flex-wrap:wrap;gap:4px 16px;">
-                                    ${Object.entries(permLabels).map(([key, label]) => `
+                                    ${Object.entries(permLabels).map(([key, meta]) => `
                                     <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;">
                                         <input type="checkbox" class="acct-perm-${key}" style="width:14px;height:14px;cursor:pointer;">
-                                        ${label}
+                                        ${meta.label}
+                                        <span class="perm-info-icon" title="${_escH(meta.tip)}" style="display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;border-radius:50%;background:#e5e5ea;color:#636366;font-size:10px;font-weight:700;cursor:help;flex-shrink:0;">i</span>
                                     </label>`).join('')}
                                 </div>
                             </div>
@@ -1486,14 +1490,16 @@
                 username: username,
                 passwordHash: await sha256Worker(password),
                 permissions: {
-                    canEditAppointments:   row.querySelector('.acct-perm-canEditAppointments')?.checked || false,
-                    canDeleteAppointments: row.querySelector('.acct-perm-canDeleteAppointments')?.checked || false,
-                    canAddAppointments:    row.querySelector('.acct-perm-canAddAppointments')?.checked || false,
-                    canEditEvents:         row.querySelector('.acct-perm-canEditEvents')?.checked || false,
-                    canDeleteEvents:       row.querySelector('.acct-perm-canDeleteEvents')?.checked || false,
-                    canAddBreaks:          row.querySelector('.acct-perm-canAddBreaks')?.checked || false,
-                    canViewAll:            row.querySelector('.acct-perm-canViewAll')?.checked || false,
-                    canInvoice:            row.querySelector('.acct-perm-canInvoice')?.checked || false
+                    canEditAppointments:    row.querySelector('.acct-perm-canEditAppointments')?.checked || false,
+                    canDeleteAppointments:  row.querySelector('.acct-perm-canDeleteAppointments')?.checked || false,
+                    canAddAppointments:     row.querySelector('.acct-perm-canAddAppointments')?.checked || false,
+                    canViewAllAppointments: row.querySelector('.acct-perm-canViewAllAppointments')?.checked || false,
+                    canEditEvents:          row.querySelector('.acct-perm-canEditEvents')?.checked || false,
+                    canDeleteEvents:        row.querySelector('.acct-perm-canDeleteEvents')?.checked || false,
+                    canAddEvents:           row.querySelector('.acct-perm-canAddEvents')?.checked || false,
+                    canViewAllEvents:       row.querySelector('.acct-perm-canViewAllEvents')?.checked || false,
+                    canInvoice:             row.querySelector('.acct-perm-canInvoice')?.checked || false,
+                    canDeleteClients:       row.querySelector('.acct-perm-canDeleteClients')?.checked || false
                 }
             };
 
@@ -1609,12 +1615,12 @@
                 window._calWorkerFilterId = 'all';
             }
 
-            // Worker override: if logged in as worker without canViewAll, force filter
+            // Worker override: if logged in as worker without canViewAll*, force filter
             // to their own events regardless of what the chip filter set above.
             var _wSess = window.bspGetSession ? window.bspGetSession() : null;
             if (_wSess && _wSess.role === 'worker') {
-                var _wPerms = _wSess.permissions || {};
-                if (!_wPerms.canViewAll) {
+                var _wPerms = _bspNormalizePerms(_wSess.permissions || {});
+                if (!_wPerms.canViewAllAppointments || !_wPerms.canViewAllEvents) {
                     window._calWorkerFilterId = _wSess.workerId || _wSess.workerName || '';
                     if (wrap) wrap.style.display = 'none';
                     if (toggleBtn) toggleBtn.style.display = 'none';
@@ -2739,9 +2745,12 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
 
         // Modal functions
         function openAddEventModal(startDate = null, endDate = null) {
-            // Worker permission check  block entirely if worker lacks canAddBreaks
+            // Worker permission check  block entirely if worker lacks canAddEvents
             const _bspWrkSess = window.bspGetSession ? window.bspGetSession() : null;
-            if (_bspWrkSess && _bspWrkSess.role === 'worker' && !(_bspWrkSess.permissions || {}).canAddBreaks) return;
+            if (_bspWrkSess && _bspWrkSess.role === 'worker') {
+                var _np = typeof _bspNormalizePerms === 'function' ? _bspNormalizePerms(_bspWrkSess.permissions) : (_bspWrkSess.permissions || {});
+                if (!_np.canAddEvents && !_np.canAddAppointments) return;
+            }
 
             const form = document.getElementById('addEventForm');
             if (form) form.reset();
@@ -4285,8 +4294,8 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                 (function _presetWorkerFilter() {
                     var sess = window.bspGetSession ? window.bspGetSession() : null;
                     if (sess && sess.role === 'worker') {
-                        var perms = sess.permissions || {};
-                        if (!perms.canViewAll) {
+                        var perms = _bspNormalizePerms(sess.permissions || {});
+                        if (!perms.canViewAllAppointments || !perms.canViewAllEvents) {
                             window._calWorkerFilterId = sess.workerId || sess.workerName || '';
                         }
                     }
@@ -4636,14 +4645,16 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
         function _bspNormalizePerms(perms) {
             var p = perms || {};
             return {
-                canEditAppointments:   p.canEditAppointments   !== undefined ? p.canEditAppointments   : (p.canMove || false),
-                canDeleteAppointments: p.canDeleteAppointments !== undefined ? p.canDeleteAppointments : (p.canDelete || false),
-                canAddAppointments:    p.canAddAppointments || false,
-                canEditEvents:         p.canEditEvents         !== undefined ? p.canEditEvents         : (p.canMove || false),
-                canDeleteEvents:       p.canDeleteEvents       !== undefined ? p.canDeleteEvents       : (p.canDelete || false),
-                canAddBreaks: p.canAddBreaks || false,
-                canViewAll:   p.canViewAll || false,
-                canInvoice:   p.canInvoice || false
+                canEditAppointments:    p.canEditAppointments   !== undefined ? p.canEditAppointments   : (p.canMove || false),
+                canDeleteAppointments:  p.canDeleteAppointments !== undefined ? p.canDeleteAppointments : (p.canDelete || false),
+                canAddAppointments:     p.canAddAppointments || false,
+                canViewAllAppointments: p.canViewAllAppointments !== undefined ? p.canViewAllAppointments : (p.canViewAll || false),
+                canEditEvents:          p.canEditEvents         !== undefined ? p.canEditEvents         : (p.canMove || false),
+                canDeleteEvents:        p.canDeleteEvents       !== undefined ? p.canDeleteEvents       : (p.canDelete || false),
+                canAddEvents:           p.canAddEvents !== undefined ? p.canAddEvents : (p.canAddBreaks || false),
+                canViewAllEvents:       p.canViewAllEvents !== undefined ? p.canViewAllEvents : (p.canViewAll || false),
+                canInvoice:             p.canInvoice || false,
+                canDeleteClients:       p.canDeleteClients || false
             };
         }
         window._bspNormalizePerms = _bspNormalizePerms;
@@ -4661,21 +4672,22 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
             var workerId   = sess.workerId  || '';
 
             // ── 1. Filter calendar events ──
-            // If canViewAll is false, hide events that don't belong to this worker
-            if (window.calendar && !perms.canViewAll) {
+            // If canViewAll* is false, hide events that don't belong to this worker
+            if (window.calendar && (!perms.canViewAllAppointments || !perms.canViewAllEvents)) {
+                var np2 = _bspNormalizePerms(perms);
                 window.calendar.getEvents().forEach(function(ev) {
                     var ep = ev.extendedProps || {};
                     var isBooking = ep.isBooking || ep.tab === 'customer' || ep.customer || ev.isBooking || (ev.id && String(ev.id).startsWith('apt_'));
                     var shouldHide = false;
-                    if (isBooking) {
+                    if (isBooking && !np2.canViewAllAppointments) {
                         var evWorker = ep.worker || ep.workerId || ep.workerName || '';
                         var evWorkerName = ep.workerName || '';
                         var matchById   = workerId && evWorker === workerId;
                         var matchByName = workerName && (evWorkerName === workerName || evWorker === workerName);
-                        if (!matchById && !matchByName) {
+                        if (!evWorker || (!matchById && !matchByName)) {
                             shouldHide = true;
                         }
-                    } else {
+                    } else if (!isBooking && !np2.canViewAllEvents) {
                         // Worker-type events (breaks, hours) — show only their own
                         var evW = ep.worker || (ev.title || '');
                         if (workerName && evW !== workerName && evW !== workerId) {
@@ -4688,7 +4700,7 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
             }
 
             // ── 1b. Hide worker filter if canViewAll is false (worker sees only own) ──
-            if (!perms.canViewAll) {
+            if (!perms.canViewAllAppointments && !perms.canViewAllEvents) {
                 var filterWrap = document.getElementById('calWorkerFilterWrap');
                 if (filterWrap) filterWrap.style.display = 'none';
                 var filterToggle = document.getElementById('calWorkerToggle');
@@ -4712,8 +4724,8 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                 window.calendar.setOption('eventDurationEditable', false);
             }
 
-            // ── 4. Hide mobile FAB if worker cannot add events ──────────────
-            if (!perms.canAddBreaks) {
+            // ── 4. Hide mobile FAB if worker cannot add events or appointments ──
+            if (!np.canAddEvents && !np.canAddAppointments) {
                 var fab = document.getElementById('mobileFab');
                 if (fab) fab.style.display = 'none';
             }
