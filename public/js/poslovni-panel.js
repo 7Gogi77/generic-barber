@@ -153,6 +153,18 @@
             }
             // Always reload services when opening modal
             function openAddEventModalWithTab(startDate = null, endDate = null, retry = 0, tab = null, startTime = null, endTime = null) {
+                // Worker permission check: block if no relevant add/edit permission
+                var _addSess = window.bspGetSession ? window.bspGetSession() : null;
+                if (_addSess && _addSess.role === 'worker') {
+                    var _addP = typeof _bspNormalizePerms === 'function' ? _bspNormalizePerms(_addSess.permissions) : (_addSess.permissions || {});
+                    var _canAddEvents = _addP.canAddBreaks || false;
+                    var _canAddApts   = _addP.canEditAppointments || false;
+                    // If worker can do neither, block completely
+                    if (!_canAddEvents && !_canAddApts) return;
+                    // Force appropriate tab if only one permission is available
+                    if (!_canAddEvents && _canAddApts) tab = 'customer';
+                    if (_canAddEvents && !_canAddApts) tab = 'worker';
+                }
                 // Če storitve še niso naložene iz Firebase, počakaj in poskusi znova
                 const ready = window.SITE_CONFIG && window.SITE_CONFIG.servicesSection && Array.isArray(window.SITE_CONFIG.servicesSection.items) && window.SITE_CONFIG.servicesSection.items.length > 0;
                 if (!ready && retry < 10) {
@@ -163,6 +175,19 @@
                 // Reset form fields if needed
                 const form = document.getElementById('addEventForm');
                 if (form) form.reset();
+
+                // Hide/show tab buttons based on worker permissions
+                if (_addSess && _addSess.role === 'worker') {
+                    var _tabW = document.getElementById('tabWorker');
+                    var _tabC = document.getElementById('tabCustomer');
+                    if (_tabW) _tabW.style.display = _canAddEvents ? '' : 'none';
+                    if (_tabC) _tabC.style.display = _canAddApts ? '' : 'none';
+                } else {
+                    var _tabW = document.getElementById('tabWorker');
+                    var _tabC = document.getElementById('tabCustomer');
+                    if (_tabW) _tabW.style.display = '';
+                    if (_tabC) _tabC.style.display = '';
+                }
                 
                 // Set times: use provided times if given, otherwise use defaults
                 const startTimeEl = document.getElementById('eventStartTime');
