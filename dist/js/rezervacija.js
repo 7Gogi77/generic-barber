@@ -7,7 +7,8 @@
                 name: '',
                 email: '',
                 phone: '',
-                notes: ''
+                notes: '',
+                notificationPreference: ''
             },
             currentMonth: new Date(),
             events: [], // Loaded from storage
@@ -72,11 +73,8 @@
             
             // Success step is now #step6
             const successTitle = document.querySelector('#step6 .success-title');
-            const successMessage = document.querySelector('#step6 .success-message');
             if (successTitle && bp.successTitle) successTitle.textContent = bp.successTitle;
-            if (successMessage && bp.successMessage) {
-                successMessage.innerHTML = bp.successMessage + '<br>Potrditev bo poslana na vaš e-poštni naslov.';
-            }
+            updateSuccessMessage(resolveNotificationPreference(getNotificationChannels()), getNotificationChannels());
             
             // Buttons - Next
             const nextBtns = document.querySelectorAll('#toStep2Btn, #toStep3FromWorker, #toStep4Btn, #toStep5Btn');
@@ -114,6 +112,7 @@
             
             // Apply booking page content from config
             applyBookingPageContent();
+            syncNotificationPreferenceUI();
 
             // Load events from storage
             await loadEvents();
@@ -1060,11 +1059,119 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
+        function getNotificationChannels() {
+            let storedSettings = {};
+            try {
+                storedSettings = JSON.parse(localStorage.getItem('bookingSettings') || '{}') || {};
+            } catch (_) {}
+
+            const siteSettings = window.SITE_CONFIG?._bookingSettings;
+            const settings = siteSettings && typeof siteSettings === 'object'
+                ? Object.assign({}, storedSettings, siteSettings)
+                : storedSettings;
+            const smsTemplates = settings.smsTemplates || {};
+            const emailTemplates = settings.emailTemplates || {};
+
+            return {
+                emailEnabled: !!emailTemplates.enabled,
+                phoneEnabled: smsTemplates.confirmationEnabled !== false
+            };
+        }
+
+        function getDefaultNotificationPreference(channels) {
+            if (channels.emailEnabled && !channels.phoneEnabled) return 'email';
+            if (channels.phoneEnabled && !channels.emailEnabled) return 'phone';
+            if (channels.emailEnabled && channels.phoneEnabled) return 'email';
+            return '';
+        }
+
+        function getSelectedNotificationPreference() {
+            const checked = document.querySelector('input[name="notificationPreference"]:checked');
+            return checked ? checked.value : '';
+        }
+
+        function resolveNotificationPreference(channels) {
+            if (channels.emailEnabled && channels.phoneEnabled) {
+                return getSelectedNotificationPreference() || getDefaultNotificationPreference(channels);
+            }
+            return getDefaultNotificationPreference(channels);
+        }
+
+        function getNotificationPreferenceLabel(preference) {
+            if (preference === 'email') return 'E-pošta';
+            if (preference === 'phone') return 'Telefon';
+            return 'Izbrani kontakt';
+        }
+
+        function updateSuccessMessage(preference, channels) {
+            const successMessage = document.querySelector('#step6 .success-message');
+            if (!successMessage) return;
+
+            const baseMessage = window.SITE_CONFIG?.bookingPage?.successMessage || 'Vaš termin je bil uspešno rezerviran.';
+            let deliveryMessage = 'Po potrebi vas bomo kontaktirali na vnesene podatke.';
+
+            if (preference === 'email') {
+                deliveryMessage = 'Potrditev bo poslana na vaš e-poštni naslov.';
+            } else if (preference === 'phone') {
+                deliveryMessage = 'Potrditev bo poslana na vašo telefonsko številko.';
+            } else if (channels.emailEnabled && channels.phoneEnabled) {
+                deliveryMessage = 'Potrditev bo poslana na izbrani kontakt.';
+            } else if (channels.emailEnabled) {
+                deliveryMessage = 'Potrditev bo poslana na vaš e-poštni naslov.';
+            } else if (channels.phoneEnabled) {
+                deliveryMessage = 'Potrditev bo poslana na vašo telefonsko številko.';
+            }
+
+            successMessage.innerHTML = `${baseMessage}<br>${deliveryMessage}`;
+        }
+
+        function syncNotificationPreferenceUI() {
+            const channels = getNotificationChannels();
+            const optionsWrap = document.getElementById('notificationPreferenceOptions');
+            const hint = document.getElementById('notificationPreferenceHint');
+            const emailInput = document.getElementById('customerEmail');
+            const phoneInput = document.getElementById('customerPhone');
+            const emailLabel = document.getElementById('labelEmail');
+            const phoneLabel = document.getElementById('labelPhone');
+            const emailOption = document.getElementById('notificationOptionEmail');
+            const phoneOption = document.getElementById('notificationOptionPhone');
+            const currentPreference = resolveNotificationPreference(channels);
+
+            if (emailOption) emailOption.checked = currentPreference === 'email';
+            if (phoneOption) phoneOption.checked = currentPreference === 'phone';
+
+            if (optionsWrap) {
+                optionsWrap.style.display = channels.emailEnabled && channels.phoneEnabled ? 'grid' : 'none';
+            }
+
+            let hintText = 'Vnesite vsaj en kontakt, da vas lahko obvestimo o terminu.';
+            if (channels.emailEnabled && channels.phoneEnabled) {
+                hintText = 'Izberite, kam želite prejeti potrditev in nadaljnja obvestila.';
+            } else if (channels.emailEnabled) {
+                hintText = 'Potrditev in nadaljnja obvestila boste prejeli na e-pošto.';
+            } else if (channels.phoneEnabled) {
+                hintText = 'Potrditev in nadaljnja obvestila boste prejeli na telefonsko številko.';
+            }
+            if (hint) hint.textContent = hintText;
+
+            const emailRequired = currentPreference === 'email' || (!channels.phoneEnabled && channels.emailEnabled);
+            const phoneRequired = currentPreference === 'phone' || (!channels.emailEnabled && channels.phoneEnabled);
+
+            if (emailInput) emailInput.required = emailRequired;
+            if (phoneInput) phoneInput.required = phoneRequired;
+            if (emailLabel) emailLabel.textContent = emailRequired ? 'E-pošta *' : 'E-pošta';
+            if (phoneLabel) phoneLabel.textContent = phoneRequired ? 'Telefon *' : 'Telefon';
+
+            updateSuccessMessage(currentPreference, channels);
+        }
+
         // ===== VALIDATE STEP 3 =====
         function validateCustomerInfo() {
             const name = document.getElementById('customerName').value.trim();
             const email = document.getElementById('customerEmail').value.trim();
             const phone = document.getElementById('customerPhone').value.trim();
+            const channels = getNotificationChannels();
+            const notificationPreference = resolveNotificationPreference(channels);
             const couponCheck = evaluateCouponInput(false);
             
             if (!name) {
@@ -1072,14 +1179,25 @@
                 return false;
             }
             
-            if (!email || !email.includes('@')) {
-                alert('Prosimo, vnesite veljavni e-poštni naslov.');
-                return false;
-            }
-            
-            if (!phone) {
-                alert('Prosimo, vnesite telefonsko številko.');
-                return false;
+            if (notificationPreference === 'email') {
+                if (!email || !email.includes('@')) {
+                    alert('Prosimo, vnesite veljavni e-poštni naslov.');
+                    return false;
+                }
+            } else if (notificationPreference === 'phone') {
+                if (!phone) {
+                    alert('Prosimo, vnesite telefonsko številko.');
+                    return false;
+                }
+            } else {
+                if (email && !email.includes('@')) {
+                    alert('Prosimo, vnesite veljavni e-poštni naslov.');
+                    return false;
+                }
+                if (!email && !phone) {
+                    alert('Prosimo, vnesite vsaj e-poštni naslov ali telefonsko številko.');
+                    return false;
+                }
             }
 
             if (couponCheck.status === 'invalid') {
@@ -1092,6 +1210,7 @@
                 email,
                 phone,
                 notes: document.getElementById('customerNotes').value.trim(),
+                notificationPreference,
                 coupon: couponCheck.status === 'valid' ? couponCheck.code : null
             };
             
@@ -1167,8 +1286,18 @@
             
             // Customer
             document.getElementById('summaryCustomer').textContent = BookingState.customerInfo.name || '-';
-            document.getElementById('summaryContact').textContent = 
-                `${BookingState.customerInfo.email}\n${BookingState.customerInfo.phone}`;
+            document.getElementById('summaryContact').textContent =
+                [BookingState.customerInfo.email, BookingState.customerInfo.phone].filter(Boolean).join('\n') || '-';
+            const notificationRow = document.getElementById('summaryNotificationRow');
+            const notificationEl = document.getElementById('summaryNotification');
+            if (notificationRow && notificationEl) {
+                if (BookingState.customerInfo.notificationPreference) {
+                    notificationEl.textContent = getNotificationPreferenceLabel(BookingState.customerInfo.notificationPreference);
+                    notificationRow.style.display = '';
+                } else {
+                    notificationRow.style.display = 'none';
+                }
+            }
             // Coupon code row
             const _couponRow = document.getElementById('summaryCouponRow');
             const _couponEl  = document.getElementById('summaryCoupon');
@@ -1277,6 +1406,7 @@
                         customer: BookingState.customerInfo.name,
                         email: BookingState.customerInfo.email,
                         phone: BookingState.customerInfo.phone,
+                        notificationPreference: BookingState.customerInfo.notificationPreference,
                         services: BookingState.selectedServices.map(s => s.name),
                         price: BookingState.totalPrice
                     }
@@ -1321,9 +1451,12 @@
                     ? window.SMSHandler.config.productionUrl
                     : window.location.origin;
                 const manageLink = `${manageBaseUrl}/manage-appointment.html?id=${appointment.id}`;
+                const notificationPreference = BookingState.customerInfo.notificationPreference;
+                const shouldSendSmsConfirmation = notificationPreference === 'phone';
+                const shouldSendEmailConfirmation = notificationPreference === 'email';
                 
                 // Send SMS confirmation if phone number provided
-                if (BookingState.customerInfo.phone) {
+                if (shouldSendSmsConfirmation && BookingState.customerInfo.phone) {
                     try {
                         const appointmentForSMS = {
                             id: appointment.id,
@@ -1341,7 +1474,7 @@
                 }
 
                 // Send email confirmation if email provided
-                if (BookingState.customerInfo.email && window.EmailHandler) {
+                if (shouldSendEmailConfirmation && BookingState.customerInfo.email && window.EmailHandler) {
                     try {
                         window.EmailHandler.sendConfirmation({
                             id: appointment.id,
@@ -1350,25 +1483,24 @@
                             customer: BookingState.customerInfo.name,
                             services: BookingState.selectedServices.map(s => s.name)
                         });
-                        window.EmailHandler.notifyOwner(
-                            'Nova rezervacija',
-                            'Nova rezervacija od ' + BookingState.customerInfo.name + ' (' + BookingState.customerInfo.email + ') za ' + BookingState.selectedServices.map(s => s.name).join(', ')
-                        );
                     } catch (emailError) {
                     }
                 }
 
-                // Send WhatsApp confirmation if enabled and phone provided
-                if (BookingState.customerInfo.phone && window.WhatsAppHandler) {
+                if (window.EmailHandler) {
                     try {
-                        window.WhatsAppHandler.sendConfirmation({
-                            id: appointment.id,
-                            phoneNumber: BookingState.customerInfo.phone,
-                            start: appointment.start,
-                            customer: BookingState.customerInfo.name
-                        });
-                    } catch (_) {}
+                        const ownerContacts = [];
+                        if (BookingState.customerInfo.email) ownerContacts.push('Email: ' + BookingState.customerInfo.email);
+                        if (BookingState.customerInfo.phone) ownerContacts.push('Telefon: ' + BookingState.customerInfo.phone);
+                        window.EmailHandler.notifyOwner(
+                            'Nova rezervacija',
+                            'Nova rezervacija od ' + BookingState.customerInfo.name + (ownerContacts.length ? ' (' + ownerContacts.join(', ') + ')' : '') + ' za ' + BookingState.selectedServices.map(s => s.name).join(', ')
+                        );
+                    } catch (ownerEmailError) {
+                    }
                 }
+
+                updateSuccessMessage(notificationPreference, getNotificationChannels());
 
                 // Go to success step
                 goToStep(6);
@@ -1439,6 +1571,9 @@
             document.getElementById('backToStep4').addEventListener('click', () => goToStep(4));
             
             document.getElementById('confirmBookingBtn').addEventListener('click', confirmBooking);
+            document.querySelectorAll('input[name="notificationPreference"]').forEach(input => {
+                input.addEventListener('change', syncNotificationPreferenceUI);
+            });
 
             const applyCouponBtn = document.getElementById('applyCouponBtn');
             const couponInput = document.getElementById('customerCoupon');

@@ -182,6 +182,20 @@
                         <label class="form-label" id="labelPhone">Telefon *</label>
                         <input type="tel" class="form-input" id="customerPhone" placeholder="+386 40 123 456" required>
                     </div>
+                    <div class="form-group" id="notificationPreferenceField">
+                        <label class="form-label">Obvestilo o rezervaciji</label>
+                        <div id="notificationPreferenceOptions" style="display:none;gap:10px;">
+                            <label style="display:flex;align-items:center;gap:10px;padding:12px 14px;border:1px solid #d1d1d6;border-radius:12px;cursor:pointer;">
+                                <input type="radio" name="notificationPreference" id="notificationOptionEmail" value="email" checked>
+                                <span>E-pošta</span>
+                            </label>
+                            <label style="display:flex;align-items:center;gap:10px;padding:12px 14px;border:1px solid #d1d1d6;border-radius:12px;cursor:pointer;">
+                                <input type="radio" name="notificationPreference" id="notificationOptionPhone" value="phone">
+                                <span>Telefon (SMS)</span>
+                            </label>
+                        </div>
+                        <div id="notificationPreferenceHint" style="margin-top:8px;font-size:13px;color:#6b7280;"></div>
+                    </div>
                     <div class="form-group">
                         <label class="form-label" id="labelNotes">Opombe (neobvezno)</label>
                         <textarea class="form-input" id="customerNotes" placeholder="Posebne želje ali opombe..."></textarea>
@@ -239,6 +253,10 @@
                             <span class="summary-label">Kontakt</span>
                             <span class="summary-value" id="summaryContact">-</span>
                         </div>
+                        <div class="summary-row" id="summaryNotificationRow" style="display:none;">
+                            <span class="summary-label">Obvestilo</span>
+                            <span class="summary-value" id="summaryNotification">-</span>
+                        </div>
                         <div class="summary-row" id="summaryCouponRow" style="display:none;">
                             <span class="summary-label">Kupon koda</span>
                             <span class="summary-value" id="summaryCoupon">-</span>
@@ -269,7 +287,7 @@
                         <h2 class="success-title">Rezervacija uspešna!</h2>
                         <p class="success-message">
                             Vaš termin je bil uspešno rezerviran.<br>
-                            Potrditev bo poslana na vaš e-poštni naslov.
+                            Potrditev bo poslana na izbrani kontakt.
                         </p>
                     </div>
                 </div>
@@ -283,8 +301,7 @@
     <script src="js/storage-manager.js?v=3"></script>
     <script src="js/sms-handler.js"></script>
     <script src="js/email-handler.js"></script>
-    <script src="js/messaging-handler.js"></script>
-    <script src="/js/rezervacija.js?v=3"></script>
+    <script src="/js/rezervacija.js?v=4"></script>
     <!-- Confetti Effect -->
     <script src="js/confetti.js"></script>
 </body>

@@ -1015,10 +1015,6 @@
                     confirmationMessage: 'Pozdravljeni {ime},\n\nhvala za vašo rezervacijo pri {posel}!\n\nVaš termin lahko upravljate na: {link}\n\nSe vidimo!',
                     cancelMessage: 'Pozdravljeni {ime},\n\nvaš termin pri {posel} je bil odpovedan.\n\nKontaktirajte nas za novo rezervacijo.\n\nLep pozdrav!',
                     rescheduleMessage: 'Pozdravljeni {ime},\n\nvaš termin pri {posel} je bil spremenjen.\n\nNov datum: {datum} ob {cas}\n\nSe vidimo!'
-                },
-                whatsappTemplates: {
-                    enabled: false,
-                    confirmationMessage: 'Hvala za rezervacijo pri {posel}! Vaš termin: {datum} ob {cas}. Upravljanje: {link}'
                 }
             };
             let raw = {};
@@ -1031,7 +1027,6 @@
             s.weekendPricing    = Object.assign({}, def.weekendPricing,     raw.weekendPricing    || {});
             s.smsTemplates      = Object.assign({}, def.smsTemplates,          raw.smsTemplates       || {});
             s.emailTemplates    = Object.assign({}, def.emailTemplates,        raw.emailTemplates     || {});
-            s.whatsappTemplates = Object.assign({}, def.whatsappTemplates,     raw.whatsappTemplates  || {});
             // per-day: merge with DAY_DEFAULTS then saved
             const savedDays = raw.workingHoursByDay || {};
             const legacyDays = (() => { try { return JSON.parse(localStorage.getItem('workingHoursByDay') || '{}'); } catch(_){return {};} })();
@@ -1195,12 +1190,6 @@
             if (emailCancelEl) emailCancelEl.value = emT.cancelMessage || 'Pozdravljeni {ime},\n\nvaš termin pri {posel} je bil odpovedan.\n\nKontaktirajte nas za novo rezervacijo.\n\nLep pozdrav!';
             const emailReschedEl = document.getElementById('emailRescheduleTemplate');
             if (emailReschedEl) emailReschedEl.value = emT.rescheduleMessage || 'Pozdravljeni {ime},\n\nvaš termin pri {posel} je bil spremenjen.\n\nNov datum: {datum} ob {cas}\n\nSe vidimo!';
-
-            // ── WhatsApp settings ─────────────────────────────────
-            const waT = s.whatsappTemplates || {};
-            setChk('whatsappEnabled', !!waT.enabled);
-            const waConfEl = document.getElementById('whatsappConfirmTemplate');
-            if (waConfEl) waConfEl.value = waT.confirmationMessage || 'Hvala za rezervacijo pri {posel}! Vaš termin: {datum} ob {cas}. Upravljanje: {link}';
         }
 
         // ── Dynamic list renderers ────────────────────────────────────────────────
@@ -1921,12 +1910,7 @@
                 cancelMessage: (document.getElementById('emailCancelTemplate')?.value || '').trim() || 'Pozdravljeni {ime},\n\nvaš termin pri {posel} je bil odpovedan.\n\nKontaktirajte nas za novo rezervacijo.\n\nLep pozdrav!',
                 rescheduleMessage: (document.getElementById('emailRescheduleTemplate')?.value || '').trim() || 'Pozdravljeni {ime},\n\nvaš termin pri {posel} je bil spremenjen.\n\nNov datum: {datum} ob {cas}\n\nSe vidimo!'
             };
-
-            // ── WhatsApp templates ─────────────────────────────────
-            s.whatsappTemplates = {
-                enabled: getC('whatsappEnabled'),
-                confirmationMessage: (document.getElementById('whatsappConfirmTemplate')?.value || '').trim() || 'Hvala za rezervacijo pri {posel}! Vaš termin: {datum} ob {cas}. Upravljanje: {link}'
-            };
+            delete s.whatsappTemplates;
 
             // ── Persist ───────────────────────────────────────────
             try { localStorage.setItem('bookingSettings', JSON.stringify(s)); } catch (e) {}

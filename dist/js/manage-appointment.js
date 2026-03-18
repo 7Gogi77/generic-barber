@@ -51,6 +51,24 @@ function normalisePhone(p) {
     return s;
 }
 
+function getCustomerNotificationPreference(appointment) {
+    return appointment?.extendedProps?.notificationPreference || appointment?.notificationPreference || '';
+}
+
+function shouldNotifyCustomerByPhone(appointment) {
+    const preference = getCustomerNotificationPreference(appointment);
+    if (preference === 'email') return false;
+    if (preference === 'phone') return true;
+    return !!normalisePhone(appointment?.extendedProps?.phone || appointment?.phone || '');
+}
+
+function shouldNotifyCustomerByEmail(appointment) {
+    const preference = getCustomerNotificationPreference(appointment);
+    if (preference === 'phone') return false;
+    if (preference === 'email') return true;
+    return !!(appointment?.extendedProps?.email || appointment?.email || '');
+}
+
 /* ─── Search ────────────────────────────────────────── */
 async function searchAppointment() {
     const email = document.getElementById('searchEmail').value.trim().toLowerCase();
@@ -338,21 +356,22 @@ async function confirmReschedule() {
             .replace(/\{posel\}/g, biz)
             .replace(/\{datum\}/g, dateLabel)
             .replace(/\{cas\}/g, selectedTime);
-        await trySend(currentAppointment.extendedProps.phone, _reschedMsg);
+        if (shouldNotifyCustomerByPhone(currentAppointment)) {
+            await trySend(currentAppointment.extendedProps.phone, _reschedMsg);
+        }
         await trySend(window.SITE_CONFIG?.ownerPhone,
             `Termin je bil spremenjen. Stranka: ${currentAppointment.extendedProps.customer}, Nov termin: ${dateLabel} ob ${selectedTime}`);
 
         // Email notifications
-        if (window.EmailHandler) {
+        if (window.EmailHandler && shouldNotifyCustomerByEmail(currentAppointment)) {
             try { await window.EmailHandler.sendReschedule(currentAppointment, dateLabel, selectedTime); } catch (_) {}
+        }
+        if (window.EmailHandler) {
             try { await window.EmailHandler.notifyOwner(
                 'Sprememba termina',
                 `Termin je bil spremenjen. Stranka: ${currentAppointment.extendedProps.customer}, Nov termin: ${dateLabel} ob ${selectedTime}`
             ); } catch (_) {}
         }
-
-        // WhatsApp notification
-        if (window.WhatsAppHandler) { try { await window.WhatsAppHandler.sendReschedule(currentAppointment, dateLabel, selectedTime); } catch (_) {} }
 
         showAlert('✓ Termin je bil uspešno spremenjen!', 'success');
         selectedDate = selectedTime = null;
@@ -385,21 +404,22 @@ async function cancelAppointment() {
             .replace(/\{posel\}/g, biz)
             .replace(/\{datum\}/g, '')
             .replace(/\{cas\}/g, '');
-        await trySend(ep.phone, _cancelMsg);
+        if (shouldNotifyCustomerByPhone(currentAppointment)) {
+            await trySend(ep.phone, _cancelMsg);
+        }
         await trySend(window.SITE_CONFIG?.ownerPhone,
             `Termin je bil odpovedan. Stranka: ${ep.customer}, Email: ${ep.email}, Tel: ${ep.phone}`);
 
         // Email notifications
-        if (window.EmailHandler) {
+        if (window.EmailHandler && shouldNotifyCustomerByEmail(currentAppointment)) {
             try { await window.EmailHandler.sendCancel(currentAppointment); } catch (_) {}
+        }
+        if (window.EmailHandler) {
             try { await window.EmailHandler.notifyOwner(
                 'Odpoved termina',
                 `Termin je bil odpovedan. Stranka: ${ep.customer}, Email: ${ep.email}, Tel: ${ep.phone}`
             ); } catch (_) {}
         }
-
-        // WhatsApp notification
-        if (window.WhatsAppHandler) { try { await window.WhatsAppHandler.sendCancel(currentAppointment); } catch (_) {} }
 
         showAlert('✓ Termin je bil odpovedan.', 'success');
         setTimeout(clearSearch, 3000);
