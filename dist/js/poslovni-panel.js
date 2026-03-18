@@ -633,24 +633,24 @@
                         var detail = document.getElementById('customerDetail');
                         if (!detail) return;
                         detail.style.display = 'block';
-                        detail.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
                         var esc = typeof _escH === 'function' ? _escH : function(s){ return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); };
                         var nameStr = esc((rec.fullName || ((rec.firstName||'') + ' ' + (rec.surname||''))).trim() || '-');
                         var _cd = !!window._custCanDelCli;
-                        detail.innerHTML = '<div style="background:#fff;border:1px solid #e5e5ea;border-radius:12px;padding:16px;margin-top:8px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">'
-                            + '<div style="font-size:17px;font-weight:600;margin-bottom:12px;">' + nameStr + '</div>'
-                            + '<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;">'
-                            + '<div style="flex:1;min-width:140px;"><span style="font-size:12px;color:#8e8e93;display:block;">Email</span><span style="font-size:14px;">' + esc(rec.email || '-') + '</span></div>'
-                            + '<div style="flex:1;min-width:140px;"><span style="font-size:12px;color:#8e8e93;display:block;">Telefon</span><span style="font-size:14px;">' + esc(rec.phone || '-') + '</span></div>'
-                            + '<div style="flex:1;min-width:100px;"><span style="font-size:12px;color:#8e8e93;display:block;">Terminov</span><span style="font-size:14px;">' + (rec.count || 0) + '</span></div>'
+                        detail.innerHTML = '<div style="background:#ffffff;color:#000000;border:2px solid #007AFF;border-radius:12px;padding:20px;margin-top:12px;box-shadow:0 4px 16px rgba(0,0,0,0.12);position:relative;z-index:10;">'
+                            + '<div style="font-size:18px;font-weight:700;margin-bottom:14px;color:#1c1c1e;">' + nameStr + '</div>'
+                            + '<div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px;">'
+                            + '<div style="flex:1;min-width:140px;"><span style="font-size:12px;color:#8e8e93;display:block;margin-bottom:2px;">Email</span><span style="font-size:14px;color:#1c1c1e;">' + esc(rec.email || '-') + '</span></div>'
+                            + '<div style="flex:1;min-width:140px;"><span style="font-size:12px;color:#8e8e93;display:block;margin-bottom:2px;">Telefon</span><span style="font-size:14px;color:#1c1c1e;">' + esc(rec.phone || '-') + '</span></div>'
+                            + '<div style="flex:1;min-width:100px;"><span style="font-size:12px;color:#8e8e93;display:block;margin-bottom:2px;">Terminov</span><span style="font-size:14px;color:#1c1c1e;">' + (rec.count || 0) + '</span></div>'
                             + '</div>'
                             + '<div style="display:flex;gap:8px;flex-wrap:wrap;">'
-                            + '<button id="custDetailEditBtn" class="btn btn-primary" style="font-size:13px;padding:8px 16px;">Uredi</button>'
-                            + (_cd ? '<button id="custDetailDeleteBtn" class="btn btn-danger" style="font-size:13px;padding:8px 16px;">Izbri\u0161i</button>' : '')
-                            + '<button id="custDetailCloseBtn" class="btn btn-secondary" style="font-size:13px;padding:8px 16px;">Zapri</button>'
+                            + '<button id="custDetailEditBtn" class="btn btn-primary" style="font-size:13px;padding:8px 18px;flex:none;">Uredi</button>'
+                            + (_cd ? '<button id="custDetailDeleteBtn" class="btn btn-danger" style="font-size:13px;padding:8px 18px;flex:none;">Izbri\u0161i</button>' : '')
+                            + '<button id="custDetailCloseBtn" class="btn btn-secondary" style="font-size:13px;padding:8px 18px;flex:none;color:#1c1c1e;">Zapri</button>'
                             + '</div>'
                             + '</div>'
                             + '<input type="hidden" id="custDetailIdx" value="' + idx + '">';
+                        setTimeout(function(){ detail.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }, 50);
                     };
 
                     if (isMobile) {
