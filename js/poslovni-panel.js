@@ -651,10 +651,10 @@
                             var card = document.getElementById('custDetailCard');
                             if (!overlay || !card) return;
                             card.innerHTML = '<div style="font-size:20px;font-weight:700;margin-bottom:16px;color:#1c1c1e;">' + nameStr + '</div>'
-                                + '<div style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:18px;">'
-                                + '<div style="flex:1;min-width:140px;"><span style="font-size:12px;color:#8e8e93;display:block;margin-bottom:3px;">Email</span><span style="font-size:15px;color:#1c1c1e;">' + esc(rec.email || '-') + '</span></div>'
-                                + '<div style="flex:1;min-width:140px;"><span style="font-size:12px;color:#8e8e93;display:block;margin-bottom:3px;">Telefon</span><span style="font-size:15px;color:#1c1c1e;">' + esc(rec.phone || '-') + '</span></div>'
-                                + '<div style="flex:1;min-width:100px;"><span style="font-size:12px;color:#8e8e93;display:block;margin-bottom:3px;">Terminov</span><span style="font-size:15px;color:#1c1c1e;">' + (rec.count || 0) + '</span></div>'
+                                + '<div style="display:flex;flex-direction:column;gap:10px;margin-bottom:18px;">'
+                                + '<div><span style="font-size:12px;color:#8e8e93;display:block;margin-bottom:3px;">Email</span><span style="font-size:15px;color:#1c1c1e;word-break:break-all;">' + esc(rec.email || '-') + '</span></div>'
+                                + '<div><span style="font-size:12px;color:#8e8e93;display:block;margin-bottom:3px;">Telefon</span><span style="font-size:15px;color:#1c1c1e;">' + esc(rec.phone || '-') + '</span></div>'
+                                + '<div><span style="font-size:12px;color:#8e8e93;display:block;margin-bottom:3px;">Terminov</span><span style="font-size:15px;color:#1c1c1e;">' + (rec.count || 0) + '</span></div>'
                                 + '</div>'
                                 + '<div style="display:flex;gap:10px;flex-wrap:wrap;">'
                                 + '<button id="custDetailEditBtn" style="background:#007AFF;color:#fff;border:none;border-radius:10px;padding:10px 20px;font-size:14px;font-weight:600;cursor:pointer;">Uredi</button>'
