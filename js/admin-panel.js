@@ -148,7 +148,7 @@
                     return;
                 }
 
-                sessionStorage.setItem('admin_token', \local-\\);
+                sessionStorage.setItem('admin_token', 'local-admin');
                 sessionStorage.setItem('admin_authenticated', 'true');
                 sessionStorage.setItem('admin_session_time', Date.now().toString());
                 // Also set bsp_session so poslovni-panel recognises the login
