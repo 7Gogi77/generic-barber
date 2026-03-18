@@ -6,7 +6,7 @@
  * For local images, place them in the /images folder and use: "images/your-image.jpg"
  */
 
-const DEFAULT_DATABASE_URL = 'https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app';
+const DEFAULT_DATABASE_URL = '/db';
 const DATABASE_URL_STORAGE_KEY = 'backend_database_url';
 
 const SITE_CONFIG = {
