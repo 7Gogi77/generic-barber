@@ -837,26 +837,40 @@ const CalendarEngine = {
             // Generate events with deletion filter applied
             const events = await CalendarEngine.generateCalendarEvents(freshScheduleData);
             const _wf = window._calWorkerFilterId;
-            // Also get worker name from session for dual matching (events may store name or ID)
+            // Get worker session info for robust matching across ID namespaces
             var _wfName = '';
+            var _wfEmpId = '';   // employee-list ID (bookings store this in ep.worker)
+            var _isWorkerSess = false;
             try {
               var _wfSess = typeof window.bspGetSession === 'function' ? window.bspGetSession() : null;
               if (_wfSess && _wfSess.role === 'worker') {
+                _isWorkerSess = true;
                 _wfName = _wfSess.workerName || '';
+                // Resolve the employee-list ID from the barber list by name match
+                // (bookings store this ID, not the Firebase key)
+                if (_wfName) {
+                  var _empList = (window.SITE_CONFIG && window.SITE_CONFIG.barbersSection && window.SITE_CONFIG.barbersSection.list) || [];
+                  var _empMatch = _empList.find(function(e) { return e.name === _wfName; });
+                  if (_empMatch) _wfEmpId = _empMatch.id || '';
+                }
               }
             } catch (_) {}
             const _filtered = (!_wf || _wf === 'all')
                 ? events
                 : events.filter(e => {
                     const ep = e.extendedProps || {};
-                    // Events without any worker association pass through
                     const evW = ep.worker || ep.workerId || ep.workerName || '';
-                    if (!evW) return true;
-                    // Match by ID or name (events may store either)
+                    // Events without any worker: admins see them, workers don't
+                    if (!evW) return !_isWorkerSess;
+                    // Match by Firebase key
                     if (evW === _wf) return true;
+                    // Match by worker name
                     if (_wfName && evW === _wfName) return true;
+                    // Match by employee-list ID (bookings use this namespace)
+                    if (_wfEmpId && evW === _wfEmpId) return true;
+                    // Match workerName prop specifically
                     if (ep.workerName && (ep.workerName === _wf || ep.workerName === _wfName)) return true;
-                    if (ep.workerId && ep.workerId === _wf) return true;
+                    if (ep.workerId && (ep.workerId === _wf || ep.workerId === _wfEmpId)) return true;
                     return false;
                   });
             successCallback(_filtered);

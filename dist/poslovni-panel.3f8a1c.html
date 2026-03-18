@@ -125,6 +125,10 @@
                     }
                     if (typeof window._bspApplyWorkerAccess === 'function') window._bspApplyWorkerAccess();
                     if (window.calendar && typeof window.calendar.refetchEvents === 'function') window.calendar.refetchEvents();
+                    // Safety: re-apply display filter after async refetch completes
+                    setTimeout(function() {
+                        if (typeof window._bspApplyWorkerAccess === 'function') window._bspApplyWorkerAccess();
+                    }, 600);
                     return;
                 }
                 errEl.textContent = 'Napačno uporabniško ime ali geslo.';
