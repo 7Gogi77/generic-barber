@@ -1,7 +1,8 @@
 /**
- * WhatsApp Handler — Appointment Notifications via Evolution API
+ * WhatsApp Handler — Appointment Notifications via Meta WhatsApp Cloud API
  *
- * Uses /api/send-whatsapp proxy to Evolution API (self-hosted) for WhatsApp messages.
+ * Uses /api/send-whatsapp proxy to Meta Graph API for WhatsApp messages.
+ * Requires WHATSAPP_TOKEN + WHATSAPP_PHONE_ID environment variables in Vercel.
  *
  * Templates use {ime}, {posel}, {datum}, {cas}, {link} variables.
  */

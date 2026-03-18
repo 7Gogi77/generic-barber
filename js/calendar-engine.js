@@ -835,7 +835,14 @@ const CalendarEngine = {
             const _wf = window._calWorkerFilterId;
             const _filtered = (!_wf || _wf === 'all')
                 ? events
-                : events.filter(e => !e.extendedProps?.worker || e.extendedProps.worker === _wf);
+                : events.filter(e => {
+                    const ep = e.extendedProps || {};
+                    // Events without any worker association pass through
+                    const evW = ep.worker || ep.workerId || ep.workerName || '';
+                    if (!evW) return true;
+                    // Check all worker identity fields
+                    return evW === _wf || ep.workerName === _wf || ep.workerId === _wf;
+                  });
             successCallback(_filtered);
           } catch (err) { failureCallback(err); }
         },
@@ -1160,10 +1167,29 @@ const CalendarEngine = {
               // This avoids any automatic DOM manipulation or forced re-initialization.
             }
           } catch (err) {}
+
+          // Apply worker access filter after every event load —
+          // this reliably hides other workers' events even on initial load
+          // (the events callback is async, so the post-init call may fire too early)
+          if (typeof window._bspApplyWorkerAccess === 'function') {
+            window._bspApplyWorkerAccess();
+          }
         },
 
         eventDrop: async (dropInfo) => {
           
+          // Worker permission check: revert if worker lacks edit permission for this event type
+          try {
+            var _sess = typeof window.bspGetSession === 'function' ? window.bspGetSession() : null;
+            if (_sess && _sess.role === 'worker') {
+              var _np = typeof window._bspNormalizePerms === 'function' ? window._bspNormalizePerms(_sess.permissions) : {};
+              var _ep = dropInfo.event.extendedProps || {};
+              var _isBooking = _ep.isBooking || _ep.tab === 'customer' || _ep.customer || (dropInfo.event.id && String(dropInfo.event.id).startsWith('apt_'));
+              if (_isBooking && !_np.canEditAppointments) { dropInfo.revert(); return; }
+              if (!_isBooking && !_np.canEditEvents) { dropInfo.revert(); return; }
+            }
+          } catch (_) {}
+
           try {
             // CRITICAL: Reload fresh data from storage to avoid using stale copies
             let currentData = scheduleData;
@@ -1256,6 +1282,18 @@ const CalendarEngine = {
 
         eventResize: async (resizeInfo) => {
           
+          // Worker permission check: revert if worker lacks edit permission for this event type
+          try {
+            var _sess = typeof window.bspGetSession === 'function' ? window.bspGetSession() : null;
+            if (_sess && _sess.role === 'worker') {
+              var _np = typeof window._bspNormalizePerms === 'function' ? window._bspNormalizePerms(_sess.permissions) : {};
+              var _ep = resizeInfo.event.extendedProps || {};
+              var _isBooking = _ep.isBooking || _ep.tab === 'customer' || _ep.customer || (resizeInfo.event.id && String(resizeInfo.event.id).startsWith('apt_'));
+              if (_isBooking && !_np.canEditAppointments) { resizeInfo.revert(); return; }
+              if (!_isBooking && !_np.canEditEvents) { resizeInfo.revert(); return; }
+            }
+          } catch (_) {}
+
           try {
             // Find and update the event in scheduleData
             const eventIndex = scheduleData.events.findIndex(e => e.id === resizeInfo.event.id);

@@ -4187,6 +4187,18 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                 
                 container.innerHTML = '<div class="calendar-loading"><div class="calendar-spinner"></div><span>Inicializiram koledar...</span></div>';
                 
+                // Pre-set worker filter ID BEFORE calendar init so the very first
+                // async events callback already filters by worker identity.
+                (function _presetWorkerFilter() {
+                    var sess = window.bspGetSession ? window.bspGetSession() : null;
+                    if (sess && sess.role === 'worker') {
+                        var perms = sess.permissions || {};
+                        if (!perms.canViewAll) {
+                            window._calWorkerFilterId = sess.workerId || sess.workerName || '';
+                        }
+                    }
+                })();
+
                 const calendar = CalendarEngine.initializeCalendar(container, scheduleData);
                 debugLog(`📦 Calendar returned: ${calendar ? 'YES' : 'NO'}`);
 
