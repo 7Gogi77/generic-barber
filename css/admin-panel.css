@@ -1182,8 +1182,10 @@
             margin-bottom: 24px;
         }
 
-        .sidebar > div[style*="flex:1"] {
+        .sidebar-spacer {
             display: block !important;
+            flex: 0 0 18px;
+            width: 100%;
         }
 
         .nav-item {
@@ -1193,7 +1195,7 @@
             justify-content: flex-start;
             width: 100%;
             padding: 0 14px;
-            margin-bottom: 4px;
+            margin-bottom: 2px;
             gap: 0;
         }
 
@@ -1214,7 +1216,7 @@
             width: 44px;
             height: 44px;
             border-radius: 12px;
-            margin-bottom: 8px;
+            margin-bottom: 0;
             box-shadow: none;
         }
 
@@ -1226,7 +1228,8 @@
             margin-left: 72px;
             width: calc(100% - 72px);
             min-height: 100vh;
-            height: 100vh;
+            height: auto;
+            overflow: visible;
             background: transparent;
         }
 
@@ -1236,11 +1239,12 @@
         }
 
         .main-content .admin-container {
-            height: 100%;
-            overflow-y: auto;
+            height: auto;
+            min-height: 100vh;
+            overflow: visible;
             max-width: 1160px;
             margin: 0 auto;
-            padding: 28px 28px 40px;
+            padding: 28px 28px 48px;
         }
 
         .admin-header {
@@ -1435,7 +1439,7 @@
 
         @media (max-width: 768px) {
             .main-content .admin-container {
-                padding: 16px 14px 24px;
+                padding: 16px 14px calc(32px + env(safe-area-inset-bottom));
             }
 
             .admin-header {
@@ -1486,7 +1490,7 @@
 
         @media (max-width: 480px) {
             .main-content .admin-container {
-                padding: 12px 10px 18px;
+                padding: calc(64px + env(safe-area-inset-top)) 10px calc(28px + env(safe-area-inset-bottom));
             }
 
             .admin-header {
@@ -1594,7 +1598,7 @@
             }
 
             .sidebar:not(.expanded) .nav-item,
-            .sidebar:not(.expanded) > div[style*="flex:1"] {
+            .sidebar:not(.expanded) .sidebar-spacer {
                 display: none;
             }
 
