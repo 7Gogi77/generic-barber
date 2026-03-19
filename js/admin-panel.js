@@ -46,6 +46,7 @@
 
         const ADMIN_TAB_STORAGE_KEY = 'adminLastTab';
         let adminDirty = false;
+        let activeGuideStepKey = null;
 
         function setAdminSaveState(state, message) {
             const statusEl = document.getElementById('adminSaveStatus');
@@ -98,10 +99,21 @@
             setAdminSaveState('clean', message);
         }
 
-        function updateGuideState(tabName) {
+        function updateGuideState() {
             document.querySelectorAll('.guide-step').forEach((button) => {
-                button.classList.toggle('is-current', button.dataset.guideTarget === tabName);
+                const guideKey = `${button.dataset.guideTarget}:${button.dataset.sectionTarget}`;
+                button.classList.toggle('is-current', guideKey === activeGuideStepKey);
             });
+        }
+
+        function setActiveGuideStep(tabName, sectionId) {
+            activeGuideStepKey = `${tabName}:${sectionId}`;
+            updateGuideState();
+        }
+
+        function clearGuideState() {
+            activeGuideStepKey = null;
+            updateGuideState();
         }
 
         function activateSidebarButtonForTab(tabName) {
@@ -118,7 +130,7 @@
             }
         }
 
-        function activateAdminTab(tabName) {
+        function activateAdminTab(tabName, options = {}) {
             const selectedTab = document.getElementById(tabName);
             if (!selectedTab) return false;
 
@@ -126,7 +138,11 @@
             selectedTab.classList.add('active');
             activateSidebarButtonForTab(tabName);
             localStorage.setItem(ADMIN_TAB_STORAGE_KEY, tabName);
-            updateGuideState(tabName);
+            if (options.clearGuideSelection) {
+                clearGuideState();
+            } else {
+                updateGuideState();
+            }
             return true;
         }
 
@@ -145,6 +161,7 @@
 
         function openGuideStep(tabName, sectionId) {
             activateAdminTab(tabName);
+            setActiveGuideStep(tabName, sectionId);
             window.setTimeout(() => scrollToAdminSection(sectionId), 90);
         }
 
@@ -155,7 +172,7 @@
         // Tab switching function (sidebar navigation)
         function switchTab(event, tabName) {
             if (event) event.preventDefault();
-            activateAdminTab(tabName);
+            activateAdminTab(tabName, { clearGuideSelection: true });
         }
 
         // Sidebar behavior copied from poslovni-panel UX.
@@ -337,7 +354,7 @@
             if (panel) panel.classList.remove('active');
 
             const loginScreen = document.getElementById('loginScreen');
-            if (loginScreen) loginScreen.style.display = 'flex';
+            if (loginScreen) loginScreen.style.removeProperty('display');
 
             const loginError = document.getElementById('loginError');
             if (loginError) {
@@ -345,11 +362,13 @@
                 loginError.style.display = 'none';
             }
 
-            const usernameInput = document.getElementById('adminUsername');
-            const passwordInput = document.getElementById('adminPassword');
-            if (usernameInput) usernameInput.value = '';
-            if (passwordInput) passwordInput.value = '';
+            const loginForm = document.querySelector('#loginScreen form');
+            if (loginForm) loginForm.reset();
 
+            const sidebar = document.getElementById('adminSidebar');
+            if (sidebar) sidebar.classList.remove('expanded');
+
+            clearGuideState();
             markAdminClean();
         }
 
