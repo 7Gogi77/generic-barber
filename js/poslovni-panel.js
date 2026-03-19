@@ -468,7 +468,7 @@
                     sidebar.classList.toggle('expanded');
                     localStorage.setItem('sidebarExpanded', sidebar.classList.contains('expanded'));
                     // Keep all open side panels positioned to the right of the sidebar
-                    const w = sidebar.classList.contains('expanded') ? 260 : 72;
+                    const w = window.innerWidth <= 480 ? 0 : (sidebar.classList.contains('expanded') ? 260 : 72);
                     ['businessSettingsPanel','customerListPanel','analyticsPanel'].forEach(id => {
                         const p = document.getElementById(id);
                         if (p && p.classList.contains('open')) {
@@ -498,6 +498,14 @@
                         setTimeout(() => { forceCalendarRelayout('sidebar-close'); }, 370);
                     });
                 }
+
+                document.addEventListener('click', (event) => {
+                    if (window.innerWidth > 480) return;
+                    if (!sidebar.classList.contains('expanded')) return;
+                    if (event.target.closest('#sidebar')) return;
+                    sidebar.classList.remove('expanded');
+                    localStorage.setItem('sidebarExpanded', 'false');
+                });
 
                 // navigation — listen on entire nav-item row so text label also triggers navigation
                 const navIcons = sidebar.querySelectorAll('.nav-icon');
@@ -4658,20 +4666,6 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                 // (the initial async events callback may still be pending from render()).
                 if (typeof calendar.refetchEvents === 'function') calendar.refetchEvents();
 
-                // On mobile, move the burger menu button into the FC toolbar left chunk
-                if (window.innerWidth <= 768) {
-                    const burgerBtn = document.getElementById('sidebarToggle');
-                    const calEl = document.getElementById('scheduleCalendar');
-                    const leftChunk = calEl && calEl.querySelector('.fc-toolbar-chunk:first-child');
-                    if (burgerBtn && leftChunk) {
-                        leftChunk.insertBefore(burgerBtn, leftChunk.firstChild);
-                        burgerBtn.classList.add('in-toolbar');
-                        // Remove extra left padding now that burger is inside toolbar
-                        const toolbar = calEl.querySelector('.fc-toolbar');
-                        if (toolbar) toolbar.classList.add('burger-inside');
-                    }
-                }
-                
                 // DEBUG: Check if dayMaxEvents is set
 
                 // Calendar interactions

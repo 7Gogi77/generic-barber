@@ -123,6 +123,13 @@
             transform: scale(0.95);
         }
 
+        .sidebar-spacer {
+            display: block;
+            flex: 1 1 auto;
+            min-height: 18px;
+            width: 100%;
+        }
+
         .nav-icon {
             width: 44px;
             height: 44px;
@@ -1757,6 +1764,10 @@
                 display: none;
             }
 
+            .sidebar:not(.expanded) .sidebar-spacer {
+                display: none;
+            }
+
             /* Calendar header - iOS compact */
             /* padding-left accounts for fixed burger until JS moves it into toolbar */
             .fc .fc-toolbar {
@@ -1821,6 +1832,64 @@
                 background: transparent !important;
                 color: var(--ios-text-primary, #1c1c1e) !important;
                 box-shadow: none !important;
+            }
+
+            /* Match admin-panel mobile sidebar behavior on phone. */
+            .sidebar {
+                width: 0;
+                height: 100%;
+                padding: 0;
+                overflow: visible;
+            }
+
+            .sidebar.expanded {
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: auto;
+                width: 100%;
+                height: 100dvh;
+                padding: calc(56px + env(safe-area-inset-top)) 0 calc(16px + env(safe-area-inset-bottom));
+                overflow-y: auto;
+                overflow-x: hidden;
+                background: rgba(28, 28, 30, 0.98);
+            }
+
+            .sidebar-toggle {
+                position: fixed !important;
+                left: 12px;
+                top: calc(12px + env(safe-area-inset-top));
+                width: 36px;
+                height: 36px;
+                background: var(--ios-blue) !important;
+                border-radius: var(--ios-radius-md);
+                z-index: 2001;
+                margin: 0 !important;
+                box-shadow: var(--ios-shadow-md);
+                flex-shrink: 0;
+            }
+
+            .sidebar.expanded .sidebar-toggle {
+                display: none !important;
+            }
+
+            .sidebar.expanded .sidebar-close-mobile {
+                position: fixed;
+                top: calc(12px + env(safe-area-inset-top));
+                right: 16px;
+                z-index: 2002;
+            }
+
+            .sidebar:not(.expanded) .nav-item,
+            .sidebar:not(.expanded) .sidebar-spacer {
+                display: none;
+            }
+
+            .main-content,
+            .sidebar.expanded ~ .main-content {
+                margin-left: 0 !important;
+                width: 100% !important;
+                display: block;
             }
 
             .fc .fc-button-group .fc-button-primary.fc-button-active {
