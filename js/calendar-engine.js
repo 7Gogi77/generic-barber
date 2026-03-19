@@ -695,14 +695,14 @@ const CalendarEngine = {
           center: 'title',
           right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
         },
-        // Slovenian button text (compact single-letter on mobile)
+        // Slovenian button text (short mobile labels instead of single letters)
         buttonText: _isMobile ? {
           today:    'Danes',
-          month:    'M',
-          week:     'T',
-          day:      'D',
-          list:     'S',
-          listWeek: 'S'
+          month:    'Mes',
+          week:     'Ted',
+          day:      'Dan',
+          list:     'Sez',
+          listWeek: 'Sez'
         } : {
           today:    'Danes',
           month:    'Mesec',
@@ -733,6 +733,23 @@ const CalendarEngine = {
             return { html: `<span>${dayNum} ${monthNames[d.getMonth()]}</span>` };
           }
           return { html: `<span>${dayNum}</span>` };
+        },
+        dayHeaderContent: function(arg) {
+          if (!_isMobile) return undefined;
+
+          const vt = arg.view?.type || '';
+          const shortWeekdays = ['Ne', 'Po', 'To', 'Sr', 'Če', 'Pe', 'So'];
+          const weekday = shortWeekdays[arg.date.getDay()] || '';
+
+          if (vt === 'dayGridMonth') {
+            return { html: `<span>${weekday}</span>` };
+          }
+
+          if (vt === 'timeGridWeek') {
+            return { html: `<span>${weekday}</span>` };
+          }
+
+          return undefined;
         },
         moreLinkClick: function(info) {
           window._moreLinkJustClicked = true;
@@ -1058,10 +1075,15 @@ const CalendarEngine = {
               };
             }
 
-            // On mobile month view: show first name + icon
+            // On mobile month view: show a compact readable name instead of a single clipped letter
             if (isMobileView) {
-              const mFirstName = displayName.split(' ')[0] || '';
-              return { html: `<div style="display:flex;align-items:center;gap:2px;width:100%;padding:0 2px;overflow:hidden;line-height:1.2;"><i class="bi ${iconClass}" style="font-size:9px;flex-shrink:0;"></i><span style="font-size:9px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${mFirstName}</span></div>` };
+              const nameParts = displayName.split(' ').filter(Boolean);
+              const monthLabel = nameParts.length > 1
+                ? `${nameParts[0]} ${nameParts[1].charAt(0)}.`
+                : (nameParts[0] || displayName);
+              return {
+                html: `<div style="display:block;width:100%;padding:1px 2px;overflow:hidden;line-height:1.15;"><span style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:10px;font-weight:700;word-break:break-word;">${monthLabel}</span></div>`
+              };
             }
 
             // Desktop timeGrid (week/day): top-left aligned name / surname / time range

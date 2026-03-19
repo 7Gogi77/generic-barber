@@ -501,7 +501,9 @@
             const ok = confirm('To bo prepisalo trenutno vsebino in barve (naslovi, storitve, galerija, itd.). Nadaljujem?');
             if (!ok) return;
 
+            SITE_CONFIG._templateKey = key;
             SITE_CONFIG.shopName = preset.shopName;
+            SITE_CONFIG.businessName = preset.shopName;
             if (preset.navLinks) {
                 SITE_CONFIG.navLinks = preset.navLinks.map(l => ({ ...l }));
             }
@@ -555,6 +557,11 @@
 
         // Load forms with current data
         function loadAdminForms() {
+            const templateSelect = document.getElementById('templateSelect');
+            if (templateSelect && typeof SITE_CONFIG._templateKey === 'string' && TEMPLATE_PRESETS[SITE_CONFIG._templateKey]) {
+                templateSelect.value = SITE_CONFIG._templateKey;
+            }
+
             // Shop
             document.getElementById('shopName').value = SITE_CONFIG.shopName;
 
@@ -1722,7 +1729,12 @@
 
         // Auto-save on input change
         document.addEventListener('change', function(e) {
-            if (e.target.id === 'shopName') SITE_CONFIG.shopName = e.target.value;
+            if (e.target.id === 'shopName') {
+                SITE_CONFIG.shopName = e.target.value;
+                if (!SITE_CONFIG.businessName || SITE_CONFIG.businessName === 'Blade & Bourbon') {
+                    SITE_CONFIG.businessName = e.target.value;
+                }
+            }
             if (e.target.id === 'heroSubtitle') SITE_CONFIG.hero.subtitle = e.target.value;
             if (e.target.id === 'heroTitle') SITE_CONFIG.hero.title = e.target.value;
             if (e.target.id === 'heroButton') SITE_CONFIG.hero.buttonText = e.target.value;
@@ -1882,13 +1894,51 @@
         });
         
         // Load appointments on init
+        async function fetchRemoteSiteConfig() {
+            const dbUrl = window.AppBackend && typeof window.AppBackend.getDatabaseUrl === 'function'
+                ? window.AppBackend.getDatabaseUrl('site_config.json', { _t: Date.now() })
+                : 'https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app/site_config.json';
+
+            try {
+                const response = await fetch(dbUrl, {
+                    cache: 'no-store',
+                    headers: {
+                        'Cache-Control': 'no-cache, no-store, must-revalidate',
+                        'Pragma': 'no-cache',
+                        'Expires': '0'
+                    }
+                });
+
+                if (!response.ok) {
+                    return null;
+                }
+
+                const remoteConfig = await response.json();
+                return remoteConfig && typeof remoteConfig === 'object' ? remoteConfig : null;
+            } catch (_) {
+                return null;
+            }
+        }
+
         async function loadConfig() {
+            const remoteConfig = await fetchRemoteSiteConfig();
+            if (remoteConfig) {
+                Object.assign(SITE_CONFIG, remoteConfig);
+                try {
+                    localStorage.setItem('site_config_backup', JSON.stringify(SITE_CONFIG));
+                } catch (e) {}
+            }
+
             const saved = localStorage.getItem('site_config_backup');
-            if (saved) {
+            if (!remoteConfig && saved) {
                 try {
                     const config = JSON.parse(saved);
                     Object.assign(SITE_CONFIG, config);
                 } catch (e) {}
+            }
+
+            if ((!SITE_CONFIG.businessName || SITE_CONFIG.businessName === 'Blade & Bourbon') && SITE_CONFIG.shopName && SITE_CONFIG.shopName !== 'Blade & Bourbon') {
+                SITE_CONFIG.businessName = SITE_CONFIG.shopName;
             }
             
             // Ensure default values exist

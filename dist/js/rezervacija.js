@@ -998,6 +998,9 @@
             infoDiv.className = 'slots-info';
             infoDiv.style.cssText = 'grid-column: 1 / -1; margin-bottom: 12px; padding: 10px; background: rgba(0, 122, 255, 0.1); border-radius: 8px; font-size: 13px; color: var(--ios-blue);';
             infoDiv.innerHTML = `<strong>Trajanje:</strong> ${durationStr}`;
+            if (slots.some(slot => getLocalDateStr(slot.end) !== getLocalDateStr(slot.start))) {
+                infoDiv.innerHTML += `<div style="margin-top: 6px; font-size: 12px; line-height: 1.45; color: var(--ios-text-secondary);">Daljsi termin se zacne na izbrani dan in se po potrebi nadaljuje naslednji delovni dan.</div>`;
+            }
             grid.appendChild(infoDiv);
             
             // Render slots with end time tooltip
@@ -1010,10 +1013,9 @@
                 const endMin = slot.end.getMinutes();
                 const endTimeStr = `${String(endHour).padStart(2, '0')}:${String(endMin).padStart(2, '0')}`;
                 const endDateStr = getLocalDateStr(slot.end);
-                // Use dd/mm/yyyy for end date if it spans to a different day
                 const endLabel = (endDateStr === getLocalDateStr(slot.start))
-                    ? `→ ${endTimeStr}`
-                    : `→ ${formatDateSlash(endDateStr)} ${endTimeStr}`;
+                    ? `Konca se ob ${endTimeStr}`
+                    : `Konca se ${formatDateSlash(endDateStr)} ob ${endTimeStr}`;
                 
                 btn.innerHTML = `
                     <div class="slot-time">${slot.timeStr}</div>
@@ -1282,7 +1284,7 @@
                 const startDateStr = BookingState.selectedDate ? getLocalDateStr(BookingState.selectedDate) : endDateStr;
                 document.getElementById('summaryTime').textContent = 
                     (endDateStr !== startDateStr)
-                        ? `${BookingState.selectedTime.timeStr} - ${formatDateSlash(endDateStr)} ${endStr}`
+                        ? `Zacetek ${BookingState.selectedTime.timeStr}, konec ${formatDateSlash(endDateStr)} ob ${endStr}`
                         : `${BookingState.selectedTime.timeStr} - ${endStr}`;
             }
             
