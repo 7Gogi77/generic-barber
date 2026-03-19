@@ -1766,3 +1766,296 @@
                 padding: calc(64px + env(safe-area-inset-top)) 10px calc(28px + env(safe-area-inset-bottom)) !important;
             }
         }
+
+        /* ===== BEGINNER UX LAYER ===== */
+        .nav-item.active {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+        }
+
+        .nav-item.active .nav-label {
+            color: #ffffff;
+            font-weight: 700;
+        }
+
+        .admin-guide-shell {
+            display: grid;
+            grid-template-columns: minmax(0, 1.35fr) minmax(280px, 0.9fr);
+            gap: 16px;
+            margin: 0 0 18px;
+        }
+
+        .admin-guide-card,
+        .admin-status-card,
+        .admin-sticky-actions,
+        .admin-tab-intro {
+            border: 1px solid #dbe4ee;
+            border-radius: 22px;
+            background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(248,250,252,0.95));
+            box-shadow: 0 12px 30px rgba(15, 23, 42, 0.05);
+        }
+
+        .admin-guide-card,
+        .admin-status-card {
+            padding: 18px 20px;
+        }
+
+        .admin-guide-eyebrow,
+        .admin-status-label {
+            margin-bottom: 8px;
+            color: #0b66ff;
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        .admin-guide-card h3 {
+            margin: 0 0 14px;
+            color: #0f172a;
+            font-size: 22px;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+        }
+
+        .admin-guide-steps {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .guide-step {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            align-items: flex-start;
+            padding: 14px;
+            border: 1px solid #d7e3f3;
+            border-radius: 18px;
+            background: #f8fbff;
+            color: #0f172a;
+            text-align: left;
+            cursor: pointer;
+            transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+        }
+
+        .guide-step:hover,
+        .guide-step.is-current {
+            transform: translateY(-1px);
+            border-color: #7fb2ff;
+            background: #eef5ff;
+            box-shadow: 0 12px 24px rgba(11, 102, 255, 0.12);
+        }
+
+        .guide-step-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            border-radius: 999px;
+            background: #0b66ff;
+            color: #ffffff;
+            font-size: 13px;
+            font-weight: 800;
+        }
+
+        .guide-step strong {
+            font-size: 15px;
+            line-height: 1.2;
+        }
+
+        .guide-step small,
+        .admin-guide-note,
+        .admin-status-note,
+        .section-helper,
+        .admin-tab-intro p,
+        .admin-sticky-subtitle {
+            color: #64748b;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .admin-guide-note,
+        .admin-status-note {
+            margin: 14px 0 0;
+        }
+
+        .admin-save-status {
+            display: inline-flex;
+            align-items: center;
+            min-height: 38px;
+            padding: 8px 12px;
+            border-radius: 999px;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .admin-save-status.clean {
+            background: #eafaf0;
+            color: #177245;
+        }
+
+        .admin-save-status.dirty {
+            background: #fff4df;
+            color: #a15c00;
+        }
+
+        .admin-save-status.saving {
+            background: #eaf2ff;
+            color: #0b66ff;
+        }
+
+        .admin-status-actions,
+        .admin-sticky-buttons,
+        .admin-quick-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .admin-status-actions {
+            margin-top: 14px;
+        }
+
+        .secondary-action-btn,
+        .admin-quick-link {
+            min-height: 42px;
+            padding: 10px 14px;
+            border: 1px solid #d6e1ef;
+            border-radius: 14px;
+            background: #ffffff;
+            color: #0f172a;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: border-color 0.18s ease, background 0.18s ease, color 0.18s ease, transform 0.18s ease;
+        }
+
+        .secondary-action-btn:hover,
+        .admin-quick-link:hover,
+        .secondary-action-btn-ghost:hover {
+            border-color: #8cb8ff;
+            background: #eff6ff;
+            color: #0b66ff;
+            transform: translateY(-1px);
+        }
+
+        .secondary-action-btn-ghost {
+            background: #f8fafc;
+        }
+
+        .admin-sticky-actions {
+            position: sticky;
+            top: 12px;
+            z-index: 25;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            margin: 0 0 18px;
+            padding: 16px 18px;
+        }
+
+        .admin-has-unsaved-changes .admin-sticky-actions {
+            border-color: #f3c46b;
+            box-shadow: 0 14px 32px rgba(245, 158, 11, 0.12);
+        }
+
+        .admin-sticky-copy {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            min-width: 0;
+        }
+
+        .admin-sticky-title {
+            color: #0f172a;
+            font-size: 15px;
+            font-weight: 800;
+            line-height: 1.35;
+        }
+
+        .admin-save-all-btn {
+            min-width: 220px;
+        }
+
+        .admin-tab-intro {
+            margin-bottom: 16px;
+            padding: 16px 18px;
+        }
+
+        .admin-tab-intro p {
+            margin: 0 0 12px;
+        }
+
+        .section-helper {
+            margin: -6px 0 14px;
+        }
+
+        .admin-section[id] {
+            scroll-margin-top: 118px;
+        }
+
+        @media (max-width: 1024px) {
+            .admin-guide-shell {
+                grid-template-columns: 1fr;
+            }
+
+            .admin-sticky-actions {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .admin-sticky-buttons {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .admin-guide-card h3 {
+                font-size: 18px;
+            }
+
+            .admin-guide-steps {
+                grid-template-columns: 1fr;
+            }
+
+            .admin-status-actions,
+            .admin-sticky-buttons,
+            .admin-quick-links {
+                display: grid;
+                grid-template-columns: 1fr;
+            }
+
+            .admin-save-all-btn,
+            .secondary-action-btn,
+            .admin-quick-link {
+                width: 100%;
+                min-width: 0;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .admin-guide-card,
+            .admin-status-card,
+            .admin-sticky-actions,
+            .admin-tab-intro {
+                border-radius: 18px;
+            }
+
+            .admin-guide-card,
+            .admin-status-card,
+            .admin-tab-intro {
+                padding: 14px;
+            }
+
+            .admin-sticky-actions {
+                top: calc(56px + env(safe-area-inset-top) + 8px);
+                padding: 14px;
+            }
+
+            .admin-section[id] {
+                scroll-margin-top: 138px;
+            }
+        }

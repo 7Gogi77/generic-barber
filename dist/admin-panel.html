@@ -9,7 +9,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="js/config.js"></script>
     <script src="js/admin-env.js"></script>
-  <link rel="stylesheet" crossorigin href="/assets/admin-De4MtT_-.css">
+  <link rel="stylesheet" crossorigin href="/assets/admin-BrfFjgVx.css">
 </head>
 <body>
     <!-- LOGIN SCREEN -->
@@ -43,14 +43,14 @@
             </button>
 
             <div class="nav-item">
-                <button class="nav-icon active" title="Videz" aria-label="Videz" onclick="switchTab(event, 'videz')">
+                <button class="nav-icon active" data-tab="videz" title="Videz" aria-label="Videz" onclick="switchTab(event, 'videz')">
                     <i class="bi bi-palette"></i>
                 </button>
                 <span class="nav-label">Videz</span>
             </div>
 
             <div class="nav-item">
-                <button class="nav-icon" title="Vsebina" aria-label="Vsebina" onclick="switchTab(event, 'vsebina')">
+                <button class="nav-icon" data-tab="vsebina" title="Vsebina" aria-label="Vsebina" onclick="switchTab(event, 'vsebina')">
                     <i class="bi bi-pencil-square"></i>
                 </button>
                 <span class="nav-label">Vsebina</span>
@@ -79,7 +79,7 @@
                 <div class="admin-header-copy">
                     <span class="admin-header-kicker">Spletna stran + rezervacija</span>
                     <h1>Urejanje strani</h1>
-                    <p class="admin-header-subtitle">Urejaj videz, vsebino in rezervacijski del brez poslovnega panela.</p>
+                    <p class="admin-header-subtitle">Urejaj videz, vsebino in rezervacijski del brez poslovnega panela. Prva verzija strani je lahko gotova v nekaj osnovnih korakih.</p>
                 </div>
                 <div class="admin-header-actions">
                     <button class="logout-btn" onclick="window.location.href='index.html'">Nazaj na Stran</button>
@@ -87,13 +87,74 @@
                 </div>
             </div>
 
+            <div class="admin-guide-shell">
+                <div class="admin-guide-card">
+                    <div class="admin-guide-eyebrow">Začetniški vrstni red</div>
+                    <h3>Najprej uredi samo te 4 stvari</h3>
+                    <div class="admin-guide-steps">
+                        <button type="button" class="guide-step" data-guide-target="vsebina" data-section-target="shopBasicsSection">
+                            <span class="guide-step-number">1</span>
+                            <strong>Ime podjetja</strong>
+                            <small>Osnovni naslov strani</small>
+                        </button>
+                        <button type="button" class="guide-step" data-guide-target="vsebina" data-section-target="heroSection">
+                            <span class="guide-step-number">2</span>
+                            <strong>Naslovnica</strong>
+                            <small>Prvi vtis obiskovalca</small>
+                        </button>
+                        <button type="button" class="guide-step" data-guide-target="videz" data-section-target="themeSection">
+                            <span class="guide-step-number">3</span>
+                            <strong>Barve in tema</strong>
+                            <small>Da stran izgleda usklajeno</small>
+                        </button>
+                        <button type="button" class="guide-step" data-guide-target="vsebina" data-section-target="contactSection">
+                            <span class="guide-step-number">4</span>
+                            <strong>Kontakt</strong>
+                            <small>Telefon, e-pošta, naslov</small>
+                        </button>
+                    </div>
+                    <p class="admin-guide-note">Ni treba urediti vsega. Za objavo prve verzije so ti štirje koraki dovolj.</p>
+                </div>
+
+                <div class="admin-status-card">
+                    <div class="admin-status-label">Status sprememb</div>
+                    <div id="adminSaveStatus" class="admin-save-status clean">Vse spremembe so shranjene</div>
+                    <p class="admin-status-note">Ko kaj spremeniš, klikni Shrani vse spremembe in nato preveri predogled.</p>
+                    <div class="admin-status-actions">
+                        <button type="button" class="secondary-action-btn" onclick="window.open('index.html', '_blank')">Predogled strani</button>
+                        <button type="button" class="secondary-action-btn" onclick="window.open('rezervacija.html', '_blank')">Predogled rezervacije</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="admin-sticky-actions">
+                <div class="admin-sticky-copy">
+                    <div class="admin-sticky-title">Če nisi prepričan, začni z: Ime podjetja, Naslovnica, Barve, Kontakt.</div>
+                    <div class="admin-sticky-subtitle" id="adminDirtyHint">Trenutno ni neshranjenih sprememb.</div>
+                </div>
+                <div class="admin-sticky-buttons">
+                    <button type="button" class="secondary-action-btn secondary-action-btn-ghost" onclick="window.open('index.html', '_blank')">Odpri stran</button>
+                    <button type="button" class="save-btn admin-save-all-btn" onclick="saveAllAndReport()">Shrani vse spremembe</button>
+                </div>
+            </div>
+
             <!-- ===== TAB 1: VIDEZ (APPEARANCE) ===== -->
             <div id="videz" class="tab-content active">
                 <h2 style="margin: 0 0 20px 0; color: var(--ios-text-primary, #000); font-size: 22px; font-weight: 700; border-bottom: none; padding-bottom: 0;">Nastavitve Videza</h2>
+                <div class="admin-tab-intro">
+                    <p>Če stran urejaš prvič, tukaj nastavi logo, temo in katere razdelke obiskovalci sploh vidijo.</p>
+                    <div class="admin-quick-links">
+                        <button type="button" class="admin-quick-link" data-scroll-target="brandingSection">Logo in ime</button>
+                        <button type="button" class="admin-quick-link" data-scroll-target="themeSection">Tema</button>
+                        <button type="button" class="admin-quick-link" data-scroll-target="colorsSection">Barve</button>
+                        <button type="button" class="admin-quick-link" data-scroll-target="visibilitySection">Vidnost razdelkov</button>
+                    </div>
+                </div>
                 
                 <!-- LOGO SECTION -->
-                <div class="admin-section">
+                <div class="admin-section" id="brandingSection">
                     <div class="section-title">Logotipi in Identiteta</div>
+                    <p class="section-helper">Izberi, ali naj se v glavi pokaže logotip ali samo ime podjetja. Če logotipa še nimaš, lahko za začetek uporabiš samo ime.</p>
                     <div class="form-row">
                         <div class="form-group-admin">
                             <label class="form-label-admin">Prikaži Logo ali Ime Podjetja?</label>
@@ -124,9 +185,9 @@
                 </div>
 
                 <!-- SIMPLE THEME SETTINGS -->
-                <div class="admin-section">
+                <div class="admin-section" id="themeSection">
                     <div class="section-title">Tema (preprosto)</div>
-                    <p style="font-size: 12px; color: #666; margin-bottom: 12px;">Izberi svetlo/temno temo in glavno barvo. Ostale barve se nastavijo samodejno.</p>
+                    <p class="section-helper">To je najlažji način za lep izgled. Najprej izberi svetlo ali temno smer, potem pa po potrebi popravi še podrobne barve spodaj.</p>
                     <div class="form-row">
                         <div class="form-group-admin">
                             <label class="form-label-admin">Tema</label>
@@ -139,9 +200,9 @@
                 </div>
 
                 <!-- COLORS SECTION -->
-                <div class="admin-section">
+                <div class="admin-section" id="colorsSection">
                     <div class="section-title">Barvna Shema</div>
-                    <p style="font-size: 12px; color: #666; margin-bottom: 15px;">Glavne barve za temo spletne strani</p>
+                    <p class="section-helper">Če ne želiš urejati vsega, zamenjaj samo primarno barvo. Ostale barve popravi le, če želiš bolj natančen izgled.</p>
                     <div class="form-row">
                         <div class="form-group-admin">
                             <label class="form-label-admin">Primarna Barva</label>
@@ -250,9 +311,9 @@
                 </div>
 
                 <!-- SECTION VISIBILITY -->
-                <div class="admin-section">
+                <div class="admin-section" id="visibilitySection">
                     <div class="section-title">Razdelki strani</div>
-                    <p style="font-size:12px;color:#666;margin-bottom:15px;">Skrij ali prikaži posamezne razdelke na strani. Izklopljeni razdelki ne bodo vidni obiskovalcem.</p>
+                    <p class="section-helper">Če kakšnega dela strani še nimaš pripravljenega, ga tukaj samo izklopi. Tako bo stran delovala urejeno tudi brez vseh vsebin.</p>
                     <div style="display:flex;flex-direction:column;gap:0;">
                         <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(128,128,128,0.12);">
                             <span style="font-size:14px;font-weight:500;"><i class="bi bi-person-lines-fill" style="margin-right:8px;opacity:.6;"></i>O nas</span>
@@ -294,11 +355,21 @@
             <!-- ===== TAB 2: VSEBINA (CONTENT) ===== -->
             <div id="vsebina" class="tab-content">
                 <h2 style="margin: 0 0 20px 0; color: var(--ios-text-primary, #000); font-size: 22px; font-weight: 700; border-bottom: none; padding-bottom: 0;">Vsebina in Tekst</h2>
+                <div class="admin-tab-intro">
+                    <p>Vsebino urejaj po vrsti: najprej ime podjetja, nato naslovnico, potem kontakt. Ostalo lahko dodaš kasneje.</p>
+                    <div class="admin-quick-links">
+                        <button type="button" class="admin-quick-link" data-scroll-target="templateSection">Predloga</button>
+                        <button type="button" class="admin-quick-link" data-scroll-target="shopBasicsSection">Osnovni podatki</button>
+                        <button type="button" class="admin-quick-link" data-scroll-target="heroSection">Naslovnica</button>
+                        <button type="button" class="admin-quick-link" data-scroll-target="contactSection">Kontakt</button>
+                        <button type="button" class="admin-quick-link" data-scroll-target="gallerySection">Galerija</button>
+                    </div>
+                </div>
 
                 <!-- TEMPLATE PRESETS -->
-                <div class="admin-section">
+                <div class="admin-section" id="templateSection">
                     <div class="section-title"><i class="bi bi-layout-text-window-reverse"></i> Predloge (Template)</div>
-                    <p style="font-size: 13px; color: var(--ios-text-secondary, #8E8E93); margin-bottom: 12px;">Izberi predlogo in hitro nastavi vsebino. Predloga lahko nastavi tudi barve.</p>
+                    <p class="section-helper">Če želiš hiter začetek, najprej izberi predlogo. Ta napolni osnovna besedila in ti da dobro osnovo za nadaljnje urejanje.</p>
                     <div class="form-row">
                         <div class="form-group-admin">
                             <label class="form-label-admin">Izberi predlogo</label>
@@ -315,8 +386,9 @@
                 </div>
                 
                 <!-- SHOP NAME SECTION -->
-                <div class="admin-section">
+                <div class="admin-section" id="shopBasicsSection">
                     <div class="section-title">Osnovni Podatki</div>
+                    <p class="section-helper">To je najpomembnejše polje. Ime podjetja se uporablja po strani in v nekaterih samodejnih besedilih.</p>
                     <div class="form-row">
                         <div class="form-group-admin">
                             <label class="form-label-admin">Ime Trgovine</label>
@@ -326,8 +398,9 @@
                 </div>
 
                 <!-- HERO SECTION -->
-                <div class="admin-section">
+                <div class="admin-section" id="heroSection">
                     <div class="section-title">Naslovnica (Hero Sekcija)</div>
+                    <p class="section-helper">To je prvi del, ki ga obiskovalec vidi. Dober naslov, en jasen gumb in ena lepa slika so običajno dovolj.</p>
                     <div class="form-row">
                         <div class="form-group-admin">
                             <label class="form-label-admin">Podnaslov</label>
@@ -358,8 +431,9 @@
                 </div>
 
                 <!-- ABOUT SECTION -->
-                <div class="admin-section">
+                <div class="admin-section" id="storySection">
                     <div class="section-title">O Nas (Story)</div>
+                    <p class="section-helper">Na kratko opiši, kdo si, kaj delaš in zakaj naj stranka izbere ravno tebe.</p>
                     <div class="form-row">
                         <div class="form-group-admin">
                             <label class="form-label-admin">Label Razdelka</label>
@@ -431,9 +505,9 @@
                 </div>
 
                 <!-- CONTACT SECTION -->
-                <div class="admin-section">
+                <div class="admin-section" id="contactSection">
                     <div class="section-title"><i class="bi bi-telephone"></i> Kontakt</div>
-                    <p style="font-size: 12px; color: #666; margin-bottom: 15px;">Podatki za kontakt na domači strani</p>
+                    <p class="section-helper">Obvezno preveri telefon, e-pošto in naslov. To so podatki, ki jih stranke najhitreje iščejo.</p>
                     <div class="form-row">
                         <div class="form-group-admin">
                             <label class="form-label-admin">Naslov Sekcije</label>
@@ -529,9 +603,9 @@
                 </div>
 
                 <!-- BOOKING PAGE CONTENT SECTION -->
-                <div class="admin-section">
+                <div class="admin-section" id="bookingContentSection">
                     <div class="section-title"><i class="bi bi-calendar-check"></i> Vsebina Rezervacijske Strani</div>
-                    <p style="font-size: 13px; color: var(--ios-text-secondary, #8E8E93); margin-bottom: 16px;">Uredi besedila na rezervacija.html strani</p>
+                    <p class="section-helper">Ta del ureja samo besedila na rezervacijski strani. Če tega trenutno ne potrebuješ, ga lahko pustiš za kasneje.</p>
                     
                     <div class="form-row">
                         <div class="form-group-admin">
@@ -650,8 +724,9 @@
                 </div>
 
                 <!-- GALLERY -->
-                <div class="admin-section">
+                <div class="admin-section" id="gallerySection">
                     <div class="section-title"><i class="bi bi-images"></i> Galerija Slik</div>
+                    <p class="section-helper">Dodaj nekaj najboljših slik. Ni treba, da jih je veliko, pomembno je, da so kvalitetne.</p>
                     <div class="upload-area" id="uploadArea" onclick="document.getElementById('imageInput').click()" style="margin-bottom: 15px;">
                         <div class="upload-icon"><i class="bi bi-camera"></i></div>
                         <div class="upload-text">Klikni za prenos slike</div>

@@ -43,26 +43,98 @@
         window.filterDeletedEvents = filterDeletedEvents;
         window.loadDeletedEventIds = loadDeletedEventIds;
         window.saveDeletedEventIds = saveDeletedEventIds;
+
+        const ADMIN_TAB_STORAGE_KEY = 'adminLastTab';
+        let adminDirty = false;
+
+        function setAdminSaveState(state, message) {
+            const statusEl = document.getElementById('adminSaveStatus');
+            const hintEl = document.getElementById('adminDirtyHint');
+            if (statusEl) {
+                statusEl.textContent = message;
+                statusEl.classList.remove('clean', 'dirty', 'saving');
+                statusEl.classList.add(state);
+            }
+            if (hintEl) {
+                if (state === 'dirty') {
+                    hintEl.textContent = 'Imaš neshranjene spremembe. Klikni Shrani vse spremembe.';
+                } else if (state === 'saving') {
+                    hintEl.textContent = 'Shranjujem spremembe in pripravljam predogled.';
+                } else {
+                    hintEl.textContent = 'Trenutno ni neshranjenih sprememb.';
+                }
+            }
+            document.body.classList.toggle('admin-has-unsaved-changes', state === 'dirty');
+        }
+
+        function markAdminDirty() {
+            adminDirty = true;
+            setAdminSaveState('dirty', 'Imaš neshranjene spremembe');
+        }
+
+        function markAdminClean(message = 'Vse spremembe so shranjene') {
+            adminDirty = false;
+            setAdminSaveState('clean', message);
+        }
+
+        function updateGuideState(tabName) {
+            document.querySelectorAll('.guide-step').forEach((button) => {
+                button.classList.toggle('is-current', button.dataset.guideTarget === tabName);
+            });
+        }
+
+        function activateSidebarButtonForTab(tabName) {
+            const buttons = document.querySelectorAll('.nav-icon');
+            const navItems = document.querySelectorAll('.nav-item');
+            buttons.forEach((btn) => btn.classList.remove('active'));
+            navItems.forEach((item) => item.classList.remove('active'));
+
+            const selectedButton = document.querySelector(`.nav-icon[data-tab="${tabName}"]`);
+            if (selectedButton) {
+                selectedButton.classList.add('active');
+                const navItem = selectedButton.closest('.nav-item');
+                if (navItem) navItem.classList.add('active');
+            }
+        }
+
+        function activateAdminTab(tabName) {
+            const selectedTab = document.getElementById(tabName);
+            if (!selectedTab) return false;
+
+            document.querySelectorAll('.tab-content').forEach((tab) => tab.classList.remove('active'));
+            selectedTab.classList.add('active');
+            activateSidebarButtonForTab(tabName);
+            localStorage.setItem(ADMIN_TAB_STORAGE_KEY, tabName);
+            updateGuideState(tabName);
+            return true;
+        }
+
+        function restoreLastAdminTab() {
+            const storedTab = localStorage.getItem(ADMIN_TAB_STORAGE_KEY);
+            if (!storedTab || !activateAdminTab(storedTab)) {
+                activateAdminTab('videz');
+            }
+        }
+
+        function scrollToAdminSection(sectionId) {
+            const section = document.getElementById(sectionId);
+            if (!section) return;
+            section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function openGuideStep(tabName, sectionId) {
+            activateAdminTab(tabName);
+            window.setTimeout(() => scrollToAdminSection(sectionId), 90);
+        }
+
+        function saveAllAndReport() {
+            saveAll();
+        }
+
         // Tab switching function (sidebar navigation)
         function switchTab(event, tabName) {
-            event.preventDefault();
-
-            // Hide all tabs
-            const tabs = document.querySelectorAll('.tab-content');
-            tabs.forEach(tab => tab.classList.remove('active'));
-
-            // Remove active from all sidebar icons
-            const buttons = document.querySelectorAll('.nav-icon');
-            buttons.forEach(btn => btn.classList.remove('active'));
-
-            // Show selected tab and activate button
-            const selectedTab = document.getElementById(tabName);
-            if (selectedTab) {
-                selectedTab.classList.add('active');
-            }
-            if (event.currentTarget) {
-                event.currentTarget.classList.add('active');
-            }
+            if (event) event.preventDefault();
+            activateAdminTab(tabName);
         }
 
         // Sidebar behavior copied from poslovni-panel UX.
@@ -113,6 +185,22 @@
                     icon.click();
                 });
             });
+
+            document.querySelectorAll('[data-scroll-target]').forEach((button) => {
+                button.addEventListener('click', () => scrollToAdminSection(button.dataset.scrollTarget));
+            });
+
+            document.querySelectorAll('[data-guide-target]').forEach((button) => {
+                button.addEventListener('click', () => openGuideStep(button.dataset.guideTarget, button.dataset.sectionTarget));
+            });
+
+            document.querySelectorAll('#adminPanel input, #adminPanel textarea, #adminPanel select').forEach((field) => {
+                field.addEventListener('input', markAdminDirty);
+                field.addEventListener('change', markAdminDirty);
+            });
+
+            restoreLastAdminTab();
+            markAdminClean();
 
             document.addEventListener('click', (event) => {
                 if (window.innerWidth > 480) return;
@@ -207,6 +295,7 @@
                 const panel = document.getElementById('adminPanel');
                 if (panel) panel.classList.add('active');
                 if (typeof loadAdminForms === 'function') loadAdminForms();
+                restoreLastAdminTab();
                 if (errorEl) errorEl.style.display = 'none';
             } catch (err) {
                 if (errorEl) {
@@ -225,6 +314,7 @@
         // Save all helper for non-technical users — calls known save functions if present
         let _saveBulkMode = false;
         function saveAll() {
+            setAdminSaveState('saving', 'Shranjujem vse spremembe...');
             _saveBulkMode = true;
             try {
                 var _fns = [saveAppearance, saveLogo, saveTheme, saveTextColors, saveFooterColors,
@@ -238,6 +328,7 @@
             } finally {
                 _saveBulkMode = false;
                 if (typeof syncToFirebase === 'function') syncToFirebase(SITE_CONFIG);
+                markAdminClean();
             }
         }
 
@@ -785,6 +876,7 @@
 
             // Section visibility toggles
             loadSectionVisibility();
+            markAdminClean();
         }
 
         // Load gallery
@@ -1761,6 +1853,7 @@
                 document.getElementById('loginScreen').style.display = 'none';
                 document.getElementById('adminPanel').classList.add('active');
                 loadAdminForms();
+                restoreLastAdminTab();
             }
         });
         
@@ -2202,6 +2295,7 @@
                 } catch (err) {} finally {
                     syncToFirebase(SITE_CONFIG);
                     if (typeof syncAppointmentsToSchedule === 'function') syncAppointmentsToSchedule();
+                    markAdminClean();
                 }
             })();
         }
