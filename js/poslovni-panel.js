@@ -914,7 +914,7 @@
             const sidebarW = document.getElementById('sidebar')?.classList.contains('expanded') ? 260 : 72;
             panel.style.left  = sidebarW + 'px';
             panel.style.width = `calc(100% - ${sidebarW}px)`;
-            panel.style.display = 'block';
+            panel.style.display = 'flex';
             setTimeout(() => panel.classList.add('open'), 20);
         }
 
@@ -930,7 +930,7 @@
             const sidebarW = document.getElementById('sidebar')?.classList.contains('expanded') ? 260 : 72;
             panel.style.left  = sidebarW + 'px';
             panel.style.width = `calc(100% - ${sidebarW}px)`;
-            panel.style.display = 'block';
+            panel.style.display = 'flex';
             setTimeout(() => panel.classList.add('open'), 10);
 
             // Load schedule data
@@ -1824,7 +1824,7 @@
             panel.style.left  = sidebarW + 'px';
             panel.style.width = `calc(100% - ${sidebarW}px)`;
             panel.classList.remove('open');
-            panel.style.display = 'block';
+            panel.style.display = 'flex';
             loadBusinessSettingsForm();
             // Activate first tab
             document.querySelectorAll('.bsp-tab').forEach((t,i) => t.classList.toggle('active', i === 0));

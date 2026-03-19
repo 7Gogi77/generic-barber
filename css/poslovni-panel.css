@@ -851,8 +851,11 @@
         }
         #customerListContent {
             padding: 16px 20px;
+            flex: 1 1 auto;
+            min-height: 0;
             overflow-y: auto;
-            height: calc(100% - 72px);
+            height: auto;
+            -webkit-overflow-scrolling: touch;
         }
         #customerListPanel .customer-table {
             width: 100%;
@@ -943,6 +946,8 @@
             top: 0;
             width: calc(100% - 72px);
             height: 100%;
+            display: flex;
+            flex-direction: column;
             z-index: 500;
             background: #f2f2f7;
             overflow: hidden;
@@ -959,6 +964,7 @@
             top: 0;
             width: calc(100% - 72px);
             height: 100%;
+            flex-direction: column;
             z-index: 500;
             background: #fff;
             color: #222;
@@ -975,6 +981,14 @@
             transform: translateX(0);
             opacity: 1;
             pointer-events: auto;
+        }
+
+        #analyticsContent {
+            flex: 1 1 auto;
+            min-height: 0;
+            height: auto !important;
+            overflow-y: auto !important;
+            -webkit-overflow-scrolling: touch;
         }
         .day-row {
             display: flex;
@@ -1020,9 +1034,12 @@
             flex-shrink: 0;
         }
         .bsp-body {
+            flex: 1 1 auto;
+            min-height: 0;
             overflow-y: auto;
-            height: calc(100% - 60px);
+            height: auto;
             padding: 20px 24px 40px;
+            -webkit-overflow-scrolling: touch;
         }
         .bsp-card {
             background: #fff;
@@ -1166,8 +1183,16 @@
         .bsp-inline-form label { font-size: 12px; color: #8e8e93; }
         .bsp-inline-form .fg { display: flex; flex-direction: column; gap: 3px; }
         @media (max-width: 768px) {
-            #businessSettingsPanel { left: 0 !important; width: 100% !important; z-index: 1100 !important; }
-            .bsp-body { padding: 0 0 40px; }
+            #businessSettingsPanel,
+            #customerListPanel,
+            #analyticsPanel {
+                left: 0 !important;
+                width: 100% !important;
+                height: 100dvh !important;
+                max-height: 100dvh !important;
+            }
+            #businessSettingsPanel { z-index: 1100 !important; }
+            .bsp-body { padding: 0 0 calc(72px + env(safe-area-inset-bottom)); }
             .day-name { min-width: 80px; font-size: 13px; }
             .day-times input[type="time"] { font-size: 12px; padding: 5px 6px; min-width: 68px; }
             .bsp-row { padding: 11px 14px; }
@@ -1980,7 +2005,8 @@
                 top: 0 !important;
                 left: 0 !important;
                 width: 100% !important;
-                height: 100% !important;
+                height: 100dvh !important;
+                max-height: 100dvh !important;
                 z-index: 3000 !important;
             }
 
