@@ -1190,6 +1190,8 @@
                 width: 100% !important;
                 height: 100dvh !important;
                 max-height: 100dvh !important;
+                padding-top: env(safe-area-inset-top) !important;
+                box-sizing: border-box;
             }
             #businessSettingsPanel { z-index: 1100 !important; }
             .bsp-body { padding: 0 0 calc(72px + env(safe-area-inset-bottom)); }
@@ -2007,6 +2009,8 @@
                 width: 100% !important;
                 height: 100dvh !important;
                 max-height: 100dvh !important;
+                padding-top: env(safe-area-inset-top) !important;
+                box-sizing: border-box;
                 z-index: 3000 !important;
             }
 
