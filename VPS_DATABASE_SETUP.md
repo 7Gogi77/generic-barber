@@ -15,12 +15,33 @@ The server exposes:
 
 - `GET /health`
 - `GET|POST|PUT|PATCH|DELETE /db/<path>.json`
+- `GET|POST|PUT|PATCH|DELETE /tenant-db/<tenantId>/<path>.json`
+- `GET /_admin/tenants`
+- `POST /_admin/tenants` with `x-admin-token`
 
 Example:
 
 - `https://your-domain.com/db/site_config.json`
 - `https://your-domain.com/db/schedule.json`
 - `https://your-domain.com/db/workers.json`
+- `https://your-domain.com/tenant-db/client-a/site_config.json`
+- `https://your-domain.com/tenant-db/client-a/schedule.json`
+
+For tenant provisioning, set these env vars before starting the server:
+
+```bash
+PUBLIC_BASE_URL=https://your-domain.com
+VPS_DB_ADMIN_TOKEN=change-this-long-random-token
+```
+
+Then create tenants via:
+
+```bash
+curl -X POST "https://your-domain.com/_admin/tenants" \
+    -H "Content-Type: application/json" \
+    -H "x-admin-token: change-this-long-random-token" \
+    -d '{"tenantId":"client-a","businessName":"Client A"}'
+```
 
 ## 2. Migrate existing Firebase data
 
@@ -75,6 +96,8 @@ The VPS database server persists everything in:
 
 ```text
 data/db.json
+data/tenants/*.json
+data/tenants-registry.json
 ```
 
-Back this file up regularly.
+Back these files up regularly.

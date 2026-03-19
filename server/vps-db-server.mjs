@@ -8,31 +8,58 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const DATA_DIR = path.join(__dirname, '..', 'data');
 const DATA_FILE = path.join(DATA_DIR, 'db.json');
+const TENANTS_DIR = path.join(DATA_DIR, 'tenants');
+const TENANT_REGISTRY_FILE = path.join(DATA_DIR, 'tenants-registry.json');
 const PORT = Number.parseInt(process.env.PORT || '3001', 10);
 const HOST = process.env.HOST || '0.0.0.0';
+const ADMIN_TOKEN = process.env.VPS_DB_ADMIN_TOKEN || '';
+const PUBLIC_BASE_URL = (process.env.PUBLIC_BASE_URL || '').replace(/\/+$/, '');
 
-async function ensureDatabaseFile() {
-  await fs.mkdir(DATA_DIR, { recursive: true });
+async function ensureJsonFile(filePath, fallback = '{}') {
+  await fs.mkdir(path.dirname(filePath), { recursive: true });
 
   try {
-    await fs.access(DATA_FILE);
+    await fs.access(filePath);
   } catch {
-    await fs.writeFile(DATA_FILE, '{}', 'utf8');
+    await fs.writeFile(filePath, fallback, 'utf8');
   }
 }
 
-async function readDatabase() {
-  await ensureDatabaseFile();
-  const raw = await fs.readFile(DATA_FILE, 'utf8');
+async function readJsonFile(filePath, fallback = '{}') {
+  await ensureJsonFile(filePath, fallback);
+  const raw = await fs.readFile(filePath, 'utf8');
   return raw.trim() ? JSON.parse(raw) : {};
 }
 
-async function writeDatabase(data) {
-  await ensureDatabaseFile();
+async function writeJsonFile(filePath, data) {
+  await ensureJsonFile(filePath);
   const nextContent = JSON.stringify(data, null, 2);
-  const tempFile = `${DATA_FILE}.tmp`;
+  const tempFile = `${filePath}.tmp`;
   await fs.writeFile(tempFile, nextContent, 'utf8');
-  await fs.rename(tempFile, DATA_FILE);
+  await fs.rename(tempFile, filePath);
+}
+
+async function ensureDatabaseFile() {
+  await fs.mkdir(DATA_DIR, { recursive: true });
+  await fs.mkdir(TENANTS_DIR, { recursive: true });
+  await ensureJsonFile(DATA_FILE);
+  await ensureJsonFile(TENANT_REGISTRY_FILE);
+}
+
+async function readDatabase() {
+  return readJsonFile(DATA_FILE);
+}
+
+async function writeDatabase(data) {
+  return writeJsonFile(DATA_FILE, data);
+}
+
+async function readTenantRegistry() {
+  return readJsonFile(TENANT_REGISTRY_FILE);
+}
+
+async function writeTenantRegistry(data) {
+  return writeJsonFile(TENANT_REGISTRY_FILE, data);
 }
 
 let mutationQueue = Promise.resolve();
@@ -90,6 +117,172 @@ function parseDbPath(pathname) {
   }
 
   return trimmed.split('/').filter(Boolean).map(decodeURIComponent);
+}
+
+function parseTenantDbPath(pathname) {
+  if (!pathname.startsWith('/tenant-db/') || !pathname.endsWith('.json')) {
+    return null;
+  }
+
+  const trimmed = pathname.slice('/tenant-db/'.length, -5).replace(/^\/+|\/+$/g, '');
+  if (!trimmed) {
+    return null;
+  }
+
+  const parts = trimmed.split('/').filter(Boolean).map(decodeURIComponent);
+  const [tenantId, ...segments] = parts;
+  if (!tenantId) {
+    return null;
+  }
+
+  return {
+    tenantId,
+    segments
+  };
+}
+
+function normalizeTenantId(input) {
+  return String(input || '')
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9-]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 64);
+}
+
+function assertValidTenantId(input) {
+  const tenantId = normalizeTenantId(input);
+  if (!tenantId) {
+    throw new Error('Valid tenantId is required');
+  }
+  return tenantId;
+}
+
+function getTenantFilePath(tenantId) {
+  return path.join(TENANTS_DIR, `${tenantId}.json`);
+}
+
+async function readTenantDatabase(tenantId) {
+  return readJsonFile(getTenantFilePath(tenantId));
+}
+
+async function writeTenantDatabase(tenantId, data) {
+  return writeJsonFile(getTenantFilePath(tenantId), data);
+}
+
+function getRequestBaseUrl(req) {
+  if (PUBLIC_BASE_URL) {
+    return PUBLIC_BASE_URL;
+  }
+
+  const forwardedProto = req.headers['x-forwarded-proto'];
+  const protocol = typeof forwardedProto === 'string' ? forwardedProto.split(',')[0] : 'http';
+  const host = req.headers.host || `localhost:${PORT}`;
+  return `${protocol}://${host}`.replace(/\/+$/, '');
+}
+
+function buildTenantDatabaseUrl(req, tenantId) {
+  return `${getRequestBaseUrl(req)}/tenant-db/${tenantId}`;
+}
+
+function readAuthToken(req) {
+  const authHeader = req.headers.authorization || '';
+  if (authHeader.startsWith('Bearer ')) {
+    return authHeader.slice('Bearer '.length).trim();
+  }
+
+  const customHeader = req.headers['x-admin-token'];
+  return typeof customHeader === 'string' ? customHeader.trim() : '';
+}
+
+function isAuthorizedAdminRequest(req) {
+  return Boolean(ADMIN_TOKEN) && readAuthToken(req) === ADMIN_TOKEN;
+}
+
+function createInitialTenantData({ tenantId, businessName = '', siteConfig = null, schedule = null, metadata = null, databaseUrl = '' }) {
+  const now = new Date().toISOString();
+
+  return {
+    site_config: {
+      ...(siteConfig && typeof siteConfig === 'object' ? siteConfig : {}),
+      tenant: {
+        id: tenantId,
+        createdAt: now,
+        ...(siteConfig?.tenant && typeof siteConfig.tenant === 'object' ? siteConfig.tenant : {})
+      },
+      businessName: siteConfig?.businessName || businessName || siteConfig?.shopName || '',
+      shopName: siteConfig?.shopName || businessName || siteConfig?.businessName || '',
+      backend: {
+        ...(siteConfig?.backend && typeof siteConfig.backend === 'object' ? siteConfig.backend : {}),
+        databaseURL: databaseUrl,
+        syncPollingMs: 15000
+      }
+    },
+    schedule: schedule && typeof schedule === 'object'
+      ? schedule
+      : {
+          version: '1.0',
+          timezone: 'Europe/Ljubljana',
+          settings: {
+            weekStart: 1,
+            defaultWorkStart: 9,
+            defaultWorkEnd: 17
+          },
+          events: [],
+          metadata: {
+            lastSync: Date.now(),
+            lastModified: 0,
+            tenantId
+          }
+        },
+    metadata: {
+      tenantId,
+      businessName,
+      createdAt: now,
+      updatedAt: now,
+      ...(metadata && typeof metadata === 'object' ? metadata : {})
+    }
+  };
+}
+
+async function createTenantRecord(req, payload) {
+  const tenantId = assertValidTenantId(payload.tenantId || payload.slug || payload.businessName);
+  const registry = await readTenantRegistry();
+  const existing = registry[tenantId];
+
+  if (existing && !payload.overwrite) {
+    const error = new Error(`Tenant ${tenantId} already exists`);
+    error.statusCode = 409;
+    throw error;
+  }
+
+  const databaseUrl = payload.databaseUrl || buildTenantDatabaseUrl(req, tenantId);
+  const tenantData = createInitialTenantData({
+    tenantId,
+    businessName: payload.businessName,
+    siteConfig: payload.siteConfig,
+    schedule: payload.schedule,
+    metadata: payload.metadata,
+    databaseUrl
+  });
+
+  await writeTenantDatabase(tenantId, tenantData);
+
+  registry[tenantId] = {
+    tenantId,
+    businessName: payload.businessName || tenantData.site_config.businessName || tenantId,
+    databaseUrl,
+    createdAt: existing?.createdAt || new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    meta: payload.metadata && typeof payload.metadata === 'object' ? payload.metadata : {}
+  };
+  await writeTenantRegistry(registry);
+
+  return {
+    tenantId,
+    databaseUrl,
+    record: registry[tenantId]
+  };
 }
 
 function getNestedValue(root, segments) {
@@ -181,29 +374,109 @@ const server = createServer(async (req, res) => {
     sendJson(res, 200, {
       ok: true,
       storage: DATA_FILE,
-      databaseUrlExample: `http://localhost:${PORT}/db/site_config.json`
+      databaseUrlExample: `http://localhost:${PORT}/db/site_config.json`,
+      tenantDatabaseUrlExample: `http://localhost:${PORT}/tenant-db/example/site_config.json`,
+      adminConfigured: Boolean(ADMIN_TOKEN)
     });
     return;
   }
 
+  if (url.pathname === '/_admin/tenants') {
+    if (!isAuthorizedAdminRequest(req)) {
+      sendJson(res, 401, { error: 'Unauthorized' });
+      return;
+    }
+
+    try {
+      if (req.method === 'GET') {
+        sendJson(res, 200, await readTenantRegistry());
+        return;
+      }
+
+      if (req.method === 'POST') {
+        const body = await parseBody(req);
+        const result = await enqueueMutation(async () => createTenantRecord(req, body || {}));
+        sendJson(res, 201, {
+          ok: true,
+          tenantId: result.tenantId,
+          databaseUrl: result.databaseUrl,
+          tenant: result.record
+        });
+        return;
+      }
+
+      sendJson(res, 405, { error: 'Method not allowed' });
+      return;
+    } catch (error) {
+      sendJson(res, error.statusCode || 500, { error: error.message || 'Internal server error' });
+      return;
+    }
+  }
+
+  if (url.pathname.startsWith('/_admin/tenants/')) {
+    if (!isAuthorizedAdminRequest(req)) {
+      sendJson(res, 401, { error: 'Unauthorized' });
+      return;
+    }
+
+    const tenantId = normalizeTenantId(url.pathname.slice('/_admin/tenants/'.length));
+    if (!tenantId) {
+      sendJson(res, 400, { error: 'Valid tenantId is required' });
+      return;
+    }
+
+    try {
+      if (req.method === 'GET') {
+        const registry = await readTenantRegistry();
+        const tenant = registry[tenantId];
+        if (!tenant) {
+          sendJson(res, 404, { error: 'Tenant not found' });
+          return;
+        }
+
+        sendJson(res, 200, {
+          tenant,
+          exists: true,
+          databaseUrl: buildTenantDatabaseUrl(req, tenantId)
+        });
+        return;
+      }
+
+      sendJson(res, 405, { error: 'Method not allowed' });
+      return;
+    } catch (error) {
+      sendJson(res, error.statusCode || 500, { error: error.message || 'Internal server error' });
+      return;
+    }
+  }
+
   const segments = parseDbPath(url.pathname);
-  if (segments === null) {
+  const tenantRoute = parseTenantDbPath(url.pathname);
+  if (segments === null && tenantRoute === null) {
     sendJson(res, 404, { error: 'Unknown endpoint' });
     return;
   }
 
+  const targetFileReader = tenantRoute
+    ? () => readTenantDatabase(assertValidTenantId(tenantRoute.tenantId))
+    : () => readDatabase();
+  const targetFileWriter = tenantRoute
+    ? (next) => writeTenantDatabase(assertValidTenantId(tenantRoute.tenantId), next)
+    : (next) => writeDatabase(next);
+  const pathSegments = tenantRoute ? tenantRoute.segments : segments;
+
   try {
     if (req.method === 'GET') {
-      const database = await readDatabase();
-      sendJson(res, 200, getNestedValue(database, segments));
+      const database = await targetFileReader();
+      sendJson(res, 200, getNestedValue(database, pathSegments));
       return;
     }
 
     if (req.method === 'DELETE') {
       await enqueueMutation(async () => {
-        const database = await readDatabase();
-        const next = deleteNestedValue(database, segments);
-        await writeDatabase(next);
+        const database = await targetFileReader();
+        const next = deleteNestedValue(database, pathSegments);
+        await targetFileWriter(next);
       });
       sendJson(res, 200, null);
       return;
@@ -213,9 +486,9 @@ const server = createServer(async (req, res) => {
 
     if (req.method === 'PUT') {
       await enqueueMutation(async () => {
-        const database = await readDatabase();
-        const next = setNestedValue(database, segments, body);
-        await writeDatabase(next);
+        const database = await targetFileReader();
+        const next = setNestedValue(database, pathSegments, body);
+        await targetFileWriter(next);
       });
       sendJson(res, 200, body);
       return;
@@ -224,11 +497,11 @@ const server = createServer(async (req, res) => {
     if (req.method === 'PATCH') {
       let merged = null;
       await enqueueMutation(async () => {
-        const database = await readDatabase();
-        const current = getNestedValue(database, segments) || {};
+        const database = await targetFileReader();
+        const current = getNestedValue(database, pathSegments) || {};
         merged = mergeNestedValue(current, body || {});
-        const next = setNestedValue(database, segments, merged);
-        await writeDatabase(next);
+        const next = setNestedValue(database, pathSegments, merged);
+        await targetFileWriter(next);
       });
       sendJson(res, 200, merged);
       return;
@@ -237,12 +510,12 @@ const server = createServer(async (req, res) => {
     if (req.method === 'POST') {
       let key = null;
       await enqueueMutation(async () => {
-        const database = await readDatabase();
+        const database = await targetFileReader();
         key = createPushKey();
-        const current = getNestedValue(database, segments) || {};
+        const current = getNestedValue(database, pathSegments) || {};
         const nextValue = { ...current, [key]: body };
-        const next = setNestedValue(database, segments, nextValue);
-        await writeDatabase(next);
+        const next = setNestedValue(database, pathSegments, nextValue);
+        await targetFileWriter(next);
       });
       sendJson(res, 200, { name: key });
       return;
@@ -258,4 +531,5 @@ server.listen(PORT, HOST, async () => {
   await ensureDatabaseFile();
   console.log(`VPS DB server listening on http://${HOST}:${PORT}`);
   console.log(`Health check: http://${HOST}:${PORT}/health`);
+  console.log(`Tenant DB example: http://${HOST}:${PORT}/tenant-db/example/site_config.json`);
 });
