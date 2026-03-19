@@ -329,7 +329,28 @@
         // Logout clears stored admin token and reloads
         function handleLogout() {
             sessionStorage.removeItem('admin_token');
-            location.reload();
+            sessionStorage.removeItem('admin_authenticated');
+            sessionStorage.removeItem('admin_session_time');
+            sessionStorage.removeItem('bsp_session');
+
+            const panel = document.getElementById('adminPanel');
+            if (panel) panel.classList.remove('active');
+
+            const loginScreen = document.getElementById('loginScreen');
+            if (loginScreen) loginScreen.style.display = 'flex';
+
+            const loginError = document.getElementById('loginError');
+            if (loginError) {
+                loginError.textContent = '';
+                loginError.style.display = 'none';
+            }
+
+            const usernameInput = document.getElementById('adminUsername');
+            const passwordInput = document.getElementById('adminPassword');
+            if (usernameInput) usernameInput.value = '';
+            if (passwordInput) passwordInput.value = '';
+
+            markAdminClean();
         }
 
         // Save all helper for non-technical users — calls known save functions if present
@@ -1906,6 +1927,10 @@
 
         // Stage input changes locally and require explicit save from the toast.
         document.addEventListener('change', function(e) {
+            if (!e.target || !e.target.closest('#adminPanel')) return;
+            const panel = document.getElementById('adminPanel');
+            if (!panel || !panel.classList.contains('active')) return;
+
             if (e.target.id === 'shopName') {
                 SITE_CONFIG.shopName = e.target.value;
                 if (!SITE_CONFIG.businessName || SITE_CONFIG.businessName === 'Blade & Bourbon') {

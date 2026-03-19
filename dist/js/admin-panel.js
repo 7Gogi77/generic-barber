@@ -50,6 +50,9 @@
         function setAdminSaveState(state, message) {
             const statusEl = document.getElementById('adminSaveStatus');
             const hintEl = document.getElementById('adminDirtyHint');
+            const unsavedBar = document.getElementById('apUnsavedBar');
+            const unsavedMessage = document.getElementById('apUnsavedMessage');
+            const unsavedSaveButton = document.getElementById('apUnsavedSaveButton');
             if (statusEl) {
                 statusEl.textContent = message;
                 statusEl.classList.remove('clean', 'dirty', 'saving');
@@ -63,6 +66,24 @@
                 } else {
                     hintEl.textContent = 'Trenutno ni neshranjenih sprememb.';
                 }
+            }
+            if (unsavedBar) {
+                unsavedBar.style.display = state === 'clean' ? 'none' : 'flex';
+            }
+            if (unsavedMessage) {
+                if (state === 'dirty') {
+                    unsavedMessage.textContent = 'Nastavitve niso shranjene';
+                } else if (state === 'saving') {
+                    unsavedMessage.textContent = 'Shranjujem nastavitve...';
+                } else {
+                    unsavedMessage.textContent = 'Vse spremembe so shranjene';
+                }
+            }
+            if (unsavedSaveButton) {
+                unsavedSaveButton.disabled = state === 'saving';
+                unsavedSaveButton.textContent = state === 'saving' ? 'Shranjujem...' : 'Shrani';
+                unsavedSaveButton.style.opacity = state === 'saving' ? '0.7' : '1';
+                unsavedSaveButton.style.cursor = state === 'saving' ? 'wait' : 'pointer';
             }
             document.body.classList.toggle('admin-has-unsaved-changes', state === 'dirty');
         }
@@ -308,12 +329,37 @@
         // Logout clears stored admin token and reloads
         function handleLogout() {
             sessionStorage.removeItem('admin_token');
-            location.reload();
+            sessionStorage.removeItem('admin_authenticated');
+            sessionStorage.removeItem('admin_session_time');
+            sessionStorage.removeItem('bsp_session');
+
+            const panel = document.getElementById('adminPanel');
+            if (panel) panel.classList.remove('active');
+
+            const loginScreen = document.getElementById('loginScreen');
+            if (loginScreen) loginScreen.style.display = 'flex';
+
+            const loginError = document.getElementById('loginError');
+            if (loginError) {
+                loginError.textContent = '';
+                loginError.style.display = 'none';
+            }
+
+            const usernameInput = document.getElementById('adminUsername');
+            const passwordInput = document.getElementById('adminPassword');
+            if (usernameInput) usernameInput.value = '';
+            if (passwordInput) passwordInput.value = '';
+
+            markAdminClean();
         }
 
         // Save all helper for non-technical users — calls known save functions if present
         let _saveBulkMode = false;
         function saveAll() {
+            if (!adminDirty) {
+                markAdminClean();
+                return;
+            }
             setAdminSaveState('saving', 'Shranjujem vse spremembe...');
             _saveBulkMode = true;
             try {
@@ -327,8 +373,18 @@
                 });
             } finally {
                 _saveBulkMode = false;
-                if (typeof syncToFirebase === 'function') syncToFirebase(SITE_CONFIG);
-                markAdminClean();
+                (async () => {
+                    try {
+                        if (typeof StorageManager !== 'undefined' && StorageManager.load) {
+                            const schedule = await StorageManager.load('schedule');
+                            SITE_CONFIG.schedule = schedule || { events: [] };
+                        }
+                    } catch (err) {} finally {
+                        if (typeof syncToFirebase === 'function') syncToFirebase(SITE_CONFIG);
+                        if (typeof syncAppointmentsToSchedule === 'function') syncAppointmentsToSchedule();
+                        markAdminClean();
+                    }
+                })();
             }
         }
 
@@ -1838,6 +1894,7 @@
 
         function showNotification(message, type) {
             if (type !== 'error') return;
+            const notif = document.createElement('div');
             notif.className = `notification ${type}`;
             notif.textContent = message;
             document.body.appendChild(notif);
@@ -1868,8 +1925,12 @@
             }, 300);
         });
 
-        // Auto-save on input change
+        // Stage input changes locally and require explicit save from the toast.
         document.addEventListener('change', function(e) {
+            if (!e.target || !e.target.closest('#adminPanel')) return;
+            const panel = document.getElementById('adminPanel');
+            if (!panel || !panel.classList.contains('active')) return;
+
             if (e.target.id === 'shopName') {
                 SITE_CONFIG.shopName = e.target.value;
                 if (!SITE_CONFIG.businessName || SITE_CONFIG.businessName === 'Blade & Bourbon') {
@@ -2282,21 +2343,8 @@
         }
         
         function saveConfig() {
-            localStorage.setItem('site_config_backup', JSON.stringify(SITE_CONFIG));
             if (_saveBulkMode) return;
-
-            (async () => {
-                try {
-                    if (typeof StorageManager !== 'undefined' && StorageManager.load) {
-                        const schedule = await StorageManager.load('schedule');
-                        SITE_CONFIG.schedule = schedule || { events: [] };
-                    }
-                } catch (err) {} finally {
-                    syncToFirebase(SITE_CONFIG);
-                    if (typeof syncAppointmentsToSchedule === 'function') syncAppointmentsToSchedule();
-                    markAdminClean();
-                }
-            })();
+            markAdminDirty();
         }
         
         // Simple Firebase REST API sync (no module dependencies)
