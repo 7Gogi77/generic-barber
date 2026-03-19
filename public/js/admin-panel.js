@@ -65,13 +65,62 @@
             }
         }
 
-        // Sidebar toggle (match poslovni-panel UX)
+        // Sidebar behavior copied from poslovni-panel UX.
         document.addEventListener('DOMContentLoaded', () => {
             const sidebar = document.getElementById('adminSidebar');
             const toggle = document.getElementById('adminSidebarToggle');
-            if (toggle && sidebar) {
-                toggle.addEventListener('click', () => sidebar.classList.toggle('expanded'));
+            const closeMobile = document.getElementById('adminSidebarCloseMobile');
+            if (!sidebar || !toggle) return;
+
+            const storageKey = 'adminSidebarExpanded';
+            const navItems = sidebar.querySelectorAll('.nav-item');
+
+            const applyState = () => {
+                if (localStorage.getItem(storageKey) === 'true') {
+                    sidebar.classList.add('expanded');
+                } else {
+                    sidebar.classList.remove('expanded');
+                }
+            };
+
+            applyState();
+
+            toggle.addEventListener('click', () => {
+                sidebar.classList.toggle('expanded');
+                localStorage.setItem(storageKey, sidebar.classList.contains('expanded'));
+            });
+
+            toggle.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    toggle.click();
+                }
+            });
+
+            if (closeMobile) {
+                closeMobile.addEventListener('click', () => {
+                    sidebar.classList.remove('expanded');
+                    localStorage.setItem(storageKey, 'false');
+                });
             }
+
+            navItems.forEach((item) => {
+                item.style.cursor = 'pointer';
+                item.addEventListener('click', (event) => {
+                    if (event.target.closest('.nav-icon')) return;
+                    const icon = item.querySelector('.nav-icon');
+                    if (!icon) return;
+                    icon.click();
+                });
+            });
+
+            document.addEventListener('click', (event) => {
+                if (window.innerWidth > 480) return;
+                if (!sidebar.classList.contains('expanded')) return;
+                if (event.target.closest('#adminSidebar')) return;
+                sidebar.classList.remove('expanded');
+                localStorage.setItem(storageKey, 'false');
+            });
         });
 
         // Initialize admin credentials
