@@ -1787,7 +1787,7 @@
 
         .admin-guide-card,
         .admin-status-card,
-        .admin-sticky-actions,
+        .admin-progress-note,
         .admin-tab-intro {
             border: 1px solid #dbe4ee;
             border-radius: 22px;
@@ -1918,6 +1918,25 @@
             margin-top: 14px;
         }
 
+        .admin-progress-note {
+            margin: 0 0 18px;
+            padding: 16px 18px;
+        }
+
+        .admin-progress-title {
+            color: #0f172a;
+            font-size: 15px;
+            font-weight: 800;
+            line-height: 1.35;
+            margin-bottom: 4px;
+        }
+
+        .admin-progress-subtitle {
+            color: #64748b;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
         .secondary-action-btn,
         .admin-quick-link {
             min-height: 42px;
@@ -1945,41 +1964,6 @@
             background: #f8fafc;
         }
 
-        .admin-sticky-actions {
-            position: sticky;
-            top: 12px;
-            z-index: 25;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 16px;
-            margin: 0 0 18px;
-            padding: 16px 18px;
-        }
-
-        .admin-has-unsaved-changes .admin-sticky-actions {
-            border-color: #f3c46b;
-            box-shadow: 0 14px 32px rgba(245, 158, 11, 0.12);
-        }
-
-        .admin-sticky-copy {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-            min-width: 0;
-        }
-
-        .admin-sticky-title {
-            color: #0f172a;
-            font-size: 15px;
-            font-weight: 800;
-            line-height: 1.35;
-        }
-
-        .admin-save-all-btn {
-            min-width: 220px;
-        }
-
         .admin-tab-intro {
             margin-bottom: 16px;
             padding: 16px 18px;
@@ -1997,18 +1981,32 @@
             scroll-margin-top: 118px;
         }
 
+        #apUnsavedBar {
+            transition: transform 0.18s ease, opacity 0.18s ease;
+        }
+
+        .admin-has-unsaved-changes #apUnsavedBar {
+            border-color: rgba(255, 196, 107, 0.65) !important;
+        }
+
+        .notification.error {
+            position: fixed;
+            right: 20px;
+            top: 20px;
+            z-index: 9100;
+            max-width: min(420px, calc(100vw - 24px));
+            padding: 12px 14px;
+            border-radius: 14px;
+            background: rgba(185, 28, 28, 0.96);
+            color: #ffffff;
+            font-size: 13px;
+            font-weight: 700;
+            box-shadow: 0 14px 30px rgba(127, 29, 29, 0.28);
+        }
+
         @media (max-width: 1024px) {
             .admin-guide-shell {
                 grid-template-columns: 1fr;
-            }
-
-            .admin-sticky-actions {
-                flex-direction: column;
-                align-items: stretch;
-            }
-
-            .admin-sticky-buttons {
-                width: 100%;
             }
         }
 
@@ -2022,13 +2020,11 @@
             }
 
             .admin-status-actions,
-            .admin-sticky-buttons,
             .admin-quick-links {
                 display: grid;
                 grid-template-columns: 1fr;
             }
 
-            .admin-save-all-btn,
             .secondary-action-btn,
             .admin-quick-link {
                 width: 100%;
@@ -2039,23 +2035,31 @@
         @media (max-width: 480px) {
             .admin-guide-card,
             .admin-status-card,
-            .admin-sticky-actions,
+            .admin-progress-note,
             .admin-tab-intro {
                 border-radius: 18px;
             }
 
             .admin-guide-card,
             .admin-status-card,
+            .admin-progress-note,
             .admin-tab-intro {
-                padding: 14px;
-            }
-
-            .admin-sticky-actions {
-                top: calc(56px + env(safe-area-inset-top) + 8px);
                 padding: 14px;
             }
 
             .admin-section[id] {
                 scroll-margin-top: 138px;
+            }
+
+            #apUnsavedBar {
+                right: 12px !important;
+                bottom: calc(12px + env(safe-area-inset-bottom)) !important;
+                width: calc(100vw - 24px) !important;
+            }
+
+            .notification.error {
+                right: 12px;
+                top: calc(12px + env(safe-area-inset-top));
+                max-width: calc(100vw - 24px);
             }
         }

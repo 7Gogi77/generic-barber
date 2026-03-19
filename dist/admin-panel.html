@@ -9,7 +9,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="js/config.js"></script>
     <script src="js/admin-env.js"></script>
-  <link rel="stylesheet" crossorigin href="/assets/admin-BrfFjgVx.css">
+  <link rel="stylesheet" crossorigin href="/assets/admin-DMOjCCJD.css">
 </head>
 <body>
     <!-- LOGIN SCREEN -->
@@ -119,7 +119,7 @@
                 <div class="admin-status-card">
                     <div class="admin-status-label">Status sprememb</div>
                     <div id="adminSaveStatus" class="admin-save-status clean">Vse spremembe so shranjene</div>
-                    <p class="admin-status-note">Ko kaj spremeniš, klikni Shrani vse spremembe in nato preveri predogled.</p>
+                    <p class="admin-status-note">Ko spremeniš katerokoli nastavitev, se spodaj pokaže obvestilo da nastavitve še niso shranjene. Shraniš lahko samo tam.</p>
                     <div class="admin-status-actions">
                         <button type="button" class="secondary-action-btn" onclick="window.open('index.html', '_blank')">Predogled strani</button>
                         <button type="button" class="secondary-action-btn" onclick="window.open('rezervacija.html', '_blank')">Predogled rezervacije</button>
@@ -127,15 +127,9 @@
                 </div>
             </div>
 
-            <div class="admin-sticky-actions">
-                <div class="admin-sticky-copy">
-                    <div class="admin-sticky-title">Če nisi prepričan, začni z: Ime podjetja, Naslovnica, Barve, Kontakt.</div>
-                    <div class="admin-sticky-subtitle" id="adminDirtyHint">Trenutno ni neshranjenih sprememb.</div>
-                </div>
-                <div class="admin-sticky-buttons">
-                    <button type="button" class="secondary-action-btn secondary-action-btn-ghost" onclick="window.open('index.html', '_blank')">Odpri stran</button>
-                    <button type="button" class="save-btn admin-save-all-btn" onclick="saveAllAndReport()">Shrani vse spremembe</button>
-                </div>
+            <div class="admin-progress-note">
+                <div class="admin-progress-title">Spremembe se ne shranijo samodejno.</div>
+                <div class="admin-progress-subtitle" id="adminDirtyHint">Ko urediš polje, se spodaj pokaže obvestilo z gumbom Shrani.</div>
             </div>
 
             <!-- ===== TAB 1: VIDEZ (APPEARANCE) ===== -->
@@ -1276,36 +1270,19 @@
     <!-- ========== END FULLCALENDAR SYSTEM ========== -->
 
     <!-- Unsaved changes bar -->
-    <div id="apUnsavedBar" style="display:none; position:fixed; bottom:0; left:72px; right:0; z-index:9000; background:#fff3cd; border-top:2px solid #ffc107; padding:12px 20px; align-items:center; justify-content:space-between; box-shadow:0 -2px 12px rgba(0,0,0,0.12);">
-        <span style="font-size:14px; color:#1c1c1e; font-weight:500;">&#9888;&#65039; Spremembe niso shranjene</span>
-        <div style="display:flex; gap:10px;">
-            <button onclick="apDiscardChanges()" style="padding:8px 16px; font-size:14px; border-radius:10px; background:#8E8E93; color:#fff; border:none; cursor:pointer; font-weight:500;">Preklici</button>
-            <button onclick="apSaveChanges()" style="padding:8px 18px; font-size:14px; border-radius:10px; background:#007AFF; color:#fff; border:none; cursor:pointer; font-weight:600;">Shrani</button>
-        </div>
+    <div id="apUnsavedBar" style="display:none; position:fixed; right:20px; bottom:20px; z-index:9000; width:min(420px, calc(100vw - 24px)); background:rgba(28,28,30,0.96); border:1px solid rgba(255,255,255,0.1); border-radius:18px; padding:14px 16px; align-items:center; justify-content:space-between; gap:14px; box-shadow:0 18px 42px rgba(15,23,42,0.26); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);">
+        <span id="apUnsavedMessage" style="font-size:14px; color:#ffffff; font-weight:600; line-height:1.4;">Nastavitve niso shranjene</span>
+        <button id="apUnsavedSaveButton" onclick="apSaveChanges()" style="padding:10px 18px; font-size:14px; border-radius:12px; background:#007AFF; color:#fff; border:none; cursor:pointer; font-weight:700; white-space:nowrap;">Shrani</button>
     </div>
     <script>
         (function() {
-            var _apSaveTimer = null;
-            function _apOnChange() {
-                var bar = document.getElementById('apUnsavedBar');
-                if (bar) bar.style.display = 'flex';
-                clearTimeout(_apSaveTimer);
-                _apSaveTimer = setTimeout(function() {
-                    if (typeof saveAll === 'function') saveAll();
-                }, 300);
-            }
             window.apSaveChanges = function() {
-                clearTimeout(_apSaveTimer);
+                if (typeof saveAllAndReport === 'function') {
+                    saveAllAndReport();
+                    return;
+                }
                 if (typeof saveAll === 'function') saveAll();
-                var bar = document.getElementById('apUnsavedBar');
-                if (bar) bar.style.display = 'none';
             };
-            window.apDiscardChanges = function() { location.reload(); };
-            document.addEventListener('DOMContentLoaded', function() {
-                var container = document.querySelector('.main-content') || document.body;
-                container.addEventListener('input', _apOnChange);
-                container.addEventListener('change', _apOnChange);
-            });
         })();
     </script>
 </body>
