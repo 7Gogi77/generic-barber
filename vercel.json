@@ -4,6 +4,7 @@
   "rewrites": [
     { "source": "/poslovni-panel.html", "destination": "/poslovni-panel.3f8a1c.html" },
     { "source": "/db/:path*", "destination": "http://178.104.77.218/db/:path*" },
+    { "source": "/tenant-db/:path*", "destination": "http://178.104.77.218/tenant-db/:path*" },
     { "source": "/health", "destination": "http://178.104.77.218/health" }
   ],
   "headers": [

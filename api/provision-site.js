@@ -1,5 +1,6 @@
 import {
   assessSiteFactoryReadiness,
+  buildTenantRuntimeDatabaseUrl,
   buildProjectEnvVars,
   buildProvisionMetadata,
   buildSeedSiteConfig,
@@ -92,18 +93,19 @@ export default async function handler(req, res) {
       return;
     }
 
-    const preliminaryDatabaseUrl = `${String(process.env.SITE_FACTORY_PUBLIC_VPS_BASE_URL || '').replace(/\/+$/, '')}/tenant-db/${tenantId}`;
-    const siteConfig = buildSeedSiteConfig(body, preliminaryDatabaseUrl, tenantId);
+    const runtimeDatabaseUrl = buildTenantRuntimeDatabaseUrl(tenantId);
+    const siteConfig = buildSeedSiteConfig(body, runtimeDatabaseUrl, tenantId);
     const metadata = buildProvisionMetadata(body, tenantId);
 
     const tenant = await createTenantOnVps({
       tenantId,
       businessName,
       siteConfig,
-      metadata
+      metadata,
+      databaseUrl: runtimeDatabaseUrl
     });
 
-    const databaseUrl = tenant.databaseUrl || preliminaryDatabaseUrl;
+    const databaseUrl = runtimeDatabaseUrl;
     const adminPasswordHash = hashPassword(adminPassword);
     const envVars = buildProjectEnvVars({
       databaseUrl,

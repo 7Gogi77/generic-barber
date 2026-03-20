@@ -303,6 +303,11 @@ export function hashPassword(password) {
   return createHash('sha256').update(String(password || '')).digest('hex');
 }
 
+export function buildTenantRuntimeDatabaseUrl(tenantId) {
+  const normalizedTenantId = slugify(tenantId);
+  return normalizedTenantId ? `/tenant-db/${normalizedTenantId}` : '/tenant-db';
+}
+
 export function getFactoryAuthRequirement() {
   return Boolean((process.env.SITE_FACTORY_API_KEY || '').trim());
 }
@@ -621,7 +626,7 @@ async function runVpsAdminWithFallback({ method = 'GET', body = null, pathSuffix
   throw new Error(`VPS request failed. Tried endpoints: ${failures.join(' | ')}`);
 }
 
-export async function createTenantOnVps({ tenantId, businessName, siteConfig, metadata, overwrite = false }) {
+export async function createTenantOnVps({ tenantId, businessName, siteConfig, metadata, databaseUrl, overwrite = false }) {
   return runVpsAdminWithFallback({
     method: 'POST',
     pathSuffix: '/_admin/tenants',
@@ -630,6 +635,7 @@ export async function createTenantOnVps({ tenantId, businessName, siteConfig, me
       businessName,
       siteConfig,
       metadata,
+      ...(databaseUrl ? { databaseUrl } : {}),
       overwrite: Boolean(overwrite)
     }
   });

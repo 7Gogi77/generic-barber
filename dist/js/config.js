@@ -259,7 +259,19 @@ const SITE_CONFIG = {
 
 function normalizeDatabaseBaseUrl(url) {
     const candidate = typeof url === 'string' ? url.trim() : '';
-    return (candidate || DEFAULT_DATABASE_URL).replace(/\/+$/, '');
+    const normalized = candidate || DEFAULT_DATABASE_URL;
+
+    try {
+        const parsed = new URL(normalized, window.location.origin);
+        if (parsed.pathname.startsWith('/tenant-db/')) {
+            return parsed.pathname.replace(/\/+$/, '');
+        }
+        if (parsed.pathname === '/db' || parsed.pathname.startsWith('/db/')) {
+            return parsed.pathname.replace(/\/+$/, '');
+        }
+    } catch (_) {}
+
+    return normalized.replace(/\/+$/, '');
 }
 
 function readConfiguredDatabaseBaseUrl() {

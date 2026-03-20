@@ -11,8 +11,6 @@ const DEFAULT_ADMIN_ENV = {
     enabled: true
 };
 
-const TENANT_DB_FALLBACK_BASE = 'http://178.104.77.218';
-
 function deriveTenantDatabaseUrlFromHostname() {
     try {
         const hostname = String(window.location.hostname || '').toLowerCase();
@@ -30,7 +28,7 @@ function deriveTenantDatabaseUrlFromHostname() {
             return '';
         }
 
-        return `${TENANT_DB_FALLBACK_BASE}/tenant-db/${tenantId}`;
+        return `/tenant-db/${tenantId}`;
     } catch (_) {
         return '';
     }
