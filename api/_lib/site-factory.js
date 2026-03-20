@@ -368,6 +368,62 @@ async function vercelRequest(path, options = {}) {
   return payload;
 }
 
+function parseTemplateRepoSlug() {
+  const repo = String(process.env.VERCEL_TEMPLATE_REPO || '').trim();
+  if (!repo) {
+    return null;
+  }
+
+  const normalized = repo
+    .replace(/^https?:\/\/github\.com\//i, '')
+    .replace(/\.git$/i, '')
+    .replace(/^github:/i, '')
+    .trim();
+
+  const [owner, name] = normalized.split('/');
+  if (!owner || !name) {
+    return null;
+  }
+
+  return `${owner}/${name}`;
+}
+
+async function resolveTemplateRepoId() {
+  const configured = String(process.env.VERCEL_TEMPLATE_REPO_ID || '').trim();
+  if (configured) {
+    return configured;
+  }
+
+  const provider = String(process.env.VERCEL_TEMPLATE_REPO_TYPE || 'github').trim().toLowerCase();
+  if (provider !== 'github') {
+    return null;
+  }
+
+  const slug = parseTemplateRepoSlug();
+  if (!slug) {
+    return null;
+  }
+
+  try {
+    const response = await fetch(`https://api.github.com/repos/${slug}`, {
+      headers: {
+        Accept: 'application/vnd.github+json',
+        'User-Agent': 'generic-barber-site-factory'
+      }
+    });
+
+    if (!response.ok) {
+      return null;
+    }
+
+    const payload = await response.json().catch(() => ({}));
+    const repoId = payload && payload.id ? String(payload.id).trim() : '';
+    return repoId || null;
+  } catch {
+    return null;
+  }
+}
+
 export async function createVercelProject({ projectName, envVars }) {
   const body = {
     name: projectName,
@@ -409,7 +465,7 @@ export async function upsertProjectEnv(projectIdOrName, envVars) {
 }
 
 export async function createProductionDeployment(project, meta = {}) {
-  const repoId = String(process.env.VERCEL_TEMPLATE_REPO_ID || '').trim();
+  const repoId = await resolveTemplateRepoId();
   if (!repoId) {
     return null;
   }

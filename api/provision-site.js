@@ -118,7 +118,7 @@ export default async function handler(req, res) {
           }
         : {
             skipped: true,
-            reason: 'VERCEL_TEMPLATE_REPO_ID is not configured, so an explicit deployment was not triggered.'
+            reason: 'Explicit deployment was not triggered. Set VERCEL_TEMPLATE_REPO_ID, or ensure VERCEL_TEMPLATE_REPO points to a publicly resolvable GitHub repository.'
           },
       checklist: [
         'Point any custom domain to the created Vercel project if needed.',
