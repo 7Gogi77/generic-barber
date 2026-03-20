@@ -242,30 +242,103 @@ export function buildProvisionMetadata(payload, tenantId) {
   };
 }
 
+function normalizeAdminEndpoint(input) {
+  const raw = String(input || '').trim();
+  if (!raw) return '';
+
+  const withPath = raw.endsWith('/_admin/tenants')
+    ? raw
+    : `${raw.replace(/\/+$/, '')}/_admin/tenants`;
+
+  return withPath;
+}
+
+function addPortFallback(endpoint) {
+  try {
+    const url = new URL(endpoint);
+    if (url.port) return null;
+    if (url.protocol !== 'http:' && url.protocol !== 'https:') return null;
+
+    const fallback = new URL(endpoint);
+    fallback.port = '3001';
+    return fallback.toString();
+  } catch {
+    return null;
+  }
+}
+
+function collectVpsAdminEndpointCandidates() {
+  const unique = new Set();
+
+  const pushWithFallback = (value) => {
+    const endpoint = normalizeAdminEndpoint(value);
+    if (!endpoint) return;
+
+    unique.add(endpoint);
+    const fallback = addPortFallback(endpoint);
+    if (fallback) {
+      unique.add(fallback);
+    }
+  };
+
+  pushWithFallback(process.env.SITE_FACTORY_VPS_ADMIN_URL);
+  pushWithFallback(process.env.SITE_FACTORY_PUBLIC_VPS_BASE_URL);
+
+  return [...unique];
+}
+
 export async function createTenantOnVps({ tenantId, businessName, siteConfig, metadata }) {
-  const endpoint = String(process.env.SITE_FACTORY_VPS_ADMIN_URL || '').trim();
   const adminToken = String(process.env.VPS_DB_ADMIN_TOKEN || '').trim();
+  const endpoints = collectVpsAdminEndpointCandidates();
 
-  const response = await fetch(endpoint, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-admin-token': adminToken
-    },
-    body: JSON.stringify({
-      tenantId,
-      businessName,
-      siteConfig,
-      metadata
-    })
-  });
-
-  const payload = await response.json().catch(() => ({}));
-  if (!response.ok) {
-    throw new Error(payload.error || `VPS tenant provisioning failed (${response.status})`);
+  if (!endpoints.length) {
+    throw new Error('SITE_FACTORY_VPS_ADMIN_URL is not configured');
   }
 
-  return payload;
+  const requestBody = JSON.stringify({
+    tenantId,
+    businessName,
+    siteConfig,
+    metadata
+  });
+
+  const failures = [];
+
+  for (const endpoint of endpoints) {
+    try {
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-token': adminToken
+        },
+        body: requestBody
+      });
+
+      const payload = await response.json().catch(() => ({}));
+      if (response.ok) {
+        return payload;
+      }
+
+      // Don't retry auth/business logic errors; those are definitive.
+      if ([400, 401, 403, 409, 422].includes(response.status)) {
+        throw new Error(payload.error || `VPS tenant provisioning failed (${response.status})`);
+      }
+
+      failures.push(`${endpoint} -> ${response.status}`);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+
+      // Definitive application errors should bubble up immediately.
+      if (/Unauthorized|already exists|required|invalid/i.test(message)) {
+        throw error;
+      }
+
+      failures.push(`${endpoint} -> ${message}`);
+    }
+  }
+
+  throw new Error(`VPS tenant provisioning failed. Tried endpoints: ${failures.join(' | ')}`);
 }
 
 function buildVercelQuery() {
