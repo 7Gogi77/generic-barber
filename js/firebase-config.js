@@ -50,6 +50,23 @@ function persistConfigLocally(config) {
     } catch (_) {}
 }
 
+function getExpectedTenantId() {
+    if (window.AppBackend && typeof window.AppBackend.getTenantIdFromHostname === 'function') {
+        return window.AppBackend.getTenantIdFromHostname();
+    }
+
+    return '';
+}
+
+function doesConfigMatchTenant(config, expectedTenantId) {
+    if (!expectedTenantId) {
+        return Boolean(config && typeof config === 'object');
+    }
+
+    const actualTenantId = String(config?.tenant?.id || '').trim().toLowerCase();
+    return actualTenantId === expectedTenantId.toLowerCase();
+}
+
 window.CloudSync = {
     isConnected: false,
     syncEnabled: true,
@@ -93,20 +110,41 @@ window.CloudSync = {
     },
 
     async fetchRemoteConfig() {
-        const response = await fetch(getDatabaseUrl('site_config.json', { _t: Date.now() }), {
-            cache: 'no-store',
-            headers: {
-                'Cache-Control': 'no-cache, no-store, must-revalidate',
-                'Pragma': 'no-cache',
-                'Expires': '0'
-            }
-        });
+        const expectedTenantId = getExpectedTenantId();
+        const urls = [getDatabaseUrl('site_config.json', { _t: Date.now() })];
 
-        if (!response.ok) {
-            return null;
+        if (expectedTenantId) {
+            urls.push(getDatabaseUrl(`${expectedTenantId}/site_config.json`, { _t: Date.now() }).replace('/db/', '/tenant-db/'));
+            urls.push(`/tenant-db/${expectedTenantId}/site_config.json?_t=${Date.now()}`);
         }
 
-        return await response.json();
+        for (const url of urls) {
+            try {
+                const response = await fetch(url, {
+                    cache: 'no-store',
+                    headers: {
+                        'Cache-Control': 'no-cache, no-store, must-revalidate',
+                        'Pragma': 'no-cache',
+                        'Expires': '0'
+                    }
+                });
+
+                if (!response.ok) {
+                    continue;
+                }
+
+                const payload = await response.json();
+                if (!payload || typeof payload !== 'object') {
+                    continue;
+                }
+
+                if (doesConfigMatchTenant(payload, expectedTenantId) || url.includes(`/tenant-db/${expectedTenantId}/`)) {
+                    return payload;
+                }
+            } catch (_) {}
+        }
+
+        return null;
     },
 
     async saveToCloud(config) {
@@ -143,10 +181,11 @@ window.CloudSync = {
             if (cloudConfig) {
                 this.lastSnapshot = JSON.stringify(cloudConfig);
                 persistConfigLocally(cloudConfig);
+                return true;
             }
         } catch (_) {}
 
-        return true;
+        return false;
     }
 };
 

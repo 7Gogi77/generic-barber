@@ -30,6 +30,18 @@
             }
             return 'https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app';
         }
+
+        function getExpectedTenantId() {
+            if (window.AppBackend && typeof window.AppBackend.getTenantIdFromHostname === 'function') {
+                return window.AppBackend.getTenantIdFromHostname();
+            }
+            return '';
+        }
+
+        function doesConfigMatchTenant(config, expectedTenantId) {
+            if (!expectedTenantId) return Boolean(config && typeof config === 'object');
+            return String(config?.tenant?.id || '').trim().toLowerCase() === expectedTenantId.toLowerCase();
+        }
         
         // Global services array (loaded from Firebase)
         let servicesData = [];
@@ -145,43 +157,54 @@
         
         // ===== LOAD CONFIG FROM FIREBASE =====
         async function loadConfigFromFirebase() {
+            const expectedTenantId = getExpectedTenantId();
+            const urls = [];
+
+            const primaryUrl = (window.AppBackend && typeof window.AppBackend.getDatabaseUrl === 'function')
+                ? window.AppBackend.getDatabaseUrl('site_config.json', { _t: Date.now() })
+                : `${getDatabaseBaseUrl()}/site_config.json?_t=${Date.now()}`;
+            urls.push(primaryUrl);
+
+            if (expectedTenantId) {
+                urls.push(`/tenant-db/${expectedTenantId}/site_config.json?_t=${Date.now()}`);
+            }
+
             try {
-                const configUrl = (window.AppBackend && typeof window.AppBackend.getDatabaseUrl === 'function')
-                    ? window.AppBackend.getDatabaseUrl('site_config.json', { _t: Date.now() })
-                    : `${getDatabaseBaseUrl()}/site_config.json?_t=${Date.now()}`;
-                const response = await fetch(configUrl, {
-                    cache: 'no-store',
-                    headers: {
-                        'Cache-Control': 'no-cache, no-store, must-revalidate',
-                        'Pragma': 'no-cache',
-                        'Expires': '0'
-                    }
-                });
-                if (response.ok) {
-                    const config = await response.json();
-                    
-                    // Store globally
-                    window.SITE_CONFIG = config;
-                    
-                    // Extract services
-                    if (config && config.servicesSection && config.servicesSection.items) {
-                        // Firebase stores arrays as objects with numeric keys
-                        const items = config.servicesSection.items;
-                        if (Array.isArray(items)) {
-                            servicesData = items;
-                        } else if (typeof items === 'object') {
-                            // Convert object with numeric keys to array
-                            servicesData = Object.values(items).filter(item => item !== null);
+                for (const configUrl of urls) {
+                    const response = await fetch(configUrl, {
+                        cache: 'no-store',
+                        headers: {
+                            'Cache-Control': 'no-cache, no-store, must-revalidate',
+                            'Pragma': 'no-cache',
+                            'Expires': '0'
                         }
+                    });
+                    if (response.ok) {
+                        const config = await response.json();
+                        if (!config || typeof config !== 'object') {
+                            continue;
+                        }
+                        if (!doesConfigMatchTenant(config, expectedTenantId) && !configUrl.includes(`/tenant-db/${expectedTenantId}/`)) {
+                            continue;
+                        }
+
+                        // Store globally
+                        window.SITE_CONFIG = config;
+
+                        // Extract services
+                        if (config.servicesSection && config.servicesSection.items) {
+                            const items = config.servicesSection.items;
+                            if (Array.isArray(items)) {
+                                servicesData = items;
+                            } else if (typeof items === 'object') {
+                                servicesData = Object.values(items).filter(item => item !== null);
+                            }
+                        }
+
+                        updateBusinessHoursDisplay();
+                        applyThemeColors();
+                        return;
                     }
-                    
-                    // Update business hours display
-                    updateBusinessHoursDisplay();
-                    
-                    // Apply theme colors from admin panel
-                    applyThemeColors();
-                    
-                } else {
                 }
             } catch (err) {
                 // Fallback to local config.js if available

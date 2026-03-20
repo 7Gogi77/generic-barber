@@ -257,6 +257,24 @@ const SITE_CONFIG = {
     }
 };
 
+function deriveTenantIdFromHostname() {
+    try {
+        const hostname = String(window.location.hostname || '').toLowerCase();
+        if (!hostname || hostname === 'localhost' || hostname === '127.0.0.1') {
+            return '';
+        }
+
+        const subdomain = hostname.split('.')[0] || '';
+        if (!subdomain.endsWith('-site')) {
+            return '';
+        }
+
+        return subdomain.slice(0, -'-site'.length).trim();
+    } catch (_) {
+        return '';
+    }
+}
+
 function normalizeDatabaseBaseUrl(url) {
     const candidate = typeof url === 'string' ? url.trim() : '';
     const normalized = candidate || DEFAULT_DATABASE_URL;
@@ -299,6 +317,7 @@ window.SITE_CONFIG = window.SITE_CONFIG || SITE_CONFIG;
 window.AppBackend = {
     defaultDatabaseURL: DEFAULT_DATABASE_URL,
     storageKey: DATABASE_URL_STORAGE_KEY,
+    getTenantIdFromHostname: deriveTenantIdFromHostname,
     normalizeDatabaseBaseUrl,
     getDatabaseBaseUrl() {
         return normalizeDatabaseBaseUrl(readConfiguredDatabaseBaseUrl());
