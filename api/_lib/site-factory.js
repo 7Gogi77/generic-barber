@@ -351,7 +351,7 @@ async function runVpsAdminWithFallback({ method = 'GET', body = null, pathSuffix
   throw new Error(`VPS request failed. Tried endpoints: ${failures.join(' | ')}`);
 }
 
-export async function createTenantOnVps({ tenantId, businessName, siteConfig, metadata }) {
+export async function createTenantOnVps({ tenantId, businessName, siteConfig, metadata, overwrite = false }) {
   return runVpsAdminWithFallback({
     method: 'POST',
     pathSuffix: '/_admin/tenants',
@@ -359,7 +359,8 @@ export async function createTenantOnVps({ tenantId, businessName, siteConfig, me
       tenantId,
       businessName,
       siteConfig,
-      metadata
+      metadata,
+      overwrite: Boolean(overwrite)
     }
   });
 }
@@ -380,20 +381,101 @@ export async function getTenantFromVps(tenantId) {
 }
 
 export async function updateTenantOnVps(tenantId, payload) {
-  return runVpsAdminWithFallback({
-    method: 'PATCH',
-    pathSuffix: '/_admin/tenants',
-    tenantId,
-    body: payload || {}
-  });
+  try {
+    return await runVpsAdminWithFallback({
+      method: 'PATCH',
+      pathSuffix: '/_admin/tenants',
+      tenantId,
+      body: payload || {}
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    const looksLikeLegacy405 = /405|Method not allowed/i.test(message);
+    if (!looksLikeLegacy405) {
+      throw error;
+    }
+
+    const current = await getTenantFromVps(tenantId);
+    const tenant = current?.tenant && typeof current.tenant === 'object' ? current.tenant : {};
+    const existingMeta = tenant.meta && typeof tenant.meta === 'object' ? tenant.meta : {};
+
+    const nextBusinessName = String(payload?.businessName || tenant.businessName || tenantId).trim() || tenantId;
+    const nextMeta = {
+      ...existingMeta,
+      ...(payload?.meta && typeof payload.meta === 'object' ? payload.meta : {}),
+      ...(payload?.businessAddress ? { businessAddress: String(payload.businessAddress).trim() } : {}),
+      ...(payload?.ownerEmail ? { ownerEmail: String(payload.ownerEmail).trim() } : {}),
+      ...(payload?.ownerPhone ? { ownerPhone: String(payload.ownerPhone).trim() } : {}),
+      ...(payload?.siteTemplate ? { siteTemplate: String(payload.siteTemplate).trim() } : {})
+    };
+
+    return createTenantOnVps({
+      tenantId,
+      businessName: nextBusinessName,
+      siteConfig: {
+        businessName: nextBusinessName,
+        shopName: nextBusinessName,
+        ...(payload?.siteConfig && typeof payload.siteConfig === 'object' ? payload.siteConfig : {}),
+        ...(payload?.businessAddress ? { businessAddress: String(payload.businessAddress).trim() } : {}),
+        ...(payload?.siteTemplate ? { siteTemplate: String(payload.siteTemplate).trim() } : {}),
+        ...(payload?.ownerEmail || payload?.ownerPhone
+          ? {
+              ownerContact: {
+                ...(payload?.ownerEmail ? { email: String(payload.ownerEmail).trim() } : {}),
+                ...(payload?.ownerPhone ? { ownerPhone: String(payload.ownerPhone).trim() } : {})
+              }
+            }
+          : {})
+      },
+      metadata: nextMeta,
+      overwrite: true
+    });
+  }
 }
 
 export async function deleteTenantOnVps(tenantId) {
-  return runVpsAdminWithFallback({
-    method: 'DELETE',
-    pathSuffix: '/_admin/tenants',
-    tenantId
-  });
+  try {
+    return await runVpsAdminWithFallback({
+      method: 'DELETE',
+      pathSuffix: '/_admin/tenants',
+      tenantId
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    const looksLikeLegacy405 = /405|Method not allowed/i.test(message);
+    if (!looksLikeLegacy405) {
+      throw error;
+    }
+
+    const current = await getTenantFromVps(tenantId);
+    const tenant = current?.tenant && typeof current.tenant === 'object' ? current.tenant : {};
+    const existingMeta = tenant.meta && typeof tenant.meta === 'object' ? tenant.meta : {};
+    const nowIso = new Date().toISOString();
+
+    await createTenantOnVps({
+      tenantId,
+      businessName: tenant.businessName || tenantId,
+      siteConfig: {
+        businessName: tenant.businessName || tenantId,
+        shopName: tenant.businessName || tenantId,
+        archived: true
+      },
+      metadata: {
+        ...existingMeta,
+        deleted: true,
+        deletedAt: nowIso,
+        archived: true
+      },
+      overwrite: true
+    });
+
+    return {
+      ok: true,
+      tenantId,
+      deleted: true,
+      legacyDelete: true
+    };
+  }
 }
 
 function buildVercelQuery() {
@@ -566,6 +648,11 @@ export async function createProductionDeployment(project, meta = {}) {
   const failures = [];
   const repoId = await resolveTemplateRepoId();
 
+  const detectedBefore = await waitForProjectDeployment(projectIdOrName, 8000, 2000);
+  if (detectedBefore) {
+    return detectedBefore;
+  }
+
   if (repoId) {
     try {
       const explicit = await vercelRequest('/v13/deployments', {
@@ -587,22 +674,6 @@ export async function createProductionDeployment(project, meta = {}) {
     } catch (error) {
       failures.push(error instanceof Error ? error.message : String(error));
     }
-  }
-
-  try {
-    const projectOnly = await vercelRequest('/v13/deployments', {
-      method: 'POST',
-      body: JSON.stringify({
-        name: project.name,
-        project: projectIdOrName,
-        target: 'production',
-        meta
-      })
-    });
-
-    return normalizeDeploymentRecord(projectOnly);
-  } catch (error) {
-    failures.push(error instanceof Error ? error.message : String(error));
   }
 
   const detected = await waitForProjectDeployment(projectIdOrName, 20000, 2000);

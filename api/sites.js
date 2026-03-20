@@ -61,6 +61,10 @@ export default async function handler(req, res) {
     if (req.method === 'GET' && !req.query?.tenantId) {
       const registry = await listTenantsFromVps();
       const sites = Object.values(registry || {})
+        .filter((record) => {
+          const meta = record?.meta && typeof record.meta === 'object' ? record.meta : {};
+          return !meta.deleted;
+        })
         .map((record) => mapTenantRecord(record))
         .sort((a, b) => new Date(b.updatedAt || 0).getTime() - new Date(a.updatedAt || 0).getTime());
 
