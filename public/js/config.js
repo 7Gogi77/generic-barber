@@ -263,14 +263,14 @@ function normalizeDatabaseBaseUrl(url) {
 }
 
 function readConfiguredDatabaseBaseUrl() {
-    try {
-        const stored = localStorage.getItem(DATABASE_URL_STORAGE_KEY);
-        if (stored) return stored;
-    } catch (_) {}
-
     if (window.ADMIN_ENV && typeof window.ADMIN_ENV.databaseUrl === 'string' && window.ADMIN_ENV.databaseUrl.trim()) {
         return window.ADMIN_ENV.databaseUrl;
     }
+
+    try {
+        const stored = localStorage.getItem(DATABASE_URL_STORAGE_KEY);
+        if (stored && stored.trim() && stored.trim() !== '/db') return stored;
+    } catch (_) {}
 
     if (window.SITE_CONFIG && window.SITE_CONFIG.backend && typeof window.SITE_CONFIG.backend.databaseURL === 'string') {
         return window.SITE_CONFIG.backend.databaseURL;

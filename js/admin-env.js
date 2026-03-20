@@ -11,7 +11,37 @@ const DEFAULT_ADMIN_ENV = {
     enabled: true
 };
 
-window.ADMIN_ENV = { ...DEFAULT_ADMIN_ENV };
+const TENANT_DB_FALLBACK_BASE = 'http://178.104.77.218';
+
+function deriveTenantDatabaseUrlFromHostname() {
+    try {
+        const hostname = String(window.location.hostname || '').toLowerCase();
+        if (!hostname || hostname === 'localhost' || hostname === '127.0.0.1') {
+            return '';
+        }
+
+        const subdomain = hostname.split('.')[0] || '';
+        if (!subdomain.endsWith('-site')) {
+            return '';
+        }
+
+        const tenantId = subdomain.slice(0, -'-site'.length).trim();
+        if (!tenantId) {
+            return '';
+        }
+
+        return `${TENANT_DB_FALLBACK_BASE}/tenant-db/${tenantId}`;
+    } catch (_) {
+        return '';
+    }
+}
+
+const FALLBACK_DATABASE_URL = deriveTenantDatabaseUrlFromHostname();
+
+window.ADMIN_ENV = {
+    ...DEFAULT_ADMIN_ENV,
+    ...(FALLBACK_DATABASE_URL ? { databaseUrl: FALLBACK_DATABASE_URL } : {})
+};
 
 window.ADMIN_ENV_PROMISE = fetch('/api/admin-env', {
     cache: 'no-store',
@@ -29,7 +59,8 @@ window.ADMIN_ENV_PROMISE = fetch('/api/admin-env', {
         const payload = await response.json();
         window.ADMIN_ENV = {
             ...DEFAULT_ADMIN_ENV,
-            ...(payload && typeof payload === 'object' ? payload : {})
+            ...(payload && typeof payload === 'object' ? payload : {}),
+            ...(!payload?.databaseUrl && FALLBACK_DATABASE_URL ? { databaseUrl: FALLBACK_DATABASE_URL } : {})
         };
 
         if (payload && payload.error) {
@@ -40,5 +71,11 @@ window.ADMIN_ENV_PROMISE = fetch('/api/admin-env', {
     })
     .catch((error) => {
         window.ADMIN_ENV_ERROR = error?.message || 'Failed to load admin env';
+        if (FALLBACK_DATABASE_URL) {
+            window.ADMIN_ENV = {
+                ...window.ADMIN_ENV,
+                databaseUrl: FALLBACK_DATABASE_URL
+            };
+        }
         return window.ADMIN_ENV;
     });
