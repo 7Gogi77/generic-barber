@@ -36,6 +36,19 @@ function getTenantId(req) {
   return String(req.query?.tenantId || '').trim().toLowerCase();
 }
 
+function deriveProjectRefFromUrl(projectUrl) {
+  const urlValue = String(projectUrl || '').trim();
+  if (!urlValue) return null;
+
+  try {
+    const parsed = new URL(urlValue);
+    const subdomain = String(parsed.hostname || '').split('.')[0] || '';
+    return subdomain || null;
+  } catch {
+    return null;
+  }
+}
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,PATCH,DELETE,OPTIONS');
@@ -124,9 +137,23 @@ export default async function handler(req, res) {
     if (deleteProject) {
       try {
         const current = await getTenantFromVps(tenantId);
-        const projectRef = current?.tenant?.meta?.projectId || current?.tenant?.meta?.projectName || null;
-        if (projectRef) {
-          projectDelete = await deleteVercelProject(projectRef);
+        const projectMeta = current?.tenant?.meta && typeof current.tenant.meta === 'object' ? current.tenant.meta : {};
+        const projectRefs = [
+          projectMeta.projectId,
+          projectMeta.projectName,
+          deriveProjectRefFromUrl(projectMeta.projectUrl),
+          deriveProjectRefFromUrl(projectMeta.dashboardUrl)
+        ].filter(Boolean);
+
+        for (const projectRef of projectRefs) {
+          try {
+            projectDelete = await deleteVercelProject(projectRef);
+            if (projectDelete) {
+              break;
+            }
+          } catch {
+            projectDelete = null;
+          }
         }
       } catch {
         projectDelete = null;
