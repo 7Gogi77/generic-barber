@@ -6,23 +6,47 @@ function normalizeBaseUrl(value) {
   return String(value || '').trim().replace(/\/+$/, '');
 }
 
-function getProxyBaseUrl() {
-  const explicit = normalizeBaseUrl(process.env.VPS_PUBLIC_BASE_URL);
-  if (explicit) {
-    return explicit;
+function addBaseCandidate(set, value) {
+  const normalized = normalizeBaseUrl(value);
+  if (!normalized) {
+    return;
   }
 
-  const fallback = normalizeBaseUrl(process.env.SITE_FACTORY_PUBLIC_VPS_BASE_URL);
-  if (fallback) {
-    return fallback;
-  }
+  set.add(normalized);
 
-  const adminUrl = normalizeBaseUrl(process.env.SITE_FACTORY_VPS_ADMIN_URL);
-  if (!adminUrl) {
-    return '';
-  }
+  try {
+    const parsed = new URL(normalized);
+    if (!parsed.port) {
+      const withPort = new URL(normalized);
+      withPort.port = '3001';
+      set.add(normalizeBaseUrl(withPort.toString()));
+    }
 
-  return adminUrl.replace(/\/_admin\/tenants\/?$/i, '');
+    if (parsed.protocol === 'https:') {
+      const asHttp = new URL(normalized);
+      asHttp.protocol = 'http:';
+      set.add(normalizeBaseUrl(asHttp.toString()));
+
+      if (!asHttp.port) {
+        asHttp.port = '3001';
+        set.add(normalizeBaseUrl(asHttp.toString()));
+      }
+    }
+  } catch {
+    // Ignore invalid URLs.
+  }
+}
+
+function getProxyBaseUrls() {
+  const candidates = new Set();
+
+  addBaseCandidate(candidates, process.env.VPS_PUBLIC_BASE_URL);
+  addBaseCandidate(candidates, process.env.SITE_FACTORY_PUBLIC_VPS_BASE_URL);
+
+  const adminUrl = normalizeBaseUrl(process.env.SITE_FACTORY_VPS_ADMIN_URL).replace(/\/_admin\/tenants\/?$/i, '');
+  addBaseCandidate(candidates, adminUrl);
+
+  return [...candidates];
 }
 
 async function readRequestBody(req) {
@@ -53,8 +77,8 @@ export default async function handler(req, res) {
     return;
   }
 
-  const baseUrl = getProxyBaseUrl();
-  if (!baseUrl) {
+  const baseUrls = getProxyBaseUrls();
+  if (!baseUrls.length) {
     json(res, 500, { error: 'VPS public base URL is not configured' });
     return;
   }
@@ -72,38 +96,67 @@ export default async function handler(req, res) {
     return;
   }
 
-  const upstreamUrl = new URL(`${baseUrl}/tenant-db/${encodeURIComponent(tenantId)}/${relativePath}`);
-  Object.entries(req.query || {}).forEach(([key, value]) => {
-    if (key === 'tenantId' || key === 'path') {
-      return;
-    }
-
-    if (Array.isArray(value)) {
-      value.forEach((entry) => upstreamUrl.searchParams.append(key, String(entry)));
-      return;
-    }
-
-    if (value !== undefined) {
-      upstreamUrl.searchParams.set(key, String(value));
-    }
-  });
-
   try {
     const requestBody = ['GET', 'HEAD'].includes(req.method || '') ? '' : await readRequestBody(req);
-    const upstream = await fetch(upstreamUrl, {
-      method: req.method,
-      headers: {
-        'Content-Type': req.headers['content-type'] || 'application/json'
-      },
-      ...(requestBody ? { body: requestBody } : {})
-    });
+    let lastStatus = 502;
+    let lastContentType = 'application/json; charset=utf-8';
+    let lastPayloadText = JSON.stringify({ error: 'Tenant DB proxy failed' });
 
-    const contentType = upstream.headers.get('content-type') || 'application/json; charset=utf-8';
-    const payloadText = await upstream.text();
+    for (const baseUrl of baseUrls) {
+      const upstreamUrl = new URL(`${baseUrl}/tenant-db/${encodeURIComponent(tenantId)}/${relativePath}`);
+      Object.entries(req.query || {}).forEach(([key, value]) => {
+        if (key === 'tenantId' || key === 'path') {
+          return;
+        }
 
-    res.status(upstream.status);
-    res.setHeader('Content-Type', contentType);
-    res.send(payloadText);
+        if (Array.isArray(value)) {
+          value.forEach((entry) => upstreamUrl.searchParams.append(key, String(entry)));
+          return;
+        }
+
+        if (value !== undefined) {
+          upstreamUrl.searchParams.set(key, String(value));
+        }
+      });
+
+      try {
+        const upstream = await fetch(upstreamUrl, {
+          method: req.method,
+          headers: {
+            'Content-Type': req.headers['content-type'] || 'application/json'
+          },
+          ...(requestBody ? { body: requestBody } : {})
+        });
+
+        const contentType = upstream.headers.get('content-type') || 'application/json; charset=utf-8';
+        const payloadText = await upstream.text();
+
+        lastStatus = upstream.status;
+        lastContentType = contentType;
+        lastPayloadText = payloadText;
+
+        if (upstream.ok) {
+          res.status(upstream.status);
+          res.setHeader('Content-Type', contentType);
+          res.send(payloadText);
+          return;
+        }
+
+        if (upstream.status !== 404) {
+          break;
+        }
+      } catch (error) {
+        lastStatus = 502;
+        lastContentType = 'application/json; charset=utf-8';
+        lastPayloadText = JSON.stringify({
+          error: error instanceof Error ? error.message : 'Tenant DB proxy failed'
+        });
+      }
+    }
+
+    res.status(lastStatus);
+    res.setHeader('Content-Type', lastContentType);
+    res.send(lastPayloadText);
   } catch (error) {
     json(res, 502, { error: error instanceof Error ? error.message : 'Tenant DB proxy failed' });
   }
