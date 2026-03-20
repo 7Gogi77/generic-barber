@@ -16,14 +16,35 @@ Main entry points:
 
 ## 1. VPS setup
 
+Your currently known VPS connection details:
+
+- IPv4: `178.104.77.218`
+- IPv6: `2a01:4f8:1c19:85f5::/64`
+- SSH user: `root`
+- Root password: available to you (do not store it in this repository)
+
+For now, use the IPv4 address directly until you attach a domain.
+
 Run the VPS database server with these environment variables:
 
 ```bash
 PORT=3001
 HOST=0.0.0.0
-PUBLIC_BASE_URL=https://your-vps-domain.com
-VPS_DB_ADMIN_TOKEN=change-this-long-random-token
+PUBLIC_BASE_URL=http://178.104.77.218
+VPS_DB_ADMIN_TOKEN=REPLACE_WITH_LONG_RANDOM_TOKEN
 npm run vps:db
+```
+
+Generate the admin token on the VPS:
+
+```bash
+openssl rand -hex 32
+```
+
+Example SSH login command from your local machine:
+
+```bash
+ssh root@178.104.77.218
 ```
 
 New VPS capabilities:
@@ -60,7 +81,7 @@ Configure these on the Vercel project that hosts this repository and the site fa
 Required:
 
 - `SITE_FACTORY_VPS_ADMIN_URL`
-  Example: `https://your-vps-domain.com/_admin/tenants`
+  Use: `http://178.104.77.218/_admin/tenants`
 - `VPS_DB_ADMIN_TOKEN`
   Must match the token configured on the VPS DB server.
 - `VERCEL_ACCESS_TOKEN`
@@ -93,7 +114,23 @@ Recommended:
 - `VERCEL_INSTALL_COMMAND`
   Default is `npm install`.
 - `SITE_FACTORY_PUBLIC_VPS_BASE_URL`
-  Optional helper. Example: `https://your-vps-domain.com`
+  Optional helper. For your current VPS: `http://178.104.77.218`
+
+Practical example of what you can set right now in Vercel:
+
+```bash
+SITE_FACTORY_VPS_ADMIN_URL=http://178.104.77.218/_admin/tenants
+SITE_FACTORY_PUBLIC_VPS_BASE_URL=http://178.104.77.218
+VPS_DB_ADMIN_TOKEN=<same token as VPS_DB_ADMIN_TOKEN on VPS>
+```
+
+Still required from your side (not available from VPS IP/user/password alone):
+
+1. `VERCEL_ACCESS_TOKEN`
+2. `VERCEL_TEMPLATE_REPO` (for example `your-github-org/your-template-repo`)
+3. Optional but strongly recommended: `SITE_FACTORY_API_KEY`
+4. If using team projects: `VERCEL_TEAM_ID` (and optionally `VERCEL_TEAM_SLUG`)
+5. If you want automatic first production deployment from git in one click: `VERCEL_TEMPLATE_REPO_ID`
 
 ## 3. Generated project env vars
 
@@ -141,3 +178,13 @@ The factory now covers project creation, tenant DB seeding, and runtime config i
    - it loads content from its tenant DB
    - admin login uses the generated username/password hash
    - `site_config.json` is being served from the tenant path
+
+## 7. Security notes for your current VPS
+
+Because you currently have root username + password login:
+
+1. Change the root password after setup.
+2. Create a non-root admin user and use SSH keys.
+3. Disable password login in SSH once keys work.
+4. Restrict firewall ports (allow SSH + web ports only).
+5. Keep `VPS_DB_ADMIN_TOKEN` and `SITE_FACTORY_API_KEY` secret and never commit them.
