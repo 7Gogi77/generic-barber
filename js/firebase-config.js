@@ -34,6 +34,32 @@ function cloneConfig(config) {
     return JSON.parse(JSON.stringify(config || {}));
 }
 
+function deepMergeConfig(base, override) {
+    if (Array.isArray(override)) {
+        return override.map((item) => cloneConfig(item));
+    }
+
+    if (!override || typeof override !== 'object') {
+        return override;
+    }
+
+    const source = base && typeof base === 'object' && !Array.isArray(base) ? { ...base } : {};
+    Object.entries(override).forEach(([key, value]) => {
+        const currentValue = source[key];
+        if (
+            value && typeof value === 'object' && !Array.isArray(value) &&
+            currentValue && typeof currentValue === 'object' && !Array.isArray(currentValue)
+        ) {
+            source[key] = deepMergeConfig(currentValue, value);
+            return;
+        }
+
+        source[key] = Array.isArray(value) ? value.map((item) => cloneConfig(item)) : value;
+    });
+
+    return source;
+}
+
 function persistConfigLocally(config) {
     const tenantId = String(config?.tenant?.id || '').trim().toLowerCase();
 
@@ -48,9 +74,10 @@ function persistConfigLocally(config) {
     Object.assign(window.SITE_CONFIG, config || {});
 
     try {
-        localStorage.setItem('site_config_backup', JSON.stringify(window.SITE_CONFIG));
         if (tenantId) {
             localStorage.setItem(`site_config_backup:${tenantId}`, JSON.stringify(window.SITE_CONFIG));
+        } else {
+            localStorage.setItem('site_config_backup', JSON.stringify(window.SITE_CONFIG));
         }
     } catch (_) {}
 }
@@ -163,18 +190,21 @@ window.CloudSync = {
         }
 
         try {
+            const remoteConfig = await this.fetchRemoteConfig();
+            const mergedConfig = deepMergeConfig(remoteConfig || {}, nextConfig);
+
             const response = await fetch(getDatabaseUrl('site_config.json'), {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(nextConfig)
+                body: JSON.stringify(mergedConfig)
             });
 
             if (!response.ok) {
                 return false;
             }
 
-            this.lastSnapshot = JSON.stringify(nextConfig);
-            persistConfigLocally(nextConfig);
+            this.lastSnapshot = JSON.stringify(mergedConfig);
+            persistConfigLocally(mergedConfig);
             this.isConnected = true;
             return true;
         } catch (_) {

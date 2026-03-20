@@ -20,7 +20,7 @@
         async function loadSavedConfig() {
             const expectedTenantId = getExpectedTenantId();
             const backupKeys = expectedTenantId
-                ? [`site_config_backup:${expectedTenantId}`, 'site_config_backup']
+                ? [`site_config_backup:${expectedTenantId}`]
                 : ['site_config_backup'];
 
             for (const backupKey of backupKeys) {
@@ -185,9 +185,10 @@
 
                     Object.assign(SITE_CONFIG, cloudConfig);
                     window.SITE_CONFIG = SITE_CONFIG;
-                    localStorage.setItem('site_config_backup', JSON.stringify(SITE_CONFIG));
                     if (expectedTenantId) {
                         localStorage.setItem(`site_config_backup:${expectedTenantId}`, JSON.stringify(SITE_CONFIG));
+                    } else {
+                        localStorage.setItem('site_config_backup', JSON.stringify(SITE_CONFIG));
                     }
 
                     if (cloudConfig._bookingSettings && typeof cloudConfig._bookingSettings === 'object') {

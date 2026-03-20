@@ -480,6 +480,30 @@ export function buildSeedSiteConfig(payload, databaseUrl, tenantId) {
     ? { title: tpl.servicesSection.title, items: services }
     : tpl.servicesSection;
 
+  const bookingPage = {
+    pageTitle: 'Rezervacija Termina',
+    pageSubtitle: 'Izberite storitve in termin',
+    step1Title: 'Izberite Storitve',
+    step1Desc: 'Izberite eno ali več storitev',
+    step2Title: 'Izberite Datum',
+    step2Desc: 'Izberite želeni datum',
+    step3Title: 'Vaši Podatki',
+    step3Desc: 'Vnesite kontaktne podatke',
+    step4Title: 'Potrditev',
+    step4Desc: 'Preglejte in potrdite',
+    successTitle: 'Rezervacija Uspešna!',
+    successMessage: 'Vaša rezervacija je bila uspešno oddana. Potrditev boste prejeli na e-pošto.',
+    nextButton: 'Naprej',
+    confirmButton: 'Potrdi Rezervacijo'
+  };
+
+  const businessHoursSection = {
+    title: 'Urnik dela',
+    subtitle: 'Nastavi svoje delovne dneve in ure',
+    hoursLabel: 'Delovni čas',
+    daysLabel: 'Delovni dnevi'
+  };
+
   return {
     tenant: {
       id: tenantId,
@@ -487,6 +511,8 @@ export function buildSeedSiteConfig(payload, databaseUrl, tenantId) {
     },
     shopName: businessName,
     businessName,
+    currency: '€',
+    primaryGold: fullTheme.primary,
     ownerPhone: HARD_CODED_CLIENT_PHONE,
     businessAddress,
     siteTemplate,
@@ -506,18 +532,24 @@ export function buildSeedSiteConfig(payload, databaseUrl, tenantId) {
       syncPollingMs: 15000
     },
     theme: fullTheme,
-    navLinks: tpl.navLinks,
+    navLinks: Array.isArray(tpl.navLinks) ? tpl.navLinks.map((item) => ({ ...item })) : [],
+    navButtonText: tpl.booking?.buttonText || 'Rezerviraj Termin',
     galleryTitle: tpl.galleryTitle,
+    footerCopy: 'Vse pravice pridržane.',
+    hiddenSections: [],
     hero: {
       ...tpl.hero,
       title: businessName
     },
-    ourStory: tpl.ourStory,
+    ourStory: { ...tpl.ourStory },
     servicesSection: resolvedServices,
-    barbersSection: tpl.barbersSection,
-    gallery: tpl.gallery,
-    testimonial: tpl.testimonial,
-    ctaSection: tpl.ctaSection,
+    barbersSection: {
+      title: tpl.barbersSection?.title || 'Ekipa',
+      list: Array.isArray(tpl.barbersSection?.list) ? tpl.barbersSection.list.map((item) => ({ ...item })) : []
+    },
+    gallery: Array.isArray(tpl.gallery) ? [...tpl.gallery] : [],
+    testimonial: { ...tpl.testimonial },
+    ctaSection: { ...tpl.ctaSection },
     contactSection: {
       title: 'Kontakt',
       subtitle: 'Pišite ali nas pokličite za termin.',
@@ -525,16 +557,26 @@ export function buildSeedSiteConfig(payload, databaseUrl, tenantId) {
       phone: HARD_CODED_CLIENT_PHONE,
       email: ownerEmail
     },
-    googleReviews: tpl.googleReviews,
+    googleReviews: {
+      ...tpl.googleReviews,
+      items: Array.isArray(tpl.googleReviews?.items) ? tpl.googleReviews.items.map((item) => ({ ...item })) : []
+    },
     booking: {
       ...tpl.booking,
       businessHours: {
         start: startHour,
         end: endHour
       },
+      daysClosed: [0],
+      slotDuration: 30,
+      allowMultiDayAppointments: false,
+      maxAppointmentDays: 4,
       ...(workingDays ? { workingDays } : {}),
       ...(hours ? { hours } : {})
-    }
+    },
+    bookingPage,
+    businessHoursSection,
+    appointments: []
   };
 }
 
