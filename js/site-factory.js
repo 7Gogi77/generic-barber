@@ -129,6 +129,11 @@ function getSelectedColorHex() {
   return COLOR_PRESETS[selected] || COLOR_PRESETS.red;
 }
 
+function getThemeMode() {
+  const el = document.getElementById('siteTheme');
+  return el ? String(el.value || 'dark') : 'dark';
+}
+
 function getTemplateServices(template) {
   return TEMPLATE_SERVICES[template] || TEMPLATE_SERVICES.barber;
 }
@@ -143,6 +148,7 @@ function buildPayload() {
   const slug = slugify(businessName);
   const template = String(document.getElementById('siteTemplate').value || 'barber');
   const primary = getSelectedColorHex();
+  const themeMode = getThemeMode();
 
   return {
     businessName,
@@ -153,6 +159,7 @@ function buildPayload() {
     businessAddress: document.getElementById('businessAddress').value.trim(),
     adminUsername: DEFAULT_ADMIN_USERNAME,
     adminPassword: DEFAULT_ADMIN_PASSWORD,
+    themeMode,
     theme: {
       primary,
       gradientStart: primary,

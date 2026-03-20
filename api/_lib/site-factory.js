@@ -25,6 +25,252 @@ const OPTIONAL_ENV_KEYS = [
 
 const HARD_CODED_CLIENT_PHONE = '+38631886977';
 
+const TEMPLATE_SEED_DATA = {
+  barber: {
+    navLinks: [
+      { name: 'Domov', link: '#home' },
+      { name: 'O nas', link: '#about' },
+      { name: 'Storitve', link: '#services' },
+      { name: 'Ekipa', link: '#barbers' },
+      { name: 'Galerija', link: '#gallery' }
+    ],
+    galleryTitle: 'Galerija',
+    hero: {
+      subtitle: 'TRADICIJA & STIL',
+      buttonText: 'Oglej si storitve',
+      backgroundImage: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?q=80&w=2000'
+    },
+    ourStory: {
+      sectionTitle: 'Naša zgodba',
+      title: 'Natančnost in tradicija',
+      text: 'Sodobne tehnike v kombinaciji s klasičnim pristopom. Vsak obisk je izkušnja.',
+      image: 'https://images.unsplash.com/photo-1532710093739-9470acff878f?q=80&w=1200'
+    },
+    servicesSection: {
+      title: 'Storitve',
+      items: [
+        { name: 'Klasična frizura', price: '€25', desc: '30 min • Natančen rez', duration: 30 },
+        { name: 'Fade & Styling', price: '€30', desc: '45 min • Moderno', duration: 45 },
+        { name: 'Britje z brisačo', price: '€22', desc: '25 min • Tradicionalno', duration: 25 },
+        { name: 'Paket Gentleman', price: '€45', desc: '60 min • Frizura + britje', duration: 60 }
+      ]
+    },
+    barbersSection: {
+      title: 'Naša ekipa',
+      list: [
+        { name: 'Marko Novak', role: 'Master Barber', img: 'https://images.unsplash.com/photo-1519345182560-3f2917c472ef?q=80&w=1000' },
+        { name: 'Luka Šter', role: 'Beard Expert', img: 'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?q=80&w=1000' },
+        { name: 'Tilen Kralj', role: 'Senior Stylist', img: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1000' }
+      ]
+    },
+    gallery: [
+      'https://images.unsplash.com/photo-1585747860715-2ba37e788b70?q=80&w=1000',
+      'https://images.unsplash.com/photo-1621605815971-fbc98d665033?q=80&w=1000',
+      'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?q=80&w=1000'
+    ],
+    testimonial: { quote: 'Najboljša izkušnja v mestu. Vrnem se zagotovo!', author: 'Tomaž P.' },
+    ctaSection: {
+      title: 'Pripravljeni na spremembo?',
+      text: 'Rezervirajte termin danes in doživite vrhunsko storitev.',
+      buttonText: 'Rezerviraj zdaj'
+    },
+    booking: {
+      title: 'Naročilo termina',
+      heading: 'Rezervirajte termin',
+      buttonText: 'Potrdi termin',
+      placeholderName: 'Ime',
+      placeholderEmail: 'E-pošta',
+      placeholderPhone: 'Telefon'
+    },
+    googleReviews: {
+      title: 'Google ocene',
+      subtitle: 'Preveri mnenja naših strank.',
+      rating: '5.0',
+      countText: '(120 ocen)',
+      link: '',
+      items: [
+        { author: 'Ana K.', text: 'Odlična storitev in vzdušje.', stars: 5 },
+        { author: 'Marko P.', text: 'Vrhunska ekipa, priporočam!', stars: 5 },
+        { author: 'Sara M.', text: 'Super izkušnja, pridem spet.', stars: 5 }
+      ]
+    }
+  },
+  detailer: {
+    navLinks: [
+      { name: 'Domov', link: '#home' },
+      { name: 'O nas', link: '#about' },
+      { name: 'Storitve', link: '#services' },
+      { name: 'Ekipa', link: '#barbers' },
+      { name: 'Galerija', link: '#gallery' }
+    ],
+    galleryTitle: 'Galerija',
+    hero: {
+      subtitle: 'PODROBNOSTI SO VSE',
+      buttonText: 'Rezerviraj termin',
+      backgroundImage: 'https://images.unsplash.com/photo-1493238792000-8113da705763?q=80&w=2000'
+    },
+    ourStory: {
+      sectionTitle: 'O nas',
+      title: 'Skrb za vsak detajl',
+      text: 'Profesionalno čiščenje, poliranje in zaščita. Vaše vozilo zasije kot novo.',
+      image: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?q=80&w=1200'
+    },
+    servicesSection: {
+      title: 'Paketne storitve',
+      items: [
+        { name: 'Notranje čiščenje', price: '€60', desc: '90 min • Globinsko', duration: 90 },
+        { name: 'Zunanje poliranje', price: '€120', desc: '150 min • Visok sijaj', duration: 150 },
+        { name: 'Keramična zaščita', price: '€280', desc: '4h • Dolgotrajno', duration: 240 },
+        { name: 'Komplet Detail', price: '€190', desc: '3h • Notranje + zunanje', duration: 180 }
+      ]
+    },
+    barbersSection: {
+      title: 'Naša ekipa',
+      list: [
+        { name: 'Andrej Kovač', role: 'Detailing specialist', img: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=1000' },
+        { name: 'Nika Zupan', role: 'Paint correction', img: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=1000' }
+      ]
+    },
+    gallery: [
+      'https://images.unsplash.com/photo-1503376780353-7e6692767b70?q=80&w=1000',
+      'https://images.unsplash.com/photo-1503736334956-4c8f8e92946d?q=80&w=1000',
+      'https://images.unsplash.com/photo-1493238792000-8113da705763?q=80&w=1000'
+    ],
+    testimonial: { quote: 'Avto je po obdelavi izgledal bolje kot ob nakupu.', author: 'Miha K.' },
+    ctaSection: {
+      title: 'Naj bo vaš avto kot nov',
+      text: 'Izberite paket in rezervirajte termin.',
+      buttonText: 'Rezerviraj zdaj'
+    },
+    booking: {
+      title: 'Rezervacija',
+      heading: 'Rezervirajte termin',
+      buttonText: 'Potrdi termin',
+      placeholderName: 'Ime',
+      placeholderEmail: 'E-pošta',
+      placeholderPhone: 'Telefon'
+    },
+    googleReviews: {
+      title: 'Google ocene',
+      subtitle: 'Preveri mnenja naših strank.',
+      rating: '4.9',
+      countText: '(87 ocen)',
+      link: '',
+      items: [
+        { author: 'Tilen V.', text: 'Avto izgleda kot nov.', stars: 5 },
+        { author: 'Nina Z.', text: 'Profesionalno in hitro.', stars: 5 },
+        { author: 'Rok S.', text: 'Odlična kakovost storitve.', stars: 5 }
+      ]
+    }
+  },
+  'beauty-salon': {
+    navLinks: [
+      { name: 'Domov', link: '#home' },
+      { name: 'O nas', link: '#about' },
+      { name: 'Storitve', link: '#services' },
+      { name: 'Ekipa', link: '#barbers' },
+      { name: 'Galerija', link: '#gallery' }
+    ],
+    galleryTitle: 'Galerija',
+    hero: {
+      subtitle: 'NEGA • LEPOTA • SIJAJ',
+      buttonText: 'Rezerviraj nego',
+      backgroundImage: 'https://images.pexels.com/photos/7755512/pexels-photo-7755512.jpeg'
+    },
+    ourStory: {
+      sectionTitle: 'O nas',
+      title: 'Vaš čas za razvajanje',
+      text: 'Nudimo vrhunske tretmaje, ki poudarijo vašo naravno lepoto.',
+      image: 'https://images.unsplash.com/photo-1500917293891-ef795e70e1f6?q=80&w=1200'
+    },
+    servicesSection: {
+      title: 'Storitve',
+      items: [
+        { name: 'Nega obraza', price: '€55', desc: '60 min • Globinska', duration: 60 },
+        { name: 'Manikura', price: '€25', desc: '30 min • Klasična', duration: 30 },
+        { name: 'Pedikura', price: '€35', desc: '45 min • SPA', duration: 45 },
+        { name: 'Masaža', price: '€50', desc: '60 min • Sproščujoča', duration: 60 }
+      ]
+    },
+    barbersSection: {
+      title: 'Naša ekipa',
+      list: [
+        { name: 'Sara M.', role: 'Kozmetičarka', img: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?q=80&w=1000' },
+        { name: 'Ana L.', role: 'Nega in masaže', img: 'https://images.pexels.com/photos/734478/pexels-photo-734478.jpeg' }
+      ]
+    },
+    gallery: [
+      'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?q=80&w=1000',
+      'https://images.unsplash.com/photo-1500917293891-ef795e70e1f6?q=80&w=1000',
+      'https://images.pexels.com/photos/939835/pexels-photo-939835.jpeg?q=80&w=1000'
+    ],
+    testimonial: { quote: 'Čudovita izkušnja in popolna nega. Priporočam!', author: 'Nina R.' },
+    ctaSection: {
+      title: 'Rezervirajte svoj tretma',
+      text: 'Sprostite se in prepustite nego strokovnjakom.',
+      buttonText: 'Rezerviraj termin'
+    },
+    booking: {
+      title: 'Rezervacija',
+      heading: 'Rezervirajte termin',
+      buttonText: 'Potrdi termin',
+      placeholderName: 'Ime',
+      placeholderEmail: 'E-pošta',
+      placeholderPhone: 'Telefon'
+    },
+    googleReviews: {
+      title: 'Google ocene',
+      subtitle: 'Preveri mnenja naših strank.',
+      rating: '5.0',
+      countText: '(64 ocen)',
+      link: '',
+      items: [
+        { author: 'Lana B.', text: 'Čudovit salon in storitev.', stars: 5 },
+        { author: 'Tina K.', text: 'Top nega, priporočam!', stars: 5 },
+        { author: 'Maja P.', text: 'Zelo prijazno osebje.', stars: 5 }
+      ]
+    }
+  }
+};
+
+function buildFullTheme(primary, mode) {
+  const isLight = String(mode || 'dark').toLowerCase() === 'light';
+  return {
+    primary,
+    mode: isLight ? 'light' : 'dark',
+    dark: isLight ? '#FFFFFF' : '#0A0A0A',
+    card: isLight ? '#F2F2F7' : '#141414',
+    gradientStart: primary,
+    gradientEnd: primary,
+    gradientDark: isLight ? '#F2F2F7' : '#0A0A0A',
+    gradientAccent: primary,
+    textPrimary: isLight ? '#1C1C1E' : '#FFFFFF',
+    textSecondary: isLight ? '#6E6E73' : '#8E8E93',
+    textGold: primary,
+    accentRed: primary,
+    accentBlue: primary,
+    accentWhite: isLight ? '#F2F2F7' : '#FFFFFF',
+    borderLight: isLight ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.1)',
+    borderGold: 'rgba(0,0,0,0.15)',
+    buttonColor: primary,
+    buttonTextColor: '#FFFFFF',
+    navTextColor: isLight ? '#6E6E73' : '#8E8E93',
+    navTextColorTop: '#FFFFFF',
+    navTextColorScrolled: isLight ? '#1C1C1E' : '#8E8E93',
+    navHoverColor: primary,
+    footerBgColor: isLight ? '#1C1C1E' : '#0A0A0A',
+    footerTextColor: isLight ? '#F2F2F7' : '#8E8E93',
+    textOnHero: '#FFFFFF',
+    scrollbarThumb: primary,
+    scrollbarTrack: isLight ? '#F2F2F7' : '#1C1C1E',
+    success: '#4ADE80',
+    error: '#F87171',
+    warning: '#FBBF24',
+    fontSerif: 'Cormorant Garamond, serif',
+    fontSans: 'Montserrat, sans-serif'
+  };
+}
+
 export function json(res, statusCode, payload) {
   res.status(statusCode).json(payload);
 }
@@ -189,8 +435,8 @@ export function buildSeedSiteConfig(payload, databaseUrl, tenantId) {
   const ownerPhone = String(payload.ownerPhone || '').trim();
   const businessAddress = String(payload.businessAddress || '').trim();
   const siteTemplate = String(payload.siteTemplate || 'barber').trim() || 'barber';
-  const tagline = String(payload.tagline || '').trim();
-  const theme = normalizeTheme(payload.theme);
+  const themeMode = String(payload.themeMode || 'dark').toLowerCase();
+  const primaryColor = String(payload.theme?.primary || '#007AFF').trim();
   const services = normalizeServices(payload.services);
   const adminUsername = String(payload.adminUsername || 'admin').trim() || 'admin';
   const booking = payload.booking && typeof payload.booking === 'object' ? payload.booking : {};
@@ -198,6 +444,14 @@ export function buildSeedSiteConfig(payload, databaseUrl, tenantId) {
   const hours = normalizeHours(booking.hours);
   const startHour = parseInteger(booking.start, 9);
   const endHour = parseInteger(booking.end, 17);
+
+  const templateKey = siteTemplate === 'beauty-salon' ? 'beauty-salon' : siteTemplate;
+  const tpl = TEMPLATE_SEED_DATA[templateKey] || TEMPLATE_SEED_DATA.barber;
+  const fullTheme = buildFullTheme(primaryColor, themeMode);
+
+  const resolvedServices = services.length
+    ? { title: tpl.servicesSection.title, items: services }
+    : tpl.servicesSection;
 
   return {
     tenant: {
@@ -224,13 +478,29 @@ export function buildSeedSiteConfig(payload, databaseUrl, tenantId) {
       databaseURL: databaseUrl,
       syncPollingMs: 15000
     },
-    ...(theme ? { theme } : {}),
-    ...(tagline ? { hero: { title: businessName, subtitle: tagline } } : {}),
-    ...(services.length ? { servicesSection: { title: 'Services', items: services } } : {}),
+    theme: fullTheme,
+    navLinks: tpl.navLinks,
+    galleryTitle: tpl.galleryTitle,
+    hero: {
+      ...tpl.hero,
+      title: businessName
+    },
+    ourStory: tpl.ourStory,
+    servicesSection: resolvedServices,
+    barbersSection: tpl.barbersSection,
+    gallery: tpl.gallery,
+    testimonial: tpl.testimonial,
+    ctaSection: tpl.ctaSection,
+    contactSection: {
+      title: 'Kontakt',
+      subtitle: 'Pišite ali nas pokličite za termin.',
+      address: businessAddress,
+      phone: HARD_CODED_CLIENT_PHONE,
+      email: ownerEmail
+    },
+    googleReviews: tpl.googleReviews,
     booking: {
-      title: 'Naročilo Termina',
-      heading: 'Request Appointment',
-      buttonText: 'Potrdi Termin',
+      ...tpl.booking,
       businessHours: {
         start: startHour,
         end: endHour
