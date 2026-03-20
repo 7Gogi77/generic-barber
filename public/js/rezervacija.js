@@ -166,7 +166,11 @@
             urls.push(primaryUrl);
 
             if (expectedTenantId) {
-                urls.push(`/api/tenant-db/${expectedTenantId}/site_config.json?_t=${Date.now()}`);
+                urls.push(
+                    window.AppBackend && typeof window.AppBackend.getTenantDatabaseUrl === 'function'
+                        ? window.AppBackend.getTenantDatabaseUrl(expectedTenantId, 'site_config.json', { _t: Date.now() })
+                        : `/api/tenant-db-proxy?tenantId=${encodeURIComponent(expectedTenantId)}&path=site_config.json&_t=${Date.now()}`
+                );
             }
 
             try {
@@ -184,7 +188,7 @@
                         if (!config || typeof config !== 'object') {
                             continue;
                         }
-                        if (!doesConfigMatchTenant(config, expectedTenantId) && !configUrl.includes(`/api/tenant-db/${expectedTenantId}/`)) {
+                        if (!doesConfigMatchTenant(config, expectedTenantId) && !configUrl.includes(`/api/tenant-db-proxy?tenantId=${encodeURIComponent(expectedTenantId)}`)) {
                             continue;
                         }
 

@@ -275,16 +275,24 @@ function deriveTenantIdFromHostname() {
     }
 }
 
+function buildTenantProxyBaseUrl(tenantId) {
+    const normalizedTenantId = String(tenantId || '').trim().toLowerCase();
+    return normalizedTenantId ? `/api/tenant-db-proxy?tenantId=${encodeURIComponent(normalizedTenantId)}` : '/api/tenant-db-proxy';
+}
+
 function normalizeDatabaseBaseUrl(url) {
     const candidate = typeof url === 'string' ? url.trim() : '';
     const normalized = candidate || DEFAULT_DATABASE_URL;
 
     try {
         const parsed = new URL(normalized, window.location.origin);
+        if (parsed.pathname === '/api/tenant-db-proxy') {
+            return `${parsed.pathname}${parsed.search}`.replace(/\/+$/, '');
+        }
         if (parsed.pathname.startsWith('/api/tenant-db/') || parsed.pathname.startsWith('/tenant-db/')) {
-            return parsed.pathname
-                .replace(/^\/tenant-db\//, '/api/tenant-db/')
-                .replace(/\/+$/, '');
+            const segments = parsed.pathname.split('/').filter(Boolean);
+            const tenantId = segments[segments.length - 1] || '';
+            return buildTenantProxyBaseUrl(tenantId);
         }
         if (parsed.pathname === '/db' || parsed.pathname.startsWith('/db/')) {
             return parsed.pathname.replace(/\/+$/, '');
@@ -320,6 +328,7 @@ window.AppBackend = {
     defaultDatabaseURL: DEFAULT_DATABASE_URL,
     storageKey: DATABASE_URL_STORAGE_KEY,
     getTenantIdFromHostname: deriveTenantIdFromHostname,
+    buildTenantProxyBaseUrl,
     normalizeDatabaseBaseUrl,
     getDatabaseBaseUrl() {
         return normalizeDatabaseBaseUrl(readConfiguredDatabaseBaseUrl());
@@ -327,6 +336,23 @@ window.AppBackend = {
     getDatabaseUrl(path = '', searchParams = null) {
         const base = this.getDatabaseBaseUrl();
         const cleanPath = String(path || '').replace(/^\/+/, '');
+        if (base.startsWith('/api/tenant-db-proxy')) {
+            const target = new URL(base, window.location.origin);
+            if (cleanPath) {
+                target.searchParams.set('path', cleanPath);
+            }
+
+            if (searchParams && typeof searchParams === 'object') {
+                Object.entries(searchParams).forEach(([key, value]) => {
+                    if (value !== undefined && value !== null && value !== '') {
+                        target.searchParams.set(key, String(value));
+                    }
+                });
+            }
+
+            return `${target.pathname}${target.search}`;
+        }
+
         const url = cleanPath ? `${base}/${cleanPath}` : base;
 
         if (!searchParams || typeof searchParams !== 'object') {
@@ -342,6 +368,10 @@ window.AppBackend = {
 
         const suffix = query.toString();
         return suffix ? `${url}?${suffix}` : url;
+    },
+    getTenantDatabaseUrl(tenantId, path = '', searchParams = null) {
+        const proxyBase = buildTenantProxyBaseUrl(tenantId);
+        return this.getDatabaseUrl.call({ getDatabaseBaseUrl: () => proxyBase }, path, searchParams);
     },
     setDatabaseBaseUrl(url, persist = true) {
         const normalized = normalizeDatabaseBaseUrl(url);

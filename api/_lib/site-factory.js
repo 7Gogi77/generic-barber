@@ -321,7 +321,7 @@ export function getPublicVpsBaseUrl() {
 
 export function buildTenantRuntimeDatabaseUrl(tenantId) {
   const normalizedTenantId = slugify(tenantId);
-  return normalizedTenantId ? `/api/tenant-db/${normalizedTenantId}` : '/api/tenant-db';
+  return normalizedTenantId ? `/api/tenant-db-proxy?tenantId=${encodeURIComponent(normalizedTenantId)}` : '/api/tenant-db-proxy';
 }
 
 export function getFactoryAuthRequirement() {

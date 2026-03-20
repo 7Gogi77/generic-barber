@@ -157,7 +157,11 @@
                 ];
 
                 if (expectedTenantId) {
-                    urls.push(`/api/tenant-db/${expectedTenantId}/site_config.json?_t=${timestamp}`);
+                    urls.push(
+                        window.AppBackend && typeof window.AppBackend.getTenantDatabaseUrl === 'function'
+                            ? window.AppBackend.getTenantDatabaseUrl(expectedTenantId, 'site_config.json', { _t: timestamp })
+                            : `/api/tenant-db-proxy?tenantId=${encodeURIComponent(expectedTenantId)}&path=site_config.json&_t=${timestamp}`
+                    );
                 }
 
                 for (const dbUrl of urls) {
