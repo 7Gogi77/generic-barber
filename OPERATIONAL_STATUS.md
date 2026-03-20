@@ -158,6 +158,29 @@ curl -i http://127.0.0.1:3001/tenant-db/production-test-1/
 
 ## Troubleshooting
 
+### If tenant creation fails with 404 error:
+
+**This means the VPS server is not responding.** See `VPS_404_TROUBLESHOOTING.md` for detailed diagnostics.
+
+Quick fix:
+```bash
+# SSH to VPS
+ssh root@178.104.77.218
+
+# Run auto-recovery
+cd /root/generic-barber
+bash vps-recovery.sh
+
+# Or run diagnostic first to identify the issue
+bash vps-diagnostic.sh
+```
+
+Common causes:
+- PM2 process crashed
+- Data directories missing
+- Port 3001 not listening
+- Server code error
+
 ### If tenant creation fails from site-factory.html:
 
 1. Check Vercel logs:

@@ -171,6 +171,12 @@ Manager: PM2 (process: barber-db)
 
 ## Troubleshooting
 
+### "VPS tenant provisioning failed (404)"
+- VPS server is not responding
+- See `VPS_404_TROUBLESHOOTING.md` for detailed diagnostic guide
+- Quick fix: Run `bash vps-recovery.sh` on VPS
+- Check: `pm2 show barber-db` and `ss -ltnp | grep 3001`
+
 ### "Cannot reach VPS"
 - Check firewall allows port 3001
 - Verify VPS is running: `ssh root@178.104.77.218`
