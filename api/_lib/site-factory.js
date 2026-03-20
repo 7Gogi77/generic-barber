@@ -327,6 +327,9 @@ export function isAuthorizedFactoryRequest(req) {
 export function assessSiteFactoryReadiness() {
   const missingRequired = REQUIRED_ENV_KEYS.filter((key) => !String(process.env[key] || '').trim());
   const configuredOptional = OPTIONAL_ENV_KEYS.filter((key) => String(process.env[key] || '').trim());
+  const templateRepo = String(process.env.VERCEL_TEMPLATE_REPO || '').trim();
+  const templateRepoId = String(process.env.VERCEL_TEMPLATE_REPO_ID || '').trim();
+  const templateRepoRef = String(process.env.VERCEL_TEMPLATE_REPO_REF || 'main').trim();
 
   return {
     ready: missingRequired.length === 0,
@@ -335,7 +338,10 @@ export function assessSiteFactoryReadiness() {
     configuredOptional,
     required: REQUIRED_ENV_KEYS,
     optional: OPTIONAL_ENV_KEYS,
-    deploymentMode: String(process.env.VERCEL_TEMPLATE_REPO_ID || '').trim() ? 'project-and-deploy' : 'project-only'
+    deploymentMode: templateRepoId ? 'project-and-deploy' : 'project-only',
+    templateRepo,
+    templateRepoId: templateRepoId || null,
+    templateRepoRef
   };
 }
 

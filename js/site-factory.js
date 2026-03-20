@@ -83,6 +83,9 @@ function renderStatus(payload) {
   const ready = Boolean(payload?.ready);
   const missingRequired = Array.isArray(payload?.missingRequired) ? payload.missingRequired : [];
   const configuredOptional = Array.isArray(payload?.configuredOptional) ? payload.configuredOptional : [];
+  const templateRepo = String(payload?.templateRepo || '').trim();
+  const templateRepoRef = String(payload?.templateRepoRef || '').trim();
+  const templateRepoId = String(payload?.templateRepoId || '').trim();
 
   statusPill.textContent = ready ? 'Factory ready' : 'Factory not ready';
   statusPill.className = `status-pill ${ready ? 'ready' : 'error'}`;
@@ -100,6 +103,14 @@ function renderStatus(payload) {
 
   if (configuredOptional.length) {
     items.push({ text: `Optional envs detected: ${configuredOptional.join(', ')}` });
+  }
+
+  if (templateRepo) {
+    items.push({ text: `Template repo: ${templateRepo}${templateRepoRef ? ` @ ${templateRepoRef}` : ''}` });
+  }
+
+  if (templateRepoId) {
+    items.push({ text: `Template repo ID: ${templateRepoId}` });
   }
 
   statusList.innerHTML = '';
