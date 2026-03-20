@@ -1,8 +1,38 @@
 const STORAGE_KEY = 'site_factory_api_key';
+const DEFAULT_ADMIN_USERNAME = 'admin';
+const DEFAULT_ADMIN_PASSWORD = 'ChangeMe123!';
+
+const COLOR_PRESETS = {
+  red: '#c1121f',
+  green: '#2d6a4f',
+  white: '#f5f5f5',
+  blue: '#1d4ed8',
+  purple: '#7e22ce',
+  gold: '#b8860b',
+  black: '#111111',
+  pink: '#e11d8a'
+};
+
+const TEMPLATE_SERVICES = {
+  barber: [
+    { name: 'Classic Cut', price: '35 EUR', duration: 45, desc: 'Precision cut and style.' },
+    { name: 'Beard Trim', price: '18 EUR', duration: 20, desc: 'Shape and detail finish.' }
+  ],
+  detailer: [
+    { name: 'Exterior Detail', price: '120 EUR', duration: 120, desc: 'Full wash, polish, and shine.' },
+    { name: 'Interior Deep Clean', price: '95 EUR', duration: 90, desc: 'Seats, plastics, and vacuum treatment.' }
+  ],
+  'beauty-salon': [
+    { name: 'Signature Facial', price: '60 EUR', duration: 60, desc: 'Hydration and glow treatment.' },
+    { name: 'Gel Manicure', price: '35 EUR', duration: 45, desc: 'Nail prep and long-wear finish.' }
+  ]
+};
 
 const form = document.getElementById('siteFactoryForm');
 const businessNameInput = document.getElementById('businessName');
-const slugInput = document.getElementById('slug');
+const siteColorInput = document.getElementById('siteColor');
+const customColorField = document.getElementById('customColorField');
+const customColorInput = document.getElementById('customColor');
 const factoryKeyInput = document.getElementById('factoryKey');
 const submitButton = document.getElementById('submitButton');
 const refreshStatusButton = document.getElementById('refreshStatusButton');
@@ -12,8 +42,6 @@ const activityLog = document.getElementById('activityLog');
 const resultList = document.getElementById('resultList');
 const readinessValue = document.getElementById('readinessValue');
 const modeValue = document.getElementById('modeValue');
-
-let slugTouched = false;
 
 function slugify(value) {
   return String(value || '')
@@ -115,60 +143,56 @@ async function fetchStatus() {
   return payload;
 }
 
-function parseServices(raw) {
-  return String(raw || '')
-    .split(/\r?\n/)
-    .map((line) => line.trim())
-    .filter(Boolean)
-    .map((line) => {
-      const [name = '', price = '', duration = '', desc = ''] = line.split('|').map((part) => part.trim());
-      return {
-        name,
-        price,
-        duration: Number.parseInt(duration || '30', 10),
-        desc
-      };
-    })
-    .filter((item) => item.name);
+function getSelectedColorHex() {
+  const selected = String(siteColorInput.value || 'red');
+  if (selected === 'custom') {
+    return customColorInput.value || '#b6461a';
+  }
+  return COLOR_PRESETS[selected] || COLOR_PRESETS.red;
 }
 
-function readWorkingDays() {
-  const values = new Set(
-    Array.from(document.querySelectorAll('input[name="day"]:checked')).map((input) => input.value)
-  );
+function getTemplateServices(template) {
+  return TEMPLATE_SERVICES[template] || TEMPLATE_SERVICES.barber;
+}
 
-  const result = {};
-  ['0', '1', '2', '3', '4', '5', '6'].forEach((day) => {
-    result[day] = values.has(day);
-  });
-
-  return result;
+function updateCustomColorVisibility() {
+  const isCustom = siteColorInput.value === 'custom';
+  customColorField.style.display = isCustom ? '' : 'none';
 }
 
 function buildPayload() {
   const businessName = businessNameInput.value.trim();
-  const slug = slugInput.value.trim() || slugify(businessName);
+  const slug = slugify(businessName);
+  const template = String(document.getElementById('siteTemplate').value || 'barber');
+  const primary = getSelectedColorHex();
 
   return {
     businessName,
     slug,
-    tagline: document.getElementById('tagline').value.trim(),
+    siteTemplate: template,
     ownerEmail: document.getElementById('ownerEmail').value.trim(),
     ownerPhone: document.getElementById('ownerPhone').value.trim(),
-    customDomain: document.getElementById('customDomain').value.trim(),
-    notes: document.getElementById('notes').value.trim(),
-    adminUsername: document.getElementById('adminUsername').value.trim(),
-    adminPassword: document.getElementById('adminPassword').value,
+    businessAddress: document.getElementById('businessAddress').value.trim(),
+    adminUsername: DEFAULT_ADMIN_USERNAME,
+    adminPassword: DEFAULT_ADMIN_PASSWORD,
     theme: {
-      primary: document.getElementById('primaryColor').value,
-      gradientStart: document.getElementById('primaryColor').value,
-      gradientEnd: document.getElementById('gradientEnd').value
+      primary,
+      gradientStart: primary,
+      gradientEnd: primary
     },
-    services: parseServices(document.getElementById('services').value),
+    services: getTemplateServices(template),
     booking: {
-      start: Number.parseInt(document.getElementById('startHour').value || '9', 10),
-      end: Number.parseInt(document.getElementById('endHour').value || '17', 10),
-      workingDays: readWorkingDays()
+      start: 9,
+      end: 17,
+      workingDays: {
+        0: false,
+        1: true,
+        2: true,
+        3: true,
+        4: true,
+        5: true,
+        6: false
+      }
     }
   };
 }
@@ -180,6 +204,11 @@ async function provisionSite(event) {
   const payload = buildPayload();
   if (!payload.businessName) {
     setActivity('Business name is required.');
+    return;
+  }
+
+  if (!payload.ownerEmail || !payload.ownerPhone || !payload.businessAddress) {
+    setActivity('Owner email, owner phone number, and business address are required.');
     return;
   }
 
@@ -206,6 +235,7 @@ async function provisionSite(event) {
     renderResultItems([
       { label: 'Business', value: result.businessName },
       { label: 'Tenant ID', value: result.tenantId },
+      { label: 'Template', value: payload.siteTemplate },
       { label: 'VPS Database', value: result.databaseUrl },
       { label: 'Project URL', value: result.project.url, href: result.project.url },
       { label: 'Dashboard', value: result.project.dashboardUrl, href: result.project.dashboardUrl },
@@ -223,21 +253,14 @@ async function provisionSite(event) {
   }
 }
 
-businessNameInput.addEventListener('input', () => {
-  if (!slugTouched) {
-    slugInput.value = slugify(businessNameInput.value);
-  }
-});
-
-slugInput.addEventListener('input', () => {
-  slugTouched = slugInput.value.trim().length > 0;
-});
+siteColorInput.addEventListener('change', updateCustomColorVisibility);
 
 factoryKeyInput.addEventListener('input', persistFactoryKey);
 refreshStatusButton.addEventListener('click', fetchStatus);
 form.addEventListener('submit', provisionSite);
 
 restoreFactoryKey();
+updateCustomColorVisibility();
 fetchStatus().catch((error) => {
   setActivity(error.message || 'Failed to load factory status.');
 });

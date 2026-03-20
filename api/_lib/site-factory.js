@@ -21,6 +21,8 @@ const OPTIONAL_ENV_KEYS = [
   'VERCEL_INSTALL_COMMAND'
 ];
 
+const HARD_CODED_CLIENT_PHONE = '+38631886977';
+
 export function json(res, statusCode, payload) {
   res.status(statusCode).json(payload);
 }
@@ -183,6 +185,8 @@ export function buildSeedSiteConfig(payload, databaseUrl, tenantId) {
   const businessName = String(payload.businessName || '').trim();
   const ownerEmail = String(payload.ownerEmail || '').trim();
   const ownerPhone = String(payload.ownerPhone || '').trim();
+  const businessAddress = String(payload.businessAddress || '').trim();
+  const siteTemplate = String(payload.siteTemplate || 'barber').trim() || 'barber';
   const tagline = String(payload.tagline || '').trim();
   const theme = normalizeTheme(payload.theme);
   const services = normalizeServices(payload.services);
@@ -200,10 +204,13 @@ export function buildSeedSiteConfig(payload, databaseUrl, tenantId) {
     },
     shopName: businessName,
     businessName,
-    ownerPhone,
+    ownerPhone: HARD_CODED_CLIENT_PHONE,
+    businessAddress,
+    siteTemplate,
     ownerContact: {
       email: ownerEmail,
-      phone: ownerPhone
+      phone: HARD_CODED_CLIENT_PHONE,
+      ownerPhone
     },
     admin: {
       username: adminUsername,
@@ -238,7 +245,10 @@ export function buildProvisionMetadata(payload, tenantId) {
     customDomain: String(payload.customDomain || '').trim(),
     notes: String(payload.notes || '').trim(),
     createdBy: 'site-factory',
-    ownerEmail: String(payload.ownerEmail || '').trim()
+    ownerEmail: String(payload.ownerEmail || '').trim(),
+    ownerPhone: String(payload.ownerPhone || '').trim(),
+    businessAddress: String(payload.businessAddress || '').trim(),
+    siteTemplate: String(payload.siteTemplate || '').trim()
   };
 }
 

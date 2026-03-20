@@ -380,7 +380,7 @@
       }
     }
   </style>
-  <script type="module" crossorigin src="/assets/siteFactory-CfuSD-Uf.js"></script>
+  <script type="module" crossorigin src="/assets/siteFactory-Z0CPYAia.js"></script>
   <link rel="modulepreload" crossorigin href="/assets/modulepreload-polyfill-B5Qt9EMX.js">
 </head>
 <body>
@@ -417,7 +417,7 @@
     <section class="workspace">
       <article class="panel form-panel">
         <h2 class="section-title">Create New Site</h2>
-        <p class="section-subtitle">Fill out the essentials. Anything omitted falls back to the template defaults already in this repo.</p>
+        <p class="section-subtitle">Provide the business essentials only. Client-facing phone is fixed globally in code for all generated sites.</p>
 
         <form id="siteFactoryForm">
           <div class="form-grid">
@@ -427,89 +427,52 @@
             </div>
 
             <div class="field">
-              <label for="slug">Slug</label>
-              <input id="slug" name="slug" placeholder="blade-bourbon">
-            </div>
-
-            <div class="field-wide">
-              <label for="tagline">Tagline</label>
-              <input id="tagline" name="tagline" placeholder="Old-school service, modern booking.">
-            </div>
-
-            <div class="field">
               <label for="ownerEmail">Owner Email</label>
-              <input id="ownerEmail" name="ownerEmail" type="email" placeholder="owner@example.com">
+              <input id="ownerEmail" name="ownerEmail" type="email" placeholder="owner@example.com" required>
             </div>
 
             <div class="field">
-              <label for="ownerPhone">Owner Phone</label>
-              <input id="ownerPhone" name="ownerPhone" placeholder="+38640111222">
+              <label for="ownerPhone">Owner Phone Number</label>
+              <input id="ownerPhone" name="ownerPhone" placeholder="+38640111222" required>
             </div>
 
             <div class="field">
-              <label for="primaryColor">Primary Color</label>
-              <input id="primaryColor" name="primaryColor" type="color" value="#b6461a">
+              <label for="businessAddress">Business Address</label>
+              <input id="businessAddress" name="businessAddress" placeholder="Main Street 12, Ljubljana" required>
             </div>
 
             <div class="field">
-              <label for="gradientEnd">Gradient End</label>
-              <input id="gradientEnd" name="gradientEnd" type="color" value="#d56b37">
+              <label for="siteTemplate">Site Template</label>
+              <select id="siteTemplate" name="siteTemplate" required>
+                <option value="barber" selected>Barber</option>
+                <option value="detailer">Detailer</option>
+                <option value="beauty-salon">Beauty Salon</option>
+              </select>
             </div>
 
             <div class="field">
-              <label for="adminUsername">Admin Username</label>
-              <input id="adminUsername" name="adminUsername" value="admin" required>
+              <label for="siteColor">Site Color</label>
+              <select id="siteColor" name="siteColor" required>
+                <option value="red" selected>Red</option>
+                <option value="green">Green</option>
+                <option value="white">White</option>
+                <option value="blue">Blue</option>
+                <option value="purple">Purple</option>
+                <option value="gold">Gold</option>
+                <option value="black">Black</option>
+                <option value="pink">Pink</option>
+                <option value="custom">Custom</option>
+              </select>
             </div>
 
-            <div class="field">
-              <label for="adminPassword">Admin Password</label>
-              <input id="adminPassword" name="adminPassword" type="password" placeholder="Strong admin password" required>
+            <div class="field" id="customColorField" style="display:none;">
+              <label for="customColor">Custom Color</label>
+              <input id="customColor" name="customColor" type="color" value="#b6461a">
             </div>
 
             <div class="field-wide">
               <label for="factoryKey">Factory API Key</label>
               <input id="factoryKey" name="factoryKey" type="password" placeholder="Required only if SITE_FACTORY_API_KEY is configured">
-            </div>
-
-            <div class="field-wide">
-              <label for="services">Services</label>
-              <textarea id="services" name="services" placeholder="Classic Cut | 35€ | 45 | Precision cut&#10;Beard Trim | 18€ | 20 | Shape and detail"></textarea>
-              <div class="hint">Format: name | price | duration minutes | description</div>
-            </div>
-
-            <div class="field-wide">
-              <label>Working Days</label>
-              <div class="day-grid">
-                <label class="day-chip"><input type="checkbox" name="day" value="1" checked><span>Mon</span></label>
-                <label class="day-chip"><input type="checkbox" name="day" value="2" checked><span>Tue</span></label>
-                <label class="day-chip"><input type="checkbox" name="day" value="3" checked><span>Wed</span></label>
-                <label class="day-chip"><input type="checkbox" name="day" value="4" checked><span>Thu</span></label>
-                <label class="day-chip"><input type="checkbox" name="day" value="5" checked><span>Fri</span></label>
-                <label class="day-chip"><input type="checkbox" name="day" value="6"><span>Sat</span></label>
-                <label class="day-chip"><input type="checkbox" name="day" value="0"><span>Sun</span></label>
-              </div>
-            </div>
-
-            <div class="field-wide">
-              <label>Default Working Hours</label>
-              <div class="subgrid">
-                <div class="field">
-                  <input id="startHour" name="startHour" type="number" min="0" max="23" value="9">
-                </div>
-                <div class="field">
-                  <input id="endHour" name="endHour" type="number" min="1" max="24" value="17">
-                </div>
-              </div>
-            </div>
-
-            <div class="field">
-              <label for="customDomain">Custom Domain</label>
-              <input id="customDomain" name="customDomain" placeholder="optional-client-domain.com">
-            </div>
-
-            <div class="field">
-              <label for="notes">Internal Notes</label>
-              <input id="notes" name="notes" placeholder="VIP client / add SMS later">
             </div>
           </div>
 

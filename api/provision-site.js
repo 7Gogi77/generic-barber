@@ -47,6 +47,10 @@ export default async function handler(req, res) {
   try {
     const body = await parseRequestBody(req);
     const businessName = String(body.businessName || '').trim();
+    const ownerEmail = String(body.ownerEmail || '').trim();
+    const ownerPhone = String(body.ownerPhone || '').trim();
+    const businessAddress = String(body.businessAddress || '').trim();
+    const siteTemplate = String(body.siteTemplate || '').trim();
     const adminPassword = String(body.adminPassword || '').trim();
     const adminUsername = String(body.adminUsername || 'admin').trim() || 'admin';
     const requestedSlug = String(body.slug || '').trim();
@@ -59,6 +63,26 @@ export default async function handler(req, res) {
 
     if (!tenantId) {
       json(res, 400, { error: 'A valid slug or business name is required' });
+      return;
+    }
+
+    if (!ownerEmail) {
+      json(res, 400, { error: 'ownerEmail is required' });
+      return;
+    }
+
+    if (!ownerPhone) {
+      json(res, 400, { error: 'ownerPhone is required' });
+      return;
+    }
+
+    if (!businessAddress) {
+      json(res, 400, { error: 'businessAddress is required' });
+      return;
+    }
+
+    if (!['barber', 'detailer', 'beauty-salon'].includes(siteTemplate)) {
+      json(res, 400, { error: 'siteTemplate must be one of: barber, detailer, beauty-salon' });
       return;
     }
 
