@@ -1,17 +1,48 @@
 ﻿        // ============================================
         // SITE INITIALIZATION
         // ============================================
+
+        function getExpectedTenantId() {
+            if (window.AppBackend && typeof window.AppBackend.getTenantIdFromHostname === 'function') {
+                return window.AppBackend.getTenantIdFromHostname();
+            }
+            return '';
+        }
+
+        function doesConfigMatchTenant(config, expectedTenantId) {
+            if (!expectedTenantId) {
+                return Boolean(config && typeof config === 'object');
+            }
+
+            return String(config?.tenant?.id || '').trim().toLowerCase() === expectedTenantId.toLowerCase();
+        }
         
         async function loadSavedConfig() {
-            const saved = localStorage.getItem('site_config_backup');
-            if (saved) {
+            const expectedTenantId = getExpectedTenantId();
+            const backupKeys = expectedTenantId
+                ? [`site_config_backup:${expectedTenantId}`, 'site_config_backup']
+                : ['site_config_backup'];
+
+            for (const backupKey of backupKeys) {
+                const saved = localStorage.getItem(backupKey);
+                if (!saved) {
+                    continue;
+                }
+
                 try {
                     const config = JSON.parse(saved);
+                    if (!doesConfigMatchTenant(config, expectedTenantId)) {
+                        continue;
+                    }
+
                     Object.assign(SITE_CONFIG, config);
                     applyThemeColors();
+                    return true;
                 } catch (e) {
                 }
             }
+
+            return false;
         }
         
         function applyThemeColors() {
@@ -103,6 +134,8 @@
         }
         
         async function loadFromFirebase() {
+            const expectedTenantId = getExpectedTenantId();
+
             try {
                 if (window.CloudSync && typeof window.CloudSync.loadFromCloud === 'function') {
                     const sdkLoaded = await window.CloudSync.loadFromCloud();
@@ -116,31 +149,48 @@
                     }
                 }
 
-                // Add timestamp to force fresh data and bypass cache
                 const timestamp = new Date().getTime();
-                const dbUrl = window.AppBackend && typeof window.AppBackend.getDatabaseUrl === 'function'
-                    ? window.AppBackend.getDatabaseUrl('site_config.json', { _t: timestamp })
-                    : `https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app/site_config.json?_t=${timestamp}`;
-                const response = await fetch(dbUrl, { 
-                    cache: 'no-store',
-                    headers: {
-                        'Cache-Control': 'no-cache, no-store, must-revalidate',
-                        'Pragma': 'no-cache',
-                        'Expires': '0'
-                    }
-                });
-                if (response.ok) {
-                    const cloudConfig = await response.json();
-                    if (cloudConfig) {
-                        Object.assign(SITE_CONFIG, cloudConfig);
-                        window.SITE_CONFIG = SITE_CONFIG;
-                        localStorage.setItem('site_config_backup', JSON.stringify(SITE_CONFIG));
-                        // Extract bookingSettings embedded by CloudSync.saveToCloud
-                        if (cloudConfig._bookingSettings && typeof cloudConfig._bookingSettings === 'object') {
-                            localStorage.setItem('bookingSettings', JSON.stringify(cloudConfig._bookingSettings));
+                const urls = [
+                    window.AppBackend && typeof window.AppBackend.getDatabaseUrl === 'function'
+                        ? window.AppBackend.getDatabaseUrl('site_config.json', { _t: timestamp })
+                        : `https://barber-shop-9b2ac-default-rtdb.europe-west1.firebasedatabase.app/site_config.json?_t=${timestamp}`
+                ];
+
+                if (expectedTenantId) {
+                    urls.push(`/tenant-db/${expectedTenantId}/site_config.json?_t=${timestamp}`);
+                }
+
+                for (const dbUrl of urls) {
+                    const response = await fetch(dbUrl, {
+                        cache: 'no-store',
+                        headers: {
+                            'Cache-Control': 'no-cache, no-store, must-revalidate',
+                            'Pragma': 'no-cache',
+                            'Expires': '0'
                         }
-                        return true;
+                    });
+
+                    if (!response.ok) {
+                        continue;
                     }
+
+                    const cloudConfig = await response.json();
+                    if (!cloudConfig || !doesConfigMatchTenant(cloudConfig, expectedTenantId)) {
+                        continue;
+                    }
+
+                    Object.assign(SITE_CONFIG, cloudConfig);
+                    window.SITE_CONFIG = SITE_CONFIG;
+                    localStorage.setItem('site_config_backup', JSON.stringify(SITE_CONFIG));
+                    if (expectedTenantId) {
+                        localStorage.setItem(`site_config_backup:${expectedTenantId}`, JSON.stringify(SITE_CONFIG));
+                    }
+
+                    if (cloudConfig._bookingSettings && typeof cloudConfig._bookingSettings === 'object') {
+                        localStorage.setItem('bookingSettings', JSON.stringify(cloudConfig._bookingSettings));
+                    }
+
+                    return true;
                 }
             } catch (error) {
                 if (error && error.message) {

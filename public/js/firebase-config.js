@@ -35,6 +35,8 @@ function cloneConfig(config) {
 }
 
 function persistConfigLocally(config) {
+    const tenantId = String(config?.tenant?.id || '').trim().toLowerCase();
+
     if (config && config._bookingSettings) {
         try { localStorage.setItem('bookingSettings', JSON.stringify(config._bookingSettings)); } catch (_) {}
     }
@@ -47,6 +49,9 @@ function persistConfigLocally(config) {
 
     try {
         localStorage.setItem('site_config_backup', JSON.stringify(window.SITE_CONFIG));
+        if (tenantId) {
+            localStorage.setItem(`site_config_backup:${tenantId}`, JSON.stringify(window.SITE_CONFIG));
+        }
     } catch (_) {}
 }
 
