@@ -9,7 +9,7 @@ module.exports = {
         PORT: '3001',
         HOST: '0.0.0.0',
         PUBLIC_BASE_URL: 'http://booking-cx33-server.hetzner.com',
-        VPS_DB_ADMIN_TOKEN: 'e0577e43a304cb2806918be46997083e1823d181cc90e7cde084f73e2d85404e'
+        VPS_DB_ADMIN_TOKEN: 'ROTATE_THIS_TOKEN_BEFORE_PRODUCTION'
       },
       error_file: '.pm2-error.log',
       out_file: '.pm2-out.log',
