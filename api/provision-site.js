@@ -127,7 +127,11 @@ export default async function handler(req, res) {
       deploymentError = error instanceof Error ? error.message : String(error || 'Deployment trigger failed');
     }
 
-    const deploymentUrl = deployment?.url ? `https://${deployment.url}` : null;
+    const deploymentUrl = deployment?.url
+      ? String(deployment.url).startsWith('http')
+        ? String(deployment.url)
+        : `https://${deployment.url}`
+      : null;
     const projectUrl = deploymentUrl || `https://${project.name}.vercel.app`;
 
     try {

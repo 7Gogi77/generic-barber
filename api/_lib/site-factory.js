@@ -525,6 +525,52 @@ function parseTemplateRepoSlug() {
   return `${owner}/${name}`;
 }
 
+function parseOwnerRepoSlug(input) {
+  const raw = String(input || '').trim();
+  if (!raw) return null;
+
+  const normalized = raw
+    .replace(/^https?:\/\/github\.com\//i, '')
+    .replace(/\.git$/i, '')
+    .replace(/^github:/i, '')
+    .trim();
+
+  const [owner, repo] = normalized.split('/');
+  if (!owner || !repo) {
+    return null;
+  }
+
+  return { owner, repo, slug: `${owner}/${repo}` };
+}
+
+async function resolveGithubRepoIdFromSlug(slug) {
+  const parsed = parseOwnerRepoSlug(slug);
+  if (!parsed) {
+    return null;
+  }
+
+  const githubToken = String(process.env.GITHUB_TOKEN || '').trim();
+
+  try {
+    const response = await fetch(`https://api.github.com/repos/${parsed.slug}`, {
+      headers: {
+        Accept: 'application/vnd.github+json',
+        'User-Agent': 'generic-barber-site-factory',
+        ...(githubToken ? { Authorization: `Bearer ${githubToken}` } : {})
+      }
+    });
+
+    if (!response.ok) {
+      return null;
+    }
+
+    const payload = await response.json().catch(() => ({}));
+    return payload?.id ? String(payload.id).trim() : null;
+  } catch {
+    return null;
+  }
+}
+
 async function resolveTemplateRepoId() {
   const configured = String(process.env.VERCEL_TEMPLATE_REPO_ID || '').trim();
   if (configured) {
@@ -541,27 +587,7 @@ async function resolveTemplateRepoId() {
     return null;
   }
 
-  const githubToken = String(process.env.GITHUB_TOKEN || '').trim();
-
-  try {
-    const response = await fetch(`https://api.github.com/repos/${slug}`, {
-      headers: {
-        Accept: 'application/vnd.github+json',
-        'User-Agent': 'generic-barber-site-factory',
-        ...(githubToken ? { Authorization: `Bearer ${githubToken}` } : {})
-      }
-    });
-
-    if (!response.ok) {
-      return null;
-    }
-
-    const payload = await response.json().catch(() => ({}));
-    const repoId = payload && payload.id ? String(payload.id).trim() : '';
-    return repoId || null;
-  } catch {
-    return null;
-  }
+  return resolveGithubRepoIdFromSlug(slug);
 }
 
 export async function createVercelProject({ projectName, envVars }) {
@@ -619,6 +645,107 @@ function normalizeDeploymentRecord(record) {
   };
 }
 
+function extractRepoIdFromProjectPayload(projectLike) {
+  const candidates = [
+    projectLike?.link?.repoId,
+    projectLike?.link?.repo?.id,
+    projectLike?.gitRepository?.repoId,
+    projectLike?.source?.repoId
+  ];
+
+  for (const candidate of candidates) {
+    const value = String(candidate || '').trim();
+    if (value) {
+      return value;
+    }
+  }
+
+  return null;
+}
+
+function extractRepoSlugFromProjectPayload(projectLike) {
+  const candidates = [
+    projectLike?.link?.repo,
+    projectLike?.gitRepository?.repo,
+    projectLike?.source?.repo,
+    process.env.VERCEL_TEMPLATE_REPO
+  ];
+
+  for (const candidate of candidates) {
+    const parsed = parseOwnerRepoSlug(candidate);
+    if (parsed) {
+      return parsed;
+    }
+  }
+
+  return null;
+}
+
+function buildGitSourceFromRepoId(repoId) {
+  const id = String(repoId || '').trim();
+  if (!id) return null;
+
+  return {
+    type: process.env.VERCEL_TEMPLATE_REPO_TYPE || 'github',
+    repoId: id,
+    ref: process.env.VERCEL_TEMPLATE_REPO_REF || 'main'
+  };
+}
+
+function buildGitSourceFromSlug(parsedSlug) {
+  if (!parsedSlug) return null;
+
+  return {
+    type: process.env.VERCEL_TEMPLATE_REPO_TYPE || 'github',
+    org: parsedSlug.owner,
+    repo: parsedSlug.repo,
+    ref: process.env.VERCEL_TEMPLATE_REPO_REF || 'main'
+  };
+}
+
+async function resolveGitSourceForProject(projectIdOrName, projectPayload) {
+  const explicitRepoId = String(process.env.VERCEL_TEMPLATE_REPO_ID || '').trim();
+  if (explicitRepoId) {
+    return buildGitSourceFromRepoId(explicitRepoId);
+  }
+
+  const fromProject = extractRepoIdFromProjectPayload(projectPayload);
+  if (fromProject) {
+    return buildGitSourceFromRepoId(fromProject);
+  }
+
+  try {
+    const details = await vercelRequest(`/v9/projects/${encodeURIComponent(projectIdOrName)}`);
+    const fromDetails = extractRepoIdFromProjectPayload(details);
+    if (fromDetails) {
+      return buildGitSourceFromRepoId(fromDetails);
+    }
+
+    const slugDetails = extractRepoSlugFromProjectPayload(details);
+    if (slugDetails) {
+      const repoId = await resolveGithubRepoIdFromSlug(slugDetails.slug);
+      if (repoId) {
+        return buildGitSourceFromRepoId(repoId);
+      }
+      return buildGitSourceFromSlug(slugDetails);
+    }
+  } catch {
+    // Keep falling back.
+  }
+
+  const templateRepoId = await resolveTemplateRepoId();
+  if (templateRepoId) {
+    return buildGitSourceFromRepoId(templateRepoId);
+  }
+
+  const templateSlug = extractRepoSlugFromProjectPayload(projectPayload);
+  if (templateSlug) {
+    return buildGitSourceFromSlug(templateSlug);
+  }
+
+  return null;
+}
+
 function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -646,14 +773,15 @@ async function waitForProjectDeployment(projectIdOrName, timeoutMs = 20000, inte
 export async function createProductionDeployment(project, meta = {}) {
   const projectIdOrName = project.id || project.name;
   const failures = [];
-  const repoId = await resolveTemplateRepoId();
 
   const detectedBefore = await waitForProjectDeployment(projectIdOrName, 8000, 2000);
   if (detectedBefore) {
     return detectedBefore;
   }
 
-  if (repoId) {
+  const gitSource = await resolveGitSourceForProject(projectIdOrName, project);
+
+  if (gitSource) {
     try {
       const explicit = await vercelRequest('/v13/deployments', {
         method: 'POST',
@@ -661,11 +789,7 @@ export async function createProductionDeployment(project, meta = {}) {
           name: project.name,
           project: projectIdOrName,
           target: 'production',
-          gitSource: {
-            type: process.env.VERCEL_TEMPLATE_REPO_TYPE || 'github',
-            repoId,
-            ref: process.env.VERCEL_TEMPLATE_REPO_REF || 'main'
-          },
+          gitSource,
           meta
         })
       });
