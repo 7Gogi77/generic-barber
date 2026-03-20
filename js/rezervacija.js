@@ -166,7 +166,7 @@
             urls.push(primaryUrl);
 
             if (expectedTenantId) {
-                urls.push(`/tenant-db/${expectedTenantId}/site_config.json?_t=${Date.now()}`);
+                urls.push(`/api/tenant-db/${expectedTenantId}/site_config.json?_t=${Date.now()}`);
             }
 
             try {
@@ -184,7 +184,7 @@
                         if (!config || typeof config !== 'object') {
                             continue;
                         }
-                        if (!doesConfigMatchTenant(config, expectedTenantId) && !configUrl.includes(`/tenant-db/${expectedTenantId}/`)) {
+                        if (!doesConfigMatchTenant(config, expectedTenantId) && !configUrl.includes(`/api/tenant-db/${expectedTenantId}/`)) {
                             continue;
                         }
 

@@ -157,7 +157,7 @@
                 ];
 
                 if (expectedTenantId) {
-                    urls.push(`/tenant-db/${expectedTenantId}/site_config.json?_t=${timestamp}`);
+                    urls.push(`/api/tenant-db/${expectedTenantId}/site_config.json?_t=${timestamp}`);
                 }
 
                 for (const dbUrl of urls) {

@@ -281,8 +281,10 @@ function normalizeDatabaseBaseUrl(url) {
 
     try {
         const parsed = new URL(normalized, window.location.origin);
-        if (parsed.pathname.startsWith('/tenant-db/')) {
-            return parsed.pathname.replace(/\/+$/, '');
+        if (parsed.pathname.startsWith('/api/tenant-db/') || parsed.pathname.startsWith('/tenant-db/')) {
+            return parsed.pathname
+                .replace(/^\/tenant-db\//, '/api/tenant-db/')
+                .replace(/\/+$/, '');
         }
         if (parsed.pathname === '/db' || parsed.pathname.startsWith('/db/')) {
             return parsed.pathname.replace(/\/+$/, '');

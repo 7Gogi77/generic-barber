@@ -109,6 +109,7 @@ export default async function handler(req, res) {
     const adminPasswordHash = hashPassword(adminPassword);
     const envVars = buildProjectEnvVars({
       databaseUrl,
+      tenantId,
       adminUsername,
       adminPasswordHash
     });

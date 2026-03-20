@@ -119,8 +119,7 @@ window.CloudSync = {
         const urls = [getDatabaseUrl('site_config.json', { _t: Date.now() })];
 
         if (expectedTenantId) {
-            urls.push(getDatabaseUrl(`${expectedTenantId}/site_config.json`, { _t: Date.now() }).replace('/db/', '/tenant-db/'));
-            urls.push(`/tenant-db/${expectedTenantId}/site_config.json?_t=${Date.now()}`);
+            urls.push(`/api/tenant-db/${expectedTenantId}/site_config.json?_t=${Date.now()}`);
         }
 
         for (const url of urls) {
@@ -143,7 +142,7 @@ window.CloudSync = {
                     continue;
                 }
 
-                if (doesConfigMatchTenant(payload, expectedTenantId) || url.includes(`/tenant-db/${expectedTenantId}/`)) {
+                if (doesConfigMatchTenant(payload, expectedTenantId) || url.includes(`/api/tenant-db/${expectedTenantId}/`)) {
                     return payload;
                 }
             } catch (_) {}

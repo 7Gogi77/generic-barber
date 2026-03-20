@@ -303,9 +303,25 @@ export function hashPassword(password) {
   return createHash('sha256').update(String(password || '')).digest('hex');
 }
 
+export function getPublicVpsBaseUrl() {
+  const explicit = String(process.env.SITE_FACTORY_PUBLIC_VPS_BASE_URL || '').trim();
+  if (explicit) {
+    return explicit.replace(/\/+$/, '');
+  }
+
+  const adminUrl = String(process.env.SITE_FACTORY_VPS_ADMIN_URL || '').trim();
+  if (!adminUrl) {
+    return '';
+  }
+
+  return adminUrl
+    .replace(/\/_admin\/tenants\/?$/i, '')
+    .replace(/\/+$/, '');
+}
+
 export function buildTenantRuntimeDatabaseUrl(tenantId) {
   const normalizedTenantId = slugify(tenantId);
-  return normalizedTenantId ? `/tenant-db/${normalizedTenantId}` : '/tenant-db';
+  return normalizedTenantId ? `/api/tenant-db/${normalizedTenantId}` : '/api/tenant-db';
 }
 
 export function getFactoryAuthRequirement() {
@@ -1104,10 +1120,14 @@ export async function deleteVercelProject(projectIdOrName) {
   });
 }
 
-export function buildProjectEnvVars({ databaseUrl, adminUsername, adminPasswordHash }) {
+export function buildProjectEnvVars({ databaseUrl, adminUsername, adminPasswordHash, tenantId }) {
+  const publicVpsBaseUrl = getPublicVpsBaseUrl();
+
   return [
     { key: 'BACKEND_DATABASE_URL', value: databaseUrl },
     { key: 'DATABASE_URL', value: databaseUrl },
+    ...(tenantId ? [{ key: 'TENANT_ID', value: tenantId }] : []),
+    ...(publicVpsBaseUrl ? [{ key: 'VPS_PUBLIC_BASE_URL', value: publicVpsBaseUrl }] : []),
     { key: 'ADMIN_USERNAME', value: adminUsername },
     { key: 'ADMIN_PASSWORD_HASH', value: adminPasswordHash },
     { key: 'ADMIN_ENABLED', value: 'true' },

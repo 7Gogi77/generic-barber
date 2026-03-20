@@ -28,7 +28,7 @@ function deriveTenantDatabaseUrlFromHostname() {
             return '';
         }
 
-        return `/tenant-db/${tenantId}`;
+        return `/api/tenant-db/${tenantId}`;
     } catch (_) {
         return '';
     }
