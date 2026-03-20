@@ -6,6 +6,7 @@ import {
   createProductionDeployment,
   createTenantOnVps,
   createVercelProject,
+  updateTenantOnVps,
   hashPassword,
   isAuthorizedFactoryRequest,
   json,
@@ -114,14 +115,43 @@ export default async function handler(req, res) {
     const project = await createVercelProject({ projectName, envVars });
     await upsertProjectEnv(project.id || project.name, envVars);
 
-    const deployment = await createProductionDeployment(project, {
-      tenantId,
-      databaseUrl,
-      businessName
-    });
+    let deployment = null;
+    let deploymentError = '';
+    try {
+      deployment = await createProductionDeployment(project, {
+        tenantId,
+        databaseUrl,
+        businessName
+      });
+    } catch (error) {
+      deploymentError = error instanceof Error ? error.message : String(error || 'Deployment trigger failed');
+    }
 
     const deploymentUrl = deployment?.url ? `https://${deployment.url}` : null;
     const projectUrl = deploymentUrl || `https://${project.name}.vercel.app`;
+
+    try {
+      await updateTenantOnVps(tenantId, {
+        meta: {
+          projectId: project.id || null,
+          projectName: project.name || null,
+          projectUrl,
+          dashboardUrl: `https://vercel.com/dashboard/projects/${project.id || project.name}`,
+          deploymentId: deployment?.id || null,
+          deploymentUrl: deploymentUrl || null,
+          deploymentState: deployment?.readyState || null
+        },
+        metadata: {
+          projectId: project.id || null,
+          projectName: project.name || null,
+          projectUrl,
+          deploymentId: deployment?.id || null,
+          deploymentUrl: deploymentUrl || null
+        }
+      });
+    } catch {
+      // Continue even if VPS management routes are not updated yet.
+    }
 
     json(res, 201, {
       ok: true,
@@ -142,7 +172,7 @@ export default async function handler(req, res) {
           }
         : {
             skipped: true,
-            reason: 'Explicit deployment was not triggered. Set VERCEL_TEMPLATE_REPO_ID, or ensure VERCEL_TEMPLATE_REPO points to a publicly resolvable GitHub repository.'
+            reason: deploymentError || 'Explicit deployment was not triggered. Ensure Vercel has git import access and set VERCEL_TEMPLATE_REPO_ID when needed.'
           },
       checklist: [
         'Point any custom domain to the created Vercel project if needed.',

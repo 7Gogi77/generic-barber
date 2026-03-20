@@ -285,6 +285,121 @@ async function createTenantRecord(req, payload) {
   };
 }
 
+async function updateTenantRecord(req, tenantIdInput, payload = {}) {
+  const tenantId = assertValidTenantId(tenantIdInput);
+  const registry = await readTenantRegistry();
+  const existing = registry[tenantId];
+
+  if (!existing) {
+    const error = new Error('Tenant not found');
+    error.statusCode = 404;
+    throw error;
+  }
+
+  const tenantData = await readTenantDatabase(tenantId);
+  const now = new Date().toISOString();
+
+  const nextBusinessName = String(payload.businessName || existing.businessName || '').trim();
+  const nextMeta = {
+    ...(existing.meta && typeof existing.meta === 'object' ? existing.meta : {}),
+    ...(payload.meta && typeof payload.meta === 'object' ? payload.meta : {})
+  };
+
+  if (payload.siteConfig && typeof payload.siteConfig === 'object') {
+    tenantData.site_config = {
+      ...(tenantData.site_config && typeof tenantData.site_config === 'object' ? tenantData.site_config : {}),
+      ...payload.siteConfig
+    };
+  }
+
+  if (payload.schedule && typeof payload.schedule === 'object') {
+    tenantData.schedule = payload.schedule;
+  }
+
+  if (payload.metadata && typeof payload.metadata === 'object') {
+    tenantData.metadata = {
+      ...(tenantData.metadata && typeof tenantData.metadata === 'object' ? tenantData.metadata : {}),
+      ...payload.metadata
+    };
+  }
+
+  if (payload.businessAddress) {
+    tenantData.site_config = {
+      ...(tenantData.site_config && typeof tenantData.site_config === 'object' ? tenantData.site_config : {}),
+      businessAddress: String(payload.businessAddress).trim()
+    };
+  }
+
+  if (payload.siteTemplate) {
+    tenantData.site_config = {
+      ...(tenantData.site_config && typeof tenantData.site_config === 'object' ? tenantData.site_config : {}),
+      siteTemplate: String(payload.siteTemplate).trim()
+    };
+  }
+
+  if (payload.ownerEmail || payload.ownerPhone) {
+    const ownerContact = tenantData.site_config?.ownerContact && typeof tenantData.site_config.ownerContact === 'object'
+      ? tenantData.site_config.ownerContact
+      : {};
+
+    tenantData.site_config = {
+      ...(tenantData.site_config && typeof tenantData.site_config === 'object' ? tenantData.site_config : {}),
+      ownerContact: {
+        ...ownerContact,
+        ...(payload.ownerEmail ? { email: String(payload.ownerEmail).trim() } : {}),
+        ...(payload.ownerPhone ? { ownerPhone: String(payload.ownerPhone).trim() } : {})
+      }
+    };
+  }
+
+  tenantData.site_config = {
+    ...(tenantData.site_config && typeof tenantData.site_config === 'object' ? tenantData.site_config : {}),
+    businessName: nextBusinessName || tenantId,
+    shopName: nextBusinessName || tenantId
+  };
+
+  tenantData.metadata = {
+    ...(tenantData.metadata && typeof tenantData.metadata === 'object' ? tenantData.metadata : {}),
+    businessName: nextBusinessName || tenantId,
+    updatedAt: now
+  };
+
+  await writeTenantDatabase(tenantId, tenantData);
+
+  registry[tenantId] = {
+    ...existing,
+    businessName: nextBusinessName || tenantId,
+    updatedAt: now,
+    meta: nextMeta
+  };
+  await writeTenantRegistry(registry);
+
+  return {
+    tenantId,
+    databaseUrl: registry[tenantId].databaseUrl || buildTenantDatabaseUrl(req, tenantId),
+    record: registry[tenantId]
+  };
+}
+
+async function deleteTenantRecord(tenantIdInput) {
+  const tenantId = assertValidTenantId(tenantIdInput);
+  const registry = await readTenantRegistry();
+
+  if (!registry[tenantId]) {
+    const error = new Error('Tenant not found');
+    error.statusCode = 404;
+    throw error;
+  }
+
+  delete registry[tenantId];
+  await writeTenantRegistry(registry);
+
+  const tenantFile = getTenantFilePath(tenantId);
+  await fs.rm(tenantFile, { force: true });
+
+  return { tenantId, deleted: true };
+}
+
 function getNestedValue(root, segments) {
   let current = root;
 
@@ -438,6 +553,27 @@ const server = createServer(async (req, res) => {
           tenant,
           exists: true,
           databaseUrl: buildTenantDatabaseUrl(req, tenantId)
+        });
+        return;
+      }
+
+      if (req.method === 'PATCH') {
+        const body = await parseBody(req);
+        const result = await enqueueMutation(async () => updateTenantRecord(req, tenantId, body || {}));
+        sendJson(res, 200, {
+          ok: true,
+          tenantId: result.tenantId,
+          databaseUrl: result.databaseUrl,
+          tenant: result.record
+        });
+        return;
+      }
+
+      if (req.method === 'DELETE') {
+        const result = await enqueueMutation(async () => deleteTenantRecord(tenantId));
+        sendJson(res, 200, {
+          ok: true,
+          ...result
         });
         return;
       }

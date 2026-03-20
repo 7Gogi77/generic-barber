@@ -18,7 +18,9 @@ const OPTIONAL_ENV_KEYS = [
   'VERCEL_PROJECT_FRAMEWORK',
   'VERCEL_BUILD_COMMAND',
   'VERCEL_OUTPUT_DIRECTORY',
-  'VERCEL_INSTALL_COMMAND'
+  'VERCEL_INSTALL_COMMAND',
+  'SITE_FACTORY_PUBLIC_VPS_BASE_URL',
+  'GITHUB_TOKEN'
 ];
 
 const HARD_CODED_CLIENT_PHONE = '+38631886977';
@@ -252,15 +254,16 @@ export function buildProvisionMetadata(payload, tenantId) {
   };
 }
 
-function normalizeAdminEndpoint(input) {
-  const raw = String(input || '').trim();
+function normalizeAdminEndpoint(value, pathSuffix = '/_admin/tenants') {
+  const raw = String(value || '').trim();
   if (!raw) return '';
 
-  const withPath = raw.endsWith('/_admin/tenants')
-    ? raw
-    : `${raw.replace(/\/+$/, '')}/_admin/tenants`;
+  let base = raw;
+  if (raw.endsWith('/_admin/tenants')) {
+    base = raw.slice(0, -'/_admin/tenants'.length);
+  }
 
-  return withPath;
+  return `${base.replace(/\/+$/, '')}${pathSuffix}`;
 }
 
 function addPortFallback(endpoint) {
@@ -277,11 +280,11 @@ function addPortFallback(endpoint) {
   }
 }
 
-function collectVpsAdminEndpointCandidates() {
+function collectVpsAdminEndpointCandidates(pathSuffix = '/_admin/tenants') {
   const unique = new Set();
 
   const pushWithFallback = (value) => {
-    const endpoint = normalizeAdminEndpoint(value);
+    const endpoint = normalizeAdminEndpoint(value, pathSuffix);
     if (!endpoint) return;
 
     unique.add(endpoint);
@@ -297,32 +300,33 @@ function collectVpsAdminEndpointCandidates() {
   return [...unique];
 }
 
-export async function createTenantOnVps({ tenantId, businessName, siteConfig, metadata }) {
+function buildTenantEndpoint(endpoint, tenantId) {
+  const safeTenantId = encodeURIComponent(String(tenantId || '').trim());
+  if (!safeTenantId) return endpoint;
+  return `${endpoint.replace(/\/+$/, '')}/${safeTenantId}`;
+}
+
+async function runVpsAdminWithFallback({ method = 'GET', body = null, pathSuffix = '/_admin/tenants', tenantId = '' }) {
   const adminToken = String(process.env.VPS_DB_ADMIN_TOKEN || '').trim();
-  const endpoints = collectVpsAdminEndpointCandidates();
+  const endpoints = collectVpsAdminEndpointCandidates(pathSuffix);
 
   if (!endpoints.length) {
     throw new Error('SITE_FACTORY_VPS_ADMIN_URL is not configured');
   }
 
-  const requestBody = JSON.stringify({
-    tenantId,
-    businessName,
-    siteConfig,
-    metadata
-  });
-
   const failures = [];
 
-  for (const endpoint of endpoints) {
+  for (const baseEndpoint of endpoints) {
+    const endpoint = tenantId ? buildTenantEndpoint(baseEndpoint, tenantId) : baseEndpoint;
+
     try {
       const response = await fetch(endpoint, {
-        method: 'POST',
+        method,
         headers: {
           'Content-Type': 'application/json',
           'x-admin-token': adminToken
         },
-        body: requestBody
+        ...(body ? { body: JSON.stringify(body) } : {})
       });
 
       const payload = await response.json().catch(() => ({}));
@@ -330,25 +334,66 @@ export async function createTenantOnVps({ tenantId, businessName, siteConfig, me
         return payload;
       }
 
-      // Don't retry auth/business logic errors; those are definitive.
-      if ([400, 401, 403, 409, 422].includes(response.status)) {
-        throw new Error(payload.error || `VPS tenant provisioning failed (${response.status})`);
+      if ([400, 401, 403, 404, 409, 422].includes(response.status)) {
+        throw new Error(payload.error || `VPS request failed (${response.status})`);
       }
 
       failures.push(`${endpoint} -> ${response.status}`);
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-
-      // Definitive application errors should bubble up immediately.
-      if (/Unauthorized|already exists|required|invalid/i.test(message)) {
+      if (/Unauthorized|already exists|required|invalid|not found/i.test(message)) {
         throw error;
       }
-
       failures.push(`${endpoint} -> ${message}`);
     }
   }
 
-  throw new Error(`VPS tenant provisioning failed. Tried endpoints: ${failures.join(' | ')}`);
+  throw new Error(`VPS request failed. Tried endpoints: ${failures.join(' | ')}`);
+}
+
+export async function createTenantOnVps({ tenantId, businessName, siteConfig, metadata }) {
+  return runVpsAdminWithFallback({
+    method: 'POST',
+    pathSuffix: '/_admin/tenants',
+    body: {
+      tenantId,
+      businessName,
+      siteConfig,
+      metadata
+    }
+  });
+}
+
+export async function listTenantsFromVps() {
+  return runVpsAdminWithFallback({
+    method: 'GET',
+    pathSuffix: '/_admin/tenants'
+  });
+}
+
+export async function getTenantFromVps(tenantId) {
+  return runVpsAdminWithFallback({
+    method: 'GET',
+    pathSuffix: '/_admin/tenants',
+    tenantId
+  });
+}
+
+export async function updateTenantOnVps(tenantId, payload) {
+  return runVpsAdminWithFallback({
+    method: 'PATCH',
+    pathSuffix: '/_admin/tenants',
+    tenantId,
+    body: payload || {}
+  });
+}
+
+export async function deleteTenantOnVps(tenantId) {
+  return runVpsAdminWithFallback({
+    method: 'DELETE',
+    pathSuffix: '/_admin/tenants',
+    tenantId
+  });
 }
 
 function buildVercelQuery() {
@@ -414,11 +459,14 @@ async function resolveTemplateRepoId() {
     return null;
   }
 
+  const githubToken = String(process.env.GITHUB_TOKEN || '').trim();
+
   try {
     const response = await fetch(`https://api.github.com/repos/${slug}`, {
       headers: {
         Accept: 'application/vnd.github+json',
-        'User-Agent': 'generic-barber-site-factory'
+        'User-Agent': 'generic-barber-site-factory',
+        ...(githubToken ? { Authorization: `Bearer ${githubToken}` } : {})
       }
     });
 
@@ -474,25 +522,108 @@ export async function upsertProjectEnv(projectIdOrName, envVars) {
   }
 }
 
+function normalizeDeploymentUrl(urlValue) {
+  if (!urlValue) return null;
+  return String(urlValue).startsWith('http') ? String(urlValue) : `https://${urlValue}`;
+}
+
+function normalizeDeploymentRecord(record) {
+  if (!record || typeof record !== 'object') return null;
+
+  return {
+    id: record.id || null,
+    url: normalizeDeploymentUrl(record.url),
+    readyState: record.readyState || record.state || record.status || null
+  };
+}
+
+function delay(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function waitForProjectDeployment(projectIdOrName, timeoutMs = 20000, intervalMs = 2000) {
+  const started = Date.now();
+
+  while (Date.now() - started < timeoutMs) {
+    try {
+      const details = await vercelRequest(`/v9/projects/${encodeURIComponent(projectIdOrName)}`);
+      const latest = Array.isArray(details?.latestDeployments) ? details.latestDeployments[0] : null;
+      if (latest) {
+        return normalizeDeploymentRecord(latest);
+      }
+    } catch {
+      // Continue polling.
+    }
+
+    await delay(intervalMs);
+  }
+
+  return null;
+}
+
 export async function createProductionDeployment(project, meta = {}) {
+  const projectIdOrName = project.id || project.name;
+  const failures = [];
   const repoId = await resolveTemplateRepoId();
-  if (!repoId) {
+
+  if (repoId) {
+    try {
+      const explicit = await vercelRequest('/v13/deployments', {
+        method: 'POST',
+        body: JSON.stringify({
+          name: project.name,
+          project: projectIdOrName,
+          target: 'production',
+          gitSource: {
+            type: process.env.VERCEL_TEMPLATE_REPO_TYPE || 'github',
+            repoId,
+            ref: process.env.VERCEL_TEMPLATE_REPO_REF || 'main'
+          },
+          meta
+        })
+      });
+
+      return normalizeDeploymentRecord(explicit);
+    } catch (error) {
+      failures.push(error instanceof Error ? error.message : String(error));
+    }
+  }
+
+  try {
+    const projectOnly = await vercelRequest('/v13/deployments', {
+      method: 'POST',
+      body: JSON.stringify({
+        name: project.name,
+        project: projectIdOrName,
+        target: 'production',
+        meta
+      })
+    });
+
+    return normalizeDeploymentRecord(projectOnly);
+  } catch (error) {
+    failures.push(error instanceof Error ? error.message : String(error));
+  }
+
+  const detected = await waitForProjectDeployment(projectIdOrName, 20000, 2000);
+  if (detected) {
+    return detected;
+  }
+
+  if (failures.length) {
+    throw new Error(`Deployment was not created. Attempts: ${failures.join(' | ')}`);
+  }
+
+  return null;
+}
+
+export async function deleteVercelProject(projectIdOrName) {
+  if (!projectIdOrName) {
     return null;
   }
 
-  return vercelRequest('/v13/deployments', {
-    method: 'POST',
-    body: JSON.stringify({
-      name: project.name,
-      project: project.id || project.name,
-      target: 'production',
-      gitSource: {
-        type: process.env.VERCEL_TEMPLATE_REPO_TYPE || 'github',
-        repoId,
-        ref: process.env.VERCEL_TEMPLATE_REPO_REF || 'main'
-      },
-      meta
-    })
+  return vercelRequest(`/v9/projects/${encodeURIComponent(projectIdOrName)}`, {
+    method: 'DELETE'
   });
 }
 

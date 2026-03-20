@@ -467,11 +467,6 @@
               <label for="customColor">Custom Color</label>
               <input id="customColor" name="customColor" type="color" value="#b6461a">
             </div>
-
-            <div class="field-wide">
-              <label for="factoryKey">Factory API Key</label>
-              <input id="factoryKey" name="factoryKey" type="password" placeholder="Required only if SITE_FACTORY_API_KEY is configured">
-            </div>
           </div>
 
           <div class="actions">
@@ -490,6 +485,15 @@
 
           <ul class="result-list" id="resultList">
             <li class="result-item">No site has been provisioned yet.</li>
+          </ul>
+
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-top:8px;">
+            <h3 class="section-title" style="font-size:1.1rem; margin:0;">Created Sites</h3>
+            <button type="button" class="ghost-btn" id="refreshSitesButton" style="padding:8px 14px;">Refresh Sites</button>
+          </div>
+
+          <ul class="result-list" id="sitesList">
+            <li class="result-item">No sites found yet.</li>
           </ul>
         </div>
       </aside>
