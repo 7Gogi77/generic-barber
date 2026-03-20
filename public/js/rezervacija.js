@@ -105,6 +105,15 @@
         // ===== INIT =====
         document.addEventListener('DOMContentLoaded', async () => {
             showLoading(true);
+
+            if (window.ADMIN_ENV_PROMISE && typeof window.ADMIN_ENV_PROMISE.then === 'function') {
+                try {
+                    await Promise.race([
+                        window.ADMIN_ENV_PROMISE,
+                        new Promise(resolve => setTimeout(resolve, 2000))
+                    ]);
+                } catch (_) {}
+            }
             
             // Load config from Firebase first
             await loadConfigFromFirebase();
@@ -137,7 +146,17 @@
         // ===== LOAD CONFIG FROM FIREBASE =====
         async function loadConfigFromFirebase() {
             try {
-                const response = await fetch(`${getDatabaseBaseUrl()}/site_config.json`);
+                const configUrl = (window.AppBackend && typeof window.AppBackend.getDatabaseUrl === 'function')
+                    ? window.AppBackend.getDatabaseUrl('site_config.json', { _t: Date.now() })
+                    : `${getDatabaseBaseUrl()}/site_config.json?_t=${Date.now()}`;
+                const response = await fetch(configUrl, {
+                    cache: 'no-store',
+                    headers: {
+                        'Cache-Control': 'no-cache, no-store, must-revalidate',
+                        'Pragma': 'no-cache',
+                        'Expires': '0'
+                    }
+                });
                 if (response.ok) {
                     const config = await response.json();
                     

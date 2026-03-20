@@ -420,6 +420,15 @@
         }
         
         async function initSite() {
+            if (window.ADMIN_ENV_PROMISE && typeof window.ADMIN_ENV_PROMISE.then === 'function') {
+                try {
+                    await Promise.race([
+                        window.ADMIN_ENV_PROMISE,
+                        new Promise(resolve => setTimeout(resolve, 2000))
+                    ]);
+                } catch (_) {}
+            }
+
             // Try Firebase first, fall back to localStorage only if Firebase fails
             const firebaseLoaded = await loadFromFirebase();
             if (!firebaseLoaded) {

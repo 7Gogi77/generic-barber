@@ -328,3 +328,14 @@ window.AppBackend = {
         } catch (_) {}
     }
 };
+
+if (window.ADMIN_ENV_PROMISE && typeof window.ADMIN_ENV_PROMISE.then === 'function') {
+    window.ADMIN_ENV_PROMISE
+        .then((env) => {
+            const runtimeDatabaseUrl = typeof env?.databaseUrl === 'string' ? env.databaseUrl.trim() : '';
+            if (runtimeDatabaseUrl) {
+                window.AppBackend.setDatabaseBaseUrl(runtimeDatabaseUrl, true);
+            }
+        })
+        .catch(() => {});
+}
