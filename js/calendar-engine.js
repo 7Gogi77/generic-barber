@@ -689,11 +689,11 @@ const CalendarEngine = {
         headerToolbar: _isMobile ? {
           left: 'prev,next',
           center: 'title',
-          right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
+          right: 'dayGridMonth,timeGridWeek,timeGridDay,listMonth'
         } : {
           left: 'prev,next today',
           center: 'title',
-          right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
+          right: 'dayGridMonth,timeGridWeek,timeGridDay,listMonth'
         },
         // Slovenian button text (short mobile labels instead of single letters)
         buttonText: _isMobile ? {
@@ -701,16 +701,19 @@ const CalendarEngine = {
           month:    'Mes',
           week:     'Ted',
           day:      'Dan',
-          list:     'Sez',
-          listWeek: 'Sez'
+          list:      'Sez',
+          listWeek:  'Sez',
+          listMonth: 'Sez'
         } : {
           today:    'Danes',
           month:    'Mesec',
           week:     'Teden',
           day:      'Dan',
-          list:     'Seznam',
-          listWeek: 'Seznam'
+          list:      'Seznam',
+          listWeek:  'Seznam',
+          listMonth: 'Seznam'
         },
+        noEventsContent: 'Za izbran mesec še ni dogodkov.',
         locale: 'sl',
         firstDay: 1,
         allDayText: 'Cel dan',

@@ -464,9 +464,9 @@
                     }
                 };
 
-                sidebarToggle.addEventListener('click', () => {
-                    sidebar.classList.toggle('expanded');
-                    localStorage.setItem('sidebarExpanded', sidebar.classList.contains('expanded'));
+                function setSidebarExpanded(nextExpanded) {
+                    sidebar.classList.toggle('expanded', !!nextExpanded);
+                    localStorage.setItem('sidebarExpanded', !!nextExpanded ? 'true' : 'false');
                     // Keep all open side panels positioned to the right of the sidebar
                     const w = window.innerWidth <= 480 ? 0 : (sidebar.classList.contains('expanded') ? 260 : 72);
                     ['businessSettingsPanel','customerListPanel','analyticsPanel'].forEach(id => {
@@ -480,6 +480,32 @@
                     setTimeout(() => {
                         forceCalendarRelayout('sidebar-toggle');
                     }, 370);
+                }
+
+                window.toggleSidebarMenu = function(forceOpen) {
+                    const shouldOpen = typeof forceOpen === 'boolean'
+                        ? forceOpen
+                        : !sidebar.classList.contains('expanded');
+                    setSidebarExpanded(shouldOpen);
+                };
+
+                window.placeMobileSidebarToggleInCalendarHeader = function() {
+                    const sbToggle = document.getElementById('sidebarToggle');
+                    if (!sbToggle) return;
+                    const calEl = document.getElementById('scheduleCalendar');
+                    const toolbar = calEl ? calEl.querySelector('.fc-toolbar') : null;
+                    if (window.innerWidth <= 480 && toolbar) {
+                        const leftChunk = toolbar.querySelector('.fc-toolbar-chunk:first-child');
+                        if (leftChunk && !leftChunk.contains(sbToggle)) {
+                            leftChunk.insertBefore(sbToggle, leftChunk.firstChild || null);
+                        }
+                        sbToggle.classList.add('in-toolbar');
+                        toolbar.classList.add('burger-inside');
+                    }
+                };
+
+                sidebarToggle.addEventListener('click', () => {
+                    window.toggleSidebarMenu();
                 });
 
                 // keyboard support
@@ -493,9 +519,7 @@
                 // Mobile sidebar close button
                 if (sidebarCloseMobile) {
                     sidebarCloseMobile.addEventListener('click', () => {
-                        sidebar.classList.remove('expanded');
-                        localStorage.setItem('sidebarExpanded', 'false');
-                        setTimeout(() => { forceCalendarRelayout('sidebar-close'); }, 370);
+                        setSidebarExpanded(false);
                     });
                 }
 
@@ -547,6 +571,8 @@
                             closeBusinessSettingsPanel();
                             if (!window.calendar && !calendarInitialized) {
                                 initializeBusinessCalendar();
+                            } else if (typeof window.placeMobileSidebarToggleInCalendarHeader === 'function') {
+                                setTimeout(() => { window.placeMobileSidebarToggleInCalendarHeader(); }, 0);
                             }
                         }
                         else if (page === 'customers') {
@@ -564,6 +590,11 @@
                 });
 
                 applyState();
+                window.addEventListener('resize', () => {
+                    if (typeof window.placeMobileSidebarToggleInCalendarHeader === 'function') {
+                        window.placeMobileSidebarToggleInCalendarHeader();
+                    }
+                });
             })();
 
             // ========== CUSTOMER LIST PANEL ========== //
@@ -4658,6 +4689,9 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                 window.calendar = calendar;
                 calendarInitialized = true;
                 debugLog('✓ Business calendar initialized');
+                if (typeof window.placeMobileSidebarToggleInCalendarHeader === 'function') {
+                    window.placeMobileSidebarToggleInCalendarHeader();
+                }
                 // Init filter chips first (may set _calWorkerFilterId = 'all'),
                 // then apply worker access which overrides to worker's own ID.
                 initCalWorkerFilter();
@@ -4752,6 +4786,8 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
 
                 // ── Calendar hover tooltip ──────────────────────────────────
                 (function() {
+                    const allowHoverTooltip = window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+                    if (!allowHoverTooltip) return;
                     var tip = document.createElement('div');
                     tip.id = '_calTooltip';
                     tip.style.cssText = 'position:fixed;z-index:9999;background:#1c1c1e;color:#fff;font-size:13px;line-height:1.5;padding:10px 14px;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,0.3);pointer-events:none;display:none;max-width:260px;word-break:break-word;';

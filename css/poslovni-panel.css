@@ -1868,6 +1868,14 @@
                 box-shadow: var(--ios-shadow-md);
                 flex-shrink: 0;
             }
+            .sidebar-toggle.in-toolbar {
+                position: relative !important;
+                left: auto !important;
+                top: auto !important;
+                z-index: auto !important;
+                margin: 0 4px 0 0 !important;
+                box-shadow: none !important;
+            }
 
             .sidebar.expanded .sidebar-toggle {
                 display: none !important;

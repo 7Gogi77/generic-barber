@@ -313,7 +313,7 @@
         <div id="customerListPanel" style="display:none;">
             <div class="panel-header" style="justify-content:space-between; flex-wrap:wrap; gap:8px;">
                 <div style="display:flex; align-items:center; gap:10px;">
-                    <button class="panel-menu-btn" onclick="document.getElementById('sidebar').classList.add('expanded')" title="Meni"><i class="bi bi-list"></i></button>
+                    <button class="panel-menu-btn" onclick="toggleSidebarMenu(true)" title="Meni"><i class="bi bi-list"></i></button>
                     <h3 style="margin:0; font-size:18px; font-weight:700; color:#2c3e50;">Seznam strank</h3>
                 </div>
                 <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
@@ -328,7 +328,7 @@
         <div id="analyticsPanel" style="display:none;">
             <div class="panel-header" style="justify-content:space-between; flex-wrap:wrap; gap:8px;">
                 <div style="display:flex; align-items:center; gap:10px;">
-                    <button class="panel-menu-btn" onclick="document.getElementById('sidebar').classList.add('expanded')" title="Meni"><i class="bi bi-list"></i></button>
+                    <button class="panel-menu-btn" onclick="toggleSidebarMenu(true)" title="Meni"><i class="bi bi-list"></i></button>
                     <h3 style="margin:0; font-size:18px; font-weight:700; color:#2c3e50;">Poslovna Analitika</h3>
                 </div>
                 <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
@@ -395,7 +395,7 @@
         <!-- BUSINESS SETTINGS PANEL -->
         <div id="businessSettingsPanel">
             <div class="bsp-header">
-                <button class="panel-menu-btn" onclick="document.getElementById('sidebar').classList.add('expanded')" title="Meni" style="color:#007aff; font-size:22px;"><i class="bi bi-list"></i></button>
+                <button class="panel-menu-btn" onclick="toggleSidebarMenu(true)" title="Meni" style="color:#007aff; font-size:22px;"><i class="bi bi-list"></i></button>
                 <h3 style="margin:0;font-size:17px;font-weight:600;color:#1c1c1e;">Nastavitve rezervacij</h3>
             </div>
 
