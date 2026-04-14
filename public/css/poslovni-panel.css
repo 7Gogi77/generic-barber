@@ -2302,6 +2302,9 @@
     transform: scale(0.91);
     box-shadow: 0 2px 8px rgba(0,122,255,0.25);
 }
+.mobile-fab-hidden {
+    display: none !important;
+}
 
 @media (min-width: 769px) {
     #mobileFab { display: none !important; }
@@ -2338,6 +2341,54 @@
 }
 
 @media (max-width: 768px) {
+    #businessSettingsPanel .bsp-header {
+        justify-content: flex-start;
+        gap: 10px;
+        padding: 0 12px;
+    }
+    #businessSettingsPanel .bsp-header h3 {
+        flex: 1;
+        min-width: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    #businessSettingsPanel .day-row {
+        flex-wrap: wrap;
+        align-items: center;
+        row-gap: 8px;
+    }
+    #businessSettingsPanel .day-name {
+        flex: 1 1 calc(100% - 34px);
+        min-width: 0;
+    }
+    #businessSettingsPanel .day-times {
+        width: 100%;
+        margin-left: 0;
+        justify-content: flex-start;
+    }
+    #businessSettingsPanel .day-times input[type="time"] {
+        flex: 1 1 0;
+        min-width: 0;
+        width: 0;
+    }
+    #businessSettingsPanel .bsp-row {
+        flex-wrap: wrap;
+        align-items: flex-start;
+    }
+    #businessSettingsPanel .bsp-row > div:first-child {
+        flex: 1 1 100%;
+        min-width: 0;
+    }
+    #businessSettingsPanel .bsp-row .bsp-time-range {
+        width: 100%;
+        justify-content: flex-start;
+    }
+    #businessSettingsPanel .bsp-row .bsp-time-range .bsp-input {
+        flex: 1 1 0;
+        min-width: 0;
+    }
+
     #mobileFab { display: flex !important; }
 
     /* Fill available screen height — CSS fallback only (JS overrides via inline style) */

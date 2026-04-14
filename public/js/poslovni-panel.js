@@ -399,6 +399,7 @@
             function closeCustomerPanel() {
                 const panel = document.getElementById('customerListPanel'); if (!panel) return; panel.classList.remove('open');
                 setTimeout(() => { try { panel.style.display = 'none'; const detail = document.getElementById('customerDetail'); if (detail) detail.style.display = 'none'; } catch (e) {} }, 320);
+                updateMobileFabVisibility();
             }
             
             function closeAnalyticsPanel() {
@@ -413,6 +414,7 @@
                         analyticsCharts = { earnings: null, services: null };
                     } catch (e) {} 
                 }, 320);
+                updateMobileFabVisibility();
             }
 
             function closeBusinessSettingsPanel() {
@@ -422,6 +424,7 @@
                 setTimeout(() => {
                     try { panel.style.display = 'none'; } catch (e) {}
                 }, 320);
+                updateMobileFabVisibility();
             }
             
             function hideAllPanels() {
@@ -437,6 +440,29 @@
                 try { if (typeof cal.updateSize === 'function') cal.updateSize(); } catch (_) {}
             }
             window.forceCalendarRelayout = forceCalendarRelayout;
+
+            function updateMobileFabVisibility() {
+                const fab = document.getElementById('mobileFab');
+                if (!fab) return;
+                if (window.innerWidth > 768) {
+                    fab.classList.add('mobile-fab-hidden');
+                    return;
+                }
+                if (window._bspWorkerMode) {
+                    const sess = window.bspGetSession ? window.bspGetSession() : null;
+                    const perms = _bspNormalizePerms(sess && sess.permissions ? sess.permissions : {});
+                    if (!perms.canAddAppointments && !perms.canAddEvents) {
+                        fab.classList.add('mobile-fab-hidden');
+                        return;
+                    }
+                }
+                const calendarActive = !!document.querySelector('.nav-icon[data-page="calendar"].active');
+                const customerOpen = !!document.getElementById('customerListPanel')?.classList.contains('open');
+                const analyticsOpen = !!document.getElementById('analyticsPanel')?.classList.contains('open');
+                const settingsOpen = !!document.getElementById('businessSettingsPanel')?.classList.contains('open');
+                fab.classList.toggle('mobile-fab-hidden', !(calendarActive && !customerOpen && !analyticsOpen && !settingsOpen));
+            }
+            window.updateMobileFabVisibility = updateMobileFabVisibility;
 
             function isBookingLikeEvent(ev) {
                 if (!ev) return false;
@@ -587,6 +613,7 @@
                             showAnalyticsPanel();
                         }
                         else { alert(`${page} page not yet implemented`); }
+                        if (typeof window.updateMobileFabVisibility === 'function') window.updateMobileFabVisibility();
                     });
                 });
 
@@ -595,6 +622,7 @@
                     if (typeof window.placeMobileSidebarToggleInCalendarHeader === 'function') {
                         window.placeMobileSidebarToggleInCalendarHeader();
                     }
+                    if (typeof window.updateMobileFabVisibility === 'function') window.updateMobileFabVisibility();
                 });
             })();
 
@@ -956,6 +984,7 @@
             panel.style.width = `calc(100% - ${sidebarW}px)`;
             panel.style.display = 'flex';
             setTimeout(() => panel.classList.add('open'), 20);
+            updateMobileFabVisibility();
         }
 
         // ===== ANALYTICS PANEL =====
@@ -972,6 +1001,7 @@
             panel.style.width = `calc(100% - ${sidebarW}px)`;
             panel.style.display = 'flex';
             setTimeout(() => panel.classList.add('open'), 10);
+            updateMobileFabVisibility();
 
             // Load schedule data
             try {
@@ -1870,6 +1900,7 @@
             document.querySelectorAll('.bsp-tab').forEach((t,i) => t.classList.toggle('active', i === 0));
             document.querySelectorAll('.bsp-tab-panel').forEach((p,i) => p.classList.toggle('active', i === 0));
             setTimeout(() => panel.classList.add('open'), 10);
+            updateMobileFabVisibility();
         }
 
         // ── Save all settings ─────────────────────────────────────────────────────
@@ -2083,6 +2114,12 @@
                     }
                 }
                 if (_changed) localStorage.setItem('sms_reminders', JSON.stringify(_rems));
+                const _dailyKey = 'sms_daily_reminder_sent_date';
+                const _todayKey = _now.getFullYear() + '-' + String(_now.getMonth() + 1).padStart(2, '0') + '-' + String(_now.getDate()).padStart(2, '0');
+                if (localStorage.getItem(_dailyKey) !== _todayKey && window.SMSHandler?.sendDailyReminders) {
+                    await window.SMSHandler.sendDailyReminders();
+                    localStorage.setItem(_dailyKey, _todayKey);
+                }
             } catch (_) {}
         });
 
@@ -4693,6 +4730,7 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                 if (typeof window.placeMobileSidebarToggleInCalendarHeader === 'function') {
                     window.placeMobileSidebarToggleInCalendarHeader();
                 }
+                if (typeof window.updateMobileFabVisibility === 'function') window.updateMobileFabVisibility();
                 // Init filter chips first (may set _calWorkerFilterId = 'all'),
                 // then apply worker access which overrides to worker's own ID.
                 initCalWorkerFilter();
@@ -5161,7 +5199,7 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
             // ── 4. Hide mobile FAB if worker cannot add events or appointments ──
             if (!np.canAddEvents && !np.canAddAppointments) {
                 var fab = document.getElementById('mobileFab');
-                if (fab) fab.style.display = 'none';
+                if (fab) fab.classList.add('mobile-fab-hidden');
             }
 
             // ── 5. Show worker identity badge in sidebar (only once) ──────
@@ -5173,5 +5211,6 @@ ${manualEarningsData.length > 0 ? `<table><thead><tr>
                 badge.textContent = workerName;
                 sidebar.insertBefore(badge, sidebar.lastElementChild.nextSibling || null);
             }
+            if (typeof window.updateMobileFabVisibility === 'function') window.updateMobileFabVisibility();
         };
         // ====================================================================

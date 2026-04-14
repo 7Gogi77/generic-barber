@@ -437,7 +437,7 @@
                             </div>
                             <div class="bsp-row">
                                 <div><div class="bsp-row-label">Od – Do<i class="bi bi-info-circle bsp-tip-icon" data-tip="Časovni interval, ko imate odmor in ne sprejemate rezervacij.|13:00 €14:00 pomeni, da je ta ura v koledarju blokirana."></i></div></div>
-                                <div style="display:flex;align-items:center;gap:8px;">
+                                <div class="bsp-time-range" style="display:flex;align-items:center;gap:8px;">
                                     <input type="time" id="autoBreakStart" class="bsp-input" value="13:00">
                                     <span style="color:#8e8e93;font-size:12px;">–</span>
                                     <input type="time" id="autoBreakEnd" class="bsp-input" value="14:00">
@@ -483,7 +483,7 @@
                             </div>
                             <div class="bsp-row">
                                 <div><div class="bsp-row-label">Poletni delovni čas<i class="bi bi-info-circle bsp-tip-icon" data-tip="Delovni čas, ki velja v poletnem obdobju.|08:00 €20:00 za vse delovne dni."></i></div><div class="bsp-row-hint">Hiter vnos za vse delovne dni (pon–pet)</div></div>
-                                <div style="display:flex;align-items:center;gap:8px;">
+                                <div class="bsp-time-range" style="display:flex;align-items:center;gap:8px;">
                                     <input type="time" id="seasonSummerStart_h" class="bsp-input" value="08:00">
                                     <span style="color:#8e8e93;font-size:12px;">–</span>
                                     <input type="time" id="seasonSummerEnd_h" class="bsp-input" value="20:00">
@@ -606,7 +606,7 @@
                             </div>
                             <div class="bsp-row">
                                 <div><div class="bsp-row-label">Ure večjega povpraševanja<i class="bi bi-info-circle bsp-tip-icon" data-tip="Čas dneva, ko velja višja cena.|16:00 €19:00."></i></div></div>
-                                <div style="display:flex;align-items:center;gap:8px;">
+                                <div class="bsp-time-range" style="display:flex;align-items:center;gap:8px;">
                                     <input type="time" id="peakStart" class="bsp-input" value="12:00">
                                     <span style="color:#8e8e93;font-size:12px;">–</span>
                                     <input type="time" id="peakEnd" class="bsp-input" value="14:00">
@@ -747,6 +747,23 @@
                             <div class="bsp-row-hint" style="margin-bottom:4px;">Spremenljivke: <b>{ime}</b> ime stranke &nbsp;·&nbsp; <b>{posel}</b> naziv podjetja &nbsp;·&nbsp; <b>{datum}</b> datum &nbsp;·&nbsp; <b>{cas}</b> ura &nbsp;·&nbsp; <b>{link}</b> link za upravljanje</div>
                             <textarea id="smsConfirmTemplate" class="bsp-input" style="width:100%;min-height:80px;font-size:13px;padding:8px;resize:vertical;box-sizing:border-box;"></textarea>
                             <div style="font-size:12px;color:#8e8e93;">Znakov: <span id="smsConfirmCharCount">0</span></div>
+                        </div>
+                    </div>
+
+                    <div class="bsp-card">
+                        <div class="bsp-card-header">
+                            <div class="bsp-card-icon" style="background:#ff950020;"><i class="bi bi-clock-history" style="color:#ff9500;font-size:15px;"></i></div>
+                            <div><div class="bsp-card-title">SMS opomnik 24 ur pred terminom</div></div>
+                        </div>
+                        <label class="bsp-row">
+                            <div><div class="bsp-row-label">Pošlji opomnik 24 ur prej</div><div class="bsp-row-hint">Sistem enkrat dnevno pošlje opomnik za jutrišnje termine</div></div>
+                            <input type="checkbox" id="smsReminderEnabled" class="bsp-toggle">
+                        </label>
+                        <div class="bsp-row" style="align-items:flex-start;flex-direction:column;gap:6px;padding-top:10px;">
+                            <div class="bsp-row-label">Besedilo opomnika</div>
+                            <div class="bsp-row-hint" style="margin-bottom:4px;">Spremenljivke: <b>{ime}</b> &nbsp;·&nbsp; <b>{posel}</b> &nbsp;·&nbsp; <b>{datum}</b> &nbsp;·&nbsp; <b>{cas}</b></div>
+                            <textarea id="smsReminderTemplate" class="bsp-input" style="width:100%;min-height:80px;font-size:13px;padding:8px;resize:vertical;box-sizing:border-box;"></textarea>
+                            <div style="font-size:12px;color:#8e8e93;">Znakov: <span id="smsReminderCharCount">0</span></div>
                         </div>
                     </div>
 
