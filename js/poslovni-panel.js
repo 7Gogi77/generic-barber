@@ -527,6 +527,7 @@
                     if (window.innerWidth > 480) return;
                     if (!sidebar.classList.contains('expanded')) return;
                     if (event.target.closest('#sidebar')) return;
+                    if (event.target.closest('#sidebarToggle') || event.target.closest('.panel-menu-btn')) return;
                     sidebar.classList.remove('expanded');
                     localStorage.setItem('sidebarExpanded', 'false');
                 });
